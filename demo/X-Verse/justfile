@@ -1,0 +1,26 @@
+#!/usr/bin/env·just·--justfile
+
+# Ignore recipe lines beginning with '#'
+set ignore-comments := true
+
+# Optional imports
+import? "./bridges/carla/just/carla-build.just"
+import? "./bridges/carla/just/carla-common.just"
+import? "./bridges/carla/just/carla-client.just"
+import? "./bridges/carla/just/carla-server.just"
+import? "./core/zenoh/just/carla-rust.just"
+import? "./core/zenoh/just/distrobox.just"
+import? "./core/zenoh/just/eclipse-zenoh.just"
+import? "./core/zenoh/just/rust-lang.just"
+import? "./vecu/simulink/just/ros2.just"
+
+# Mandatory imports
+import "./just/utils.just"
+
+# Main definitions
+main_repo := "autoverse"
+main_temp := main_repo/"temp"
+
+# Default recipe to display help information
+_default:
+  @just --list

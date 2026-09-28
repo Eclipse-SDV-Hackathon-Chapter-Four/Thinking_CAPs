@@ -1,0 +1,10 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"    # MQTT Protocol
+      - "9001:9001"    # WebSocket Protocol
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    network_mode: host  # Use host network

@@ -1,0 +1,90 @@
+# carla_video_source.py
+# ------------------------------------------------------------
+# CARLA → LiveKit Video Adapter
+# ------------------------------------------------------------
+# Responsibilities:
+# - Receive images from CARLA sensor.camera.rgb
+# - Enforce fixed resolution (width/height invariants)
+# - Discard transient or invalid frames (dimension mismatches)
+# - Convert CARLA BGRA format to RGB24
+# - Publish frames to LiveKit via VideoSource.capture_frame()
+#
+# Design notes:
+# - This module contains NO CARLA world or actor logic
+# - It assumes that CarlaCamera manages sensor lifecycle
+# - capture_frame() is synchronous by design
+# - Stability is preferred over frame completeness
+# ------------------------------------------------------------
+import time
+import numpy as np
+from livekit import rtc
+
+
+class CarlaVideoSource(rtc.VideoSource):
+    def __init__(self, width: int, height: int):
+        """
+        Initialize a LiveKit VideoSource for CARLA RGB images.
+
+        Args:
+            width: Expected image width in pixels
+            height: Expected image height in pixels
+        """
+        super().__init__(width, height)
+        self.width = width
+        self.height = height
+
+
+        # FPS counters
+        self._last_ts = time.time()
+        self._frame_counter = 0
+
+    # ------------------------------------------------------------
+    # CARLA image callback
+    # ------------------------------------------------------------
+    def on_carla_image(self, image) -> None:
+
+        #self._frame_counter += 1
+        #now = time.time()
+        #if now - self._last_ts >= 1.0:
+        #    print(f"[CARLA] Incoming FPS: {self._frame_counter}")
+        #    self._frame_counter = 0
+        #    self._last_ts = now
+
+        """
+        Receive an image from CARLA (sensor.camera.rgb).
+
+        CARLA image format:
+        - image.raw_data: BGRA bytes (uint8)
+        - image.width / image.height may transiently differ
+
+        Behaviour:
+        - Frames with mismatched dimensions are discarded
+        - Valid frames are converted to RGB24 and published
+
+        Args:
+            image: carla.Image instance
+        """
+
+        # Enforce strict resolution invariants
+        if image.width != self.width or image.height != self.height:
+            # Discard invalid or transient frames to avoid
+            # WebRTC renegotiation and browser layout jitter
+            return
+
+        # Convert raw BGRA buffer to numpy array
+        bgra = np.frombuffer(image.raw_data, dtype=np.uint8)
+        bgra = bgra.reshape((self.height, self.width, 4))
+
+        # Convert BGRA -> RGB (drop alpha channel, swap BGR)
+        rgb = bgra[:, :, :3][:, :, ::-1]
+
+        # Create LiveKit VideoFrame (RGB24)
+        frame = rtc.VideoFrame(
+            self.width,
+            self.height,
+            rtc.VideoBufferType.RGB24,
+            rgb.tobytes(),
+        )
+
+        # Publish frame to LiveKit (synchronous)
+        self.capture_frame(frame)

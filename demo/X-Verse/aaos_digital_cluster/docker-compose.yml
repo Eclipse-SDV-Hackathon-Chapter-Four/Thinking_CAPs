@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  android-emulator:
+    container_name: android-emulator-tablet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - APK_FILENAME=${APK_FILENAME}
+      - PACKAGE_NAME=${PACKAGE_NAME}
+      - AVD_NAME=pixel_tablet_api34
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ./apk:/apk
+      - ./logs:/tmp
+      # - ./workspace:/workspace  # OPTIONAL: mount your code
+    devices:
+      - /dev/kvm:/dev/kvm
+    stdin_open: true
+    tty: true

@@ -1,0 +1,99 @@
+#
+# Paste it on the .gitconfig file on your local machine
+# windows: C:\Users\<username>\.gitconfig
+# linux: $HOME/.gitconfig
+#
+[alias]
+	# - Set git user data
+	# 	git config user.name <user> or "Name"
+	# 	git config user.email <e-mail>
+	#
+	# - Get git user data
+	# 	git config --get user.name
+	# 	git config --get user.email
+	#
+	# - Unset git user data
+	# 	git config --unset user.name
+	# 	git config --unset user.email
+	#
+	# - Rebase dev_branch
+	# 		git checkout dev_branch
+	# 		git rebase develop/master
+	#
+	# - git cherry-pick hash1^..hashN
+	# 		cherrypick_range = "!git cherry-pick \"$1\" #^..\"$2\" #"
+	#
+	# - Delete remote branch from local machine/repo
+	# 		git push origin -d branch-name	
+	#
+	# - Reset specific file to commit or branch
+	#		git checkout 'commit hash or branch' -- 'file path'
+	#
+	# - Update specific file from specific branch
+	# 		1)
+	#			git fetch
+	# 			git checkout -m <branch-name> <filepath>
+	#		2)
+	#			git fetch
+	#			git checkout --patch <branch-name> <filepath>
+	#
+	# - Restore specific file to specific branch/revision
+	#		git restore --source <branch-name|revision> <filepath> 	
+	#		
+	#		1)
+	#			git restore --source 7173808e index.html
+	#			This command will restore the file as it was in commit #7173808e
+	#		2)
+	#			git restore --source master~2 index.html
+	#			This command will restore it as it was "two commits before the current tip of the master branch".
+	#
+	# - Copy git entries without lost commit history
+	#	https://stackoverflow.com/questions/1043388/record-file-copy-operation-with-git/46484848#46484848
+	# 		fileOriginal=OriginalFileName.cpp
+	# 		fileDuplicate=DuplicateFileName.cpp
+	# 		branchName=duplicate-OriginalFileName
+	# 		
+	# 		echo "$fileOriginal, $fileDuplicate, $branchName" # review of defined names
+	# 		
+	# 		git checkout -b $branchName # create and switch to branch
+	# 		
+	# 		git mv $fileOriginal $fileDuplicate # make the duplicate
+	# 		git commit -m "Duplicate $fileOriginal to $fileDuplicate"
+	# 		
+	# 		git checkout HEAD~ $fileOriginal # bring back the original
+	# 		git commit -m "Restore duplicated $fileOriginal"
+	# 		
+	# 		git checkout - # switch back to source branch
+	# 		git merge --no-ff $branchName -m "Merge branch $branchName" # merge dup into source branch	
+	#
+	# - Git command to show alias
+	#	git config --get-regexp alias
+	#
+	# - Git diff between stash entries
+	# 	git diff 'stash@{0}' 'stash@{1}'
+	#
+	rmupstream = !git branch --unset-upstream
+	st = status
+	su = submodule update --init --recursive
+	upm = pull origin main
+	# up = !git fetch && git pull origin 
+	up = !git fetch && git pull
+	ups = !git up && git su
+	save = stash --staged -m
+	sthp = "!git stash show -p \"$1\" > stash$\"$1\".patch #"
+	ln1 = log --oneline
+	bcc = checkout -b
+	bc = branch
+	bd = branch -D
+	bdo = push origin -d
+	bl = branch --list
+	bla = branch -a
+	patchwip = "!git diff --cached > stash_wip_$\"$1\".patch #"
+	rev = rev-parse --short HEAD
+	br = branch
+	sth = stash
+	sthl = stash list
+	stha = stash apply
+	sthd = stash drop
+	ck = checkout
+	ft = fetch

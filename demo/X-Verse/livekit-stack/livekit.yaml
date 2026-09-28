@@ -1,0 +1,33 @@
+
+# LiveKit server configuration
+# This configuration is intended for local / LAN deployment
+# with a fixed server IP addres
+
+port: 7880
+
+rtc:
+
+  # IP address advertised to WebRTC clients as ICE candidate.
+  # This must be reachable by browsers.
+  # NOTE: This is intentionally fixed for local deployment.
+
+  node_ip: 192.168.1.102
+
+  # Disable external IP discovery (no STUN)
+  use_external_ip: false
+
+  # Force WebRTC to use TCP (firewall/NAT friendly)
+  force_tcp: true
+  tcp_port: 7881
+
+redis:
+  # Redis endpoint used by LiveKit
+  address: redis:6379
+
+keys:
+  # API key used to validate JWT tokens
+  devkey: a94f3c8e2c3f44c1adcfb6bb8129e56c6b7c1b2e3a91d4f5c6a8b9e0d12345
+
+logging:
+  # Log verbosity level
+  level: info

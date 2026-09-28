@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>LiveKit Viewer</title>
+
+  <!-- Basic layout stabilization -->
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #111;
+      color: #ddd;
+      margin: 20px;
+    }
+
+    h2 {
+      margin-bottom: 15px;
+    }
+
+    /* Container adapted for 16:9 streams (e.g. 960x540) */
+    .video-container {
+      width: 960px;
+      aspect-ratio: 16 / 9;
+      background: black;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: black;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>LiveKit Viewer (View-Only)</h2>
+  <div class="video-container" id="video-container"></div>
+
+  <script type="module">
+    import { Room } from "https://unpkg.com/livekit-client/dist/livekit-client.esm.mjs";
+
+    console.log("✅ Viewer script loaded");
+
+    // ------------------------------------------------------------
+    // Network-aware configuration
+    // ------------------------------------------------------------
+    // The viewer automatically connects to the same host
+    // that served this HTML page.
+    // ------------------------------------------------------------
+    const SERVER_HOST = window.location.hostname;
+
+    // LiveKit signaling endpoint
+    const wsUrl = `ws://${SERVER_HOST}:7880`;
+
+    // Generate a unique viewer identity
+    const viewerId = `viewer-${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
+
+    // Token server endpoint
+    const tokenUrl = `http://${SERVER_HOST}:8080/token?id=${viewerId}`;
+
+    console.log("🌐 Using server host:", SERVER_HOST);
+
+    const videoContainer = document.getElementById("video-container");
+
+    async function connect() {
+      try {
+        // ------------------------------------------------------------
+        // Fetch view-only token
+        // ------------------------------------------------------------
+        console.log("🟡 Requesting token...");
+        const res = await fetch(tokenUrl);
+
+        if (!res.ok) {
+          throw new Error(`Token request failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        const token = data.token;
+
+        // ------------------------------------------------------------
+        // Connect to LiveKit
+        // ------------------------------------------------------------
+        const room = new Room();
+
+        room.on("trackSubscribed", (track) => {
+          console.log("🎥 Track subscribed:", track.kind);
+          if (track.kind === "video") {
+            const videoElement = track.attach();
+            videoContainer.innerHTML = "";
+            videoContainer.appendChild(videoElement);
+          }
+        });
+
+        console.log("🟡 Connecting to LiveKit...");
+        await room.connect(wsUrl, token);
+
+        console.log("✅ Connected to room:", room.name);
+      } catch (err) {
+        console.error("❌ Viewer connection error:", err);
+      }
+    }
+
+    // ------------------------------------------------------------
+    // Auto-connect on page load
+    // ------------------------------------------------------------
+    window.addEventListener("load", connect);
+  </script>
+</body>
+</html>

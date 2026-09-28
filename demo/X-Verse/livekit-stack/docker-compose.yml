@@ -1,0 +1,31 @@
+services:
+  redis:
+    image: redis:7
+    restart: unless-stopped
+
+  livekit:
+    image: livekit/livekit-server:latest
+    command: --config /etc/livekit.yaml
+    ports:
+      - "7880:7880" # WebSocket signaling
+      - "7881:7881" # WebRTC media over TCP
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml
+    environment:
+      # IP advertised to WebRTC clients
+      LIVEKIT_NODE_IP: ${LIVEKIT_NODE_IP}
+
+      # API secrets used to validate JWT tokens
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  token-server:
+    build: ./token-server
+    ports:
+      - "8080:8080"
+    environment:
+      LIVEKIT_API_KEY: devkey
+      LIVEKIT_API_SECRET: a94f3c8e2c3f44c1adcfb6bb8129e56c6b7c1b2e3a91d4f5c6a8b9e0d12345
+    restart: unless-stopped
