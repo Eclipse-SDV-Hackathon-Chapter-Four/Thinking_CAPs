@@ -1,16 +1,11 @@
 # cruise-gateway
 
-Main SOVD REST API server.
+Standalone Axum prototype exposing the cc-app faults collection.
 
-## Build
+Run from `eclipse_sdv_hackathon_2026/sovd`:
+
 ```bash
-cargo build --release
+cargo run -p cruise-gateway
 ```
 
-## Run
-```bash
-./target/release/cruise-gateway
-```
-
-## Port
-- HTTP: 7690
+The default bind is `127.0.0.1:7690`. The internal HTTP event-ingestion route is a test bridge only. The architecture's I1/I2 JSON-lines Unix socket, command forwarding, and upstream OpenSOVD server integration are not implemented yet.

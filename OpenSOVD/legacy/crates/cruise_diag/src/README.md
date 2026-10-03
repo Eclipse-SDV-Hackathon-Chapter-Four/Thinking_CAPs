@@ -1,3 +1,3 @@
 # Source Files
 
-- `lib.rs` - Fault management implementation
+- `lib.rs` - Fault models, provider contract, in-memory store, filters, and max-age behavior.
