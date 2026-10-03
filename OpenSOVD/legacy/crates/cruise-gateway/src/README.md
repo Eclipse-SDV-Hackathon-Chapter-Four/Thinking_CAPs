@@ -1,4 +1,4 @@
 # Source Files
 
-- `main.rs` - SOVD server setup, topology, routes
-- `bridge_link.rs` - TCP client to S-CORE bridge (port 7700)
+- `lib.rs` - App/component-scoped fault routes and HTTP error mapping.
+- `main.rs` - Standalone prototype server setup and demo DTC definitions.
