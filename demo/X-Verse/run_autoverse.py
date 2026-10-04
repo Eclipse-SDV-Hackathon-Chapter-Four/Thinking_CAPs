@@ -28,13 +28,14 @@ Environment overrides
 ---------------------
 - AUTOVERSE_DISPLAY_NAME="HDMI-0"      -> prefer a monitor by name
 - AUTOVERSE_DISPLAY_INDEX="1"          -> prefer a monitor by index (0-based)
+- AUTOVERSE_PYTHON="/usr/bin/python3"   -> component Python interpreter
 - CARLA_PORT="2000"                    -> CARLA RPC/server port to kill by
 - CARLA_STREAMING_PORT="2001"          -> CARLA streaming port to kill by
 
 Command-line arguments
 ----------------------
 - --carla-mock                         -> Run automate.py in CARLA mock mode
-- --enable-camera-display              -> Enable camera display in automate.py (temporary disabled, this arg is being passed as default to automate.py)
+- --enable-camera-display              -> Enable camera display in automate.py
 - --only-zenoh-modules                 -> Use only Zenoh-based modules (VCU and PID Controller) 
 
 Notes
@@ -46,12 +47,16 @@ Notes
 from __future__ import annotations
 import argparse
 import atexit
+import fcntl
 import os
 import re
+import json
+import shutil
 import shlex
 import signal
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -62,27 +67,89 @@ import psutil
 # -------- Configuration -------------------------------------------------------
 
 PYTHON = sys.executable or "python3"
+PYTHON_BIN_DIR: Optional[Path] = None
 
-def build_steps(carla_mock: bool = False, enable_camera_display: bool = False, only_zenoh_modules: bool = False, vcu_zenoh: bool = False) -> List[Dict]:
+def select_python(requested: Optional[str], carla_mock: bool,
+                  only_zenoh_modules: bool) -> str:
+    """Select an interpreter with the component dependencies before stopping anything."""
+    modules = ["pygame", "numpy", "zenoh", "evdev"]
+    if not carla_mock:
+        modules.append("carla")
+    if only_zenoh_modules:
+        modules.append("matplotlib")
+    probe = (
+        "import importlib, json, sys\n"
+        "errors = {}\n"
+        "for name in sys.argv[1:]:\n"
+        "    try: importlib.import_module(name)\n"
+        "    except Exception as exc: errors[name] = str(exc)\n"
+        "print(json.dumps(errors))\n"
+    )
+    candidates = [requested] if requested else [PYTHON, "/usr/bin/python3"]
+    failures = []
+    for candidate in dict.fromkeys(candidates):
+        executable = shutil.which(candidate)
+        if not executable:
+            failures.append(f"{candidate}: executable not found")
+            continue
+        try:
+            result = subprocess.run(
+                [executable, "-c", probe, *modules],
+                capture_output=True, text=True, timeout=30,
+                env={**os.environ, "PYGAME_HIDE_SUPPORT_PROMPT": "1"},
+            )
+            if result.returncode:
+                failures.append(f"{executable}: {result.stderr.strip()}")
+                continue
+            errors = json.loads(result.stdout.strip().splitlines()[-1])
+        except (OSError, subprocess.TimeoutExpired, ValueError, IndexError) as exc:
+            failures.append(f"{executable}: {exc}")
+            continue
+        if not errors:
+            if executable != PYTHON:
+                info(f"Using component Python: {executable}")
+            return executable
+        failures.append(f"{executable}: {errors}")
+    raise RuntimeError(
+        "No Python interpreter has the required component packages. "
+        "Use --python /path/to/python with pygame, numpy, eclipse-zenoh, evdev "
+        "and the CARLA API matching your server installed.\n" + "\n".join(failures)
+    )
+
+def build_steps(
+    carla_mock: bool = False,
+    enable_camera_display: bool = False,
+    only_zenoh_modules: bool = False,
+    external_carla_server: bool = False,
+    carla_host: str = "127.0.0.1",
+    carla_port: int = 2000,
+    vcu_zenoh: bool = False) -> List[Dict]:
     """Build the STEPS list with optional arguments for automate.py"""
     
     # Build automate.py command with optional flags
-    automate_cmd = [PYTHON, "automate.py"]
+    automate_cmd = [
+        PYTHON,
+        "automate.py",
+        "--carla-host",
+        carla_host,
+        "--carla-port",
+        str(carla_port),
+    ]
+
     if carla_mock:
         automate_cmd.append("--carla-mock")
-    else:
-        # Always pass this argument to automate.py to make it True by default
+    elif enable_camera_display:
         automate_cmd.append("--enable-camera-display")
 
     # Define steps dynamically according to user configuration
     steps = []
     
     # Conditionally add CARLA Server step (only when not in mock mode)
-    if not carla_mock:
+    if not carla_mock and not external_carla_server:
         steps.append({
             "name": "CARLA Server (NVIDIA option)",
             "cwd": "$HOME/autoverse",
-            "cmd": ["just", "server-nvidia"],
+            "cmd": ["just", "server-nvidia", "Epic", str(carla_port)],
             "kill_patterns": ["just server-nvidia"],
             "startup_delay_sec": 2.0,
         })
@@ -139,6 +206,7 @@ def build_steps(carla_mock: bool = False, enable_camera_display: bool = False, o
 
         steps.append({
             "name": "Zenoh to SOME-IP bridge",
+            "containers": [os.environ.get("CONTAINER", "bridge-e2e")],
             "cwd": "$HOME/autoverse/bridges/someip/zenoh-someip-bridge",
             "cmd": ["./scripts/ctl.sh",  "start"],
             "stp": ["./scripts/ctl.sh",  "stop"],
@@ -148,14 +216,33 @@ def build_steps(carla_mock: bool = False, enable_camera_display: bool = False, o
 
         steps.append({
             "name": "ADAS Module S-CORE",
+            "containers": (
+                ["docker_setup-adas_score-1"]
+                if os.environ.get("SCORE_FOR", "X-Verse") == "X-Verse"
+                else ["docker_setup-someipd-1", "docker_setup-client-1"]
+                + (["docker_setup-adas_score-1"]
+                   if os.environ.get("SCORE_FOR") == "All" else [])
+            ),
             "cwd": "$HOME/autoverse/vecu/s-core",
             "cmd": ["./ctl.sh",  "start"],
             "stp": ["./ctl.sh",  "stop"],
             "kill_patterns": [],
             "startup_delay_sec": 5.0,
         })
-    
-         
+
+    # OTA stack -  EOL backend + RTCU vECU, from
+    # vecu/ota/docker-compose.yaml (one-shot certgen runs first).  The X-Verse APK is
+    # delivered ONLY through this OTA plane — cuttlefish ctl.sh no longer
+    # installs it at container-creation time.
+    steps.append({
+        "name": "OTA stack: EOL backend + RTCU (APK installer)",
+        "cwd": "$HOME/autoverse/vecu/ota",
+        "cmd": ["docker", "compose", "up", "-d"],
+        "stp": ["docker", "compose", "stop"],
+        "kill_patterns": [],
+        "startup_delay_sec": 1.0,
+    })
+
     # Common modules always used
     steps.append({
         "name": "Vehicle Manual Control module",
@@ -179,11 +266,39 @@ def build_steps(carla_mock: bool = False, enable_camera_display: bool = False, o
         ],
         "startup_delay_sec": 1.0,
     })
-    
+    steps.append({
+        "name": "ANDROID Cuttlefish",
+        "containers": [os.environ.get("CONTAINER", "cuttlefish-orchestration-cont")],
+        "cwd": "$HOME/autoverse/aaos_digital_cluster/cuttlefish_emulator",
+        "cmd": ["./ctl.sh",  "start"],
+        "stp": ["./ctl.sh",  "stop"],
+        "kill_patterns": [],
+        "startup_delay_sec": 1.0,
+    })
+
+    # Component-specific overrides avoid sharing the generic IMAGE/CONTAINER
+    # values between the bridge and Android during an isolated SSD bring-up.
+    settings = {
+        "Zenoh to SOME-IP bridge": ("AUTOVERSE_BRIDGE", "zenoh-someip-bridge", "bridge-e2e"),
+        "ANDROID Cuttlefish": ("AUTOVERSE_ANDROID", "cuttlefish-orchestration-img", "cuttlefish-orchestration-cont"),
+    }
+    for step in steps:
+        if step["name"] in settings:
+            prefix, image_default, container_default = settings[step["name"]]
+            if os.environ.get(prefix + "_IMAGE") or os.environ.get(prefix + "_CONTAINER"):
+                image = os.environ.get(prefix + "_IMAGE", image_default)
+                container = os.environ.get(prefix + "_CONTAINER", container_default)
+                step["containers"] = [container]
+                for action in ("cmd", "stp"):
+                    step[action] = ["env", "IMAGE=" + image, "CONTAINER=" + container, *step[action]]
+        if step["name"] == "ADAS Module S-CORE" and os.environ.get("COMPOSE_PROJECT_NAME"):
+            step["containers"] = [name.replace("docker_setup-", os.environ["COMPOSE_PROJECT_NAME"] + "-", 1)
+                                  for name in step["containers"]]
+
     # Automatically add step numbers to names
     for i, step in enumerate(steps, start=1):
         step["name"] = f"Step {i}: {step['name']}"
-    
+
     return steps
 
 LOG_DIR = Path.home() / ".cache" / "autoverse-runner" / "logs"
@@ -191,6 +306,47 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 GRACEFUL_TERM_TIMEOUT = 10.0
 FORCE_KILL_TIMEOUT = 3.0
+CONTROL_STOP_TIMEOUT = 60.0
+CONTROL_START_TIMEOUT = 540.0
+CONTAINER_CHECK_INTERVAL = 5.0
+
+
+def acquire_runner_lock():
+    """Hold the stack lock until all shutdown handlers have completed."""
+    lock_path = LOG_DIR.parent / "runner.lock"
+    lock_file = lock_path.open("a+")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock_file.seek(0)
+        owner = lock_file.read().strip() or "unknown"
+        lock_file.close()
+        raise RuntimeError(f"Autoverse is already running (PID {owner}).")
+    lock_file.seek(0)
+    lock_file.truncate()
+    lock_file.write(str(os.getpid()))
+    lock_file.flush()
+    return lock_file
+
+
+def check_containers(names: List[str]) -> None:
+    """Check the containers themselves, rather than their detached launchers."""
+    result = subprocess.run(
+        ["docker", "container", "inspect", "--format", "{{json .State}}", *names],
+        capture_output=True, text=True, timeout=15,
+    )
+    if result.returncode:
+        raise RuntimeError(f"Cannot inspect containers: {result.stderr.strip()}")
+    states = [json.loads(line) for line in result.stdout.splitlines()]
+    if len(states) != len(names):
+        raise RuntimeError("Docker returned an incomplete container status.")
+    for name, state in zip(names, states):
+        if not state["Running"] or state.get("Paused") or state.get("Restarting"):
+            raise RuntimeError(
+                f"Container {name} is {state['Status']} "
+                f"(exit={state['ExitCode']}, OOMKilled={state['OOMKilled']}). "
+                f"Inspect with: docker logs {name}"
+            )
 
 # ---- CARLA server cleanup config --------------------------------------------
 
@@ -537,6 +693,10 @@ def start_process(name: str, cwd: str, cmd: List[str],
     info(f"     {stderr_path}")
 
     env = os.environ.copy()
+    # automate.py invokes a just recipe which runs python3 through PATH.
+    # Keep that nested client on the same interpreter as the other modules.
+    env["PATH"] = str(PYTHON_BIN_DIR or Path(PYTHON).parent) + os.pathsep + env.get("PATH", "")
+    env["PYTHONUNBUFFERED"] = "1"
 
     # Apply SDL placement for Step 3 only
     if "CARLA automate.py" in name and step3_monitor:
@@ -554,21 +714,29 @@ def start_process(name: str, cwd: str, cmd: List[str],
             f"SDL_VIDEO_FULLSCREEN_DISPLAY={env['SDL_VIDEO_FULLSCREEN_DISPLAY']}"
         )
 
-    proc = subprocess.Popen(
-        cmd,
-        cwd=cwd,
-        stdout=stdout_f,
-        stderr=stderr_f,
-        preexec_fn=os.setsid,  # new process group for clean termination
-        env=env,
-    )
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            cwd=cwd,
+            stdout=stdout_f,
+            stderr=stderr_f,
+            preexec_fn=os.setsid,  # new process group for clean termination
+            env=env,
+        )
+    finally:
+        stdout_f.close()
+        stderr_f.close()
 
     ok(f"{name} started with PID {proc.pid}")
     return proc, stdout_path, stderr_path
 
 children: List[Tuple[str, subprocess.Popen]] = []
+CONTROL_STEPS: List[Dict] = []
+SHUTTING_DOWN = False
 
-def stop_process(name: str, cwd: str, cmd: List[str])-> Tuple[subprocess.Popen, Path, Path]:
+USE_EXTERNAL_CARLA_SERVER = False
+
+def stop_process(name: str, cwd: str, cmd: List[str]) -> Tuple[subprocess.Popen, Path, Path]:
     # Expand environment variables in cwd
     cwd = os.path.expandvars(cwd)
     check_dir(cwd)
@@ -598,7 +766,22 @@ def stop_process(name: str, cwd: str, cmd: List[str])-> Tuple[subprocess.Popen, 
         env=env,
     )
 
-    ok(f"{name} stopped with PID {proc.pid}")
+    # Docker stop can take its full grace period. Do not start anything until
+    # this command has completed successfully.
+    try:
+        returncode = proc.wait(timeout=CONTROL_STOP_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        kill_process_tree(proc.pid, timeout=FORCE_KILL_TIMEOUT)
+        proc.wait(timeout=FORCE_KILL_TIMEOUT)
+        raise RuntimeError(f"Timed out stopping {name}. See {stderr_path}")
+    finally:
+        stdout_f.close()
+        stderr_f.close()
+    if returncode:
+        raise RuntimeError(
+            f"Failed to stop {name} (exit {returncode}). See {stderr_path}"
+        )
+    ok(f"{name} stopped")
     return proc, stdout_path, stderr_path
 
 def terminate_process(proc: subprocess.Popen, name: str) -> None:
@@ -620,14 +803,35 @@ def terminate_process(proc: subprocess.Popen, name: str) -> None:
         err(f"Error during force kill of {name}: {e}")
 
 def shutdown_all(*_args) -> None:
+    global SHUTTING_DOWN
+    if SHUTTING_DOWN:
+        return
+    SHUTTING_DOWN = True
+
     # First stop our child processes (includes CARLA client from Step 3)
     if children:
         warn("Shutting down all child processes...")
         for name, proc in children:
             terminate_process(proc, name)
+
+        children.clear()
         ok("All child processes stopped.")
-    # Then ensure CARLA server is gone (even if it wasn't our child)
-    kill_carla_processes("CARLA (shutdown)")
+
+    for step in reversed(CONTROL_STEPS):
+        try:
+            stop_process(name=step["name"], cwd=step["cwd"], cmd=step["stp"])
+        except Exception as exc:
+            err(f"Shutdown failed for {step['name']}: {exc}")
+
+    if USE_EXTERNAL_CARLA_SERVER:
+        info(
+            "External CARLA server mode: "
+            "skipping CARLA server cleanup."
+        )
+    else:
+        kill_carla_processes(
+            "CARLA (shutdown)"
+        )
 
 # -------- Main ---------------------------------------------------------------
 
@@ -673,41 +877,134 @@ def main() -> int:
              'When disabled, the VCU CAN and CAN bridge should be launched manually.'
     )
 
+    parser.add_argument(
+        "--external-carla-server",
+        action="store_true",
+        help=(
+            "Use an already running external CARLA server "
+            "instead of starting or stopping CARLA locally"
+        ),
+    )
+
+    parser.add_argument(
+        "--carla-host",
+        default="127.0.0.1",
+        help=(
+            "CARLA server address passed to the CARLA client "
+            "(default: 127.0.0.1)"
+        ),
+    )
+
+    parser.add_argument(
+        "--carla-port",
+        type=int,
+        default=2000,
+        help="CARLA RPC port (default: 2000)",
+    )
+
+
+    parser.add_argument(
+        "--python",
+        default=os.environ.get("AUTOVERSE_PYTHON"),
+        help="Python for components (default: current Python, then system Python if packages are missing)",
+    )
+
     args = parser.parse_args()
+
+    try:
+        runner_lock = acquire_runner_lock()
+    except RuntimeError as exc:
+        err(str(exc))
+        return 1
+    atexit.register(runner_lock.close)
+
+    global PYTHON, PYTHON_BIN_DIR
+    try:
+        PYTHON = select_python(args.python, args.carla_mock, args.only_zenoh_modules)
+    except RuntimeError as exc:
+        err(str(exc))
+        return 1
+
+    # A private python3 shim also supports explicitly selected executables whose
+    # directory's default python3 points at a different interpreter.
+    python_bin = tempfile.TemporaryDirectory(prefix="autoverse-python-")
+    PYTHON_BIN_DIR = Path(python_bin.name)
+    (PYTHON_BIN_DIR / "python3").symlink_to(PYTHON)
+    atexit.register(python_bin.cleanup)
+
+    global USE_EXTERNAL_CARLA_SERVER
+
+    USE_EXTERNAL_CARLA_SERVER = (
+        args.external_carla_server
+    )
     
     # Build steps with optional arguments
     STEPS = build_steps(
         carla_mock=args.carla_mock,
         enable_camera_display=args.enable_camera_display,
         only_zenoh_modules=args.only_zenoh_modules,
-        vcu_zenoh= args.vcu_zenoh
+        vcu_zenoh= args.vcu_zenoh,
+        external_carla_server=args.external_carla_server,
+        carla_host=args.carla_host,
+        carla_port=args.carla_port,
     )
     
+    global CONTROL_STEPS
+    CONTROL_STEPS = [step for step in STEPS if "stp" in step]
+
     # Log configuration
     info("=" * 60)
     info("Autoverse Supervisor Starting")
     info("=" * 60)
     info(f"CARLA Mock Mode: {'Enabled' if args.carla_mock else 'Disabled'}")
-    # info(f"Camera Display rendering: {'Enabled' if args.enable_camera_display else 'Disabled'}")
+    info("External CARLA Server: "f"{'Enabled' if args.external_carla_server else 'Disabled'}")
+    info(f"CARLA Endpoint: {args.carla_host}:{args.carla_port}")
+    info(f"Camera Display rendering: {'Enabled' if args.enable_camera_display else 'Disabled'}")
+    info(f"Component Python: {PYTHON}")
     info(f"Use only Zenoh Modules: {'True' if args.only_zenoh_modules else 'False'}")
     info(f"Use VCU Zenoh Module: {'True' if args.vcu_zenoh else 'False'}")
     info(f"Logs Directory:")
     info(f"     {LOG_DIR}")
     info("=" * 60)
+
+    def handle_shutdown_signal(
+        signum,
+        _frame,
+    ) -> None:
+        warn(
+            f"Received signal {signum}. "
+            "Stopping supervisor."
+        )
+
+        shutdown_all()
+
+        raise SystemExit(0)
     
     # Cleanup on exit/signals
     atexit.register(shutdown_all)
-    signal.signal(signal.SIGINT, lambda *_: shutdown_all())
-    signal.signal(signal.SIGTERM, lambda *_: shutdown_all())
+    signal.signal(signal.SIGINT, handle_shutdown_signal)
+    signal.signal(signal.SIGTERM, handle_shutdown_signal)
 
     # 0) Ensure CARLA server isn't already running from a previous session
-    kill_carla_processes("CARLA (pre-start)")
+    if args.external_carla_server:
+        info(
+            "External CARLA server mode: "
+            "skipping pre-start CARLA cleanup."
+        )
+    else:
+        kill_carla_processes(
+            "CARLA (pre-start)"
+        )
 
     # 1) Stop previous instances of our steps
     info("Ensuring previous instances are not running...")
     for step in STEPS:
         if "stp" in step:
-            stop_process(name=step["name"], cwd=step["cwd"], cmd=step["stp"])
+            try:
+                stop_process(name=step["name"], cwd=step["cwd"], cmd=step["stp"])
+            except Exception as exc:
+                err(str(exc))
+                return 1
         kill_existing(step["kill_patterns"], step["name"])
 
     # 2) Detect the second monitor (for Step 3 SDL placement)
@@ -731,18 +1028,30 @@ def main() -> int:
         warn("Could not detect a second monitor. Step 3 will use default display.")
 
     # 3) Start steps
+    managed_containers = []
     for step in STEPS:
         try:
             proc, out_log, err_log = start_process(
                 step["name"], step["cwd"], step["cmd"], step3_monitor=step3_monitor
             )
             children.append((step["name"], proc))
+            if "containers" in step:
+                returncode = proc.wait(timeout=CONTROL_START_TIMEOUT)
+                if returncode:
+                    raise RuntimeError(f"Start command exited with {returncode}. See {err_log}")
             time.sleep(step.get("startup_delay_sec", 0.0))
+            if "containers" in step:
+                check_containers(step["containers"])
+                children.remove((step["name"], proc))
+                managed_containers.append(step)
+                ok(f"{step['name']}: containers are running")
         except Exception as e:
             err(f"Failed to start {step['name']}: {e}")
+            if "containers" in step:
+                return 1
             continue
 
-    if not children:
+    if not children and not managed_containers:
         err("No processes started. Exiting.")
         return 1
 
@@ -750,25 +1059,29 @@ def main() -> int:
     info(f"Logs directory:")
     info(f"     {LOG_DIR}")
 
-    # 4) Supervise loop
+    # 4) Supervise processes and detached containers.
+    next_container_check = 0.0
     try:
         while True:
+            if managed_containers and time.monotonic() >= next_container_check:
+                try:
+                    check_containers([
+                        name for step in managed_containers for name in step["containers"]
+                    ])
+                except Exception as exc:
+                    err(str(exc))
+                    return 1
+                next_container_check = time.monotonic() + CONTAINER_CHECK_INTERVAL
             for name, proc in list(children):
                 rc = proc.poll()
                 if rc is not None:
                     warn(f"{name} exited with code {rc}. See logs for details.")
                     children.remove((name, proc))
-            if not children:
-                warn("All child processes have exited.")
+            if not children and not managed_containers:
+                warn("All components have exited.")
                 break
             time.sleep(1.0)
     finally:
-        # Send stop comand to all steps (copied from step 1)
-        info("Ensuring previous instances are not running...")
-        for step in STEPS:
-            if "stp" in step:
-                stop_process(name=step["name"], cwd=step["cwd"], cmd=step["stp"])
-
         shutdown_all()
 
     return 0
