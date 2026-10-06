@@ -1,0 +1,31 @@
+@startuml context
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+title System context — AZ3166 zonal lighting ECU in X-Verse
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+actor Driver
+package "Host PC (X-Verse)" {
+  [Vehicle Manual Control] as MC
+  [X-Verse VCU] as VCU
+  [Zenoh router\n(zenohd, tcp/127.0.0.1:7447)] as ZR
+  [Zenoh2CAN bridge\n(unmodified, python-can slcan)] as BR
+  [Virtual vehicle] as VV
+  [CARLA 0.9.15] as CARLA
+}
+node "MXChip AZ3166" {
+  [threadx-zonal-lights-az3166\n(ThreadX cortex_m4)] as ECU #E8F1FB
+}
+
+Driver --> MC : keys S / Q
+MC --> ZR : vehicle/command/brake_pedal_sts\nvehicle/control/reverse_req
+ZR --> VCU
+VCU --> ZR : vcu/control/brake_sts\nvcu/control/reverse_sts
+ZR --> BR
+BR --> ECU : SLCAN over USB UART\n0x1F1 VCU status
+ECU --> BR : 0x1F4 light command\n0x1F5 diagnostics
+BR --> ZR : vehicle/lights/*
+ZR --> VV
+VV --> CARLA : VehicleLightState\nBrake | Reverse
+@enduml

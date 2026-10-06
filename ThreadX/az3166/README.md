@@ -134,6 +134,49 @@ state, OLED health, the close fail-safe, and a four-state Zenoh round trip
 through the unchanged bridge. Results go to the output directory. The
 [recorded run](../artifacts/README.md#az3166-hardware-run) passed 11 of 11 checks.
 
+## Live X-Verse + CARLA test
+
+This test drives the complete X-Verse environment, with the board as its
+lighting controller:
+
+```text
+Vehicle Manual Control (keys) → X-Verse VCU → Zenoh → Zenoh2CAN (slcan) → AZ3166/ThreadX
+  → Zenoh2CAN → Zenoh → X-Verse virtual vehicle → CARLA actor light state
+```
+
+1. Start the Zenoh router: `zenohd -l tcp/127.0.0.1:7447`.
+2. Start the bridge with the SLCAN profile, as in [Connect to X-Verse](#connect-to-x-verse).
+3. Start X-Verse with `cd ~/autoverse && /usr/bin/python3 run_autoverse.py --enable-camera-display --vcu-zenoh`.
+   Use an interpreter that has the CARLA 0.9.15 client, pygame, numpy, zenoh and evdev.
+   X-Verse does not start the Zephyr BCM or a CAN bridge, so the board is the only lighting controller.
+4. When the vehicle and the *Vehicle Manual Control* window are up, run:
+
+   ```bash
+   python3.10 -m venv .venv-carla
+   .venv-carla/bin/pip install carla==0.9.15 pygame numpy python-xlib==0.33 -r az3166/requirements.txt
+   .venv-carla/bin/python az3166/tests/xverse_carla_live.py --role-name ego_vehicle \
+     --output "artifacts/runs/xverse-carla-$(date +%s)"
+   ```
+
+The test presses brake (`S`) and the reverse toggle (`Q`) in the Manual
+Control window through X11 XTEST. It only types while that window has focus.
+It walks through brake, reverse and both, and for each step requires all of the following:
+
+- the VCU status on Zenoh
+- the board's command on `vehicle/lights/frame`
+- the matching `carla.VehicleLightState` bits on the actor (Brake 8, Reverse 64)
+
+It also saves a rear-camera image for each step and then removes its camera.
+It needs an X11 session; Wayland does not allow synthetic input.
+
+## ASPICE evidence
+
+[aspice/](aspice/README.md) contains SWE.1–SWE.6 work products:
+
+- requirements, PlantUML architecture and detailed design, and coding guidelines
+- unit, integration and qualification test specifications
+- a generator for an HTML report with traceability, coverage and static analysis results
+
 ## Limitations
 
 - CAN is simulated over UART. There is no CAN bit timing, arbitration, ACK
@@ -145,3 +188,5 @@ through the unchanged bridge. Results go to the output directory. The
   edges. This needs a debugger to resolve, so the crystal is not used.
 - The lamps are the board's LEDs. Lamp timing is not measured electrically.
 - No OpenSOVD/openDuT integration on this target yet; the Linux/AutoSD path keeps those.
+- The live test operates Manual Control's keyboard. Steering, throttle and
+  cruise control are not exercised, and S-CORE/SOME-IP run but are not checked.

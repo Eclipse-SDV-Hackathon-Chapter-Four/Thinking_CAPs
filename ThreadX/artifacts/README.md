@@ -63,3 +63,39 @@ Not exercised: a physical CAN transceiver, the Linux `slcand` SocketCAN path,
 a CARLA actor, and electrical lamp timing. The board LEDs and OLED were not
 inspected visually; the OLED's health comes from its I2C acknowledgements.
 Regenerate with the [hardware test](../az3166/README.md#hardware-test).
+
+## AZ3166 in live X-Verse with CARLA
+
+The [live X-Verse run](az3166-xverse-carla/results.json) passed on 6 October
+2026. It used the complete environment started by
+`run_autoverse.py --enable-camera-display --vcu-zenoh`:
+
+- CARLA 0.9.15 (Town10HD) and the X-Verse VCU
+- the SOME/IP bridge, S-CORE, Vehicle Manual Control and the virtual vehicle
+- Cuttlefish
+- `zenohd` 1.10.1
+- the unchanged Zenoh2CAN bridge over SLCAN to the physical AZ3166
+
+Unlike the earlier runs, the inputs were not fixtures. The test pressed the
+brake and reverse keys in Vehicle Manual Control, and the real VCU produced the
+status.
+
+- [Step results](az3166-xverse-carla/results.json): brake, brake released,
+  reverse, reverse+brake, reverse with brake released, and reverse off.
+  Each step matched the expected CARLA `VehicleLightState` (8, 0, 64, 72, 64, 0).
+  Keypress to VCU took about 21 ms (about 140 ms for reverse, which includes the
+  key hold of the toggle). Keypress to CARLA lamp state took 39–189 ms.
+- [Rear-camera frames](az3166-xverse-carla/images/), one per step, show the tail
+  and reverse lamps in CARLA. They were converted from PNG to JPEG.
+- [VCU log excerpt](az3166-xverse-carla/vcu.log),
+  [Zenoh samples](az3166-xverse-carla/zenoh-samples.json),
+  [bridge profile](az3166-xverse-carla/bridge.json) and
+  [bridge log](az3166-xverse-carla/bridge.log).
+
+The bridge log also covers a first attempt on the same bridge instance. That
+attempt failed only because the test read an individual light topic that the
+bridge publishes only on change. The board and chain behaved correctly, and
+the test now reads the aggregate `vehicle/lights/frame`.
+
+Not exercised: steering, throttle and cruise control, the S-CORE/SOME-IP
+outputs, and a physical CAN transceiver.
