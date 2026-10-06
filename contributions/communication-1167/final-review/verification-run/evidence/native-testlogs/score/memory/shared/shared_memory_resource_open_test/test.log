@@ -1,0 +1,217 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:shared_memory_resource_open_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 18 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m5 tests from SharedMemoryResourceOpenDeathTest
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenDeathTest.OpensSharedMemoryTerminatesProcessIfLockfileIsAlwaysThere
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd3d5dbe80 pointing to "/proc/self/exe", 0x56bd4a839470 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-B5 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:40.7600191 463527583 000 ECU1 NONE shm log error verbose 4 LockFile::Create failed to open file:  /tmp/my_shm_lock  | Error:  An OS error has occurred with error code: File exists 
+2026/10/06 09:06:40.7600702 463532692 000 ECU1 NONE shm log fatal verbose 5 acquireLockFile 1004 Shared Memory Resource:  /my_shm  Lock file still present after timeout. Cannot open shared memory. Terminating 
+[0;32m[       OK ] [mSharedMemoryResourceOpenDeathTest.OpensSharedMemoryTerminatesProcessIfLockfileIsAlwaysThere (597 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenDeathTest.UnableToMemoryMapCausesTermination
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83a750 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <4F-BF 5D-3D FD-7F 00-00 01-BE 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd3d5dbe90 pointing to "/proc/self/exe", 0x56bd4a83b220 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-B5 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:40.7600788 463533555 000 ECU1 NONE shm log fatal verbose 8 mapMemoryIntoProcess 958 Unexpected error while mapping memory into process for file: /my_shm with errno An OS error has occurred with error code:  Unknown error -1 . Terminating. 
+[0;32m[       OK ] [mSharedMemoryResourceOpenDeathTest.UnableToMemoryMapCausesTermination (69 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenDeathTest.OpensSharedMemoryErrorOnFstatCausesTermination
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a839350 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <6F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd3d5dbf20 pointing to "/proc/self/exe", 0x56bd4a83b080 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-B6 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:40.7600858 463534253 000 ECU1 NONE shm log fatal verbose 3 Getting owner_uid and size of shm-object file failed:  An OS error has occurred with error code:  Bad file descriptor 
+[0;32m[       OK ] [mSharedMemoryResourceOpenDeathTest.OpensSharedMemoryErrorOnFstatCausesTermination (66 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenDeathTest.OpensSharedMemoryEAGAINOnFstatCausesTermination
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a836ef0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <6F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd3d5dbf20 pointing to "/proc/self/exe", 0x56bd4a83b050 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-B6 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:40.7600924 463534916 000 ECU1 NONE shm log fatal verbose 3 Getting owner_uid and size of shm-object file failed:  An OS error has occurred with error code:  Resource temporarily unavailabl 
+[0;32m[       OK ] [mSharedMemoryResourceOpenDeathTest.OpensSharedMemoryEAGAINOnFstatCausesTermination (78 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenDeathTest.OpenTypedSharedMemoryTerminatesWhenGetCreatorUidFails
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a839a00 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <1F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: mmap(NULL, 1, 4-byte object <01-00 00-00>, 4-byte object <01-00 00-00>, 5, 0)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-C0 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd3d5dbe90 pointing to "/proc/self/exe", 0x56bd4a83b2a0 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-B5 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:41.7601003 463535707 000 ECU1 NONE shm log fatal verbose 5 Could not insert resource into MemoryResourceRegistry: The memory address range: [ False : True cannot contain a nullptr. 
+[0;32m[       OK ] [mSharedMemoryResourceOpenDeathTest.OpenTypedSharedMemoryTerminatesWhenGetCreatorUidFails (66 ms)
+[0;32m[----------] [m5 tests from SharedMemoryResourceOpenDeathTest (879 ms total)
+
+[0;32m[----------] [m13 tests from SharedMemoryResourceOpenTest
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryReadOnlyByDefault
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83a130 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <2F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryReadOnlyByDefault (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpeningSharedMemoryFreesResourcesOnDestruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83b0e0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <CF-BF 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpeningSharedMemoryFreesResourcesOnDestruction (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryWillWaitUntilLockFileIsGone
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd3d5dbd70 pointing to "/proc/self/exe", 0x56bd4a83bfa0 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-B4 5D-3D FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 09:06:41.7601069 463536368 000 ECU1 NONE shm log error verbose 4 LockFile::Create failed to open file:  /tmp/my_shm_lock  | Error:  An OS error has occurred with error code: File exists 
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83be70 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <6F-BF 5D-3D FD-7F 00-00 01-BE 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryWillWaitUntilLockFileIsGone (10 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryErrorOnLockFileHandleGracefully
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83b0c0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <3F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryErrorOnLockFileHandleGracefully (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryReadWrite
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83a720 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <2F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpensSharedMemoryReadWrite (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpeningResourceThatDoesNotExistWillReturnError
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83a390 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <0F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:41.7601081 463536479 000 ECU1 NONE shm log error verbose 7 Open 431 Unexpected error while opening shared-memory resource file: /my_shm with errno An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpeningResourceThatDoesNotExistWillReturnError (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpeningResourceWithoutTheRequiredACLsWillReturnError
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83bbb0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <0F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 09:06:41.7601081 463536480 000 ECU1 NONE shm log error verbose 7 Open 431 Unexpected error while opening shared-memory resource file: /my_shm with errno An OS error has occurred with error code:  Permission denied 
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpeningResourceWithoutTheRequiredACLsWillReturnError (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.SameUnitIsEqual
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a836850 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <8F-C0 5D-3D FD-7F 00-00 01-C0 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.SameUnitIsEqual (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.DifferentChildClassIsNotEqual
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83b580 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <4F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.DifferentChildClassIsNotEqual (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.IsShmInTypedMemoryReturnsFalseWhenOpenTypedSharedMemoryFail
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83b750 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <5F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: munmap(0x1, 0)
+          Returns: 12-byte object <7F-C2 5D-3D FD-7F 00-00 01-C1 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.IsShmInTypedMemoryReturnsFalseWhenOpenTypedSharedMemoryFail (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.DifferentInstancesAreNotEqual
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83a870 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <BF-BF 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a847f60 pointing to "/tmp/my_shm2_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <BF-BF 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.DifferentInstancesAreNotEqual (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.OpeningSharedMemoryFillsRegistryKnownRegions
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a837470 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <7F-BE 5D-3D FD-7F 00-00 01-BD 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.OpeningSharedMemoryFillsRegistryKnownRegions (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceOpenTest.LockFileIsHeldDuringEntireOpenSequence
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x56bd4a83b770 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <3F-C0 5D-3D FD-7F 00-00 01-BF 5D-3D>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceOpenTest.LockFileIsHeldDuringEntireOpenSequence (0 ms)
+[0;32m[----------] [m13 tests from SharedMemoryResourceOpenTest (13 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m18 tests from 2 test suites ran. (893 ms total)
+[0;32m[  PASSED  ] [m18 tests.

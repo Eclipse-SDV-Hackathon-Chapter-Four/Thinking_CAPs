@@ -1,0 +1,240 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/bindings/lola/messaging:message_passing_service_instance_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 59 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceDeathTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceDeathTest.TerminationOnStartListeningFail
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp:132:
+    Function call: StartListening(48-byte object <D0-B3 4D-E9 FA-76 00-00 90-92 04-F3 FF-7F 00-00 D0-8F 04-F3 FF-7F 00-00 30-2D 49-E9 FA-76 00-00 A0-8F 04-F3 FF-7F 00-00 90-92 04-F3 FF-7F 00-00>, 48-byte object <A0-B3 4D-E9 FA-76 00-00 70-90 04-F3 FF-7F 00-00 70-90 04-F3 FF-7F 00-00 98-92 04-F3 FF-7F 00-00 70-8F 04-F3 FF-7F 00-00 3C-33 49-E9 FA-76 00-00>, 48-byte object <70-B3 4D-E9 FA-76 00-00 60-72 4D-14 B1-60 00-00 50-72 4D-14 B1-60 00-00 70-90 04-F3 FF-7F 00-00 40-8F 04-F3 FF-7F 00-00 6E-37 49-E9 FA-76 00-00>, 48-byte object <40-B3 4D-E9 FA-76 00-00 F0-43 4E-14 B1-60 00-00 E0-43 4E-14 B1-60 00-00 D8-90 04-F3 FF-7F 00-00 10-8F 04-F3 FF-7F 00-00 F8-92 04-F3 FF-7F 00-00>)
+          Returns: 12-byte object <05-00 00-00 0C-00 00-00 00-76 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 05:19:58.3998127 396205298 000 ECU1 NONE lola log fatal verbose 5 MessagePassingService: Failed to start listening on  LoLa_2_1_ASIL_B  with following error:  An OS error has occurred with error code:  Cannot allocate memory 
+
+GMOCK WARNING:
+Uninteresting mock function call - returning directly.
+    Function call: Destruct()
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceDeathTest.TerminationOnStartListeningFail (79 ms)
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceDeathTest (79 ms total)
+
+[0;32m[----------] [m58 tests from MessagePassingServiceInstanceTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ConnectCallbackReturnsClientPid
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ConnectCallbackReturnsClientPid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DisconnectCallbackSuccessfullyExecuted
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DisconnectCallbackSuccessfullyExecuted (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingAnEmptyMessage
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 05:19:58.3998204 396206071 000 ECU1 NONE lola log error verbose 2 MessagePassingService: Empty message received from  10 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingAnEmptyMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingMessageOfInvalidType
+2026/10/06 05:19:58.3998205 396206072 000 ECU1 NONE lola log error verbose 2 MessagePassingService: Unsupported MessageType received from  10 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingMessageOfInvalidType (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingRegisterEventNotifierWithWrongLengthPayload
+2026/10/06 05:19:58.3998205 396206074 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  12 , expected  8 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingRegisterEventNotifierWithWrongLengthPayload (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingUnregisterEventNotifierWithWrongLengthPayload
+2026/10/06 05:19:58.3998205 396206075 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  12 , expected  8 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingUnregisterEventNotifierWithWrongLengthPayload (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingNotifyEventWithWrongLengthPayload
+2026/10/06 05:19:58.3998205 396206076 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  12 , expected  8 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingNotifyEventWithWrongLengthPayload (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingOutdatedNodeIdWithWrongLengthPayload
+2026/10/06 05:19:58.3998205 396206078 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  12 , expected  4 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.DoesNotTerminateUponReceivingOutdatedNodeIdWithWrongLengthPayload (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyCallsRegisteredHandler
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp:66:
+    Function call: Enqueue(32-byte object <28-80 26-E8 FA-76 00-00 48-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 40-36 4E-14 B1-60 00-00>)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyCallsRegisteredHandler (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyDoesNotTerminateUponEncounteringDestroyedHandler
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp:66:
+    Function call: Enqueue(32-byte object <28-80 26-E8 FA-76 00-00 48-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 D0-24 4E-14 B1-60 00-00>)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyDoesNotTerminateUponEncounteringDestroyedHandler (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyDoesNotCallUnregisteredHandler
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyDoesNotCallUnregisteredHandler (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationCalledWithNonExistingHandlerRegistrationDoesNotAffectExistingRegistrations
+2026/10/06 05:19:58.3998206 396206083 000 ECU1 NONE lola log warn verbose 2 MessagePassingService: Couldn't find handler for UnregisterEventNotification call with register_no  1 
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp:66:
+    Function call: Enqueue(32-byte object <28-80 26-E8 FA-76 00-00 48-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 40-36 4E-14 B1-60 00-00>)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationCalledWithNonExistingHandlerRegistrationDoesNotAffectExistingRegistrations (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventDoesNotPostNotifyEventLocallyIfNothingRegisteredForTheEvent
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventDoesNotPostNotifyEventLocallyIfNothingRegisteredForTheEvent (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyCallsNoMoreThanMaxPossibleHandlersPerEvent
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp:66:
+    Function call: Enqueue(32-byte object <28-80 26-E8 FA-76 00-00 48-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 30-62 4E-14 B1-60 00-00>)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 05:19:58.3998206 396206086 000 ECU1 NONE lola log error verbose 4 MessagePassingServiceInstance: NotifyEventLocally failed to call ALL registered event receive handlers for event_id ElementFqId{S:65535, E:65535, I:65535, T:0} , because number is exceeding  5 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventLocallyCallsNoMoreThanMaxPossibleHandlersPerEvent (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteSendsRegisterMessageOnFirstRegistration
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteSendsRegisterMessageOnFirstRegistration (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteDoesNotTerminateWhenFailsToSendRegistrationMessage
+2026/10/06 05:19:58.3998206 396206090 000 ECU1 NONE lola log error verbose 5 MessagePassingService: Sending RegisterEventNotificationMessage to node_id  2  failed with error:  An OS error has occurred with error code:  Cannot allocate memory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteDoesNotTerminateWhenFailsToSendRegistrationMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteSendsRegistrationMessageOnlyOnInitialRegistration
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteSendsRegistrationMessageOnlyOnInitialRegistration (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteReplacesNodeIdWhenCalledWithDifferentForSameEvent
+2026/10/06 05:19:58.3998709 396211120 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_2_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:19:58.3998709 396211121 000 ECU1 NONE lola log error verbose 6 MessagePassingService: RegisterEventNotificationRemote called for event ElementFqId{S:65535, E:65535, I:65535, T:0} and node_id 7 although event is currently located at node 2 
+2026/10/06 05:19:59.3999212 396216147 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_7_ASIL_B  takes too long to create, might be not working 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterEventNotificationRemoteReplacesNodeIdWhenCalledWithDifferentForSameEvent (1005 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteSendsUnregisterMessageUponRemovalOfLastRegistration
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteSendsUnregisterMessageUponRemovalOfLastRegistration (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotTerminateUponUnregistrationMessageSendFailure
+2026/10/06 05:19:59.3999213 396216155 000 ECU1 NONE lola log error verbose 5 MessagePassingService: Sending UnregisterEventNotificationMessage to node_id  2  failed with error:  An OS error has occurred with error code:  Cannot allocate memory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotTerminateUponUnregistrationMessageSendFailure (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotSendUnregisterMessageWhenClientIsNotReady
+2026/10/06 05:19:59.3999213 396216157 000 ECU1 NONE lola log error verbose 4 MessagePassingClientCache: Connection for  LoLa_2_2_ASIL_B  has failed to create, the reason is  0 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotSendUnregisterMessageWhenClientIsNotReady (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotUnregisterOnPidMismatch
+2026/10/06 05:19:59.3999213 396216160 000 ECU1 NONE lola log error verbose 8 MessagePassingService: UnregisterEventNotification called with register_no  0  for a remote event  ElementFqId{S:65535, E:65535, I:65535, T:0}  for target_node_id 7 , which is not the node_id, by which this event is currently provided: 2 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotUnregisterOnPidMismatch (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotSendMessageUponUnregisteringNonLastHandler
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotSendMessageUponUnregisteringNonLastHandler (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotUnregisterLocalRegistrations
+2026/10/06 05:19:59.3999214 396216165 000 ECU1 NONE lola log error verbose 5 MessagePassingService: UnregisterEventNotification called with register_no  0  for a remote event  ElementFqId{S:65535, E:65535, I:65535, T:0}  without current remote registration! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationRemoteDoesNotUnregisterLocalRegistrations (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteNotifiesClients
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteNotifiesClients (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteWontNotifyClientRegisteredForDifferentEvent
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteWontNotifyClientRegisteredForDifferentEvent (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteNotifiesClientsRegisteredTwice
+2026/10/06 05:19:59.3999214 396216170 000 ECU1 NONE lola log warn verbose 4 MessagePassingService: Received redundant RegisterEventNotificationMessage for event:  ElementFqId{S:65535, E:65535, I:65535, T:0}  from node  10 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteNotifiesClientsRegisteredTwice (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteDoesNotTerminateOnSendFail
+2026/10/06 05:19:59.3999215 396216173 000 ECU1 NONE lola log error verbose 5 MessagePassingService: Sending NotifyEventUpdateMessage to node_id  10  failed with error:  An OS error has occurred with error code:  Cannot allocate memory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteDoesNotTerminateOnSendFail (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteNotifiesClientsExceedingTmpNodeBuffer
+2026/10/06 05:19:59.3999718 396221204 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_10_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:00.4000221 396226236 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_11_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:00.4000724 396231268 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_12_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:01.4001227 396236301 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_13_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:01.4001731 396241334 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_14_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:02.4002234 396246369 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_15_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:02.4002737 396251402 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_16_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:03.4003241 396256436 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_17_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:03.4003744 396261471 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_18_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:04.4004248 396266505 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_19_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:04.4004751 396271540 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_20_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:05.4005255 396276574 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_21_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:05.4005758 396281608 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_22_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:06.4006261 396286639 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_23_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:06.4006764 396291668 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_24_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:07.4007267 396296700 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_25_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:07.4007771 396301734 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_26_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:08.4008274 396306767 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_27_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:08.4008778 396311803 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_28_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:09.4009281 396316835 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_29_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:09.4009784 396321869 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_30_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:10.4010288 396326905 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_31_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:10.4010791 396331938 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_32_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:11.4011295 396336973 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_33_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:11.4011798 396342004 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_34_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:12.4012301 396347039 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_35_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:12.4012805 396352074 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_36_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:13.4013308 396357103 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_37_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:13.4013811 396362133 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_38_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:14.4014314 396367165 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_39_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:14.4014817 396372195 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_40_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:15.4015320 396377225 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_41_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:15.4015823 396382253 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_42_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:16.4016326 396387285 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_43_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:16.4016829 396392315 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_44_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:17.4017332 396397348 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_45_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:17.4017836 396402383 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_46_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:18.4018339 396407414 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_47_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:18.4018842 396412446 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_48_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:19.4019345 396417478 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_49_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:19.4019345 396417478 000 ECU1 NONE lola log warn verbose 1 MessagePassingService: NotifyEventRemote did need more than one copy loop for node_identifiers. Think about extending capacity of NodeIdTmpBufferType! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteNotifiesClientsExceedingTmpNodeBuffer (20131 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteDoesNotNotifyUnregisteredClient
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventRemoteDoesNotNotifyUnregisteredClient (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterMessageForNonExistingRegistrationDoesNotAffectTheExistingRegistrations
+2026/10/06 05:20:19.4019347 396417500 000 ECU1 NONE lola log warn verbose 5 MessagePassingService: Received UnregisterEventNotificationMessage for event:  ElementFqId{S:65535, E:0, I:65535, T:0}  from node  10 , but there was no registration! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterMessageForNonExistingRegistrationDoesNotAffectTheExistingRegistrations (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.MultipleUnregistrationsForTheSameClientDoNotLeadToTermination
+2026/10/06 05:20:19.4019348 396417503 000 ECU1 NONE lola log warn verbose 5 MessagePassingService: Received UnregisterEventNotificationMessage for event:  ElementFqId{S:65535, E:65535, I:65535, T:0}  from node  10 , but there was no registration! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.MultipleUnregistrationsForTheSameClientDoNotLeadToTermination (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.HandleOutdatedNodeIdMsgRemovesOutdatedPid
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.HandleOutdatedNodeIdMsgRemovesOutdatedPid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.HandleOutdatedNodeIdCalledWithUnregisteredPidDoesNotAffectOtherRegistrations
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.HandleOutdatedNodeIdCalledWithUnregisteredPidDoesNotAffectOtherRegistrations (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventMessageCallsRegisteredHandler
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventMessageCallsRegisteredHandler (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyEventMessageDoesNotCallHandlerForDifferentEvent
+2026/10/06 05:20:19.4019349 396417515 000 ECU1 NONE lola log warn verbose 5 MessagePassingService: Received NotifyEventUpdateMessage for event:  ElementFqId{S:65535, E:0, I:65535, T:0}  from node  10  although we don't have currently any registered handlers. Might be an acceptable race, if it happens seldom! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyEventMessageDoesNotCallHandlerForDifferentEvent (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationDoesNotRegisterNewNotification
+2026/10/06 05:20:19.4019349 396417518 000 ECU1 NONE lola log error verbose 3 MessagePassingService: ReregisterEventNotification called for event_id ElementFqId{S:65535, E:65535, I:65535, T:0} , which had not yet been registered! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationDoesNotRegisterNewNotification (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationDoesNotAffectLocalRegistrationsWhenCalledWithRemotePid
+2026/10/06 05:20:19.4019349 396417520 000 ECU1 NONE lola log error verbose 3 MessagePassingService: ReregisterEventNotification for a remote event  ElementFqId{S:65535, E:65535, I:65535, T:0}  without current remote registration! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationDoesNotAffectLocalRegistrationsWhenCalledWithRemotePid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationDoesNotAffectLocalRegistrationsWhenCalledWithLocalPid
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationDoesNotAffectLocalRegistrationsWhenCalledWithLocalPid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationForTheSameEventPidCombinationDoesNotSendMessage
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationForTheSameEventPidCombinationDoesNotSendMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationWithDifferentNodeIdReplacesNodeIdAndSendsMessage
+2026/10/06 05:20:19.4019853 396422555 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_2_ASIL_B  takes too long to create, might be not working 
+2026/10/06 05:20:20.4020356 396427586 000 ECU1 NONE lola log error verbose 3 MessagePassingClientCache: Connection for  LoLa_2_7_ASIL_B  takes too long to create, might be not working 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ReregisterEventNotificationWithDifferentNodeIdReplacesNodeIdAndSendsMessage (1006 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyOutdatedNodeCreatesClientAndSendsMessage
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyOutdatedNodeCreatesClientAndSendsMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.NotifyOutdatedNodeDoesNotTerminateOnFailedSend
+2026/10/06 05:20:20.4020357 396427602 000 ECU1 NONE lola log error verbose 5 MessagePassingService: Sending OutdatedNodeIdMessage to node_id  4  failed with error:  An OS error has occurred with error code:  Cannot allocate memory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.NotifyOutdatedNodeDoesNotTerminateOnFailedSend (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterCallbackWithNoExistingHandlersCallbackNotInvoked
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterCallbackWithNoExistingHandlersCallbackNotInvoked (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterCallbackWithExistingLocalHandlersCallbackInvokedWithTrue
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterCallbackWithExistingLocalHandlersCallbackInvokedWithTrue (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterCallbackWithExistingRemoteHandlersCallbackInvokedWithTrue
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterCallbackWithExistingRemoteHandlersCallbackInvokedWithTrue (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RegisterLocalHandlerCallbackInvokedWithTrue
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RegisterLocalHandlerCallbackInvokedWithTrue (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterLastLocalHandlerCallbackInvokedWithFalse
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterLastLocalHandlerCallbackInvokedWithFalse (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.MultipleLocalHandlersCallbackOnlyOnFirstAndLast
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.MultipleLocalHandlersCallbackOnlyOnFirstAndLast (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterCallbackNoMoreCallbacksInvoked
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterCallbackNoMoreCallbacksInvoked (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.LocalAndRemoteHandlersMixedCallbackRespectsOverallState
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.LocalAndRemoteHandlersMixedCallbackRespectsOverallState (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterNonExistentCallbackLogsWarning
+2026/10/06 05:20:20.4020361 396427637 000 ECU1 NONE lola log warn verbose 3 MessagePassingService: UnregisterEventNotificationExistenceChangedCallback called for event  ElementFqId{S:65535, E:65535, I:65535, T:0}  but no callback was registered 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterNonExistentCallbackLogsWarning (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RemoteHandlerRegistrationInvokesCallback
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RemoteHandlerRegistrationInvokesCallback (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RemoteHandlerUnregistrationInvokesCallback
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RemoteHandlerUnregistrationInvokesCallback (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RemoteHandlerRegistrationViaMessageInvokesCallbackWhenNoLocalHandlers
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RemoteHandlerRegistrationViaMessageInvokesCallbackWhenNoLocalHandlers (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.RemoteHandlerUnregistrationViaMessageInvokesCallbackWhenNoLocalHandlers
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.RemoteHandlerUnregistrationViaMessageInvokesCallbackWhenNoLocalHandlers (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationWithNonExistingHandlerNoHandler
+2026/10/06 05:20:20.4020363 396427652 000 ECU1 NONE lola log warn verbose 2 MessagePassingService: Couldn't find handler for UnregisterEventNotification call with register_no  1 
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.UnregisterEventNotificationWithNonExistingHandlerNoHandler (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceTest.ScopedFunctionPreventsCallbackExecutionAfterDestruction
+[0;32m[       OK ] [mMessagePassingServiceInstanceTest.ScopedFunctionPreventsCallbackExecutionAfterDestruction (0 ms)
+[0;32m[----------] [m58 tests from MessagePassingServiceInstanceTest (22159 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m59 tests from 2 test suites ran. (22238 ms total)
+[0;32m[  PASSED  ] [m59 tests.

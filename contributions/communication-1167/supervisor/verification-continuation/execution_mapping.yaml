@@ -1,0 +1,170 @@
+compiler_profile: deterministic-compiler-v1
+digest: 810f97bfe9213bd840dc2275e8e2addc780cc8f89020c80bf19f2ddc5fa22cd4
+edges:
+- condition: null
+  loop_id: null
+  origin: &id001
+    decision_ref: user-three-fix-supervisor-20261005
+    kind: authorized_human_decision
+    pointer: /user_instruction
+    rationale: User explicitly requested unattended supervision with at most three
+      fixes; engineering acceptance remains pending
+    source_ref:
+      path: authority.json
+      sha256: 850c666dd6f069a2aaa078dfe2c824df61ca99d30cf80dd2e0e3c8b5d3f26545
+  outcome: null
+  source: start
+  target: verify3
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: verify3
+  target: export
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: verify3
+  target: export
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: export
+  target: exit
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: export
+  target: exit
+  type: failure
+fan_groups: []
+id: communication1167-three-fix-supervisor
+loop_policies: []
+plan_version: 1
+review:
+  reference:
+    path: authority.json
+    scope: User-authorized finite operational supervision; engineering acceptance
+      pending
+    sha256: 850c666dd6f069a2aaa078dfe2c824df61ca99d30cf80dd2e0e3c8b5d3f26545
+  state: reviewed
+rules:
+- actions:
+  - allowed_inputs:
+    - authority.json
+    - correction-packet.json
+    - native-evidence
+    allowed_paths:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/verify3.sh
+    completion_predicate: Output retained; verification and acceptance remain separate
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Native source, response and measured results with hashes;
+      failures preserved
+    expected_outputs:
+    - verify3-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - supervisor-communication1167-verify3
+    label: verify3
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Execute frozen host supervisor stage verify3
+    ref: verify3
+    role: measurement_runner
+    support_files:
+    - commands/verify3.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+  - allowed_inputs:
+    - authority.json
+    - correction-packet.json
+    - native-evidence
+    allowed_paths:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/export.sh
+    completion_predicate: Output retained; verification and acceptance remain separate
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Native source, response and measured results with hashes;
+      failures preserved
+    expected_outputs:
+    - export-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - supervisor-communication1167-export
+    label: export
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Execute frozen host supervisor stage export
+    ref: export
+    role: measurement_runner
+    support_files:
+    - commands/export.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+  id: three-attempt-operational-supervisor
+  instance_ids:
+  - supervisor-communication1167-verify3
+  - supervisor-communication1167-export
+schema_version: 1
+support_files:
+- content: '/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/supervisor/run_stage.py
+    verify3
+
+    '
+  origin: *id001
+  path: commands/verify3.sh
+- content: '/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/supervisor/run_stage.py
+    export
+
+    '
+  origin: *id001
+  path: commands/export.sh
+version: 1

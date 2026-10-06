@@ -1,0 +1,16 @@
+digraph SCoreWorkflow {
+  graph [goal="Execute reviewed S-CORE obligations", max_node_visits=20, on_failure="route"];
+  rankdir=LR;
+  exit [label="Exit", type="exit"];
+  node_1b9b48f071c64d4e19b793b9 [allow_partial=false, label="admit", max_retries=0, max_visits=1, on_failure="route", script="true\n", selection="deterministic", timeout="14400s", type="command"];
+  node_ba3b54de64d974a3bc0bf304 [allow_partial=false, label="verify", max_retries=0, max_visits=1, on_failure="route", script="true\n", selection="deterministic", timeout="14400s", type="command"];
+  node_d7cf370487bf809702d73667 [allow_partial=false, label="export", max_retries=0, max_visits=1, on_failure="route", script="true\n", selection="deterministic", timeout="14400s", type="command"];
+  start [label="Start", type="start"];
+  node_1b9b48f071c64d4e19b793b9 -> node_d7cf370487bf809702d73667 [condition="outcome=failed"];
+  node_d7cf370487bf809702d73667 -> exit [condition="outcome=failed"];
+  start -> node_1b9b48f071c64d4e19b793b9;
+  node_ba3b54de64d974a3bc0bf304 -> node_d7cf370487bf809702d73667 [condition="outcome=failed"];
+  node_ba3b54de64d974a3bc0bf304 -> node_d7cf370487bf809702d73667;
+  node_1b9b48f071c64d4e19b793b9 -> node_ba3b54de64d974a3bc0bf304;
+  node_d7cf370487bf809702d73667 -> exit;
+}

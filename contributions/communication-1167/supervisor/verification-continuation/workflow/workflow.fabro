@@ -1,0 +1,13 @@
+digraph SCoreWorkflow {
+  graph [goal="Execute reviewed S-CORE obligations", max_node_visits=20, on_failure="route"];
+  rankdir=LR;
+  exit [label="Exit", type="exit"];
+  node_9bbda8f46ba49e2a41bc532c [allow_partial=false, label="export", max_retries=0, max_visits=1, on_failure="route", script="/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/supervisor/run_stage.py export\n", selection="deterministic", timeout="14400s", type="command"];
+  node_ac3598f092fa167ddd944637 [allow_partial=false, label="verify3", max_retries=0, max_visits=1, on_failure="route", script="/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/supervisor/run_stage.py verify3\n", selection="deterministic", timeout="14400s", type="command"];
+  start [label="Start", type="start"];
+  node_9bbda8f46ba49e2a41bc532c -> exit;
+  node_ac3598f092fa167ddd944637 -> node_9bbda8f46ba49e2a41bc532c [condition="outcome=failed"];
+  node_9bbda8f46ba49e2a41bc532c -> exit [condition="outcome=failed"];
+  node_ac3598f092fa167ddd944637 -> node_9bbda8f46ba49e2a41bc532c;
+  start -> node_ac3598f092fa167ddd944637;
+}

@@ -1,0 +1,226 @@
+compiler_profile: deterministic-compiler-v1
+digest: bd1d5c4a389368e041c995de033dc1b1cf66321730dda8d9bf8cdd161e7b0074
+edges:
+- condition: null
+  loop_id: null
+  origin: &id001
+    decision_ref: user-communication1167-run-20261005
+    kind: authorized_human_decision
+    pointer: /scope
+    rationale: Task execution authorized; engineering review remains outside Fabro
+    source_ref:
+      path: authority.json
+      sha256: f343d0b3e8130f5effc8cd20128d5aaf21e858380dcb11f3ad4f859f5304f42d
+  outcome: null
+  source: start
+  target: admit
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: verify
+  target: export
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: admit
+  target: export
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: verify
+  target: export
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: export
+  target: exit
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: export
+  target: exit
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: admit
+  target: verify
+  type: success
+fan_groups: []
+id: communication1167-operational
+loop_policies: []
+plan_version: 1
+review:
+  reference:
+    path: authority.json
+    scope: User-authorized operational task; engineering applicability/review pending
+    sha256: f343d0b3e8130f5effc8cd20128d5aaf21e858380dcb11f3ad4f859f5304f42d
+  state: reviewed
+rules:
+- actions:
+  - allowed_inputs:
+    - authority.json
+    - context-manifest.json
+    - budget.json
+    allowed_paths:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/admit.sh
+    completion_predicate: Original measured results retained; acceptance pending
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Native model output and measured logs, hashes and failures
+    expected_outputs:
+    - admit-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-communication1167-admit
+    label: admit
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: 'Run frozen host collector: admit'
+    ref: admit
+    role: measurement_runner
+    support_files:
+    - commands/admit.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+  - allowed_inputs:
+    - authority.json
+    - context-manifest.json
+    - budget.json
+    allowed_paths:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/verify.sh
+    completion_predicate: Original measured results retained; acceptance pending
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Native model output and measured logs, hashes and failures
+    expected_outputs:
+    - verify-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-communication1167-verify
+    label: verify
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: 'Run frozen host collector: verify'
+    ref: verify
+    role: measurement_runner
+    support_files:
+    - commands/verify.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+  - allowed_inputs:
+    - authority.json
+    - context-manifest.json
+    - budget.json
+    allowed_paths:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/export.sh
+    completion_predicate: Original measured results retained; acceptance pending
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Native model output and measured logs, hashes and failures
+    expected_outputs:
+    - export-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-communication1167-export
+    label: export
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: 'Run frozen host collector: export'
+    ref: export
+    role: measurement_runner
+    support_files:
+    - commands/export.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha
+  id: authorized-operational-execution
+  instance_ids:
+  - local-communication1167-admit
+  - local-communication1167-verify
+  - local-communication1167-export
+schema_version: 1
+support_files:
+- content: 'true
+
+    '
+  origin: *id001
+  path: commands/admit.sh
+- content: 'true
+
+    '
+  origin: *id001
+  path: commands/verify.sh
+- content: 'true
+
+    '
+  origin: *id001
+  path: commands/export.sh
+version: 1

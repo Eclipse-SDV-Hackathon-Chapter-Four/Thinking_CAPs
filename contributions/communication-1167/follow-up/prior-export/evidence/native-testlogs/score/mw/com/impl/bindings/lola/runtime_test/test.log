@@ -1,0 +1,55 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/bindings/lola:runtime_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 15 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m4 tests from RuntimeDeathTest
+[0;32m[ RUN      ] [mRuntimeDeathTest.GettingAsilBConfigInQmProcessTerminates
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7fff7f5a71c0 pointing to "/proc/self/exe", 0x5d984a6c2e10 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-68 5A-7F FF-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+
+[WARNING] external/googletest+/googletest/src/gtest-death-test.cc:1104:: Death tests use fork(), which is unsafe particularly in a threaded context. For this test, Google Test detected 9 threads. See https://github.com/google/googletest/blob/main/docs/advanced.md#death-tests-and-threads for more explanation and suggested solutions, especially if this is the last message you see before your test times out.
+2026/10/05 23:27:11.2831857 184542603 000 ECU1 NONE lola log fatal verbose 3 GetMessagePassingCfg 119 Invalid call to GetMessagePassingCfg with asil_level B although app/process is configured for QM only. 
+[0;32m[       OK ] [mRuntimeDeathTest.GettingAsilBConfigInQmProcessTerminates (152 ms)
+[0;32m[ RUN      ] [mRuntimeDeathTest.CanRetrieveServiceDiscoveryClient
+[0;32m[       OK ] [mRuntimeDeathTest.CanRetrieveServiceDiscoveryClient (1 ms)
+[0;32m[ RUN      ] [mRuntimeDeathTest.CanRetrieveRollbackSynchronization
+[0;32m[       OK ] [mRuntimeDeathTest.CanRetrieveRollbackSynchronization (11 ms)
+[0;32m[ RUN      ] [mRuntimeDeathTest.CanRetrieveMessagingAPI
+[0;32m[       OK ] [mRuntimeDeathTest.CanRetrieveMessagingAPI (11 ms)
+[0;32m[----------] [m4 tests from RuntimeDeathTest (175 ms total)
+
+[0;32m[----------] [m11 tests from RuntimeFixture
+[0;32m[ RUN      ] [mRuntimeFixture.EnsureBindingTypeIsLoLa
+[0;32m[       OK ] [mRuntimeFixture.EnsureBindingTypeIsLoLa (11 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.EnsureCorrectAsilQMSupport
+[0;32m[       OK ] [mRuntimeFixture.EnsureCorrectAsilQMSupport (11 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.EnsureCorrectAsilBSupport
+[0;32m[       OK ] [mRuntimeFixture.EnsureCorrectAsilBSupport (12 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.CanRetrieveTracingRuntime
+[0;32m[       OK ] [mRuntimeFixture.CanRetrieveTracingRuntime (22 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.GetMessagePassingCfgWithPredefinedTwoLolaServiceConfig
+[0;32m[       OK ] [mRuntimeFixture.GetMessagePassingCfgWithPredefinedTwoLolaServiceConfig (23 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.GetMessagePassingCfgOneEmptyQMProvider
+[0;32m[       OK ] [mRuntimeFixture.GetMessagePassingCfgOneEmptyQMProvider (12 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.GetMessagePassingCfgOneEmptyQMConsumer
+[0;32m[       OK ] [mRuntimeFixture.GetMessagePassingCfgOneEmptyQMConsumer (23 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.GetMessagePassingCfgWithNoServiceInstances
+[0;32m[       OK ] [mRuntimeFixture.GetMessagePassingCfgWithNoServiceInstances (11 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.GetMessagePassingCfgMissingConsumer
+[0;32m[       OK ] [mRuntimeFixture.GetMessagePassingCfgMissingConsumer (22 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.CanRetrieveShmSizeCalculationMode
+[0;32m[       OK ] [mRuntimeFixture.CanRetrieveShmSizeCalculationMode (11 ms)
+[0;32m[ RUN      ] [mRuntimeFixture.EnsureCorrectPidReturned
+[0;32m[       OK ] [mRuntimeFixture.EnsureCorrectPidReturned (11 ms)
+[0;32m[----------] [m11 tests from RuntimeFixture (173 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m15 tests from 2 test suites ran. (349 ms total)
+[0;32m[  PASSED  ] [m15 tests.

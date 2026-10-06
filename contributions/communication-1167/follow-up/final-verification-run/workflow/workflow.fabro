@@ -1,0 +1,13 @@
+digraph SCoreWorkflow {
+  graph [goal="Execute reviewed S-CORE obligations", max_node_visits=20, on_failure="route"];
+  rankdir=LR;
+  exit [label="Exit", type="exit"];
+  node_2fe69e9dee903cbb008e1906 [allow_partial=false, label="export", max_retries=0, max_visits=1, on_failure="route", script="/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/follow-up/verify_unique_tmp.py export\n", selection="deterministic", timeout="14400s", type="command"];
+  node_64f37322655c2a18ab6852c0 [allow_partial=false, label="verify", max_retries=0, max_visits=1, on_failure="route", script="/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/follow-up/verify_unique_tmp.py verify\n", selection="deterministic", timeout="14400s", type="command"];
+  start [label="Start", type="start"];
+  start -> node_64f37322655c2a18ab6852c0;
+  node_2fe69e9dee903cbb008e1906 -> exit;
+  node_64f37322655c2a18ab6852c0 -> node_2fe69e9dee903cbb008e1906 [condition="outcome=failed"];
+  node_64f37322655c2a18ab6852c0 -> node_2fe69e9dee903cbb008e1906;
+  node_2fe69e9dee903cbb008e1906 -> exit [condition="outcome=failed"];
+}

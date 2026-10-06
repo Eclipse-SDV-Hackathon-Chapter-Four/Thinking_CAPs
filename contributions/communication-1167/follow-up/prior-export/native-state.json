@@ -1,0 +1,370 @@
+{
+  "checkpoints": [
+    {
+      "checkpoint": {
+        "current_node": "start",
+        "git_commit_sha": "0e0630792994e7bbf8f76fdb4fee5a4c0b964661",
+        "timestamp": "2026-10-05T23:24:22.167Z"
+      },
+      "diff": {},
+      "seq": 26
+    },
+    {
+      "checkpoint": {
+        "current_node": "node_ac3598f092fa167ddd944637",
+        "git_commit_sha": "bb7c11d37f75b8a7380c827a25ebeb2a9112abed",
+        "timestamp": "2026-10-05T23:29:00.341Z"
+      },
+      "diff": {
+        "summary": {
+          "additions": 0,
+          "deletions": 0,
+          "files_changed": 0
+        }
+      },
+      "seq": 39
+    }
+  ],
+  "conclusion": null,
+  "git_identity": {
+    "email": "noreply@fabro.sh",
+    "name": "Fabro",
+    "source": "default"
+  },
+  "last_event_at": "2026-10-05T23:29:00.343Z",
+  "parent_id": "01M475XJCAKNFW7KJVJ21CM55W",
+  "pending_control": null,
+  "pending_interviews": {},
+  "pull_request": null,
+  "sandbox": {
+    "instance": {
+      "provider": "local",
+      "ready_duration_ms": 49,
+      "runtime": {
+        "id": "host-g18dbc5b5f40ac5e3-870504-0",
+        "working_directory": "/home/jefferson/.local/state/s-core/fabro/someip84-server/storage/scratch/20261006-01M4763VYCDPHEFTXW92SX6ETF/petri/scopes/invocation-0-scope-0/work"
+      }
+    },
+    "kind": "ready",
+    "plan": {
+      "provider": "local"
+    }
+  },
+  "spec": {
+    "admission": {
+      "graph": {
+        "blob": "fd1b5cfe3271461708c736fdb9dafa492c3a6bb36b17f88292f064e1c1448f0e",
+        "digest": "fd1b5cfe3271461708c736fdb9dafa492c3a6bb36b17f88292f064e1c1448f0e"
+      }
+    },
+    "definition_blob": "07cf15ecd355a644bf79d9c88f642ab2ef0067e138007d6a0453836bcd3d3885",
+    "git": {
+      "branch": "test/1167-api-idempotency",
+      "dirty": "dirty",
+      "origin_url": "https://github.com/eclipse-score/communication",
+      "sha": "e3d126c2d7569345cf5f790310702eb00cd86b06"
+    },
+    "graph": {
+      "edges": [
+        {
+          "from": "node_9bbda8f46ba49e2a41bc532c",
+          "to": "exit"
+        },
+        {
+          "from": "node_9bbda8f46ba49e2a41bc532c",
+          "to": "exit"
+        },
+        {
+          "from": "node_ac3598f092fa167ddd944637",
+          "to": "node_9bbda8f46ba49e2a41bc532c"
+        },
+        {
+          "from": "node_ac3598f092fa167ddd944637",
+          "to": "node_9bbda8f46ba49e2a41bc532c"
+        },
+        {
+          "from": "start",
+          "to": "node_ac3598f092fa167ddd944637"
+        }
+      ],
+      "goal": "Execute reviewed S-CORE obligations",
+      "name": "SCoreWorkflow",
+      "nodes": {
+        "exit": {
+          "kind": "exit",
+          "label": "Exit"
+        },
+        "node_9bbda8f46ba49e2a41bc532c": {
+          "kind": "command",
+          "label": "export"
+        },
+        "node_ac3598f092fa167ddd944637": {
+          "kind": "command",
+          "label": "verify3"
+        },
+        "start": {
+          "kind": "start",
+          "label": "Start"
+        }
+      }
+    },
+    "graph_source": "digraph SCoreWorkflow {\n  graph [goal=\"Execute reviewed S-CORE obligations\", max_node_visits=20, on_failure=\"route\"];\n  rankdir=LR;\n  exit [label=\"Exit\", type=\"exit\"];\n  node_9bbda8f46ba49e2a41bc532c [allow_partial=false, label=\"export\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/supervisor/run_stage.py export\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_ac3598f092fa167ddd944637 [allow_partial=false, label=\"verify3\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/supervisor/run_stage.py verify3\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  start [label=\"Start\", type=\"start\"];\n  node_9bbda8f46ba49e2a41bc532c -> exit;\n  node_ac3598f092fa167ddd944637 -> node_9bbda8f46ba49e2a41bc532c [condition=\"outcome=failed\"];\n  node_9bbda8f46ba49e2a41bc532c -> exit [condition=\"outcome=failed\"];\n  node_ac3598f092fa167ddd944637 -> node_9bbda8f46ba49e2a41bc532c;\n  start -> node_ac3598f092fa167ddd944637;\n}\n",
+    "labels": {
+      "scope": "communication-1167-attempt3-native-measurement"
+    },
+    "provenance": {
+      "client": {
+        "name": "fabro-cli",
+        "user_agent": "fabro-cli/0.362.0-nightly.0",
+        "version": "0.362.0-nightly.0"
+      },
+      "server": {
+        "version": "0.362.0-nightly.0"
+      },
+      "subject": {
+        "auth_method": "dev_token",
+        "identity": {
+          "issuer": "fabro:dev",
+          "subject": "dev"
+        },
+        "kind": "user",
+        "login": "dev"
+      }
+    },
+    "run_id": "01M4763VYCDPHEFTXW92SX6ETF",
+    "settings": {
+      "project": {
+        "description": null,
+        "metadata": {},
+        "name": null
+      },
+      "run": {
+        "agent": {
+          "fabro_tools": false,
+          "mcps": {}
+        },
+        "artifacts": {
+          "include": []
+        },
+        "checkpoint": {
+          "commit_timeout_ms": 30000,
+          "exclude_globs": [],
+          "skip_git_hooks": false
+        },
+        "clone": {
+          "depth": 100,
+          "enabled": false
+        },
+        "environment": {
+          "env": {},
+          "id": "local",
+          "image": {
+            "docker": null,
+            "dockerfile": null
+          },
+          "labels": {},
+          "lifecycle": {
+            "auto_stop": null,
+            "preserve": false,
+            "stop_on_terminal": true
+          },
+          "network": {
+            "allow": [],
+            "mode": "allow_all"
+          },
+          "provider": "local",
+          "resources": {
+            "cpu": null,
+            "disk": null,
+            "memory": null
+          }
+        },
+        "execution": {
+          "approval": "prompt",
+          "mode": "normal"
+        },
+        "git": {
+          "author": null
+        },
+        "goal": {
+          "type": "inline",
+          "value": "Execute reviewed S-CORE obligations"
+        },
+        "hooks": [],
+        "inputs": {},
+        "integrations": {
+          "github": {
+            "permissions": {}
+          }
+        },
+        "interviews": {
+          "provider": null,
+          "slack": null
+        },
+        "metadata": {
+          "scope": "communication-1167-attempt3-native-measurement"
+        },
+        "model": {
+          "controls": {
+            "reasoning_effort": null,
+            "speed": null
+          },
+          "fallbacks": {
+            "deepseek-v4-flash": []
+          },
+          "name": "deepseek-v4-flash",
+          "provider": "deepseek"
+        },
+        "notifications": {},
+        "prepare": {
+          "steps": [],
+          "timeout_ms": 300000
+        },
+        "pull_request": null,
+        "run_branch": {
+          "enabled": false,
+          "push": false
+        },
+        "scm": {
+          "github": null,
+          "owner": null,
+          "provider": null,
+          "repository": null
+        },
+        "working_dir": null
+      },
+      "workflow": {
+        "description": null,
+        "graph": "workflow.fabro",
+        "metadata": {},
+        "name": null
+      }
+    },
+    "source_directory": "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate",
+    "spec_blob": "d93ab2324f7e930926e8902f0861c0bd7b0c05cf4d3c223a31beece9f8a73a0f",
+    "target": {
+      "kind": "folder",
+      "path": "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/candidate"
+    },
+    "workflow_slug": "workflow",
+    "workflow_version_id": "0bf36458a36731af16f27e022ce03e8855a8462b78a2bbccd0b88609770ea0e1"
+  },
+  "stages": {
+    "node_9bbda8f46ba49e2a41bc532c@1": {
+      "completion": null,
+      "diff": null,
+      "first_event_seq": 278508,
+      "graph_visit": 1,
+      "handler": "command",
+      "live_streaming": true,
+      "output": null,
+      "parallel_results": null,
+      "prompt": null,
+      "provider_used": null,
+      "response": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "started_at": "2026-10-05T23:29:00.343Z",
+      "state": "running",
+      "usage": {
+        "tokens": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "input": 0,
+          "output": 0,
+          "reasoning": 0
+        }
+      }
+    },
+    "node_ac3598f092fa167ddd944637@1": {
+      "completion": {
+        "failure_reason": "script exited with status 1\n{\"stage\": \"verify3\", \"failure\": \"Native verification failed; measured results preserved for export\"}",
+        "notes": null,
+        "outcome": "failed",
+        "timestamp": "2026-10-05T23:29:00.327Z"
+      },
+      "diff": null,
+      "first_event_seq": 333,
+      "graph_visit": 1,
+      "handler": "command",
+      "live_streaming": false,
+      "output": "{\"stage\": \"verify3\", \"failure\": \"Native verification failed; measured results preserved for export\"}\n",
+      "output_bytes": 101,
+      "parallel_results": null,
+      "prompt": null,
+      "provider_used": null,
+      "response": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "started_at": "2026-10-05T23:24:22.168Z",
+      "state": "failed",
+      "termination": "exited",
+      "timing": {
+        "active_time_ms": 278115,
+        "inference_time_ms": 0,
+        "tool_time_ms": 278115,
+        "wall_time_ms": 278115
+      },
+      "usage": {
+        "tokens": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "input": 0,
+          "output": 0,
+          "reasoning": 0
+        }
+      }
+    },
+    "start@1": {
+      "completion": {
+        "failure_reason": null,
+        "notes": null,
+        "outcome": "succeeded",
+        "timestamp": "2026-10-05T23:24:22.162Z"
+      },
+      "diff": null,
+      "first_event_seq": 224,
+      "graph_visit": 1,
+      "handler": "start",
+      "live_streaming": false,
+      "output": "checkout: [run.clone] is disabled; the workspace starts empty\n",
+      "output_bytes": 62,
+      "parallel_results": null,
+      "prompt": null,
+      "provider_used": null,
+      "response": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "started_at": "2026-10-05T23:24:22.059Z",
+      "state": "succeeded",
+      "termination": "exited",
+      "timing": {
+        "active_time_ms": 0,
+        "inference_time_ms": 0,
+        "tool_time_ms": 0,
+        "wall_time_ms": 0
+      },
+      "usage": {
+        "tokens": {
+          "cache_read": 0,
+          "cache_write": 0,
+          "input": 0,
+          "output": 0,
+          "reasoning": 0
+        }
+      }
+    }
+  },
+  "start": {
+    "base_sha": "0e0630792994e7bbf8f76fdb4fee5a4c0b964661",
+    "run_branch": "fabro/run/01M4763VYCDPHEFTXW92SX6ETF",
+    "start_time": "2026-10-05T23:24:22.049Z"
+  },
+  "status": {
+    "kind": "running"
+  },
+  "status_updated_at": "2026-10-05T23:24:22.046Z",
+  "superseded_by": null,
+  "title": "Execute reviewed S-CORE obligations",
+  "web_url": "http://192.168.13.204:43916/runs/01M4763VYCDPHEFTXW92SX6ETF"
+}

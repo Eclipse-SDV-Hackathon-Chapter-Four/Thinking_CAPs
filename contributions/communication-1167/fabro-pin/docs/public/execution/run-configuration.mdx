@@ -1,0 +1,670 @@
+---
+title: "Run Configuration"
+description: "Configure workflow runs with TOML files"
+---
+
+A workflow config is a TOML file that bundles a workflow graph with its
+execution behavior — the goal, model, prepare steps, inputs, hooks, and other
+workflow-owned settings. Instead of passing a dozen CLI flags, check
+`workflow.toml` into version control and launch it with a single command:
+
+```bash
+fabro run run.toml
+```
+
+`fabro run` and `fabro create` resolve and package the workflow locally,
+register its immutable workflow version and dependencies, and then ask the
+server to admit the intent and create a run from that version. Source parsing
+or packaging failures stop locally before registration; full effective-intent
+validation is authoritative at server admission. Use `fabro preflight` for
+explicit local validation without creating a run. `fabro create` stops with
+the run in the submitted state; `fabro run` performs the same create operation
+and then starts the run separately.
+
+The workflow can be selected by name from the current project or user workflow
+storage, by a path in another local checkout, or as a loose local file. Its
+source location does not choose the execution workspace: the directory where
+you invoke Fabro remains the target source. Clone-based environments derive a
+GitHub target from that caller directory, while a local environment receives
+the canonical caller directory directly. Fetching workflow definitions from a
+remote Git URL is not part of these commands.
+
+## Minimal example
+
+A run config needs at minimum a schema version and a goal:
+
+```toml title="run.toml"
+_version = 1
+
+[workflow]
+graph = "workflow.fabro"
+
+[run]
+goal = "Implement the login feature"
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `_version` | No (defaults to `1`) | Schema version. Must be `1` in the first pass. |
+| `[workflow].graph` | No | Path to the Graphviz workflow file, relative to the TOML file's directory. Defaults to `workflow.fabro`. |
+| `[run].goal` | No | What the workflow should accomplish. Passed to agents and available via `--goal` CLI flag or Graphviz graph `goal` attribute. |
+
+Goal precedence: CLI `--goal` or `--goal-file` > `[run].goal` > Graphviz graph
+attribute. A CLI `--goal-file` is read on the invoking machine and sent as a
+per-run value; a goal file referenced by `workflow.toml` remains immutable
+workflow content.
+
+## Full example
+
+```toml title="run.toml"
+_version = 1
+
+[workflow]
+graph = ".fabro/workflows/ci.fabro"
+
+[run]
+goal = "Run the CI pipeline"
+working_dir = "/tmp/workdir"
+
+[run.model]
+name = "claude-sonnet-4-5"
+
+[run.model.controls]
+reasoning_effort = "high"
+
+[run.model.fallbacks]
+"claude-sonnet-4-5" = ["openai", "gemini"]
+
+[[run.prepare.steps]]
+script = "git clone https://github.com/fabro-sh/fabro repo"
+
+[[run.prepare.steps]]
+script = "cd repo && npm install"
+
+[run.integrations.github.permissions]
+contents = "write"
+pull_requests = "write"
+
+[run.notifications.deploys]
+enabled = true
+provider = "slack"
+events = ["run.started", "run.completed", "run.failed"]
+
+[run.notifications.deploys.slack]
+channel = "#deploys"
+
+[run.checkpoint]
+exclude_globs = ["**/node_modules/**", "**/.cache/**"]
+
+[run.inputs]
+repo_name = "fabro"
+repo_url = "https://github.com/fabro-sh/fabro"
+
+[run.artifacts]
+include = ["test-results/**", "playwright-report/**", "**/*.trace.zip"]
+
+[run.agent.mcps.playwright]
+type = "sandbox"
+command = ["npx", "@playwright/mcp@latest", "--port", "3100", "--headless"]
+port = 3100
+
+[run.pull_request]
+enabled = true
+draft = false
+
+[[run.hooks]]
+id = "pre-check"
+event = "stage_start"
+script = "./scripts/pre-check.sh"
+blocking = true
+sandbox = false
+
+[[run.hooks]]
+event = "run_complete"
+script = "echo done"
+```
+
+## Sections
+
+### `[run.model]`
+
+Override the default model and provider for all nodes that don't have an explicit model assigned via a [stylesheet](/workflows/stylesheets).
+
+```toml title="run.toml"
+[run.model]
+name = "claude-sonnet-4-5"
+```
+
+| Field | Description |
+|---|---|
+| `name` | Canonical model slug or alias (e.g. `claude-sonnet-4-5`, `opus`, `gemini-pro`). See [Models](/core-concepts/models). |
+| `provider` | Optional provider pin. When omitted, Fabro selects among ready offerings by provider priority. When present, an unavailable provider is an error rather than permission to switch. |
+| `fallbacks` | Table of ordered fallback lists keyed by the originally requested model. |
+
+Provider values are catalog provider ID strings. Built-in IDs like `anthropic` and `openai` work, and settings-defined IDs like `proxy` work after they are added under `[llm.providers.<id>]`.
+
+For a qualified fallback, the selector may be that provider's canonical model ID, alias, or API ID. Fabro splits on the first `:` when the part before it names a known provider, so provider API IDs may contain `/` or additional colons:
+
+```toml title="run.toml"
+[run.model.fallbacks]
+"kimi-k3" = [
+  "moonshot:kimi-k3",
+  "openrouter:kimi-k3",
+  "claude-opus",
+]
+```
+
+This chain applies only when the original request resolves to `kimi-k3`. It tries direct Moonshot AI, then OpenRouter, then Claude Opus. The OpenRouter entry could equivalently be written as `"openrouter:moonshotai/kimi-k3"` using its API ID. Legacy `provider/model` fallback references remain accepted but are normalized to `provider:model`.
+
+A colon alone does not make a reference qualified. Many model IDs contain one — ollama `name:tag` values, Bedrock inference-profile IDs and ARNs — so Fabro treats the reference as qualified only when the text before the first `:` names a known provider. `"llama3:8b"` stays a single model ID, while `"ollama:llama3:8b"` pins the `ollama` provider and passes `llama3:8b` as the selector.
+
+At run creation, Fabro resolves the primary selector, every node selector, and the fallback table against the server's ready-provider snapshot. It persists the selected canonical model slug and provider, so resuming the run does not choose a different provider just because credentials or priorities changed. `fabro validate` only checks the table's TOML shape because it is offline and has no server model catalog. Use `fabro preflight` for catalog and provider checks.
+
+Each original requested model selects one fixed chain. Fabro does not jump to the chain configured for a fallback target. When a target lacks the requested reasoning level, Fabro uses the nearest supported level. It rounds equal-distance choices up.
+
+For example, a server that selects Modal as the primary `kimi-k3` offering can define these independent chains:
+
+```toml title="settings.toml"
+[run.model.fallbacks]
+"kimi-k3" = ["moonshot:kimi-k3", "openrouter:kimi-k3", "claude-opus"]
+"glm-5.2" = ["gpt-sol"]
+"gpt-sol" = ["claude-opus"]
+"claude-opus" = ["gpt-sol"]
+"gpt-terra" = ["claude-opus"]
+"gpt-luna" = ["claude-sonnet"]
+"claude-fable" = ["gpt-sol", "claude-opus"]
+```
+
+If `claude-fable` falls back to `gpt-sol`, Fabro continues with `claude-opus` from the Fable list. It does not restart from the separate `gpt-sol` list.
+
+Historical built-in provider API IDs are accepted for compatibility and normalize before this selection. For example, `name = "openai/gpt-5.6-sol"` is treated as the canonical `gpt-5.6-sol` selector; omit `provider` to use readiness and priority, or set `provider` separately to pin an offering.
+
+#### `[run.model.controls]`
+
+Set default model controls for all nodes that do not override them in the workflow stylesheet:
+
+```toml title="run.toml"
+[run.model]
+provider = "proxy"
+name = "team-code"
+
+[run.model.controls]
+reasoning_effort = "high"
+speed = "fast"
+```
+
+| Field | Description |
+|---|---|
+| `reasoning_effort` | Native reasoning-effort value to request when the selected model allows it, such as `"minimal"`, `"low"`, `"medium"`, `"high"`, `"xhigh"`, or `"max"`. |
+| `speed` | Native speed value to request when the selected model declares it, such as `"fast"`. The standard speed is implicit and does not need to be set. |
+
+#### Fallback lists with splice
+
+Use the reserved `"..."` marker in one model's list to splice in that model's inherited list from lower-precedence layers:
+
+```toml title="run.toml"
+[run.model.fallbacks]
+# Prepend Anthropic to the inherited chain for gpt-5.6-sol.
+"gpt-5.6-sol" = ["anthropic", "..."]
+```
+
+### `[run.prepare]`
+
+Ordered list of steps to run before the workflow starts. Use this to clone repositories, install dependencies, or prepare the environment.
+
+```toml title="run.toml"
+[[run.prepare.steps]]
+script = "pip install -r requirements.txt"
+
+[[run.prepare.steps]]
+command = ["npm", "install"]
+env = { NPM_TOKEN = "{{ secrets.NPM_TOKEN }}" }
+```
+
+| Field | Description |
+|---|---|
+| `script` | Bash source, evaluated by the sandbox's non-login Bash (`bash -c`). Supports `{{ vars.* }}` and `{{ secrets.* }}` interpolation. |
+| `command` | Argv-style command, mutually exclusive with `script`. Each resolved element is shell-quoted as one argument. |
+| `env` | Additional environment variables for this step. Values support the same interpolation as `script` and `command`. |
+
+Each step must exit with status 0. If any step fails, the run aborts before the workflow starts. Prepare steps replace across layers — the higher-precedence layer wins wholesale.
+
+Fabro substitutes `{{ vars.* }}` when the server creates the run, then resolves `{{ secrets.* }}` from token entries in the server vault immediately before the worker executes the steps. Secret expressions remain in the persisted run definition; resolved secret values are not persisted. A missing or non-token secret aborts startup with the affected step and token named in the error.
+
+### `[run.clone]`
+
+Configure whether clone-based sandboxes clone the run's GitHub origin before execution.
+
+```toml title="run.toml"
+[run.clone]
+enabled = true
+depth = 100
+```
+
+Set `enabled = false` to start Docker and Daytona runs with an empty provider workspace. Use [prepare steps](#runprepare) to clone or create any files the workflow needs.
+
+| Field | Description |
+|---|---|
+| `enabled` | When `false`, Fabro skips the repository clone. Defaults to `true`. |
+| `depth` | Git history depth for Docker and Daytona. Defaults to `100`. Set it to `0` to clone full history. |
+
+### `[run.run_branch]`
+
+Configure Fabro's managed `fabro/run/<id>` checkpoint branch.
+
+```toml title="run.toml"
+[run.run_branch]
+enabled = true
+push = true
+```
+
+| Field | Description |
+|---|---|
+| `enabled` | When `false`, Fabro does not create the managed run branch or checkpoint commits. |
+| `push` | When `false`, Fabro creates local checkpoint commits but does not push `fabro/run/<id>` to the remote. |
+
+### `[run.meta_branch]`
+
+Metadata branches have been retired. Existing `enabled` and `push` settings in this table are accepted but ignored. Resolved settings and API responses omit `meta_branch`. You can remove the table from your configuration. Existing Git metadata branches remain untouched.
+
+### `[run.environment]` and server-managed environments
+
+Runs select a reusable server-managed environment by slug. For `fabro run` and
+`fabro create`, use `--environment <slug>` to select it; omitting the flag
+selects `default`. Configure the catalog on the server rather than relying on
+the CLI machine's `settings.toml` or the source checkout's
+`.fabro/project.toml`, because those `environments` tables are not transmitted
+during intent creation.
+
+```toml title="server settings.toml"
+[environments.ci]
+provider = "docker" # local | docker | daytona
+
+[environments.ci.image]
+docker = "buildpack-deps:noble"
+
+[environments.ci.resources]
+cpu = 2
+memory = "4GB"
+
+[environments.ci.lifecycle]
+preserve = true
+stop_on_terminal = true
+
+[environments.ci.env]
+NODE_ENV = "production"
+```
+
+Workflow-owned sparse overrides can live under `[run.environment.*]` and apply
+to the selected server environment:
+
+```toml
+[run.environment.resources]
+memory = "8GB"
+```
+
+| Field | Description |
+|---|---|
+| `run.environment.id` | Environment slug to select. Defaults to `default`. |
+| `environments.<slug>.provider` | Required provider: `local`, `docker`, or `daytona`. |
+| `image.docker` | Docker image. Docker runs it directly; Daytona uses it to create or reuse an internally named snapshot. |
+| `image.dockerfile` | Inline Dockerfile or `{ path = "Dockerfile" }`; Daytona uses it to create or reuse an internally named snapshot. Do not set it with `image.docker`. |
+| `resources.cpu` / `memory` / `disk` | Best-effort resource hints. Unsupported provider fields warn and continue. |
+| `network.mode` | `allow_all`, `block`, or `cidr_allow_list`. Local cannot enforce blocked/CIDR networking; Docker cannot enforce CIDR allow-lists. |
+| `network.allow` | CIDRs for `cidr_allow_list`; entries are validated as CIDRs. |
+| `lifecycle.preserve` | Keep the created sandbox after the run finishes. |
+| `lifecycle.stop_on_terminal` | Stop the sandbox when the run reaches a terminal state. |
+| `lifecycle.auto_stop` | Daytona auto-stop duration, such as `"30m"`. Defaults to `"120m"`; `"0s"` disables auto-stop. |
+| `labels` | Provider labels. Merge by key across layers. |
+| `env` | Environment variables passed to command and agent execution. Merge by key across layers. |
+
+When `provider = "local"`, Fabro runs directly in the resolved working
+directory. If you want local isolation, create or enter a separate clone or Git
+worktree yourself.
+
+Environment variable values can combine literal text with server variables and token secrets:
+
+```toml title="run.toml"
+[environments.ci.env]
+API_KEY = "{{ secrets.SERVICE_API_KEY }}"
+NODE_ENV = "production"
+SERVICE_URL = "https://api.{{ vars.REGION }}.example.com"
+RELEASE_CHANNEL = "{{ vars.RELEASE_CHANNEL }}"
+```
+
+| Syntax | Description |
+|---|---|
+| `"literal"` | Static value passed as-is |
+| `"{{ vars.NAME }}"` | Server-managed variable substituted when the run is created |
+| `"{{ secrets.NAME }}"` | Token secret resolved from the server vault when the run starts |
+| `"prefix-{{ vars.X }}-suffix"` | Substring interpolation; multiple supported tokens per string are allowed |
+
+Missing or non-token secret references fail closed before sandbox startup. `{{ env.* }}` is not supported: the process environment is not a configuration source. Use `{{ vars.NAME }}` for a non-sensitive value or `{{ secrets.NAME }}` for a credential.
+
+### `[run.integrations.github.permissions]`
+
+Request a scoped GitHub App token for workflow stages that need `GITHUB_TOKEN` inside the sandbox. Values map directly to GitHub App permission names and access levels.
+
+```toml title="run.toml"
+[run.integrations.github.permissions]
+contents = "write"
+pull_requests = "write"
+issues = "read"
+```
+
+Only requested permissions are included. The upper bound is the permission set granted to the installed GitHub App, and Fabro logs a warning and continues without `GITHUB_TOKEN` if the app is not configured or is not installed on the repository.
+
+This table follows the workflow settings merge rules. A higher-precedence
+workflow or CLI override can set `permissions = {}` to clear inherited
+permissions and run without a GitHub token.
+
+### `[run.integrations.github].additional_repositories`
+
+Declare extra GitHub repositories, beyond the implicit run origin, that the minted `GITHUB_TOKEN` must cover. The one `permissions` map applies to the origin and every declared repository.
+
+```toml title="run.toml"
+[run.integrations.github]
+additional_repositories = ["fabro-sh/keystone"]
+permissions = { contents = "read" }
+```
+
+Each entry is a full `owner/repository` slug. Every repository in the effective set must share one owner and be reachable by the origin repository's GitHub App installation. A non-empty list requires `contents = "read"` or `contents = "write"`. Malformed slugs, case-insensitive duplicates, cross-owner sets, and sets larger than 499 entries fail configuration validation with indexed error paths such as `run.integrations.github.additional_repositories[1]`.
+
+Unlike permissions-only configuration, declared additional repositories are a hard requirement: missing credentials, a missing origin, or an inaccessible declared repository fails preflight and run initialization with the repository named.
+
+The higher-precedence list replaces the lower one wholesale — no union and no `...` splice — and `additional_repositories = []` explicitly clears an inherited list. `additional_repositories` and `permissions` resolve independently; if layering leaves repositories declared while permissions were cleared, resolution reports the invalid combination instead of dropping either field.
+
+See [Additional repositories](/integrations/github#additional-repositories) for what works inside stages (`gh`, GitHub API, plain Git over HTTPS and the common SSH spellings) and for the security boundary.
+
+### `[run.notifications]`
+
+Define named notification routes for run events. Slack lifecycle notifications are configured here, not in server config.
+
+```toml title="run.toml"
+[run.notifications.deploys]
+enabled = true
+provider = "slack"
+events = ["run.started", "run.completed", "run.failed"]
+
+[run.notifications.deploys.slack]
+channel = "#deploys"
+```
+
+| Field | Description |
+|---|---|
+| `enabled` | Enables this route. Defaults to `false`. |
+| `provider` | Notification provider. Use `"slack"` for Slack lifecycle notifications. Other provider names may be parsed but are not delivered by the server yet. |
+| `events` | Raw Fabro event names that trigger this route, such as `run.started`, `run.completed`, and `run.failed`. |
+| `[run.notifications.<name>.slack].channel` | Required for Slack lifecycle notifications. Literal channel names and `{{ vars.NAME }}` interpolation are supported. |
+
+Each enabled Slack route posts once for each matching lifecycle event. Messages include the run ID, an Open in Fabro link when available, workflow label, terminal result, duration, and pull request details when those are already present in the run event stream.
+
+`run.failed` is emitted only when the run terminally fails. A failed stage that routes onward to a normal completion path produces `run.completed`, not `run.failed`.
+
+If a Slack route's channel is missing, empty, or contains an unsupported interpolation token, Fabro logs a warning and skips that route. Delivery failures are logged and never fail or alter the run.
+
+### `[run.checkpoint]`
+
+Configure how git checkpoint commits behave.
+
+```toml title="run.toml"
+[run.checkpoint]
+exclude_globs = ["**/node_modules/**", "**/.cache/**", "**/dist/**"]
+skip_git_hooks = false
+commit_timeout = "30s"
+```
+
+| Field | Description |
+|---|---|
+| `exclude_globs` | Glob patterns for files to exclude from checkpoint commits. Uses git pathspec `:(glob,exclude)` syntax. |
+| `skip_git_hooks` | Accepted for compatibility. Fabro-managed run-branch checkpoint commits never run local Git commit hooks (e.g. `pre-commit`, `commit-msg`); the sandbox driver disables repository hooks on every git command it runs. Does not affect Fabro workflow `[[run.hooks]]`. |
+| `commit_timeout` | Accepted for compatibility. The per-node run-branch checkpoint commit runs under the sandbox driver's git command budget; no repository hook can prolong it. |
+
+`exclude_globs` replaces across layers — the higher-precedence layer wins wholesale. `skip_git_hooks` and `commit_timeout` use normal override semantics: the highest layer that sets the field wins.
+
+### `[run.inputs]`
+
+Define inputs that are rendered into final workflow string attributes. See [Variables](/workflows/variables) for the full reference.
+
+```toml title="run.toml"
+[run.inputs]
+repo_name = "fabro"
+repo_url = "https://github.com/fabro-sh/fabro"
+language = "rust"
+```
+
+Inputs can be used in graph `goal`, root `model_stylesheet`, and node `prompt` attributes with `{{ inputs.name }}` syntax:
+
+```dot title="c-i.fabro"
+digraph CI {
+    graph [
+        goal="Run tests for {{ inputs.repo_name }}",
+        model_stylesheet="{% if inputs.language == 'rust' %}* { reasoning_effort: high; }{% endif %}"
+    ]
+    test [label="Test", prompt="Clone {{ inputs.repo_url }} and run the {{ inputs.language }} test suite."]
+}
+```
+
+Inputs cannot parameterize workflow structure, file references such as node IDs, edges, `import` paths, `@file` paths, or child workflow paths, or any full-template attribute besides `prompt`, `goal`, and the root `model_stylesheet`. Command `script` supports only simple value substitution. Other attributes such as `label` are literal text.
+
+If a workflow template references an undefined input like `{{ inputs.langauge }}`, `fabro validate` reports a warning. Run-style commands promote that diagnostic to an error before creating or starting a run.
+
+TOML `[run.inputs]` tables replace wholesale across layers. Unlike labels, TOML input tables do not merge by key — the highest-precedence config layer that sets `inputs` wins its entire map.
+
+CLI input flags are sparse overrides on top of the resolved config inputs:
+
+```bash
+fabro run .fabro/workflows/ci/workflow.toml -I repo_name=fabro-2 --input language=rust
+```
+
+Repeat `-I` / `--input` to override multiple keys. CLI input flags have the highest precedence, merge per key, and preserve unrelated inherited inputs. Duplicate CLI keys are accepted; the last value wins.
+
+### `[run.artifacts]`
+
+Configure automatic collection of test artifacts (Playwright reports, JUnit XML, screenshots, etc.) from the execution environment after each stage.
+
+```toml title="run.toml"
+[run.artifacts]
+include = ["test-results/**", "playwright-report/**", "**/*.trace.zip"]
+```
+
+| Field | Description |
+|---|---|
+| `include` | Workspace-relative glob patterns for regular files to collect as assets after each stage. |
+
+Artifact collection is opt-in — when no `[run.artifacts]` section is present, no file scanning occurs.
+
+Artifact globs use `/` as the separator and have the same semantics in every sandbox:
+
+- `*` and `?` match within one path segment.
+- Bracket expressions such as `[abc]` and `[!abc]` match one character.
+- `**` matches across directories when used as a complete segment.
+- Leading dots are matched normally.
+- Patterns use `/`, are relative to the sandbox working directory, and are case-sensitive. Backslashes are invalid.
+- Absolute patterns and patterns containing a `..` segment are invalid.
+
+For example, `.ai/reports/*.md` matches direct Markdown children of `.ai/reports`, while `.ai/reports/**/*.md` also matches nested reports. `*.trace.zip` matches only the working-directory root; use `**/*.trace.zip` to match at any depth. To collect date-named implementation plans, use `.ai/plans/????-??-??-*.md`.
+
+Each collection reflects the post-stage workspace state rather than filesystem modification timestamps. A path with unchanged content is recorded only once per run; if its content changes, Fabro captures the new version.
+
+Fabro resolves the configured workspace root but does not recurse through symlinks below it while collecting artifacts. Dependency, cache, and build directories such as `.git`, `node_modules`, `target`, `.venv`, `.cache`, and `dist` are pruned. A collection is limited to 100 files, 10 MB per file, and 50 MB total.
+
+### `[run.agent]`
+
+Configure workflow agent behavior that is not tied to a single stage.
+
+```toml title="run.toml"
+[run.agent]
+fabro_tools = true
+```
+
+`fabro_tools` defaults to `false`. Set it to `true` only for runs whose agents should be able to use the same Fabro run-management MCP tool catalog exposed to human MCP clients: workflow version registration, create, search, get, interact, gather, events, and pair.
+
+One workflow-agent exception is intentional: `fabro_run_create` always creates [child runs](/execution/child-runs) parented to the current run. If an agent supplies `parent_id`, it must match the current run ID.
+
+This setting is independent of `[run.agent.mcps]`, which configures external MCP servers available to the agent.
+
+### `[run.agent.mcps]`
+
+Configure [MCP servers](/agents/mcp) available to agent stages during the workflow run. Each server is a named TOML table under `[run.agent.mcps]`. All three transport types are supported: `stdio`, `http`, and `sandbox`.
+
+```toml title="run.toml"
+[run.agent.mcps.playwright]
+type = "sandbox"
+command = ["npx", "@playwright/mcp@latest", "--port", "3100", "--headless", "--browser", "chromium"]
+port = 3100
+startup_timeout = "60s"
+tool_timeout = "2m"
+```
+
+To reuse a definition from the server-managed MCP catalog, reference its ID instead of defining an inline transport:
+
+```toml title="run.toml"
+[run.agent.mcps.sentry]
+id = "sentry"
+```
+
+| Field | Description | Default |
+|---|---|---|
+| `id` | Server-managed MCP definition to use. Cannot be combined with inline transport fields. | — |
+| `enabled` | Set `false` to leave this inline server or catalog reference disabled. | `true` |
+| `type` | Transport type: `"stdio"`, `"http"`, or `"sandbox"`. | — |
+| `script` | (stdio, sandbox) Shell-evaluated startup command, mutually exclusive with `command`. | — |
+| `command` | (stdio, sandbox) Argv array: executable + arguments. | — |
+| `port` | (sandbox) Port the server listens on inside the sandbox. | — |
+| `url` | (http) The MCP server endpoint URL. | — |
+| `env` | (stdio, sandbox) Additional environment variables. | `{}` |
+| `headers` | (http) Optional HTTP headers for authentication. | `{}` |
+| `startup_timeout` | Max duration for server startup + MCP handshake (e.g. `"10s"`, `"1m"`). | `"10s"` |
+| `tool_timeout` | Max duration for a single tool call. | `"60s"` |
+
+Inline transport commands, URLs, env values, and headers support `{{ vars.* }}` and `{{ secrets.* }}` interpolation. As with prepare steps, server variables resolve at run creation and token secrets resolve at launch; missing values fail closed. See [MCP runtime interpolation](/agents/mcp#runtime-interpolation) for the standalone `fabro exec` difference.
+
+The `sandbox` transport runs the MCP server inside the workflow's sandbox. This is useful for tools that need access to the sandbox environment, such as browser automation with Playwright. See [MCP](/agents/mcp#sandbox) for details.
+
+### `[run.pull_request]`
+
+Automatically open a GitHub pull request when the workflow run completes successfully. Requires a [GitHub App](/integrations/github) to be configured and a clone-based Docker or Daytona environment; run creation rejects `enabled = true` on a Local environment.
+
+```toml title="run.toml"
+[run.pull_request]
+enabled = true
+draft = true
+auto_merge = false
+merge_strategy = "squash"
+```
+
+| Field | Description |
+|---|---|
+| `enabled` | When `true`, Fabro creates a PR from the agent's working branch after a successful run. Default: `false`. |
+| `draft` | When `true`, the PR is created as a draft pull request. Default: `true`. |
+| `auto_merge` | When `true`, enables GitHub auto-merge on the created PR. Implies `draft = false` since GitHub doesn't allow auto-merge on draft PRs. The repository must have auto-merge enabled in GitHub settings. Default: `false`. |
+| `merge_strategy` | Merge method when `auto_merge` is enabled: `squash` (default), `merge`, or `rebase`. |
+
+### `[[run.hooks]]`
+
+Define hooks that run in response to lifecycle events. Each hook is a TOML array entry:
+
+```toml title="run.toml"
+[[run.hooks]]
+id = "pre-check"
+name = "Pre-check script"
+event = "stage_start"
+script = "./scripts/pre-check.sh"
+matcher = "agent"
+blocking = true
+timeout = "30s"
+sandbox = false
+```
+
+| Field | Description |
+|---|---|
+| `id` | Optional merge identity. Hooks with the same `id` replace each other across layers. |
+| `name` | Optional display name for the hook. |
+| `event` | Lifecycle event: `run_start`, `run_complete`, `stage_start`, `stage_complete`, etc. |
+| `script` | Shell-evaluated command (equivalent to the old `type = "command"` shorthand). |
+| `command` | Argv-style command (alternative to `script`). |
+| `matcher` | Regex matched against node ID or handler type. Limits which stages trigger this hook. |
+| `blocking` | Whether the hook must complete before execution continues. Defaults vary by event. |
+| `timeout` | Human-readable hook timeout (e.g. `"30s"`, `"1m"`). Default: `"60s"`. |
+| `sandbox` | Run inside the sandbox (`true`, default) or on the host (`false`). |
+
+Hook merge semantics: hooks with matching `id` values replace in place. Hooks without an `id` from a higher-precedence layer append after the fully merged inherited hook list.
+
+See [Hooks](/agents/hooks) for hook types beyond scripts (HTTP, prompt, agent).
+
+## Graph path resolution
+
+The `[workflow].graph` path is resolved relative to the TOML file's parent directory, not the current working directory. This means a run config and its workflow can live side by side:
+
+```
+project/
+  runs/
+    ci.toml       # [workflow] graph = "ci.fabro"
+    ci.fabro
+```
+
+Absolute paths are used as-is.
+
+## Precedence
+
+For runs created by `fabro run` and `fabro create`, the CLI transmits sparse
+flags and immutable workflow content, not machine or project run defaults.
+Fabro resolves workflow behavior in this order (first match wins):
+
+| Source | Priority |
+|---|---|
+| Node-level [stylesheet](/workflows/stylesheets) | Highest |
+| CLI flags (`--model`, `--provider`, `--environment`) | |
+| Run config TOML (`workflow.toml` or equivalent) | |
+| Graphviz graph attributes (`default_model`, `default_provider`) | |
+| Built-in defaults | Lowest |
+
+<Note>
+Stylesheet rules on individual nodes always take priority over run config values.
+</Note>
+
+### Project and machine settings
+
+`fabro run` and `fabro create` do not transmit `[run]` or `[environments]`
+from `.fabro/project.toml` or the CLI machine's `~/.fabro/settings.toml`.
+When either key is present, the CLI warns with the affected file and key names,
+but never includes the values in the warning or request. Move workflow-owned
+behavior into each `workflow.toml`, and configure placement in server-managed
+environments.
+
+In particular, automatic pull-request behavior for CLI-created runs belongs in
+the workflow:
+
+```toml title="workflow.toml"
+_version = 1
+
+[workflow]
+graph = "workflow.fabro"
+
+[run.pull_request]
+enabled = true
+draft = false
+```
+
+There is no compatibility field in the create request and no global
+pull-request default supplied by the CLI. A server may still apply its own
+active configuration independently; the warning does not claim otherwise.
+
+## Validation
+
+Fabro validates the run config when it loads:
+
+- **`_version` check** — Only `_version = 1` (or missing, which defaults to `1`) is accepted. The legacy top-level `version` key is rejected with a rename hint.
+- **Unknown keys** — Any top-level key not in `[project]`, `[workflow]`, `[run]`, `[cli]`, `[server]`, or `_version` is rejected with a targeted rename hint pointing at the v2 replacement path.
+- **Variable check** — Undefined workflow or prompt template variables produce diagnostics. `fabro validate` reports them as warnings; run-style commands treat them as errors before creating or starting a run.
+
+The CLI also continues to parse and validate its active machine settings and a
+discovered source-project config before creation. Malformed or unreadable files
+remain hard local failures even though their run values are not transmitted.
+
+Use `fabro preflight` to validate a run config without executing it:
+
+```bash
+fabro preflight run.toml
+```
