@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="ITF" errors="3" failures="0" skipped="0" tests="3" time="157.905" timestamp="2026-10-06T09:16:22.576736+00:00" hostname="master"><testcase classname="" name="test_bigdata_async_with_cancellation" file="../_main/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/com_api_async_api_test.py" line="55" time="0.000"><error message="failed on setup with &quot;docker.errors.APIError: 500 Server Error for http+docker://localhost/v1.56/containers/62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161/start: Internal Server Error (&quot;failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration: unable to start unit &quot;docker-62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161.scope&quot; (properties [{Name:Description Value:&quot;libcontainer container 62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161&quot;} {Name:Slice Value:&quot;user.slice&quot;} {Name:Delegate Value:true} {Name:PIDs Value:@au [1800524]} {Name:MemoryAccounting Value:true} {Name:CPUAccounting Value:true} {Name:IOAccounting Value:true} {Name:TasksAccounting Value:true} {Name:DefaultDependencies Value:false}]): Interactive authentication required.&quot;)&quot;">self = &lt;docker.api.client.APIClient object at 0x710ebafe6f90&gt;
+response = &lt;Response [500]&gt;
+
+    def _raise_for_status(self, response):
+        """Raises stored :class:`APIError`, if one occurred."""
+        try:
+&gt;           response.raise_for_status()
+
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/client.py:275: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Response [500]&gt;
+
+    def raise_for_status(self):
+        """Raises :class:`HTTPError`, if one occurred."""
+    
+        http_error_msg = ""
+        if isinstance(self.reason, bytes):
+            # We attempt to decode utf-8 first because some servers
+            # choose to localize their reason strings. If the string
+            # isn't utf-8, we fall back to iso-8859-1 for all other
+            # encodings. (See PR #3538)
+            try:
+                reason = self.reason.decode("utf-8")
+            except UnicodeDecodeError:
+                reason = self.reason.decode("iso-8859-1")
+        else:
+            reason = self.reason
+    
+        if 400 &lt;= self.status_code &lt; 500:
+            http_error_msg = (
+                f"{self.status_code} Client Error: {reason} for url: {self.url}"
+            )
+    
+        elif 500 &lt;= self.status_code &lt; 600:
+            http_error_msg = (
+                f"{self.status_code} Server Error: {reason} for url: {self.url}"
+            )
+    
+        if http_error_msg:
+&gt;           raise HTTPError(http_error_msg, response=self)
+E           requests.exceptions.HTTPError: 500 Server Error: Internal Server Error for url: http+docker://localhost/v1.56/containers/62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161/start
+
+../rules_python++pip+itf_pip_312_requests/site-packages/requests/models.py:1028: HTTPError
+
+The above exception was the direct cause of the following exception:
+
+request = &lt;SubRequest 'target_init' for &lt;Function test_bigdata_async_with_cancellation&gt;&gt;
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+                raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+    
+        docker_image = request.config.getoption("docker_image")
+        client = pypi_docker.from_env(timeout=DOCKER_CLIENT_TIMEOUT)
+    
+        known_keys = {"command", "init", "environment", "volumes", "shm_size", "detach", "auto_remove"}
+        reserved_overrides = {k for k in ("detach", "auto_remove") if k in _docker_configuration}
+        if reserved_overrides:
+            logger.warning(f"docker_configuration contains reserved keys {reserved_overrides} which will be ignored")
+        extra_kwargs = {k: v for k, v in _docker_configuration.items() if k not in known_keys}
+    
+        # Create a per-container bridge network so that get_ip() / get_gateway()
+        # return addresses unique to this container.
+        network = client.networks.create(
+            f"score_itf_{os.urandom(8).hex()}",
+            driver="bridge",
+        )
+    
+        try:
+&gt;           container = client.containers.run(
+                docker_image,
+                _docker_configuration["command"],
+                detach=True,
+                auto_remove=False,
+                init=_docker_configuration["init"],
+                environment=_docker_configuration["environment"],
+                volumes=_docker_configuration["volumes"],
+                shm_size=_docker_configuration["shm_size"],
+                network=network.name,
+                **extra_kwargs,
+            )
+
+../score_itf+/score/itf/plugins/docker.py:371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/models/containers.py:883: in run
+    container.start()
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/models/containers.py:420: in start
+    return self.client.api.start(self.id, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/utils/decorators.py:19: in wrapped
+    return f(self, resource_id, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/container.py:1136: in start
+    self._raise_for_status(res)
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/client.py:277: in _raise_for_status
+    raise create_api_error_from_http_exception(e) from e
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+e = HTTPError('500 Server Error: Internal Server Error for url: http+docker://localhost/v1.56/containers/62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161/start')
+
+    def create_api_error_from_http_exception(e):
+        """
+        Create a suitable APIError from requests.exceptions.HTTPError.
+        """
+        response = e.response
+        try:
+            explanation = response.json()['message']
+        except ValueError:
+            explanation = (response.text or '').strip()
+        cls = APIError
+        if response.status_code == 404:
+            explanation_msg = (explanation or '').lower()
+            if any(fragment in explanation_msg
+                   for fragment in _image_not_found_explanation_fragments):
+                cls = ImageNotFound
+            else:
+                cls = NotFound
+&gt;       raise cls(e, response=response, explanation=explanation) from e
+E       docker.errors.APIError: 500 Server Error for http+docker://localhost/v1.56/containers/62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161/start: Internal Server Error ("failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration: unable to start unit "docker-62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161.scope" (properties [{Name:Description Value:"libcontainer container 62a6fcca4c3c90665389eef7605c02a01e94420b5a3dcbdb377e3cfea0502161"} {Name:Slice Value:"user.slice"} {Name:Delegate Value:true} {Name:PIDs Value:@au [1800524]} {Name:MemoryAccounting Value:true} {Name:CPUAccounting Value:true} {Name:IOAccounting Value:true} {Name:TasksAccounting Value:true} {Name:DefaultDependencies Value:false}]): Interactive authentication required.")
+
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/errors.py:39: APIError</error></testcase><testcase classname="" name="test_bigdata_async_without_cancellation" file="../_main/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/com_api_async_api_test.py" line="69" time="0.000"><error message="failed on setup with &quot;docker.errors.APIError: 500 Server Error for http+docker://localhost/v1.56/containers/10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462/start: Internal Server Error (&quot;failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration: unable to start unit &quot;docker-10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462.scope&quot; (properties [{Name:Description Value:&quot;libcontainer container 10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462&quot;} {Name:Slice Value:&quot;user.slice&quot;} {Name:Delegate Value:true} {Name:PIDs Value:@au [1801357]} {Name:MemoryAccounting Value:true} {Name:CPUAccounting Value:true} {Name:IOAccounting Value:true} {Name:TasksAccounting Value:true} {Name:DefaultDependencies Value:false}]): Interactive authentication required.&quot;)&quot;">self = &lt;docker.api.client.APIClient object at 0x710ebac71a00&gt;
+response = &lt;Response [500]&gt;
+
+    def _raise_for_status(self, response):
+        """Raises stored :class:`APIError`, if one occurred."""
+        try:
+&gt;           response.raise_for_status()
+
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/client.py:275: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Response [500]&gt;
+
+    def raise_for_status(self):
+        """Raises :class:`HTTPError`, if one occurred."""
+    
+        http_error_msg = ""
+        if isinstance(self.reason, bytes):
+            # We attempt to decode utf-8 first because some servers
+            # choose to localize their reason strings. If the string
+            # isn't utf-8, we fall back to iso-8859-1 for all other
+            # encodings. (See PR #3538)
+            try:
+                reason = self.reason.decode("utf-8")
+            except UnicodeDecodeError:
+                reason = self.reason.decode("iso-8859-1")
+        else:
+            reason = self.reason
+    
+        if 400 &lt;= self.status_code &lt; 500:
+            http_error_msg = (
+                f"{self.status_code} Client Error: {reason} for url: {self.url}"
+            )
+    
+        elif 500 &lt;= self.status_code &lt; 600:
+            http_error_msg = (
+                f"{self.status_code} Server Error: {reason} for url: {self.url}"
+            )
+    
+        if http_error_msg:
+&gt;           raise HTTPError(http_error_msg, response=self)
+E           requests.exceptions.HTTPError: 500 Server Error: Internal Server Error for url: http+docker://localhost/v1.56/containers/10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462/start
+
+../rules_python++pip+itf_pip_312_requests/site-packages/requests/models.py:1028: HTTPError
+
+The above exception was the direct cause of the following exception:
+
+request = &lt;SubRequest 'target_init' for &lt;Function test_bigdata_async_without_cancellation&gt;&gt;
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+                raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+    
+        docker_image = request.config.getoption("docker_image")
+        client = pypi_docker.from_env(timeout=DOCKER_CLIENT_TIMEOUT)
+    
+        known_keys = {"command", "init", "environment", "volumes", "shm_size", "detach", "auto_remove"}
+        reserved_overrides = {k for k in ("detach", "auto_remove") if k in _docker_configuration}
+        if reserved_overrides:
+            logger.warning(f"docker_configuration contains reserved keys {reserved_overrides} which will be ignored")
+        extra_kwargs = {k: v for k, v in _docker_configuration.items() if k not in known_keys}
+    
+        # Create a per-container bridge network so that get_ip() / get_gateway()
+        # return addresses unique to this container.
+        network = client.networks.create(
+            f"score_itf_{os.urandom(8).hex()}",
+            driver="bridge",
+        )
+    
+        try:
+&gt;           container = client.containers.run(
+                docker_image,
+                _docker_configuration["command"],
+                detach=True,
+                auto_remove=False,
+                init=_docker_configuration["init"],
+                environment=_docker_configuration["environment"],
+                volumes=_docker_configuration["volumes"],
+                shm_size=_docker_configuration["shm_size"],
+                network=network.name,
+                **extra_kwargs,
+            )
+
+../score_itf+/score/itf/plugins/docker.py:371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/models/containers.py:883: in run
+    container.start()
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/models/containers.py:420: in start
+    return self.client.api.start(self.id, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/utils/decorators.py:19: in wrapped
+    return f(self, resource_id, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/container.py:1136: in start
+    self._raise_for_status(res)
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/client.py:277: in _raise_for_status
+    raise create_api_error_from_http_exception(e) from e
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+e = HTTPError('500 Server Error: Internal Server Error for url: http+docker://localhost/v1.56/containers/10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462/start')
+
+    def create_api_error_from_http_exception(e):
+        """
+        Create a suitable APIError from requests.exceptions.HTTPError.
+        """
+        response = e.response
+        try:
+            explanation = response.json()['message']
+        except ValueError:
+            explanation = (response.text or '').strip()
+        cls = APIError
+        if response.status_code == 404:
+            explanation_msg = (explanation or '').lower()
+            if any(fragment in explanation_msg
+                   for fragment in _image_not_found_explanation_fragments):
+                cls = ImageNotFound
+            else:
+                cls = NotFound
+&gt;       raise cls(e, response=response, explanation=explanation) from e
+E       docker.errors.APIError: 500 Server Error for http+docker://localhost/v1.56/containers/10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462/start: Internal Server Error ("failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration: unable to start unit "docker-10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462.scope" (properties [{Name:Description Value:"libcontainer container 10c28ba283b202d11a0c754c11ba28f6a51353fc685ce65be1d4f8e377d08462"} {Name:Slice Value:"user.slice"} {Name:Delegate Value:true} {Name:PIDs Value:@au [1801357]} {Name:MemoryAccounting Value:true} {Name:CPUAccounting Value:true} {Name:IOAccounting Value:true} {Name:TasksAccounting Value:true} {Name:DefaultDependencies Value:false}]): Interactive authentication required.")
+
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/errors.py:39: APIError</error></testcase><testcase classname="" name="test_bigdata_async_stream" file="../_main/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/com_api_async_api_test.py" line="82" time="0.000"><error message="failed on setup with &quot;docker.errors.APIError: 500 Server Error for http+docker://localhost/v1.56/containers/fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476/start: Internal Server Error (&quot;failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration: unable to start unit &quot;docker-fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476.scope&quot; (properties [{Name:Description Value:&quot;libcontainer container fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476&quot;} {Name:Slice Value:&quot;user.slice&quot;} {Name:Delegate Value:true} {Name:PIDs Value:@au [1802058]} {Name:MemoryAccounting Value:true} {Name:CPUAccounting Value:true} {Name:IOAccounting Value:true} {Name:TasksAccounting Value:true} {Name:DefaultDependencies Value:false}]): Interactive authentication required.&quot;)&quot;">self = &lt;docker.api.client.APIClient object at 0x710ebacf7800&gt;
+response = &lt;Response [500]&gt;
+
+    def _raise_for_status(self, response):
+        """Raises stored :class:`APIError`, if one occurred."""
+        try:
+&gt;           response.raise_for_status()
+
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/client.py:275: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;Response [500]&gt;
+
+    def raise_for_status(self):
+        """Raises :class:`HTTPError`, if one occurred."""
+    
+        http_error_msg = ""
+        if isinstance(self.reason, bytes):
+            # We attempt to decode utf-8 first because some servers
+            # choose to localize their reason strings. If the string
+            # isn't utf-8, we fall back to iso-8859-1 for all other
+            # encodings. (See PR #3538)
+            try:
+                reason = self.reason.decode("utf-8")
+            except UnicodeDecodeError:
+                reason = self.reason.decode("iso-8859-1")
+        else:
+            reason = self.reason
+    
+        if 400 &lt;= self.status_code &lt; 500:
+            http_error_msg = (
+                f"{self.status_code} Client Error: {reason} for url: {self.url}"
+            )
+    
+        elif 500 &lt;= self.status_code &lt; 600:
+            http_error_msg = (
+                f"{self.status_code} Server Error: {reason} for url: {self.url}"
+            )
+    
+        if http_error_msg:
+&gt;           raise HTTPError(http_error_msg, response=self)
+E           requests.exceptions.HTTPError: 500 Server Error: Internal Server Error for url: http+docker://localhost/v1.56/containers/fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476/start
+
+../rules_python++pip+itf_pip_312_requests/site-packages/requests/models.py:1028: HTTPError
+
+The above exception was the direct cause of the following exception:
+
+request = &lt;SubRequest 'target_init' for &lt;Function test_bigdata_async_stream&gt;&gt;
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+                raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+    
+        docker_image = request.config.getoption("docker_image")
+        client = pypi_docker.from_env(timeout=DOCKER_CLIENT_TIMEOUT)
+    
+        known_keys = {"command", "init", "environment", "volumes", "shm_size", "detach", "auto_remove"}
+        reserved_overrides = {k for k in ("detach", "auto_remove") if k in _docker_configuration}
+        if reserved_overrides:
+            logger.warning(f"docker_configuration contains reserved keys {reserved_overrides} which will be ignored")
+        extra_kwargs = {k: v for k, v in _docker_configuration.items() if k not in known_keys}
+    
+        # Create a per-container bridge network so that get_ip() / get_gateway()
+        # return addresses unique to this container.
+        network = client.networks.create(
+            f"score_itf_{os.urandom(8).hex()}",
+            driver="bridge",
+        )
+    
+        try:
+&gt;           container = client.containers.run(
+                docker_image,
+                _docker_configuration["command"],
+                detach=True,
+                auto_remove=False,
+                init=_docker_configuration["init"],
+                environment=_docker_configuration["environment"],
+                volumes=_docker_configuration["volumes"],
+                shm_size=_docker_configuration["shm_size"],
+                network=network.name,
+                **extra_kwargs,
+            )
+
+../score_itf+/score/itf/plugins/docker.py:371: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/models/containers.py:883: in run
+    container.start()
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/models/containers.py:420: in start
+    return self.client.api.start(self.id, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/utils/decorators.py:19: in wrapped
+    return f(self, resource_id, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/container.py:1136: in start
+    self._raise_for_status(res)
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/api/client.py:277: in _raise_for_status
+    raise create_api_error_from_http_exception(e) from e
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+e = HTTPError('500 Server Error: Internal Server Error for url: http+docker://localhost/v1.56/containers/fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476/start')
+
+    def create_api_error_from_http_exception(e):
+        """
+        Create a suitable APIError from requests.exceptions.HTTPError.
+        """
+        response = e.response
+        try:
+            explanation = response.json()['message']
+        except ValueError:
+            explanation = (response.text or '').strip()
+        cls = APIError
+        if response.status_code == 404:
+            explanation_msg = (explanation or '').lower()
+            if any(fragment in explanation_msg
+                   for fragment in _image_not_found_explanation_fragments):
+                cls = ImageNotFound
+            else:
+                cls = NotFound
+&gt;       raise cls(e, response=response, explanation=explanation) from e
+E       docker.errors.APIError: 500 Server Error for http+docker://localhost/v1.56/containers/fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476/start: Internal Server Error ("failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: unable to apply cgroup configuration: unable to start unit "docker-fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476.scope" (properties [{Name:Description Value:"libcontainer container fbae16ea6cfff04d6cd90b375e3dc0a65bcac27b68154612c6d8ab3b31d94476"} {Name:Slice Value:"user.slice"} {Name:Delegate Value:true} {Name:PIDs Value:@au [1802058]} {Name:MemoryAccounting Value:true} {Name:CPUAccounting Value:true} {Name:IOAccounting Value:true} {Name:TasksAccounting Value:true} {Name:DefaultDependencies Value:false}]): Interactive authentication required.")
+
+../rules_python++pip+itf_pip_312_docker/site-packages/docker/errors.py:39: APIError</error></testcase></testsuite></testsuites>

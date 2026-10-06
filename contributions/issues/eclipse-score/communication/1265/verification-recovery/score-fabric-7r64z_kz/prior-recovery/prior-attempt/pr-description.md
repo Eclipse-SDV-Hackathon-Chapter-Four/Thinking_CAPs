@@ -1,0 +1,7 @@
+The COM interface macros already use pastey 0.2.3, while #1265 asks for the identifier-pasting dependency to be assessed. This change adds a detailed-design assessment and a link from the Rust README. It records the resolved version/features/digest, the four implemented suffix patterns, provenance/license/maintenance/safety implications, and a retain/paste/pastey/internal comparison. It proposes retaining the locked pastey crate and references existing native classification, requirements, architecture, assumptions of use and test obligations.
+
+Production Rust, dependency locks and generated API remain unchanged. Existing score-crates classification is recorded as published source evidence; communication adoption, qualification scope and the proposed engineering decision require offline review.
+
+Validation: the patch applies to e3d126c2d7569345cf5f790310702eb00cd86b06; direct local source hashing verifies the intended documentation-only delta. The supervised command-only Fabro run failed before native execution because storage validation could not locate losetup in the worker PATH. No native tests ran. Both failure logs and all three correction attempts are retained; the correction limit is exhausted. Native checks, full CI/platform coverage, compiler qualification/adoption and ECA remain pending.
+
+Related: #1265. This is a local PR draft; no publication or engineering acceptance is recorded.

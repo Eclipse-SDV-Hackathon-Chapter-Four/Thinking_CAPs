@@ -1,0 +1,213 @@
+\
+load("@rules_rust//rust:toolchain.bzl", "rust_stdlib_filegroup", "rust_toolchain")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "rustc",
+    srcs = glob(
+        [
+            "bin/rustc",
+            "usr/bin/rustc",
+            "usr/local/bin/rustc",
+        ],
+        allow_empty = True,
+    ),
+)
+
+filegroup(
+    name = "cargo",
+    srcs = glob(
+        [
+            "bin/cargo",
+            "usr/bin/cargo",
+            "usr/local/bin/cargo",
+        ],
+        allow_empty = True,
+    ),
+)
+
+filegroup(
+    name = "rustdoc",
+    srcs = glob(
+        [
+            "bin/rustdoc",
+            "usr/bin/rustdoc",
+            "usr/local/bin/rustdoc",
+        ],
+        allow_empty = True,
+    ),
+)
+
+filegroup(
+    name = "clippy_driver",
+    srcs = glob(
+        [
+            "bin/clippy-driver",
+            "usr/bin/clippy-driver",
+            "usr/local/bin/clippy-driver",
+        ],
+        allow_empty = True,
+    ),
+)
+
+rust_stdlib_filegroup(
+    name = "rust_std-x86_64-unknown-linux-gnu",
+    srcs = glob(
+        [
+            "lib/rustlib/x86_64-unknown-linux-gnu/**",
+            "usr/lib/rustlib/x86_64-unknown-linux-gnu/**",
+            "usr/local/lib/rustlib/x86_64-unknown-linux-gnu/**",
+        ],
+        allow_empty = True,
+    ),
+)
+
+filegroup(
+    name = "rustc_lib",
+    srcs = glob(
+        [
+            "lib/**",
+            "usr/lib/**",
+            "usr/local/lib/**",
+        ],
+        allow_empty = True,
+    ),
+)
+
+rust_toolchain(
+    name = "rust_ferrocene",
+    rustc = ":rustc",
+    cargo = ":cargo",
+    rust_doc = ":rustdoc",
+    clippy_driver = ":clippy_driver",
+    rust_std = ":rust_std-x86_64-unknown-linux-gnu",
+    rustc_lib = ":rustc_lib",
+    target_triple = "x86_64-unknown-linux-gnu",
+    exec_triple = "x86_64-unknown-linux-gnu",
+    staticlib_ext = ".a",
+    dylib_ext = ".so",
+    binary_ext = "",
+    default_edition = "2021",
+    stdlib_linkflags = [],
+    extra_rustc_flags = [
+        "-Clink-arg=-Wl,--no-as-needed",
+        "-Clink-arg=-lstdc++",
+        "-Clink-arg=-lm",
+        "-Clink-arg=-lc"
+    ],
+    extra_exec_rustc_flags = [],
+    env = {},
+    llvm_cov = ":llvm-cov-bin",
+    llvm_profdata = ":llvm-profdata-bin",
+    tags = ["manual"],
+)
+
+toolchain(
+    name = "rust_ferrocene_toolchain",
+    toolchain_type = "@rules_rust//rust:toolchain_type",
+    toolchain = ":rust_ferrocene",
+    exec_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux"
+    ],
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux"
+    ],
+)
+
+\
+filegroup(
+    name = "symbol-report-bin",
+    srcs = ["symbol-report"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "blanket-bin",
+    srcs = ["blanket"],
+    visibility = ["//visibility:public"],
+)
+
+sh_binary(
+    name = "symbol-report-wrapper",
+    srcs = ["symbol-report.sh"],
+    data = [
+        ":symbol-report-bin",
+        ":rustc_lib",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+sh_binary(
+    name = "blanket-wrapper",
+    srcs = ["blanket.sh"],
+    data = [
+        ":blanket-bin",
+        ":rustc_lib",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+\
+filegroup(
+    name = "llvm-cov-bin",
+    srcs = ["llvm-cov"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "llvm-profdata-bin",
+    srcs = ["llvm-profdata"],
+    visibility = ["//visibility:public"],
+)
+
+\
+filegroup(
+    name = "llvm-cxxfilt-bin",
+    srcs = ["llvm-cxxfilt"],
+    visibility = ["//visibility:public"],
+)
+
+
+sh_binary(
+    name = "miri",
+    srcs = ["miri.sh"],
+    data = [
+        ":miri-runtime-files",
+        ":miri-sysroot-files",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "miri-bin",
+    srcs = ["miri.sh"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "miri-sysroot-anchor",
+    srcs = ["miri-sysroot/.rules_rust_miri_sysroot_anchor"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "miri-sysroot-files",
+    srcs = glob(["miri-sysroot/**"], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "miri-runtime-files",
+    srcs = glob([
+        "bin/**",
+        "lib/**",
+        "usr/lib/**",
+        "usr/local/lib/**",
+    ], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+

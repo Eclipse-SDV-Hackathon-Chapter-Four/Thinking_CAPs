@@ -1,0 +1,4549 @@
+{
+  "pages": [
+    {
+      "data": [
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 1,
+          "kind": "platform",
+          "id": "1",
+          "recorded_at": 1791277735751,
+          "item": {
+            "seq": 1,
+            "recorded_at": 1791277735751,
+            "record": {
+              "kind": "run.created",
+              "spec": {
+                "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+                "settings": {
+                  "project": {
+                    "name": null,
+                    "description": null,
+                    "metadata": {}
+                  },
+                  "workflow": {
+                    "name": null,
+                    "description": null,
+                    "graph": "workflow.fabro",
+                    "metadata": {}
+                  },
+                  "run": {
+                    "goal": {
+                      "type": "inline",
+                      "value": "Measure pinned native checks and export complete results; offline acceptance remains pending"
+                    },
+                    "working_dir": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/candidate",
+                    "metadata": {
+                      "score_issue": "communication1265",
+                      "max_corrections": "3",
+                      "supervisor": "rust_issue_supervisor"
+                    },
+                    "inputs": {},
+                    "model": {
+                      "provider": null,
+                      "name": null,
+                      "fallbacks": {},
+                      "controls": {
+                        "reasoning_effort": null,
+                        "speed": null
+                      }
+                    },
+                    "git": {
+                      "author": null
+                    },
+                    "prepare": {
+                      "steps": [],
+                      "timeout_ms": 300000
+                    },
+                    "execution": {
+                      "mode": "normal",
+                      "approval": "prompt"
+                    },
+                    "checkpoint": {
+                      "exclude_globs": [],
+                      "skip_git_hooks": false,
+                      "commit_timeout_ms": 30000
+                    },
+                    "clone": {
+                      "enabled": false,
+                      "depth": 100
+                    },
+                    "run_branch": {
+                      "enabled": false,
+                      "push": false
+                    },
+                    "environment": {
+                      "id": "default",
+                      "provider": "local",
+                      "image": {
+                        "docker": null,
+                        "dockerfile": null
+                      },
+                      "resources": {
+                        "cpu": null,
+                        "memory": null,
+                        "disk": null
+                      },
+                      "network": {
+                        "mode": "allow_all",
+                        "allow": []
+                      },
+                      "lifecycle": {
+                        "preserve": false,
+                        "stop_on_terminal": true,
+                        "auto_stop": null
+                      },
+                      "labels": {},
+                      "env": {
+                        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin"
+                      }
+                    },
+                    "notifications": {},
+                    "interviews": {
+                      "provider": null,
+                      "slack": null
+                    },
+                    "agent": {
+                      "fabro_tools": false,
+                      "mcps": {}
+                    },
+                    "hooks": [],
+                    "scm": {
+                      "provider": null,
+                      "owner": null,
+                      "repository": null,
+                      "github": null
+                    },
+                    "pull_request": null,
+                    "artifacts": {
+                      "include": []
+                    },
+                    "integrations": {
+                      "github": {
+                        "permissions": {}
+                      }
+                    }
+                  }
+                },
+                "graph": {
+                  "name": "communication1265",
+                  "goal": "Measure pinned native checks and export complete results; offline acceptance remains pending",
+                  "nodes": {
+                    "exit": {
+                      "label": "exit",
+                      "kind": "exit"
+                    },
+                    "export": {
+                      "label": "export",
+                      "kind": "command"
+                    },
+                    "preflight": {
+                      "label": "preflight",
+                      "kind": "command"
+                    },
+                    "start": {
+                      "label": "start",
+                      "kind": "start"
+                    },
+                    "verify": {
+                      "label": "verify",
+                      "kind": "command"
+                    }
+                  },
+                  "edges": [
+                    {
+                      "from": "export",
+                      "to": "exit"
+                    },
+                    {
+                      "from": "preflight",
+                      "to": "export"
+                    },
+                    {
+                      "from": "preflight",
+                      "to": "verify"
+                    },
+                    {
+                      "from": "start",
+                      "to": "preflight"
+                    },
+                    {
+                      "from": "verify",
+                      "to": "export"
+                    },
+                    {
+                      "from": "verify",
+                      "to": "export"
+                    }
+                  ]
+                },
+                "graph_source": "digraph communication1265 {\n graph [goal=\"Measure native Rust COM integration on Linux\", on_failure=\"exit\"];\n start [type=\"start\"];\n preflight [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight\", max_retries=0, timeout=\"6m\"];\n verify [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify\", max_retries=0, timeout=\"60m\"];\n export [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export\", max_retries=0, timeout=\"1m\"];\n exit [type=\"exit\"];\n start -> preflight;\n preflight -> verify;\n preflight -> export [condition=\"outcome=failed\"];\n verify -> export [condition=\"outcome=failed\"];\n verify -> export;\n export -> exit;\n}\n",
+                "workflow_slug": "workflow",
+                "workflow_version_id": "3663165b99b8e8a24ee433c2369e8785d2b1a6bc82a65f6bdf10d8edcb7a8510",
+                "target": {
+                  "kind": "folder",
+                  "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/candidate"
+                },
+                "source_directory": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/candidate",
+                "labels": {
+                  "supervisor": "rust_issue_supervisor",
+                  "max_corrections": "3",
+                  "score_issue": "communication1265"
+                },
+                "provenance": {
+                  "server": {
+                    "version": "0.362.0-nightly.0"
+                  },
+                  "client": {
+                    "user_agent": "Python-urllib/3.12"
+                  },
+                  "subject": {
+                    "kind": "user",
+                    "identity": {
+                      "issuer": "fabro:dev",
+                      "subject": "dev"
+                    },
+                    "login": "dev",
+                    "auth_method": "dev_token"
+                  }
+                },
+                "definition_blob": "6bc5115f072d6fa3299bf9472dd14d205feac27e1e1950e90e64bf8f25635022",
+                "spec_blob": "b6dd745d59634f76891d9c07d185769b6d64791706ca606fc06d46dfbdafff96",
+                "admission": {
+                  "graph": {
+                    "blob": "1f27ab918ddc1f757e7317404e739c1015390f600933048874a713ea998fc914",
+                    "digest": "1f27ab918ddc1f757e7317404e739c1015390f600933048874a713ea998fc914"
+                  }
+                }
+              },
+              "title": "Communication #1265: Linux Rust COM integration"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 2,
+          "kind": "platform",
+          "id": "2",
+          "recorded_at": 1791277735752,
+          "item": {
+            "seq": 2,
+            "recorded_at": 1791277735752,
+            "record": {
+              "kind": "run.lifecycle",
+              "transition": "submitted",
+              "status": {
+                "kind": "submitted"
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 3,
+          "kind": "platform",
+          "id": "3",
+          "recorded_at": 1791277735780,
+          "item": {
+            "seq": 3,
+            "recorded_at": 1791277735780,
+            "record": {
+              "kind": "run.lifecycle",
+              "transition": "start_requested",
+              "source": "start"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 4,
+          "kind": "platform",
+          "id": "4",
+          "recorded_at": 1791277735787,
+          "item": {
+            "seq": 4,
+            "recorded_at": 1791277735787,
+            "record": {
+              "kind": "run.lifecycle",
+              "transition": "runnable",
+              "status": {
+                "kind": "runnable"
+              },
+              "source": "start_requested"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 5,
+          "kind": "platform",
+          "id": "5",
+          "recorded_at": 1791277735846,
+          "item": {
+            "seq": 5,
+            "recorded_at": 1791277735846,
+            "record": {
+              "kind": "run.lifecycle",
+              "transition": "starting",
+              "status": {
+                "kind": "starting"
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 6,
+          "kind": "platform",
+          "id": "6",
+          "recorded_at": 1791277735847,
+          "item": {
+            "seq": 6,
+            "recorded_at": 1791277735847,
+            "record": {
+              "kind": "run.lifecycle",
+              "transition": "running",
+              "status": {
+                "kind": "running"
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 7,
+          "kind": "petri",
+          "id": "coordinator/0/0",
+          "recorded_at": 1791277735850,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 0,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0
+            },
+            "recorded_at": 1791277735850,
+            "record": {
+              "seq": 0,
+              "origin": "external",
+              "recorded_at": 1791277735850,
+              "body": {
+                "event": "run.started",
+                "format_version": 7,
+                "key": "01M487J7SEV1V42R8QVSX9ZEKA",
+                "root": 0,
+                "middleware_chain": [
+                  "circuit-breaker"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 8,
+          "kind": "petri",
+          "id": "coordinator/1/0",
+          "recorded_at": 1791277735853,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 1,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {},
+            "recorded_at": 1791277735853,
+            "record": {
+              "seq": 1,
+              "origin": "external",
+              "recorded_at": 1791277735853,
+              "body": {
+                "event": "graph.registered",
+                "digest": "1f27ab918ddc1f757e7317404e739c1015390f600933048874a713ea998fc914"
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 9,
+          "kind": "petri",
+          "id": "coordinator/2/0",
+          "recorded_at": 1791277735854,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 2,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0
+            },
+            "recorded_at": 1791277735854,
+            "record": {
+              "seq": 2,
+              "origin": "external",
+              "recorded_at": 1791277735854,
+              "body": {
+                "event": "invocation.declared",
+                "invocation": 0,
+                "call": null,
+                "graph": "1f27ab918ddc1f757e7317404e739c1015390f600933048874a713ea998fc914",
+                "context": {},
+                "secret_bindings": "none",
+                "sandbox": "isolated"
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 10,
+          "kind": "petri",
+          "id": "coordinator/3/0",
+          "recorded_at": 1791277735855,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 3,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791277735855,
+            "record": {
+              "seq": 3,
+              "origin": "external",
+              "recorded_at": 1791277735855,
+              "body": {
+                "event": "execution.declared",
+                "execution": 0,
+                "invocation": 0,
+                "predecessor": null,
+                "start": {
+                  "entry": "graph_entries",
+                  "context": {},
+                  "prior_firings": {},
+                  "execution_index": 0,
+                  "max_executions": 32
+                },
+                "middleware_state": {
+                  "circuit-breaker": [
+                    1,
+                    {
+                      "loop_signatures": {},
+                      "restart_signatures": {},
+                      "pending": {}
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 11,
+          "kind": "petri",
+          "id": "execution 0/0/0",
+          "recorded_at": 1791277735859,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 0,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791277735859,
+            "record": {
+              "seq": 0,
+              "origin": "external",
+              "recorded_at": 1791277735859,
+              "body": {
+                "event": "execution.started",
+                "entry": "graph_entries",
+                "context": {},
+                "prior_firings": {},
+                "execution_index": 0,
+                "max_executions": 32
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 12,
+          "kind": "petri",
+          "id": "execution 0/1/0",
+          "recorded_at": 1791277735859,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 1,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791277735859,
+            "record": {
+              "seq": 1,
+              "origin": "external",
+              "recorded_at": 1791277735859,
+              "body": {
+                "event": "admission.decided",
+                "decision_id": "execution_start",
+                "decision": "admit",
+                "trace": []
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 13,
+          "kind": "petri",
+          "id": "execution 0/1/1",
+          "recorded_at": 1791277735859,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 1,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735859,
+            "derived": {
+              "event": "visit.started",
+              "inputs": [
+                {
+                  "edge": 6,
+                  "generation": 0,
+                  "payload": null,
+                  "from": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 14,
+          "kind": "petri",
+          "id": "execution 0/1/2",
+          "recorded_at": 1791277735859,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 1,
+              "index": 2
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735859,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "awaiting_admission"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 15,
+          "kind": "petri",
+          "id": "execution 0/2/0",
+          "recorded_at": 1791277735859,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 2,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791277735859,
+            "record": {
+              "seq": 2,
+              "origin": "core",
+              "recorded_at": 1791277735859,
+              "body": {
+                "event": "token.emitted",
+                "edge": 6,
+                "generation": 0,
+                "payload": null,
+                "from": 0
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 16,
+          "kind": "petri",
+          "id": "execution 0/3/0",
+          "recorded_at": 1791277735859,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 3,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735859,
+            "record": {
+              "seq": 3,
+              "origin": "external",
+              "recorded_at": 1791277735859,
+              "body": {
+                "event": "admission.decided",
+                "decision_id": {
+                  "attempt_start": {
+                    "firing": 1,
+                    "attempt": 1
+                  }
+                },
+                "decision": "admit",
+                "trace": []
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 17,
+          "kind": "petri",
+          "id": "execution 0/4/0",
+          "recorded_at": 1791277735884,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 4,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791277735884,
+            "record": {
+              "seq": 4,
+              "origin": "external",
+              "recorded_at": 1791277735884,
+              "body": {
+                "event": "scope.acquired",
+                "scope": 0,
+                "lease": 0,
+                "workspace": "invocation-0-scope-0",
+                "provider": "host",
+                "instance": "host-g18dbe59c3436bfd8-1774917-0",
+                "working_directory": "/home/jefferson/.local/state/s-core/fabro/score-rust-linux-integration-xfiuopbb/communication1265_linux_integration/storage/scratch/20261006-01M487J7SEV1V42R8QVSX9ZEKA/petri/scopes/invocation-0-scope-0/work",
+                "duration_ms": 25
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 18,
+          "kind": "petri",
+          "id": "execution 0/5/0",
+          "recorded_at": 1791277735884,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 5,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735884,
+            "record": {
+              "seq": 5,
+              "origin": "external",
+              "recorded_at": 1791277735884,
+              "body": {
+                "event": "step.started",
+                "firing": 1,
+                "attempt": 1
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 19,
+          "kind": "petri",
+          "id": "execution 0/5/1",
+          "recorded_at": 1791277735884,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 5,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735884,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "running"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 20,
+          "kind": "petri",
+          "id": "execution 0/6/0",
+          "recorded_at": 1791277735885,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 6,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735885,
+            "record": {
+              "seq": 6,
+              "origin": "external",
+              "recorded_at": 1791277735885,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 1,
+                "ev": {
+                  "log": {
+                    "stream": "stderr",
+                    "line": "checkout: [run.clone] is disabled; the workspace starts empty"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 21,
+          "kind": "petri",
+          "id": "execution 0/7/0",
+          "recorded_at": 1791277735941,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 7,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735941,
+            "record": {
+              "seq": 7,
+              "origin": "external",
+              "recorded_at": 1791277735941,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 1,
+                "ev": {
+                  "custom": {
+                    "$note": {
+                      "kind": "fabro.checkpoint",
+                      "payload": {
+                        "execution": 0,
+                        "firing": 1,
+                        "attempt": 1,
+                        "workspace": "invocation-0-scope-0",
+                        "git_commit_sha": "35e8c6ad71fa99042101c00edfe849083b1d7692",
+                        "reused": false
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "derived": {
+              "parsed": {
+                "kind": "note",
+                "note": {
+                  "kind": "fabro.checkpoint",
+                  "payload": {
+                    "execution": 0,
+                    "firing": 1,
+                    "attempt": 1,
+                    "workspace": "invocation-0-scope-0",
+                    "git_commit_sha": "35e8c6ad71fa99042101c00edfe849083b1d7692",
+                    "reused": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 22,
+          "kind": "petri",
+          "id": "execution 0/8/0",
+          "recorded_at": 1791277735941,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 8,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735941,
+            "record": {
+              "seq": 8,
+              "origin": "external",
+              "recorded_at": 1791277735941,
+              "body": {
+                "event": "step.finished",
+                "firing": 1,
+                "attempt": 1,
+                "outcome": {
+                  "status": "success",
+                  "output": {
+                    "outcome": "succeeded",
+                    "failure_class": ""
+                  },
+                  "metrics": {
+                    "duration_ms": 0
+                  },
+                  "context_updates": {
+                    "failure_class": "",
+                    "internal.run_id": "petri"
+                  }
+                }
+              }
+            },
+            "derived": {
+              "final": true,
+              "exhausted": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 23,
+          "kind": "petri",
+          "id": "execution 0/8/1",
+          "recorded_at": 1791277735941,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 8,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735941,
+            "derived": {
+              "event": "visit.completed",
+              "outcome": {
+                "status": "success",
+                "output": {
+                  "outcome": "succeeded",
+                  "failure_class": ""
+                },
+                "metrics": {
+                  "duration_ms": 0
+                },
+                "context_updates": {
+                  "failure_class": "",
+                  "internal.run_id": "petri"
+                }
+              },
+              "executed": true,
+              "attempts": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 24,
+          "kind": "platform",
+          "id": "7",
+          "recorded_at": 1791277735938,
+          "item": {
+            "seq": 7,
+            "recorded_at": 1791277735938,
+            "record": {
+              "kind": "run.branch",
+              "run_branch": "fabro/run/01M487J7SEV1V42R8QVSX9ZEKA",
+              "base_sha": "35e8c6ad71fa99042101c00edfe849083b1d7692",
+              "workspace": "invocation-0-scope-0"
+            },
+            "position": {
+              "execution": 0,
+              "firing": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 25,
+          "kind": "platform",
+          "id": "8",
+          "recorded_at": 1791277735940,
+          "item": {
+            "seq": 8,
+            "recorded_at": 1791277735940,
+            "record": {
+              "kind": "git.identity",
+              "name": "Fabro",
+              "email": "noreply@fabro.sh",
+              "source": "default"
+            },
+            "position": {
+              "execution": 0,
+              "firing": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 26,
+          "kind": "platform",
+          "id": "9",
+          "recorded_at": 1791277735947,
+          "item": {
+            "seq": 9,
+            "recorded_at": 1791277735947,
+            "record": {
+              "kind": "checkpoint",
+              "execution": 0,
+              "firing": 1,
+              "attempt": 1,
+              "workspace": "invocation-0-scope-0",
+              "git_commit_sha": "35e8c6ad71fa99042101c00edfe849083b1d7692",
+              "operation": {
+                "execution": 0,
+                "decision": {
+                  "attempt_start": {
+                    "firing": 1,
+                    "attempt": 1
+                  }
+                },
+                "effect": "checkpoint"
+              }
+            },
+            "position": {
+              "execution": 0,
+              "firing": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 27,
+          "kind": "petri",
+          "id": "execution 0/9/0",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 9,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "record": {
+              "seq": 9,
+              "origin": "external",
+              "recorded_at": 1791277735948,
+              "body": {
+                "event": "routing.resolved",
+                "decision_id": {
+                  "route": {
+                    "firing": 1,
+                    "attempt": 1
+                  }
+                },
+                "groups": [
+                  {
+                    "group": 0,
+                    "draw": null,
+                    "trace": [],
+                    "decision": {
+                      "emit": 0
+                    }
+                  }
+                ]
+              }
+            },
+            "derived": {
+              "groups": [
+                {
+                  "group": 0,
+                  "target": {
+                    "id": 1,
+                    "name": "preflight",
+                    "kind": "attractor/command",
+                    "meta": {
+                      "label": "preflight",
+                      "shape": "box",
+                      "kind": "command",
+                      "classes": [],
+                      "span": {
+                        "line": 4,
+                        "column": 2
+                      },
+                      "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                      "edges": {
+                        "1": {
+                          "to": "verify",
+                          "label": null
+                        },
+                        "2": {
+                          "to": "export",
+                          "label": null,
+                          "condition": "outcome=failed"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 28,
+          "kind": "petri",
+          "id": "execution 0/9/1",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 9,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "derived": {
+              "event": "visit.started",
+              "inputs": [
+                {
+                  "edge": 0,
+                  "generation": 0,
+                  "payload": {
+                    "outcome": "succeeded",
+                    "failure_class": ""
+                  },
+                  "from": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 29,
+          "kind": "petri",
+          "id": "execution 0/9/2",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 9,
+              "index": 2
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "awaiting_admission"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 30,
+          "kind": "petri",
+          "id": "execution 0/10/0",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 10,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "record": {
+              "seq": 10,
+              "origin": "core",
+              "recorded_at": 1791277735948,
+              "body": {
+                "event": "route.applied",
+                "kind": "edge",
+                "firing": 1,
+                "group": 0,
+                "edge": 0
+              }
+            },
+            "derived": {
+              "target": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "transition": "Continue",
+              "back": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 31,
+          "kind": "petri",
+          "id": "execution 0/11/0",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 11,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 0,
+                "name": "start",
+                "kind": "attractor/stage",
+                "meta": {
+                  "label": "start",
+                  "shape": "box",
+                  "kind": "start",
+                  "classes": [],
+                  "span": {
+                    "line": 3,
+                    "column": 2
+                  },
+                  "admission_hooks": "step",
+                  "edges": {
+                    "0": {
+                      "to": "preflight",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 1,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "record": {
+              "seq": 11,
+              "origin": "core",
+              "recorded_at": 1791277735948,
+              "body": {
+                "event": "token.emitted",
+                "edge": 0,
+                "generation": 0,
+                "payload": {
+                  "outcome": "succeeded",
+                  "failure_class": ""
+                },
+                "from": 1
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 32,
+          "kind": "petri",
+          "id": "execution 0/12/0",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 12,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "record": {
+              "seq": 12,
+              "origin": "external",
+              "recorded_at": 1791277735948,
+              "body": {
+                "event": "admission.decided",
+                "decision_id": {
+                  "attempt_start": {
+                    "firing": 2,
+                    "attempt": 1
+                  }
+                },
+                "decision": "admit",
+                "trace": []
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 33,
+          "kind": "petri",
+          "id": "execution 0/13/0",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 13,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "record": {
+              "seq": 13,
+              "origin": "external",
+              "recorded_at": 1791277735948,
+              "body": {
+                "event": "step.started",
+                "firing": 2,
+                "attempt": 1
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 34,
+          "kind": "petri",
+          "id": "execution 0/13/1",
+          "recorded_at": 1791277735948,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 13,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277735948,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "running"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 35,
+          "kind": "petri",
+          "id": "execution 0/14/0",
+          "recorded_at": 1791277744994,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 14,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277744994,
+            "record": {
+              "seq": 14,
+              "origin": "external",
+              "recorded_at": 1791277744994,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 2,
+                "ev": {
+                  "log": {
+                    "stream": "stdout",
+                    "line": "Native Linux targets and private Docker endpoint verified."
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 36,
+          "kind": "petri",
+          "id": "execution 0/15/0",
+          "recorded_at": 1791277745074,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 15,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745074,
+            "record": {
+              "seq": 15,
+              "origin": "external",
+              "recorded_at": 1791277745074,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 2,
+                "ev": {
+                  "custom": {
+                    "$note": {
+                      "kind": "fabro.checkpoint",
+                      "payload": {
+                        "execution": 0,
+                        "firing": 2,
+                        "attempt": 1,
+                        "workspace": "invocation-0-scope-0",
+                        "git_commit_sha": "a7aec72c5c7148d4686797bd856c3b4fd87c3858",
+                        "reused": false
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "derived": {
+              "parsed": {
+                "kind": "note",
+                "note": {
+                  "kind": "fabro.checkpoint",
+                  "payload": {
+                    "execution": 0,
+                    "firing": 2,
+                    "attempt": 1,
+                    "workspace": "invocation-0-scope-0",
+                    "git_commit_sha": "a7aec72c5c7148d4686797bd856c3b4fd87c3858",
+                    "reused": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 37,
+          "kind": "petri",
+          "id": "execution 0/16/0",
+          "recorded_at": 1791277745074,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 16,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745074,
+            "record": {
+              "seq": 16,
+              "origin": "external",
+              "recorded_at": 1791277745074,
+              "body": {
+                "event": "step.finished",
+                "firing": 2,
+                "attempt": 1,
+                "outcome": {
+                  "status": "success",
+                  "output": {
+                    "exit_status": 0,
+                    "stdout": "Native Linux targets and private Docker endpoint verified.\n",
+                    "outcome": "succeeded",
+                    "failure_class": ""
+                  },
+                  "metrics": {
+                    "duration_ms": 9083
+                  },
+                  "context_updates": {
+                    "command.output": "Native Linux targets and private Docker endpoint verified.\n",
+                    "failure_class": ""
+                  }
+                }
+              }
+            },
+            "derived": {
+              "final": true,
+              "exhausted": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 38,
+          "kind": "petri",
+          "id": "execution 0/16/1",
+          "recorded_at": 1791277745074,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 16,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745074,
+            "derived": {
+              "event": "visit.completed",
+              "outcome": {
+                "status": "success",
+                "output": {
+                  "exit_status": 0,
+                  "stdout": "Native Linux targets and private Docker endpoint verified.\n",
+                  "outcome": "succeeded",
+                  "failure_class": ""
+                },
+                "metrics": {
+                  "duration_ms": 9083
+                },
+                "context_updates": {
+                  "command.output": "Native Linux targets and private Docker endpoint verified.\n",
+                  "failure_class": ""
+                }
+              },
+              "executed": true,
+              "attempts": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 39,
+          "kind": "platform",
+          "id": "10",
+          "recorded_at": 1791277745082,
+          "item": {
+            "seq": 10,
+            "recorded_at": 1791277745082,
+            "record": {
+              "kind": "checkpoint",
+              "execution": 0,
+              "firing": 2,
+              "attempt": 1,
+              "workspace": "invocation-0-scope-0",
+              "git_commit_sha": "a7aec72c5c7148d4686797bd856c3b4fd87c3858",
+              "diff_summary": {
+                "files_changed": 0,
+                "additions": 0,
+                "deletions": 0
+              },
+              "operation": {
+                "execution": 0,
+                "decision": {
+                  "attempt_start": {
+                    "firing": 2,
+                    "attempt": 1
+                  }
+                },
+                "effect": "checkpoint"
+              }
+            },
+            "position": {
+              "execution": 0,
+              "firing": 2
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 40,
+          "kind": "petri",
+          "id": "execution 0/17/0",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 17,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "record": {
+              "seq": 17,
+              "origin": "external",
+              "recorded_at": 1791277745083,
+              "body": {
+                "event": "routing.resolved",
+                "decision_id": {
+                  "route": {
+                    "firing": 2,
+                    "attempt": 1
+                  }
+                },
+                "groups": [
+                  {
+                    "group": 0,
+                    "draw": null,
+                    "trace": [],
+                    "decision": {
+                      "emit": 1
+                    }
+                  }
+                ]
+              }
+            },
+            "derived": {
+              "groups": [
+                {
+                  "group": 0,
+                  "target": {
+                    "id": 2,
+                    "name": "verify",
+                    "kind": "attractor/command",
+                    "meta": {
+                      "label": "verify",
+                      "shape": "box",
+                      "kind": "command",
+                      "classes": [],
+                      "span": {
+                        "line": 5,
+                        "column": 2
+                      },
+                      "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                      "edges": {
+                        "3": {
+                          "to": "export",
+                          "label": null,
+                          "condition": "outcome=failed"
+                        },
+                        "4": {
+                          "to": "export",
+                          "label": null
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 41,
+          "kind": "petri",
+          "id": "execution 0/17/1",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 17,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "derived": {
+              "event": "visit.started",
+              "inputs": [
+                {
+                  "edge": 1,
+                  "generation": 0,
+                  "payload": {
+                    "exit_status": 0,
+                    "stdout": "Native Linux targets and private Docker endpoint verified.\n",
+                    "outcome": "succeeded",
+                    "failure_class": ""
+                  },
+                  "from": 2
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 42,
+          "kind": "petri",
+          "id": "execution 0/17/2",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 17,
+              "index": 2
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "awaiting_admission"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 43,
+          "kind": "petri",
+          "id": "execution 0/18/0",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 18,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "record": {
+              "seq": 18,
+              "origin": "core",
+              "recorded_at": 1791277745083,
+              "body": {
+                "event": "route.applied",
+                "kind": "edge",
+                "firing": 2,
+                "group": 0,
+                "edge": 1
+              }
+            },
+            "derived": {
+              "target": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "transition": "Continue",
+              "back": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 44,
+          "kind": "petri",
+          "id": "execution 0/19/0",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 19,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 1,
+                "name": "preflight",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "preflight",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 4,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight",
+                  "edges": {
+                    "1": {
+                      "to": "verify",
+                      "label": null
+                    },
+                    "2": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    }
+                  }
+                }
+              },
+              "firing": 2,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "record": {
+              "seq": 19,
+              "origin": "core",
+              "recorded_at": 1791277745083,
+              "body": {
+                "event": "token.emitted",
+                "edge": 1,
+                "generation": 0,
+                "payload": {
+                  "exit_status": 0,
+                  "stdout": "Native Linux targets and private Docker endpoint verified.\n",
+                  "outcome": "succeeded",
+                  "failure_class": ""
+                },
+                "from": 2
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 45,
+          "kind": "petri",
+          "id": "execution 0/20/0",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 20,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "record": {
+              "seq": 20,
+              "origin": "external",
+              "recorded_at": 1791277745083,
+              "body": {
+                "event": "admission.decided",
+                "decision_id": {
+                  "attempt_start": {
+                    "firing": 3,
+                    "attempt": 1
+                  }
+                },
+                "decision": "admit",
+                "trace": []
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 46,
+          "kind": "petri",
+          "id": "execution 0/21/0",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 21,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "record": {
+              "seq": 21,
+              "origin": "external",
+              "recorded_at": 1791277745083,
+              "body": {
+                "event": "step.started",
+                "firing": 3,
+                "attempt": 1
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 47,
+          "kind": "petri",
+          "id": "execution 0/21/1",
+          "recorded_at": 1791277745083,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 21,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791277745083,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "running"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 48,
+          "kind": "petri",
+          "id": "execution 0/22/0",
+          "recorded_at": 1791278342383,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 22,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342383,
+            "record": {
+              "seq": 22,
+              "origin": "external",
+              "recorded_at": 1791278342383,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 3,
+                "ev": {
+                  "log": {
+                    "stream": "stdout",
+                    "line": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 49,
+          "kind": "petri",
+          "id": "execution 0/23/0",
+          "recorded_at": 1791278342445,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 23,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342445,
+            "record": {
+              "seq": 23,
+              "origin": "external",
+              "recorded_at": 1791278342445,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 3,
+                "ev": {
+                  "custom": {
+                    "$note": {
+                      "kind": "fabro.checkpoint",
+                      "payload": {
+                        "execution": 0,
+                        "firing": 3,
+                        "attempt": 1,
+                        "workspace": "invocation-0-scope-0",
+                        "git_commit_sha": "9bd58c28f0c518849b5ca14cfe1825ebd2f2601d",
+                        "reused": false
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "derived": {
+              "parsed": {
+                "kind": "note",
+                "note": {
+                  "kind": "fabro.checkpoint",
+                  "payload": {
+                    "execution": 0,
+                    "firing": 3,
+                    "attempt": 1,
+                    "workspace": "invocation-0-scope-0",
+                    "git_commit_sha": "9bd58c28f0c518849b5ca14cfe1825ebd2f2601d",
+                    "reused": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 50,
+          "kind": "petri",
+          "id": "execution 0/24/0",
+          "recorded_at": 1791278342445,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 24,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342445,
+            "record": {
+              "seq": 24,
+              "origin": "external",
+              "recorded_at": 1791278342445,
+              "body": {
+                "event": "step.finished",
+                "firing": 3,
+                "attempt": 1,
+                "outcome": {
+                  "status": {
+                    "failure": {
+                      "message": "script exited with status 3\n{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}",
+                      "class": "exit_status:3"
+                    }
+                  },
+                  "output": {
+                    "exit_status": 3,
+                    "stdout": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}\n",
+                    "outcome": "failed",
+                    "failure_class": "exit_status:3",
+                    "failure_reason": "script exited with status 3\n{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}"
+                  },
+                  "metrics": {
+                    "duration_ms": 597332
+                  },
+                  "context_updates": {
+                    "command.output": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}\n",
+                    "failure_class": "exit_status:3"
+                  }
+                }
+              }
+            },
+            "derived": {
+              "final": true,
+              "exhausted": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 51,
+          "kind": "petri",
+          "id": "execution 0/24/1",
+          "recorded_at": 1791278342445,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 24,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342445,
+            "derived": {
+              "event": "visit.completed",
+              "outcome": {
+                "status": {
+                  "failure": {
+                    "message": "script exited with status 3\n{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}",
+                    "class": "exit_status:3"
+                  }
+                },
+                "output": {
+                  "exit_status": 3,
+                  "stdout": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}\n",
+                  "outcome": "failed",
+                  "failure_class": "exit_status:3",
+                  "failure_reason": "script exited with status 3\n{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}"
+                },
+                "metrics": {
+                  "duration_ms": 597332
+                },
+                "context_updates": {
+                  "command.output": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}\n",
+                  "failure_class": "exit_status:3"
+                }
+              },
+              "executed": true,
+              "attempts": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 52,
+          "kind": "platform",
+          "id": "11",
+          "recorded_at": 1791278342455,
+          "item": {
+            "seq": 11,
+            "recorded_at": 1791278342455,
+            "record": {
+              "kind": "checkpoint",
+              "execution": 0,
+              "firing": 3,
+              "attempt": 1,
+              "workspace": "invocation-0-scope-0",
+              "git_commit_sha": "9bd58c28f0c518849b5ca14cfe1825ebd2f2601d",
+              "diff_summary": {
+                "files_changed": 0,
+                "additions": 0,
+                "deletions": 0
+              },
+              "operation": {
+                "execution": 0,
+                "decision": {
+                  "attempt_start": {
+                    "firing": 3,
+                    "attempt": 1
+                  }
+                },
+                "effect": "checkpoint"
+              }
+            },
+            "position": {
+              "execution": 0,
+              "firing": 3
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 53,
+          "kind": "petri",
+          "id": "execution 0/25/0",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 25,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "record": {
+              "seq": 25,
+              "origin": "external",
+              "recorded_at": 1791278342456,
+              "body": {
+                "event": "routing.resolved",
+                "decision_id": {
+                  "route": {
+                    "firing": 3,
+                    "attempt": 1
+                  }
+                },
+                "groups": [
+                  {
+                    "group": 0,
+                    "draw": null,
+                    "trace": [],
+                    "decision": {
+                      "emit": 3
+                    }
+                  }
+                ]
+              }
+            },
+            "derived": {
+              "groups": [
+                {
+                  "group": 0,
+                  "target": {
+                    "id": 3,
+                    "name": "export",
+                    "kind": "attractor/command",
+                    "meta": {
+                      "label": "export",
+                      "shape": "box",
+                      "kind": "command",
+                      "classes": [],
+                      "span": {
+                        "line": 6,
+                        "column": 2
+                      },
+                      "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                      "edges": {
+                        "5": {
+                          "to": "exit",
+                          "label": null
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 54,
+          "kind": "petri",
+          "id": "execution 0/25/1",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 25,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "derived": {
+              "event": "visit.started",
+              "inputs": [
+                {
+                  "edge": 3,
+                  "generation": 0,
+                  "payload": {
+                    "exit_status": 3,
+                    "stdout": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}\n",
+                    "outcome": "failed",
+                    "failure_class": "exit_status:3",
+                    "failure_reason": "script exited with status 3\n{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}"
+                  },
+                  "from": 3
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 55,
+          "kind": "petri",
+          "id": "execution 0/25/2",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 25,
+              "index": 2
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "awaiting_admission"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 56,
+          "kind": "petri",
+          "id": "execution 0/26/0",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 26,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "record": {
+              "seq": 26,
+              "origin": "core",
+              "recorded_at": 1791278342456,
+              "body": {
+                "event": "route.applied",
+                "kind": "edge",
+                "firing": 3,
+                "group": 0,
+                "edge": 3
+              }
+            },
+            "derived": {
+              "target": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "transition": "Continue",
+              "back": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 57,
+          "kind": "petri",
+          "id": "execution 0/27/0",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 27,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 2,
+                "name": "verify",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "verify",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 5,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify",
+                  "edges": {
+                    "3": {
+                      "to": "export",
+                      "label": null,
+                      "condition": "outcome=failed"
+                    },
+                    "4": {
+                      "to": "export",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 3,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "record": {
+              "seq": 27,
+              "origin": "core",
+              "recorded_at": 1791278342456,
+              "body": {
+                "event": "token.emitted",
+                "edge": 3,
+                "generation": 0,
+                "payload": {
+                  "exit_status": 3,
+                  "stdout": "{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}\n",
+                  "outcome": "failed",
+                  "failure_class": "exit_status:3",
+                  "failure_reason": "script exited with status 3\n{\"native_command\": \"failed\", \"exit_code\": 3, \"targets\": 2, \"xml_records\": [{\"target\": \"//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"158.324\"}]}, {\"target\": \"//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async\", \"counts\": [{\"name\": \"ITF\", \"tests\": \"3\", \"failures\": \"0\", \"errors\": \"3\", \"skipped\": \"0\", \"time\": \"157.905\"}]}]}"
+                },
+                "from": 3
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 58,
+          "kind": "petri",
+          "id": "execution 0/28/0",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 28,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "record": {
+              "seq": 28,
+              "origin": "external",
+              "recorded_at": 1791278342456,
+              "body": {
+                "event": "admission.decided",
+                "decision_id": {
+                  "attempt_start": {
+                    "firing": 4,
+                    "attempt": 1
+                  }
+                },
+                "decision": "admit",
+                "trace": []
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 59,
+          "kind": "petri",
+          "id": "execution 0/29/0",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 29,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "record": {
+              "seq": 29,
+              "origin": "external",
+              "recorded_at": 1791278342456,
+              "body": {
+                "event": "step.started",
+                "firing": 4,
+                "attempt": 1
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 60,
+          "kind": "petri",
+          "id": "execution 0/29/1",
+          "recorded_at": 1791278342456,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 29,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342456,
+            "derived": {
+              "event": "wait.state.changed",
+              "state": "running"
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 61,
+          "kind": "petri",
+          "id": "execution 0/30/0",
+          "recorded_at": 1791278342783,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 30,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342783,
+            "record": {
+              "seq": 30,
+              "origin": "external",
+              "recorded_at": 1791278342783,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 4,
+                "ev": {
+                  "log": {
+                    "stream": "stdout",
+                    "line": "Native integration evidence exported; offline acceptance pending."
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 62,
+          "kind": "petri",
+          "id": "execution 0/31/0",
+          "recorded_at": 1791278342857,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 31,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342857,
+            "record": {
+              "seq": 31,
+              "origin": "external",
+              "recorded_at": 1791278342857,
+              "body": {
+                "event": "step.progress.recorded",
+                "firing": 4,
+                "ev": {
+                  "custom": {
+                    "$note": {
+                      "kind": "fabro.checkpoint",
+                      "payload": {
+                        "execution": 0,
+                        "firing": 4,
+                        "attempt": 1,
+                        "workspace": "invocation-0-scope-0",
+                        "git_commit_sha": "4e467ffd001d1da7279bc76b20cb31d61d69c008",
+                        "reused": false
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "derived": {
+              "parsed": {
+                "kind": "note",
+                "note": {
+                  "kind": "fabro.checkpoint",
+                  "payload": {
+                    "execution": 0,
+                    "firing": 4,
+                    "attempt": 1,
+                    "workspace": "invocation-0-scope-0",
+                    "git_commit_sha": "4e467ffd001d1da7279bc76b20cb31d61d69c008",
+                    "reused": false
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 63,
+          "kind": "petri",
+          "id": "execution 0/32/0",
+          "recorded_at": 1791278342857,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 32,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342857,
+            "record": {
+              "seq": 32,
+              "origin": "external",
+              "recorded_at": 1791278342857,
+              "body": {
+                "event": "step.finished",
+                "firing": 4,
+                "attempt": 1,
+                "outcome": {
+                  "status": {
+                    "failure": {
+                      "message": "script exited with status 1\nNative integration evidence exported; offline acceptance pending.",
+                      "class": "exit_status:1"
+                    }
+                  },
+                  "output": {
+                    "exit_status": 1,
+                    "stdout": "Native integration evidence exported; offline acceptance pending.\n",
+                    "outcome": "failed",
+                    "failure_class": "exit_status:1",
+                    "failure_reason": "script exited with status 1\nNative integration evidence exported; offline acceptance pending."
+                  },
+                  "metrics": {
+                    "duration_ms": 359
+                  },
+                  "context_updates": {
+                    "command.output": "Native integration evidence exported; offline acceptance pending.\n",
+                    "failure_class": "exit_status:1"
+                  }
+                }
+              }
+            },
+            "derived": {
+              "final": true,
+              "exhausted": false
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 64,
+          "kind": "petri",
+          "id": "execution 0/32/1",
+          "recorded_at": 1791278342857,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 32,
+              "index": 1
+            },
+            "origin": "derived",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342857,
+            "derived": {
+              "event": "visit.completed",
+              "outcome": {
+                "status": {
+                  "failure": {
+                    "message": "script exited with status 1\nNative integration evidence exported; offline acceptance pending.",
+                    "class": "exit_status:1"
+                  }
+                },
+                "output": {
+                  "exit_status": 1,
+                  "stdout": "Native integration evidence exported; offline acceptance pending.\n",
+                  "outcome": "failed",
+                  "failure_class": "exit_status:1",
+                  "failure_reason": "script exited with status 1\nNative integration evidence exported; offline acceptance pending."
+                },
+                "metrics": {
+                  "duration_ms": 359
+                },
+                "context_updates": {
+                  "command.output": "Native integration evidence exported; offline acceptance pending.\n",
+                  "failure_class": "exit_status:1"
+                }
+              },
+              "executed": true,
+              "attempts": 1
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 65,
+          "kind": "platform",
+          "id": "12",
+          "recorded_at": 1791278342866,
+          "item": {
+            "seq": 12,
+            "recorded_at": 1791278342866,
+            "record": {
+              "kind": "checkpoint",
+              "execution": 0,
+              "firing": 4,
+              "attempt": 1,
+              "workspace": "invocation-0-scope-0",
+              "git_commit_sha": "4e467ffd001d1da7279bc76b20cb31d61d69c008",
+              "diff_summary": {
+                "files_changed": 0,
+                "additions": 0,
+                "deletions": 0
+              },
+              "operation": {
+                "execution": 0,
+                "decision": {
+                  "attempt_start": {
+                    "firing": 4,
+                    "attempt": 1
+                  }
+                },
+                "effect": "checkpoint"
+              }
+            },
+            "position": {
+              "execution": 0,
+              "firing": 4
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 66,
+          "kind": "petri",
+          "id": "execution 0/33/0",
+          "recorded_at": 1791278342867,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 33,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342867,
+            "record": {
+              "seq": 33,
+              "origin": "external",
+              "recorded_at": 1791278342867,
+              "body": {
+                "event": "routing.resolved",
+                "decision_id": {
+                  "route": {
+                    "firing": 4,
+                    "attempt": 1
+                  }
+                },
+                "groups": [
+                  {
+                    "group": 0,
+                    "draw": null,
+                    "trace": [],
+                    "decision": "none"
+                  }
+                ]
+              }
+            },
+            "derived": {
+              "groups": [
+                {
+                  "group": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 67,
+          "kind": "petri",
+          "id": "execution 0/34/0",
+          "recorded_at": 1791278342867,
+          "item": {
+            "id": {
+              "log": "execution",
+              "execution": 0,
+              "seq": 34,
+              "index": 0
+            },
+            "origin": "core",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "subject": {
+              "node": {
+                "id": 3,
+                "name": "export",
+                "kind": "attractor/command",
+                "meta": {
+                  "label": "export",
+                  "shape": "box",
+                  "kind": "command",
+                  "classes": [],
+                  "span": {
+                    "line": 6,
+                    "column": 2
+                  },
+                  "script": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export",
+                  "edges": {
+                    "5": {
+                      "to": "exit",
+                      "label": null
+                    }
+                  }
+                }
+              },
+              "firing": 4,
+              "visit": 1,
+              "attempt": 1,
+              "generation": 0,
+              "branch": {
+                "role": "none"
+              }
+            },
+            "recorded_at": 1791278342867,
+            "record": {
+              "seq": 34,
+              "origin": "core",
+              "recorded_at": 1791278342867,
+              "body": {
+                "event": "route.applied",
+                "kind": "none",
+                "firing": 4,
+                "group": 0
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 68,
+          "kind": "platform",
+          "id": "13",
+          "recorded_at": 1791278342873,
+          "item": {
+            "seq": 13,
+            "recorded_at": 1791278342873,
+            "record": {
+              "kind": "run.diff",
+              "base_sha": "35e8c6ad71fa99042101c00edfe849083b1d7692",
+              "head_sha": "4e467ffd001d1da7279bc76b20cb31d61d69c008",
+              "diff_summary": {
+                "files_changed": 0,
+                "additions": 0,
+                "deletions": 0
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 69,
+          "kind": "petri",
+          "id": "coordinator/4/0",
+          "recorded_at": 1791278342874,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 4,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791278342874,
+            "record": {
+              "seq": 4,
+              "origin": "external",
+              "recorded_at": 1791278342874,
+              "body": {
+                "event": "execution.finished",
+                "execution": 0,
+                "exit": {
+                  "terminal": {
+                    "status": "failed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 70,
+          "kind": "petri",
+          "id": "coordinator/5/0",
+          "recorded_at": 1791278342876,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 5,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0,
+              "execution": 0
+            },
+            "recorded_at": 1791278342876,
+            "record": {
+              "seq": 5,
+              "origin": "external",
+              "recorded_at": 1791278342876,
+              "body": {
+                "event": "invocation.finished",
+                "invocation": 0,
+                "result": {
+                  "status": "failed",
+                  "failure": {
+                    "message": "script exited with status 1\nNative integration evidence exported; offline acceptance pending.",
+                    "class": "exit_status:1"
+                  },
+                  "final_execution": 0,
+                  "output": null,
+                  "context": {
+                    "command.output": "Native integration evidence exported; offline acceptance pending.\n",
+                    "failure_class": "exit_status:1",
+                    "internal.run_id": "petri"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 71,
+          "kind": "petri",
+          "id": "coordinator/6/0",
+          "recorded_at": 1791278343023,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 6,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {
+              "invocation": 0
+            },
+            "recorded_at": 1791278343023,
+            "record": {
+              "seq": 6,
+              "origin": "external",
+              "recorded_at": 1791278343023,
+              "body": {
+                "event": "scope.released",
+                "invocation": 0,
+                "lease": 0,
+                "scope": {
+                  "declared": 0
+                },
+                "workspace": "invocation-0-scope-0",
+                "provider": "host",
+                "instance": "host-g18dbe59c3436bfd8-1774917-0",
+                "outcome": "failed",
+                "retained": true
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 72,
+          "kind": "petri",
+          "id": "coordinator/7/0",
+          "recorded_at": 1791278343026,
+          "item": {
+            "id": {
+              "log": "coordinator",
+              "seq": 7,
+              "index": 0
+            },
+            "origin": "external",
+            "context": {},
+            "recorded_at": 1791278343026,
+            "record": {
+              "seq": 7,
+              "origin": "external",
+              "recorded_at": 1791278343026,
+              "body": {
+                "event": "run.finished",
+                "status": "failed"
+              }
+            }
+          }
+        },
+        {
+          "run_id": "01M487J7SEV1V42R8QVSX9ZEKA",
+          "stream_seq": 73,
+          "kind": "platform",
+          "id": "14",
+          "recorded_at": 1791278343054,
+          "item": {
+            "seq": 14,
+            "recorded_at": 1791278343054,
+            "record": {
+              "kind": "run.lifecycle",
+              "transition": "failed",
+              "status": {
+                "kind": "failed",
+                "reason": "workflow_error"
+              },
+              "reason": "script exited with status 1\nNative integration evidence exported; offline acceptance pending."
+            }
+          }
+        }
+      ],
+      "event_contract_version": 4,
+      "meta": {
+        "has_more": false
+      }
+    }
+  ]
+}
