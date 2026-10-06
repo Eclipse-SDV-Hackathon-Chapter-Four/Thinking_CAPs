@@ -92,7 +92,7 @@ Leverage and integrate open-source SDV projects to address complex challenges in
 
 Our solution aligns with the challenge through four complementary dimensions:
 
-1. **Integration:** Connect multiple Eclipse SDV projects, Capgemini Engineering assets, simulation environments, and physical or virtual ECUs.
+1. **Integration:** Connect multiple Eclipse SDV projects, Capgemini Engineering open-source assets, simulation environments, and physical or virtual ECUs.
 2. **Automation:** Apply an automated software factory and local engineering assistant to real S-CORE development tasks.
 3. **Contribution:** Investigate open issues, implement improvements, and deliver fixes at a contribution-ready level.
 4. **Extension:** Introduce reusable capabilities that can add value to the existing Eclipse SDV ecosystem.
