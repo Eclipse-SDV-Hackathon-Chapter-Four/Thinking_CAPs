@@ -1,0 +1,27 @@
+@startuml handshake
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Sequence — connection and handshake (SWR-004, SWR-020)
+participant "rx thread" as RX
+participant "pyserial" as P
+participant "ECU (AZ3166)" as E
+participant "Serial2CanBridge" as B
+RX -> RX : _resolve_device() (glob)
+RX -> P : Serial(path, 115200)
+RX -> E : "\\r\\r\\r" (flush partial line)
+RX -> E : C
+E --> RX : CR
+RX -> E : V
+E --> RX : V1010
+RX -> E : S6
+E --> RX : CR
+RX -> E : O
+E --> RX : CR + "t1F480000…" (state report)
+note right of RX : reply and frame may arrive in one read;\npending tokens are kept (SWR-003)
+RX -> RX : connected.set()
+RX -> B : from_serial(0x1F4 state)
+loop until error or stop
+  E --> RX : frames / z / BELL
+end
+@enduml
