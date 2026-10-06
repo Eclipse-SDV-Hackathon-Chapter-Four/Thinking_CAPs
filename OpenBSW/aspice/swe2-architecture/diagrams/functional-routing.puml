@@ -1,0 +1,48 @@
+@startuml functional-routing
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Dynamic view — functional request to all zonal ECUs (0xE400)
+autonumber
+
+participant "CDA" as CDA
+participant "DoIpServerSystem\nARC-01" as DoIp
+participant "ZonalRouter\nARC-03" as R
+participant "Gateway UDS\nARC-05" as Uds
+participant "DoCanSystem\nARC-02" as Tp
+participant "Rear lighting\n0x1020" as E1
+participant "Front zone\n0x1030" as E2
+
+CDA -> DoIp : diag msg 0x0E80 → 0xE400\n19 02 08
+DoIp -> R : messageReceived
+alt payload > 7 bytes
+  R --> DoIp : rejected
+  DoIp --> CDA : NACK 0x04 (SWR-013)
+else single frame
+  par local node
+    R -> Uds : 19 02 08
+  else CAN nodes
+    R -> Tp : send on 0x7DF (functional)
+    Tp -> E1 : SF 03 19 02 08
+    Tp -> E2 : SF 03 19 02 08
+  end
+  DoIp --> CDA : ACK 0x8002
+  R -> R : collect until P2* expires
+  Uds -> R : 59 02 ... (gateway faults)
+  R -> DoIp : forward
+  DoIp -> CDA : diag msg 0x1010 → 0x0E80
+  E1 -> Tp : 59 02 ... on 0x7E9
+  Tp -> R : messageReceived
+  R -> DoIp : forward
+  DoIp -> CDA : diag msg 0x1020 → 0x0E80
+  E2 -> Tp : 59 02 ... on 0x7EA
+  Tp -> R : messageReceived
+  R -> DoIp : forward
+  DoIp -> CDA : diag msg 0x1030 → 0x0E80
+  note over R
+    One DoIP message per responding node.
+    Nodes that stay silent are not reported here;
+    the reachability routine (SWR-026) does that.
+  end note
+end
+@enduml

@@ -1,0 +1,33 @@
+@startuml deployment
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Deployment — Linux host in X-Verse (first) and S32K148 (later)
+
+node "Linux x86_64 host (X-Verse workstation)" as H {
+  node "Docker network" as DN {
+    artifact "OpenSOVD gateway" as SOVD
+    artifact "CDA container\n+ MDD (0x1010, 0x1020)" as CDA
+  }
+  interface "tap0\n(TAP, host side)" as TAP
+  artifact "openbsw-zonal-gw\n(OpenBSW POSIX, FreeRTOS core;\nThreadX core optional)\nlwIP on tap0" as GW
+  queue "vcan0\n(SocketCAN)" as VCAN
+  artifact "threadx-zonal-lights\n(Linux build, + UDS server)" as TXL
+  artifact "Serial2CAN bridge\n(new profile: +0x7E1 / 0x7E9)" as S2C
+  artifact "Zenoh2CAN + X-Verse + CARLA\n(unchanged)" as XV
+}
+
+node "MXChip AZ3166\n(ThreadX, SLCAN over USB UART)" as AZ
+node "NXP S32K148 EVB (later)\nOpenBSW S32K platform\nFlexCAN + ENET" as S32 #F2F2F2
+
+SOVD --> CDA : HTTP
+CDA --> TAP : DoIP UDP/TCP 13400\n(routed host ↔ tap0)
+TAP --> GW
+GW --> VCAN : ISO-TP 0x7DF/0x7E1/0x7E2
+VCAN --> GW : 0x7E9/0x7EA
+VCAN <--> TXL : simulation option
+VCAN <--> S2C
+S2C <--> AZ : hardware option
+VCAN <--> XV : 0x1F1/0x1F4 only
+S32 ..> GW : same application,\nbuild-only first (SWR-051)
+@enduml
