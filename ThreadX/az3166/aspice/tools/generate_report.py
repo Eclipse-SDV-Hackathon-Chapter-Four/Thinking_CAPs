@@ -115,7 +115,7 @@ def parse_requirements(path, prefix):
         for line in body.strip().splitlines():
             if line.startswith("|") or line.startswith("#"):
                 break
-            statement.append(line.strip())
+            statement.append(line.rstrip())
         attributes = {}
         for rows in md_tables(body):
             for row in rows:
@@ -408,15 +408,22 @@ def inline_md(text):
 
 
 def statement_html(text):
-    """Requirement statement: prose lines joined, '- ' lines as a bullet list."""
-    prose, bullets = [], []
+    """Requirement statement in written order: prose paragraphs and '- ' bullet lists."""
+    blocks: list[tuple[str, list[str]]] = []
     for line in (text or "").splitlines():
-        (bullets if line.startswith("- ") else prose).append(line[2:] if line.startswith("- ") else line)
-    out = inline_md(" ".join(prose))
-    if bullets:
-        out += "<ul>" + "".join(f"<li>{inline_md(b)}</li>" for b in bullets) + "</ul>"
-    return out
-
+        if line.startswith("- "):
+            if not blocks or blocks[-1][0] != "list":
+                blocks.append(("list", []))
+            blocks[-1][1].append(line[2:])
+        elif line.startswith(" ") and blocks and blocks[-1][0] == "list":
+            blocks[-1][1][-1] += " " + line.strip()  # wrapped continuation of a bullet
+        elif blocks and blocks[-1][0] == "prose":
+            blocks[-1][1].append(line.strip())
+        else:
+            blocks.append(("prose", [line.strip()]))
+    return "".join(inline_md(" ".join(items)) if kind == "prose" else
+                   "<ul>" + "".join(f"<li>{inline_md(item)}</li>" for item in items) + "</ul>"
+                   for kind, items in blocks)
 
 LEVEL_ORDER = ["UT", "IT", "QT", "AN", "RV"]
 
