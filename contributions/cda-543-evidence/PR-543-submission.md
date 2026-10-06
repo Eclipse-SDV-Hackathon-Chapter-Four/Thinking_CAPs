@@ -150,7 +150,7 @@ Contributed by: EP1991 | Thinking_CAPs | Eclipse SDV Hackathon Chapter 4 2026
 |----------|--------|-------|
 | Contribution package is complete | DONE | Code, tests, docs all ready |
 | Applicable checks pass | DONE | All cargo checks pass |
-| Submission reference recorded | PENDING | Awaiting PR creation |
+| Submission reference recorded | DONE | PR #601 created |
 | Upstream acceptance not assumed | NOTED | PR requires maintainer review |
 
 ---
@@ -159,18 +159,18 @@ Contributed by: EP1991 | Thinking_CAPs | Eclipse SDV Hackathon Chapter 4 2026
 
 | Field | Value |
 |-------|-------|
-| PR URL | *To be filled after PR creation* |
-| PR Number | *To be filled after PR creation* |
+| PR URL | https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601 |
+| PR Number | #601 |
 | Submission Date | 2026-10-06 |
-| Status | Ready for human review and submission |
+| Status | SUBMITTED - Awaiting maintainer review |
 
 ---
 
 ## 8. Next Steps
 
-1. **Human Review**: Review the changes and PR description
-2. **Create PR**: Visit the PR creation link above
-3. **Record PR URL**: Update this document with PR reference
+1. ~~**Human Review**: Review the changes and PR description~~ DONE
+2. ~~**Create PR**: Visit the PR creation link above~~ DONE
+3. ~~**Record PR URL**: Update this document with PR reference~~ DONE
 4. **Monitor**: Track upstream review feedback
 
 ---
