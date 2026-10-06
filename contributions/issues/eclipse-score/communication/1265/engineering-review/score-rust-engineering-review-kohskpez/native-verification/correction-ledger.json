@@ -1,0 +1,30 @@
+{
+  "authority": "User requests Linux integration tests after exhausted historical recovery",
+  "corrections_used": 3,
+  "entries": [
+    {
+      "correction": 1,
+      "failure": "Owned rootless Docker preflight socket bind invalid argument: absolute AF_UNIX path exceeded Linux length limit",
+      "fix": "Short internal alias to managed private state and shorter exec-root; Docker data remains SSD-bound; raw initial failure retained",
+      "remaining_corrections": 2
+    },
+    {
+      "correction": 2,
+      "failure": "RootlessKit detached network namespace setup failed with Invalid argument using a symlinked state path",
+      "fix": "Short actual internal directory for RootlessKit namespace, Docker socket and exec state; managed private state links to it; no global daemon/storage configuration changes",
+      "remaining_corrections": 1
+    },
+    {
+      "correction": 3,
+      "failure": "Both native targets report DockerAPI500/runc cgroup systemd Interactive authentication required during fixture startup;3errors each, no test-body assertions",
+      "fix": "Pass existing host user DBus session and XDG runtime directory explicitly to owned rootless daemon; retain exact private Docker socket, exec/data and RootlessKit state. Force fresh native test execution with cache_test_results=no. Supported environment hypothesis, success determined by next native run",
+      "measured_result": "Final native run executed both suites: six passed, zero failures/errors/skips; runtime cgroup fixture startup resolved",
+      "remaining_corrections": 0
+    }
+  ],
+  "max_corrections": 3,
+  "remaining_corrections": 0,
+  "status": "completed_native_linux_integration",
+  "stop_reason": "all_six_expected_native_integration_cases_passed; bounded run terminated; no further corrections",
+  "supervisor": "/root/rust_issue_supervisor"
+}

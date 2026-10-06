@@ -1,0 +1,14 @@
+digraph communication1265 {
+ graph [goal="Measure native Rust COM integration on Linux with explicit user-session bus; final correction", on_failure="exit"];
+ start [type="start"];
+ preflight [type="command", script="/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight", max_retries=0, timeout="6m"];
+ verify [type="command", script="/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify", max_retries=0, timeout="60m"];
+ export [type="command", script="/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export", max_retries=0, timeout="1m"];
+ exit [type="exit"];
+ start -> preflight;
+ preflight -> verify;
+ preflight -> export [condition="outcome=failed"];
+ verify -> export [condition="outcome=failed"];
+ verify -> export;
+ export -> exit;
+}

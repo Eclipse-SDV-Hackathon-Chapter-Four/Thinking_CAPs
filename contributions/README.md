@@ -9,9 +9,12 @@ Eclipse SDV Hackathon submission. Inventory captured on **2026-10-04**.
 | [Lifecycle #704](issues/eclipse-score/lifecycle/704/README.md) | Generate three communication configurations from shared definitions | Fabro/DeepSeek Flash patch verified; 113 native cases pass; scoped local owner approval recorded | Issue open; upstream-template PR body and title prepared; upstream review/CI pending |
 | [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Evidence missing in this checkout | Issue open; recover implementation, baseline and original test records |
 
+| [Communication #1265](issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch; six Linux integration cases passed; agent engineering review complete, retain pastey0.2.3 recommended | Issue open; exact compiler qualification/adoption and human acceptance pending; historical evidence preserved |
+
 The first two rows are completed local implementations with retained measurements.
 Upstream review, merge and issue closure have their own statuses. The diagnostics row
 is a recovery item and is excluded from the submission's completed-fix count.
+The communication assessment was added on **2026-10-06** and is excluded from completed/accepted fix counts.
 The inventory covers identifiable contributions in the inspected local factory
 handoffs and this repository; add other completed work as its artifacts are recovered.
 

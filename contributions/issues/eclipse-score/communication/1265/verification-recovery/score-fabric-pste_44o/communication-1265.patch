@@ -1,0 +1,168 @@
+--- a/score/mw/com/rust/README.md
++++ b/score/mw/com/rust/README.md
+@@ -76,7 +76,8 @@
+ 
+ ## Further Reading
+ 
++- [identifier_pasting_assessment.md](design/identifier_pasting_assessment.md) — dependency baseline, required macro operations, design alternatives and qualification obligations
+ - [high_level_design_detail.md](design/high_level_design_detail.md) — internal architecture, layer details, trait reference, and module structure
+ - [user_facing_api_examples.md](doc/user_facing_api_examples.md) — user-facing API examples and usage patterns
+ - **score_com_concept** crate — detailed trait definitions and API documentation (Runtime, Producer, Consumer, etc.)
+-- **score_com** crate — public re-exports for user-side consumption
+\ No newline at end of file
++- **score_com** crate — public re-exports for user-side consumption
+--- /dev/null
++++ b/score/mw/com/rust/design/identifier_pasting_assessment.md
+@@ -0,0 +1,152 @@
++<!--
++Copyright (c) 2026 Contributors to the Eclipse Foundation
++
++See the NOTICE file(s) distributed with this work for additional
++information regarding copyright ownership.
++
++This program and the accompanying materials are made available under the
++terms of the Apache License Version 2.0 which is available at
++https://www.apache.org/licenses/LICENSE-2.0
++
++SPDX-License-Identifier: Apache-2.0
++-->
++# Identifier-pasting dependency assessment
++
++This detailed-design assessment addresses [communication #1265](https://github.com/eclipse-score/communication/issues/1265).
++Its baseline is communication `e3d126c2d7569345cf5f790310702eb00cd86b06`.
++The recommendation and communication-specific qualification/adoption remain pending
++engineering review. This document does not grant a new qualification or change a native status.
++
++## Actual dependency and scope
++
++The issue describes `paste`, but this baseline already uses `pastey`. The interface
++macros call `score_com::pastey::paste!`; `score_com` re-exports it through
++`score_com_concept`. The native BUILD dependency is
++`@score_communication_crate_index//:pastey`, with the index supplied by `score_crates` 0.0.11.
++No additional migration is needed to make the source use `pastey`.
++
++| Property | Resolved baseline |
++| --- | --- |
++| Crate | `pastey` 0.2.3 |
++| Archive | `https://static.crates.io/crates/pastey/0.2.3/download` |
++| Archive SHA-256 | `2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4` |
++| License expression | `MIT OR Apache-2.0`; retain the archive's `LICENSE-MIT` and `LICENSE-APACHE` |
++| Rust edition / declared minimum Rust | 2018 / 1.54 |
++| Enabled features | None: the generated root-lock BUILD has no `crate_features`; the archive manifest defines no feature table |
++| Normal/build crate dependencies | None in the resolved archive manifest; compiler-provided `proc_macro` is still required |
++| Applied crate patches | None in the root lock |
++| Role | Host-executed procedural macro generating code compiled for the application target |
++
++These values come from communication's root `MODULE.bazel.lock` and the checksum-verified
++crate archive, not only the crate-index MODULE's version requirement. The index module
++also contains `paste` 1.0.15, archive SHA-256
++`57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a`;
++its presence does not make it a dependency of these COM macros. Other index users are
++outside this assessment and must not lose their dependencies during a COM cleanup.
++
++## Required identifier-pasting functionality
++
++[interface_macros.rs](../score_com_concept/interface_macros.rs) contains four
++`score_com::pastey::paste!` blocks and only these identifier forms:
++
++| Pattern | Generated API role | Baseline source lines |
++| --- | --- | --- |
++| `[<$id Interface>]` | Interface type, trait implementation and producer associations | 135, 136, 147, 148, 209, 239 |
++| `[<$id Consumer>]` | Consumer type, interface association and implementation | 139, 150, 164, 170, 172 |
++| `[<$id Producer>]` | Producer type, interface association and implementation | 140, 151, 196, 208, 230, 240, 242 |
++| `[<$id OfferedProducer>]` | Offered-producer type, association and implementation | 201, 210, 212, 238 |
++
++The event fields use `$event_name` directly. No getter/setter identifier pasting, case
++conversion, replacement modifier or raw-identifier pasting was observed in these blocks.
++The issue's accessor examples therefore do not establish additional implemented patterns.
++The public macro supports event interfaces, default/custom interface IDs and a legacy
++comma form; Method/Field forms are deliberately rejected. This assessment adds none of them.
++
++The used concatenation maps to the existing native requirement
++`PasteyComReq.REQ_COMP_PASTEY_001@1`. The remaining upstream modifier requirements
++describe crate functionality outside these COM paste blocks; this is a scope observation,
++not deletion of their obligations or an approval to omit required qualification checks.
++
++## Provenance, maintenance and safety relevance
++
++The verified 0.2.3 archive identifies [as1100k/pastey](https://github.com/as1100k/pastey)
++as its source repository and contains both license texts. As observed on 2026-10-06
++(Europe/Lisbon), that repository is not archived; its last reported push is
++2026-09-29. The [paste repository](https://github.com/dtolnay/paste) is archived, with
++last reported push in 2024-10. These are dated maintenance observations, not promises
++of support, security assurance or proof of a particular qualification outcome.
++
++Identifier pasting runs during compilation and supplies no IPC runtime implementation.
++Incorrect generation can still alter safety-relevant target code. Misspelled/missing
++types and trait mismatches are often rejected by compilation; a valid but incorrect
++identifier, interface association, visibility or generated method body can compile.
++Consumer contract tests and engineering review remain necessary. Executing a procedural
++macro also introduces build-time supply-chain exposure even if there is no runtime crate.
++
++The generated external crate rule carries `--cap-lints=allow` and the `manual`,
++`noclippy`, `norustfmt` tags. A clean communication Clippy run does not establish lint
++coverage of the dependency source. Do not remove these native settings to manufacture
++qualification evidence; assess dependency checks separately under the selected process.
++
++## Options and proposed detailed-design decision
++
++| Option | Benefits | Costs, risks and verification implications |
++| --- | --- | --- |
++| Continue with current `pastey` 0.2.3 | Preserves the current API and lock; uses an existing S-CORE component assessment and the required concatenation operation | Confirm communication adoption, compiler/target/configuration scope and remaining qualification evidence; retain dependency maintenance/security monitoring |
++| Return to `paste` 1.0.15 | Historically provides the required suffix concatenation and can be compared against the current generated API | Reintroduces an archived dependency; changes source/locks and requires a new applicability/qualification rationale plus generated API/downstream checks; no demonstrated benefit for this issue |
++| Implement the limited operation internally | Could limit the supported token syntax to the four required suffixes and give the project direct maintenance control | Requires a maintained identifier-generating implementation with hygiene, diagnostics, rejection behavior and compiler/target tests; introduces design/qualification obligations and does not become qualified merely by being internal |
++
++**Proposed decision:** continue using the current locked `pastey` 0.2.3 while completing
++the communication-specific evidence and offline engineering decision. Do not introduce
++another migration or a custom generator solely to match the issue's older wording.
++Any later replacement needs a separate scoped change and measured compatibility evidence.
++
++## Existing native assurance artifacts and remaining obligations
++
++At `score-crates` `4656dda8f04a3d88c8089f63111195840cfbd9e3` (v0.0.11), sources include:
++
++- [Component classification](https://github.com/eclipse-score/score-crates/blob/4656dda8f04a3d88c8089f63111195840cfbd9e3/docs/pastey/docs/component_classification.rst):
++  native ID `doc__pastey_crate_comp_class`, status `valid`, safety `ASIL_B`, security `NO`,
++  with published P=2, C=1 and CLAS_OUT=Q for 0.2.3.
++- [Architecture](https://github.com/eclipse-score/score-crates/blob/4656dda8f04a3d88c8089f63111195840cfbd9e3/docs/pastey/docs/architecture/index.rst):
++  `doc__mod_pastey_architecture`, status `valid`, realizes `wp__component_arch`.
++- [Requirements](https://github.com/eclipse-score/score-crates/blob/4656dda8f04a3d88c8089f63111195840cfbd9e3/docs/pastey/docs/requirement/component_requirements.trlc),
++  [safety analysis/AoU](https://github.com/eclipse-score/score-crates/blob/4656dda8f04a3d88c8089f63111195840cfbd9e3/docs/pastey/docs/safety_analysis/aou.trlc)
++  and [native tests](https://github.com/eclipse-score/score-crates/blob/4656dda8f04a3d88c8089f63111195840cfbd9e3/docs/pastey/tests/BUILD).
++
++Preserve those IDs and native statuses as published source assertions. They do not
++establish acceptance of this document, communication-specific adoption or the scope of
++the actual compiler binaries. Classification Step 5 conditions safety-plan adaptation
++on the change request being Accepted; that decision is not supplied here.
++`PasteyAoU.PasteyRustCompilerCertified@1` requires a compiler certified up to ASIL B.
++Verify the exact host/compiler/target/use-case qualification scope; a Ferrocene name
++or version alone cannot satisfy the AoU. The classification's LOBSTER Rust test-result
++parsing limitation also remains an explicit trace/evidence concern.
++
++Use the selected crate/component process and reuse these artifacts instead of creating
++a duplicate classification. Resolve whether additional tool-management obligations
++apply to the build-time generator. If they do, bind native tool-report instances and
++validation scope under the selected process; do not infer TCL, safety/security attributes
++or qualified/released status from a template. Record the authorized offline decisions.
++
++## Verification required for this use
++
++[Native macro checks](../score_com_concept/BUILD) include
++`score_com_concept-test`, `score_com_concept-macros-unit-tests` and
++`score_com_concept-macros-tests`. Verify generated names and trait associations through
++the public re-export, default/custom IDs, legacy syntax, multi-event interfaces and
++downstream producer/consumer use with the resolved compiler/features/configuration.
++Keep the expected rejection behavior for Method/Field and incomplete helper usage.
++
++The macro doctest has a `manual` tag and a documented native-linking limitation.
++Enumerate it explicitly; wildcard test success cannot establish it ran. Native crate
++tests are `//docs/pastey/tests:pastey_test` and `:pastey_doc_test` in
++score-crates, and remain separate from communication consumer checks.
++Record all actual commands, hashes, results, failures and unavailable checks in the
++verification report. Linux results do not satisfy unavailable QNX/other-platform checks.
++
++This change adds assessment documentation and preserves production Rust source,
++generated API, native dependency lock and policy. Existing baseline checks are relevant
++only through verified unchanged subject hashes. No replacement is introduced by this
++change, so replacement-versus-baseline API equivalence is not claimed as a new result.
++Engineering acceptance and any remaining qualification/platform evidence stay pending.

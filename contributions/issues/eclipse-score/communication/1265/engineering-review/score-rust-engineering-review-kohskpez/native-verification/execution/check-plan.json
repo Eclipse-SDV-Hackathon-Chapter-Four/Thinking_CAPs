@@ -1,0 +1,28 @@
+{
+  "baseline": "8368bfb5b182ae6642d963b58ad4bac5dabc02c3",
+  "platform": "native default Linux x86_64 GCC15 and pinned Ferrocene",
+  "targets": [
+    "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+    "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+  ],
+  "expected_pytest_cases": {
+    "test_com_api_sync": [
+      "test_bigdata_exchange",
+      "test_mixed_primitives_exchange",
+      "test_complex_struct_exchange"
+    ],
+    "test_com_api_async": [
+      "test_bigdata_async_with_cancellation",
+      "test_bigdata_async_without_cancellation",
+      "test_bigdata_async_stream"
+    ]
+  },
+  "runtime": "native Ubuntu24.04 OCI packages in owned rootless Docker; exact native DOCKER_HOST empty attribute retained; private endpoint mounted at /run/docker.sock in namespace",
+  "omissions": {
+    "QNX": "User requested Linux only",
+    "full_repository_CI": "Focused Rust COM integration request; other suites are not run",
+    "sanitizers_and_coverage": "No sanitizer/coverage configuration requested or measured",
+    "payload_layout_completeness": "Native BigData opaque placeholders and sample-count checks do not validate every C++ layout or payload field"
+  },
+  "acceptance": "pending offline"
+}
