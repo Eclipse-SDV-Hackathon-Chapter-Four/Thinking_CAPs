@@ -1,0 +1,56 @@
+{
+  "kind": "agent_result",
+  "native_ids": [
+    "feat_arc_sta__lifecycle__cfg_params_static"
+  ],
+  "path": "config/mw_com_config.bzl",
+  "content": "# *******************************************************************************\n# Copyright (c) 2025 Contributors to the Eclipse Foundation\n#\n# See the NOTICE file(s) distributed with this work for additional\n# information regarding copyright ownership.\n#\n# This program and the accompanying materials are made available under the\n# terms of the Apache License Version 2.0 which is available at\n# https://www.apache.org/licenses/LICENSE-2.0\n#\n# SPDX-License-Identifier: Apache-2.0\n# *******************************************************************************\n\n\"\"\"Generated mw_com_config.json artifacts for the LmControl service.\n\nEach supported profile emits the exact mw_com_configuration JSON document that\nwas previously committed as a checked-in source file. The profile-name map is\ndisclosure metadata only and is never emitted as a root key.\n\"\"\"\n\nload(\"@bazel_skylib//rules:write_file.bzl\", \"write_file\")\n\n_LM_CONTROL_SERVICE_TYPE = {\n    \"serviceTypeName\": \"/score/mw/lifecycle/LmControlService\",\n    \"version\": {\n        \"major\": 1,\n        \"minor\": 0,\n    },\n    \"bindings\": [\n        {\n            \"binding\": \"SHM\",\n            \"serviceId\": 7101,\n            \"events\": [\n                {\n                    \"eventName\": \"ActivationResult\",\n                    \"eventId\": 1,\n                },\n            ],\n            \"methods\": [\n                {\n                    \"methodName\": \"ActivateRunTarget\",\n                    \"methodId\": 2,\n                },\n                {\n                    \"methodName\": \"GetActiveRunTarget\",\n                    \"methodId\": 3,\n                },\n            ],\n        },\n    ],\n}\n\n_SERVICE_TYPES = {\n    \"provider_test\": [_LM_CONTROL_SERVICE_TYPE],\n    \"client_test\": [_LM_CONTROL_SERVICE_TYPE],\n    \"integration\": [_LM_CONTROL_SERVICE_TYPE],\n}\n\n_SERVICE_INSTANCES = {\n    \"provider_test\": [\n        {\n            \"instanceSpecifier\": \"LaunchManager/StateManager/Instance\",\n            \"serviceTypeName\": \"/score/mw/lifecycle/LmControlService\",\n            \"version\": {\n                \"major\": 1,\n                \"minor\": 0,\n            },\n            \"instances\": [\n                {\n                    \"instanceId\": 1,\n                    \"asil-level\": \"QM\",\n                    \"binding\": \"SHM\",\n                    \"events\": [\n                        {\n                            \"eventName\": \"ActivationResult\",\n                            \"numberOfSampleSlots\": 8,\n                            \"maxSubscribers\": 1,\n                        },\n                    ],\n                    \"methods\": [\n                        {\n                            \"methodName\": \"ActivateRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                        {\n                            \"methodName\": \"GetActiveRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                    ],\n                },\n            ],\n        },\n    ],\n    \"client_test\": [\n        {\n            \"instanceSpecifier\": \"StateManager/LaunchManager/Instance\",\n            \"serviceTypeName\": \"/score/mw/lifecycle/LmControlService\",\n            \"version\": {\n                \"major\": 1,\n                \"minor\": 0,\n            },\n            \"instances\": [\n                {\n                    \"instanceId\": 1,\n                    \"asil-level\": \"B\",\n                    \"binding\": \"SHM\",\n                    \"permission-checks\": \"strict\",\n                    \"allowedProvider\": {\n                        \"B\": [3020],\n                    },\n                    \"events\": [\n                        {\n                            \"eventName\": \"ActivationResult\",\n                        },\n                    ],\n                    \"methods\": [\n                        {\n                            \"methodName\": \"ActivateRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                        {\n                            \"methodName\": \"GetActiveRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                    ],\n                },\n            ],\n        },\n    ],\n    \"integration\": [\n        {\n            \"instanceSpecifier\": \"LaunchManager/StateManager/Instance\",\n            \"serviceTypeName\": \"/score/mw/lifecycle/LmControlService\",\n            \"version\": {\n                \"major\": 1,\n                \"minor\": 0,\n            },\n            \"instances\": [\n                {\n                    \"instanceId\": 1,\n                    \"asil-level\": \"QM\",\n                    \"binding\": \"SHM\",\n                    \"events\": [\n                        {\n                            \"eventName\": \"ActivationResult\",\n                            \"numberOfSampleSlots\": 8,\n                            \"maxSubscribers\": 1,\n                        },\n                    ],\n                    \"methods\": [\n                        {\n                            \"methodName\": \"ActivateRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                        {\n                            \"methodName\": \"GetActiveRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                    ],\n                },\n            ],\n        },\n        {\n            \"instanceSpecifier\": \"StateManager/LaunchManager/Instance\",\n            \"serviceTypeName\": \"/score/mw/lifecycle/LmControlService\",\n            \"version\": {\n                \"major\": 1,\n                \"minor\": 0,\n            },\n            \"instances\": [\n                {\n                    \"instanceId\": 1,\n                    \"asil-level\": \"QM\",\n                    \"binding\": \"SHM\",\n                    \"events\": [\n                        {\n                            \"eventName\": \"ActivationResult\",\n                        },\n                    ],\n                    \"methods\": [\n                        {\n                            \"methodName\": \"ActivateRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                        {\n                            \"methodName\": \"GetActiveRunTarget\",\n                            \"queueSize\": 1,\n                        },\n                    ],\n                },\n            ],\n        },\n    ],\n}\n\n_GLOBAL = {\n    \"provider_test\": {\n        \"asil-level\": \"QM\",\n    },\n    \"client_test\": {\n        \"asil-level\": \"B\",\n        \"queue-size\": {\n            \"B-receiver\": 10,\n        },\n    },\n    \"integration\": {\n        \"asil-level\": \"QM\",\n    },\n}\n\ndef _render(profile):\n    return json.encode_indent(\n        {\n            \"serviceTypes\": _SERVICE_TYPES[profile],\n            \"serviceInstances\": _SERVICE_INSTANCES[profile],\n            \"global\": _GLOBAL[profile],\n        },\n        indent = 2,\n    )\n\ndef mw_com_config(name, profile, out, **kwargs):\n    \"\"\"Emit the mw_com_configuration JSON document for ``profile`` as ``out``.\"\"\"\n    write_file(\n        name = name,\n        out = out,\n        content = [_render(profile)],\n        **kwargs\n    )\n",
+  "edits": [
+    {
+      "path": "score/launch_manager/src/daemon/src/control/BUILD",
+      "replacements": [
+        {
+          "old": "load(\"@rules_cc//cc:defs.bzl\", \"cc_library\")",
+          "new": "load(\"@rules_cc//cc:defs.bzl\", \"cc_library\")\nload(\"//config:mw_com_config.bzl\", \"mw_com_config\")"
+        }
+      ],
+      "append": "\nmw_com_config(\n    name = \"control_provider_test_mw_com_config_gen\",\n    profile = \"provider_test\",\n    out = \"control_provider_test_mw_com_config.json\",\n    visibility = [\"//visibility:public\"],\n)\n"
+    },
+    {
+      "path": "score/launch_manager/src/lm_control/BUILD",
+      "replacements": [
+        {
+          "old": "load(\"@rules_cc//cc:defs.bzl\", \"cc_library\")",
+          "new": "load(\"@rules_cc//cc:defs.bzl\", \"cc_library\")\nload(\"//config:mw_com_config.bzl\", \"mw_com_config\")"
+        }
+      ],
+      "append": "\nmw_com_config(\n    name = \"test_lmcontrol_mw_com_config_gen\",\n    profile = \"client_test\",\n    out = \"src/details/test_lmcontrol_mw_com_config.json\",\n    visibility = [\"//visibility:public\"],\n)\n"
+    },
+    {
+      "path": "tests/utils/environments/BUILD",
+      "replacements": [
+        {
+          "old": "# *******************************************************************************",
+          "new": "# *******************************************************************************"
+        },
+        {
+          "old": "exports_files(\n    [\"mw_com_config.json\"],\n    visibility = [\n        \"//examples/demo_verification:__subpackages__\",\n        \"//tests/integration:__subpackages__\",\n    ],\n)\n",
+          "new": "load(\"//config:mw_com_config.bzl\", \"mw_com_config\")\n\nmw_com_config(\n    name = \"mw_com_config_gen\",\n    profile = \"integration\",\n    out = \"mw_com_config.json\",\n    visibility = [\n        \"//examples/demo_verification:__subpackages__\",\n        \"//tests/integration:__subpackages__\",\n    ],\n)\n"
+        }
+      ],
+      "append": "\n"
+    }
+  ],
+  "delete_paths": [
+    "score/launch_manager/src/daemon/src/control/control_provider_test_mw_com_config.json",
+    "score/launch_manager/src/lm_control/src/details/test_lmcontrol_mw_com_config.json",
+    "tests/utils/environments/mw_com_config.json"
+  ],
+  "unresolved_assumptions": [
+    "native impact/export closure pending",
+    "QNX unmeasured"
+  ],
+  "evidence_refs": [
+    "original-source"
+  ]
+}

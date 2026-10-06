@@ -1,0 +1,1 @@
+../OpenSOVD/tests/diagnostic_http_smoke.py

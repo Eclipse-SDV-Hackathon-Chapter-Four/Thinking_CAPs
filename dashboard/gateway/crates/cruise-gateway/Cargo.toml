@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: Apache-2.0
+# The demo gateway serving the cruise control component: stand-in app in process, or the S-CORE path via cruise_bridge.
+[package]
+name = "cruise-gateway"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+cruise_diag = { path = "../cruise_diag" }
+cruise_sim = { path = "../cruise_sim" }
+sovd_adapter = { path = "../sovd_adapter" }
+opensovd-core = { git = "https://github.com/eclipse-opensovd/opensovd-core.git", rev = "0cb4b250643164d678389385aa94b6a92bb7f0c7" }
+opensovd-server = { git = "https://github.com/eclipse-opensovd/opensovd-core.git", rev = "0cb4b250643164d678389385aa94b6a92bb7f0c7" }
+tokio = { version = "1", features = ["macros", "rt", "net", "time"] }
+serde_json = "1"
+
+[dev-dependencies]
+opensovd-client = { git = "https://github.com/eclipse-opensovd/opensovd-core.git", rev = "0cb4b250643164d678389385aa94b6a92bb7f0c7" }

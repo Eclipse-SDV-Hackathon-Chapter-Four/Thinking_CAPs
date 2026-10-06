@@ -1,0 +1,45 @@
+from native_operator import ROOT,PRIVATE,CONFIGS,BUILDS,extract,write
+from score_sw_fabric.storage import validate_run_root
+from pathlib import Path
+import sys,json,hashlib,shutil
+validate_run_root(ROOT)
+label=sys.argv[1]
+assert label in ('implementation','correction','repair')
+worker=Path.cwd()
+assert worker==Path(json.loads((PRIVATE/label/'run.json').read_text())['native_context']['cwd'])
+state=json.loads((PRIVATE/'live-meter-remainder/meter.json').read_text())
+entry=next(r for r in state['records'] if r['task']=='qualification:lifecycle-704-'+label)
+assert entry['status']=='observed' and not state['stopped']
+result,usage=extract(entry['ticket'])
+write(ROOT/(label+'-model-output.json'),result)
+assert result['kind']=='agent_result' and result['native_ids']==['feat_arc_sta__lifecycle__cfg_params_static']
+assert result['path']=='config/mw_com_config.bzl'
+assert isinstance(result['content'],str) and len(result['content'].encode())<50000
+assert sorted(e['path'] for e in result['edits'])==sorted(BUILDS)
+assert len(result['delete_paths'])==3 and set(result['delete_paths'])==set(CONFIGS)
+prepared={result['path']:result['content']}
+assert not (ROOT/'lifecycle'/result['path']).exists()
+for edit in result['edits']:
+    text=(ROOT/'lifecycle'/edit['path']).read_text()
+    for rep in edit['replacements']:
+        assert set(rep)=={'old','new'} and isinstance(rep['old'],str) and rep['old'] and isinstance(rep['new'],str)
+        assert text.count(rep['old'])==1,(edit['path'],rep['old'])
+        text=text.replace(rep['old'],rep['new'],1)
+    assert isinstance(edit['append'],str) and len(edit['append'].encode())<8000
+    prepared[edit['path']]=text.rstrip()+'\n\n'+edit['append'].rstrip()+'\n'
+for name,text in prepared.items():
+    assert 'SPDX-License-Identifier: Apache-2.0' in text and 'Contributors to the Eclipse Foundation' in text and 'NOTICE' in text
+    path=ROOT/'lifecycle'/name
+    assert not any(p.is_symlink() for p in (path,*path.parents))
+for name,text in prepared.items():(ROOT/'lifecycle'/name).write_text(text if text.endswith('\n') else text+'\n')
+for name in CONFIGS:(ROOT/'lifecycle'/name).unlink()
+changed=[*prepared,*CONFIGS]
+for name in changed:
+    source=ROOT/'lifecycle'/name
+    for destination in [worker/name,ROOT/'native-target'/name]:
+        if source.exists():
+            destination.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,destination)
+        elif destination.exists():destination.unlink()
+validate_run_root(ROOT)
+write(ROOT/(label+'-applied.json'),{'origin':'native Fabro command applying exact structured Flash output','changed_paths':changed,'model_output_sha256':hashlib.sha256((ROOT/(label+'-model-output.json')).read_bytes()).hexdigest(),'formatting':'trailing-newline normalization only; buildifier recorded separately','usage':usage})
+print(json.dumps({'applied':label,'paths':changed}))

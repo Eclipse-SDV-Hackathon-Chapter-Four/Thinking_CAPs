@@ -1,0 +1,11 @@
+[Unit]
+Description=Load the pinned lighting container into AutoSD transient Podman storage
+Before=sdv-threadx.service sdv-zenoh-can.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman load -i /var/lib/sdv-lighting/workload-image.tar
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

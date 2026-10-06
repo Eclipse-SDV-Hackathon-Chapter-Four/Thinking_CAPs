@@ -1,0 +1,1 @@
+../OpenSOVD/tests/dashboard_diagnosis_smoke.py

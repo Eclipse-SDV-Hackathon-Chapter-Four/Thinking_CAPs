@@ -1,0 +1,121 @@
+{
+  "id": "01M42D046AW5JBJHDXPRF1XK4Y",
+  "children_count": 0,
+  "title": "011 lifecycle704 Flash critique",
+  "goal": "",
+  "workflow": {
+    "slug": "workflow",
+    "name": null,
+    "graph_name": "Flash704",
+    "node_count": 5,
+    "edge_count": 5
+  },
+  "automation": null,
+  "repository": {
+    "name": "native-target",
+    "origin_url": null,
+    "provider": "unknown"
+  },
+  "created_by": {
+    "kind": "user",
+    "identity": {
+      "issuer": "fabro:dev",
+      "subject": "dev"
+    },
+    "login": "dev",
+    "auth_method": "dev_token"
+  },
+  "origin": {
+    "kind": "api"
+  },
+  "labels": {},
+  "lifecycle": {
+    "status": {
+      "kind": "blocked",
+      "blocked_reason": "human_input_required"
+    },
+    "approval": null,
+    "pending_control": null,
+    "queue_position": null,
+    "error": null,
+    "archived": false,
+    "archived_at": null
+  },
+  "sandbox": {
+    "kind": "ready",
+    "plan": {
+      "provider": "local"
+    },
+    "instance": {
+      "provider": "local",
+      "runtime": {
+        "id": "host-g18db33afe313ea47-1361370-0",
+        "working_directory": "/home/jefferson/.local/state/s-core/fabro/score-fabric-ov7tdu5s/qualification/storage/scratch/20261004-01M42D046AW5JBJHDXPRF1XK4Y/petri/scopes/invocation-0-scope-0/work"
+      },
+      "ready_duration_ms": 41
+    }
+  },
+  "models": [
+    {
+      "provider": "deepseek",
+      "name": "deepseek-v4-flash"
+    }
+  ],
+  "source_directory": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-ov7tdu5s/native-target",
+  "timestamps": {
+    "created_at": "2026-10-04T02:48:27.082Z",
+    "started_at": "2026-10-04T02:48:27.320Z",
+    "last_event_at": "2026-10-04T02:48:33.499Z",
+    "completed_at": null
+  },
+  "timing": {
+    "wall_time_ms": 8210,
+    "inference_time_ms": 3884,
+    "tool_time_ms": 117,
+    "active_time_ms": 4001
+  },
+  "usage": {
+    "tokens": {
+      "input": 6481,
+      "output": 572,
+      "reasoning": 0,
+      "cache_read": 0,
+      "cache_write": 0
+    },
+    "cost": {
+      "usd_micros": 1067,
+      "source": "catalog"
+    }
+  },
+  "size": "XS",
+  "ask_fabro": {
+    "available": true,
+    "unavailable_reason": null,
+    "default_model": "deepseek-v4-flash"
+  },
+  "diff": {
+    "files_changed": 0,
+    "additions": 0,
+    "deletions": 0
+  },
+  "pull_request": null,
+  "current_question": {
+    "id": "human#4",
+    "text": "Engineering review required",
+    "stage": "human@1",
+    "question_type": "multiple_choice",
+    "options": [
+      {
+        "key": "A",
+        "label": "[A] Review complete"
+      }
+    ],
+    "allow_freeform": false,
+    "context_display": "{\"kind\":\"agent_result\",\"native_ids\":[\"feat_arc_sta__lifecycle__cfg_params_static\"],\"findings\":[{\"severity\":\"medium\",\"path\":\"config/mw_com_config.bzl\",\"reason\":\"Generated artifacts replace three checked-in JSON files, but no native check re-derives the emitted JSON byte-for-byte against the original source at 7d1d7bec81d96752b5a9a235044d2dfc3ecd259b; the recorded 'configuration_equivalence' is an assertion over parsed JSON, not a native binding, so independent value-level preservation of permissions, QM/B, queue sizes, subscribers and instance specifiers remains unverified.\"},{\"severity\":\"medium\",\"path\":\"tests/utils/environments/BUILD\",\"reason\":\"The integration profile previously emitted a separately packaged mw_com_config.json under tests/utils/environments; the claim 'original_etc_filename_and_JSON_preserved' is a self-reported assertion with no native evidence reference tying the packaged runtime/runfile path to the original installation location, leaving package/output path preservation unmeasured.\"},{\"severity\":\"low\",\"path\":\"score/launch_manager/src/lm_control/BUILD\",\"reason\":\"Consumer target ilm_control_UT keeps 'src/details/test_lmcontrol_mw_com_config.json' as both an args rootpath and data source that is now the declared output of mw_com_config in the same package; correctness depends on Bazel resolving the generated file ahead of the deleted checked-in path, which is build-order behavior not covered by a distinct native check.\"},{\"severity\":\"low\",\"path\":\"config/mw_com_config.bzl\",\"reason\":\"_render injects 'global' keyed by profile while the LM_CONTROL client instance uses asil-level 'B' and strict permission-checks with allowedProvider B:[3020]; equivalence checks cover parsed JSON equality but not semantic admissibility of these safety/QM parameters, which is outside the measured scope.\"},{\"severity\":\"low\",\"path\":\"config/mw_com_config.bzl\",\"reason\":\"Profile-name keys in _SERVICE_TYPES/_SERVICE_INSTANCES/_GLOBAL are disclosure metadata, so any future addition of a profile silently emits a new root document; the deduplication consolidates three files into one module but introduces a single-point variance surface without a native regression guard on the emitted document set.\"}],\"human_review\":\"pending\",\"unresolved_assumptions\":[\"native impact/export closure pending\",\"QNX unmeasured\",\"engineering acceptance pending; checks are assertions, not passed verification\",\"packaged etc filename/JSON preservation asserted but not natively bound\"],\"evidence_refs\":[\"native-check-summary\"],\"proposed_next_action\":\"human engineering review or correction\"}"
+  },
+  "superseded_by": null,
+  "retried_from": null,
+  "links": {
+    "web": null
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "schema_version": 1,
+  "work_classification": "prepared",
+  "operator": "implementation agent self-run",
+  "independent_person_reproduced": false,
+  "shared_host": true,
+  "shared_assets": [
+    "immutable Docker images",
+    "deployed openDuT",
+    "LLVM repository in Bazel volume"
+  ],
+  "rust_target": "fresh",
+  "bazel_output_base": "fresh",
+  "sources": {
+    "integration": {
+      "origin": "/home/jefferson/eclipse_sdv_hackathon_2026",
+      "revision": "6d7bef9fbf5e6e3781dc350e371301db20ab2f9a",
+      "clean_before_patch": true,
+      "source_subdirectory": "."
+    },
+    "score": {
+      "origin": "/home/jefferson/autoverse/vecu/s-core",
+      "revision": "93f8ea1e6f76714496c092902e00c9b91c58cdc8",
+      "clean_before_patch": true,
+      "source_subdirectory": "cc_s-core",
+      "patch_sha256": "38061cab177e227b82fd1012745e740bff975fa2437560cea112f63be4c6eaa9"
+    },
+    "bridge": {
+      "origin": "/home/jefferson/autoverse/bridges/someip",
+      "revision": "0d53a2af8b37121e54d742c6cefd0297dd9e4b92",
+      "clean_before_patch": true,
+      "source_subdirectory": "zenoh-someip-bridge"
+    }
+  },
+  "commands": [
+    [
+      "rustc",
+      "+stable",
+      "--version"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026",
+      "rev-parse",
+      "--show-toplevel"
+    ],
+    [
+      "git",
+      "clone",
+      "--no-hardlinks",
+      "--no-checkout",
+      "/home/jefferson/eclipse_sdv_hackathon_2026",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration",
+      "checkout",
+      "--detach",
+      "6d7bef9"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration",
+      "status",
+      "--porcelain"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration",
+      "rev-parse",
+      "HEAD"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/autoverse/vecu/s-core/cc_s-core",
+      "rev-parse",
+      "--show-toplevel"
+    ],
+    [
+      "git",
+      "clone",
+      "--no-hardlinks",
+      "--no-checkout",
+      "/home/jefferson/autoverse/vecu/s-core",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score",
+      "checkout",
+      "--detach",
+      "93f8ea1e6f76714496c092902e00c9b91c58cdc8"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score",
+      "status",
+      "--porcelain"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score",
+      "rev-parse",
+      "HEAD"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/autoverse/bridges/someip/zenoh-someip-bridge",
+      "rev-parse",
+      "--show-toplevel"
+    ],
+    [
+      "git",
+      "clone",
+      "--no-hardlinks",
+      "--no-checkout",
+      "/home/jefferson/autoverse/bridges/someip",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/bridge"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/bridge",
+      "checkout",
+      "--detach",
+      "0d53a2af8b37121e54d742c6cefd0297dd9e4b92"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/bridge",
+      "status",
+      "--porcelain"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/bridge",
+      "rev-parse",
+      "HEAD"
+    ],
+    [
+      "git",
+      "-C",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score",
+      "apply",
+      "--index",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration/patches/receiver-diagnostics/s-core-observation.patch"
+    ],
+    [
+      "docker",
+      "image",
+      "inspect",
+      "--format",
+      "{{.Id}}",
+      "sha256:71efeddcfec43b336a4f4a22b2cc9a73c99b11bd44fe8c657c8c8b210b73e78c"
+    ],
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "sdv-repro-70234998f8",
+      "--label",
+      "sdv.reproduction.run=70234998f8874124a02f425eb36e72ca",
+      "--user",
+      "0",
+      "-v",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score:/home/source",
+      "-v",
+      "eclipse-s-core-bazel-cache:/var/cache/bazel",
+      "-w",
+      "/home/source/cc_s-core",
+      "--entrypoint",
+      "bash",
+      "sha256:71efeddcfec43b336a4f4a22b2cc9a73c99b11bd44fe8c657c8c8b210b73e78c",
+      "-c",
+      "bazel --output_base=/var/cache/bazel/sdv-reproduction-70234998f8 build --jobs=2 --override_repository=toolchains_llvm++llvm+llvm_toolchain_llvm=/var/cache/bazel/e97fe0dd2c3d7fe69841bf89910a450d/external/toolchains_llvm++llvm+llvm_toolchain_llvm //score/cruise_control:cruise_control_main //tests/integration/gatewayd:gatewayd //tests/integration/someipd:someipd //tests/integration:cruise_control_someip_config @flatbuffers//:flatc"
+    ],
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "sdv-repro-70234998f8",
+      "--label",
+      "sdv.reproduction.run=70234998f8874124a02f425eb36e72ca",
+      "--user",
+      "0",
+      "-v",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score:/home/source",
+      "-v",
+      "eclipse-s-core-bazel-cache:/var/cache/bazel",
+      "-w",
+      "/home/source/cc_s-core",
+      "--entrypoint",
+      "bash",
+      "sha256:71efeddcfec43b336a4f4a22b2cc9a73c99b11bd44fe8c657c8c8b210b73e78c",
+      "-c",
+      "bazel --output_base=/var/cache/bazel/sdv-reproduction-70234998f8 test --jobs=2 --override_repository=toolchains_llvm++llvm+llvm_toolchain_llvm=/var/cache/bazel/e97fe0dd2c3d7fe69841bf89910a450d/external/toolchains_llvm++llvm+llvm_toolchain_llvm //score/cruise_control:cruise_control_unit_tests"
+    ],
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "sdv-repro-70234998f8",
+      "--label",
+      "sdv.reproduction.run=70234998f8874124a02f425eb36e72ca",
+      "--user",
+      "0",
+      "-v",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score:/home/source",
+      "-v",
+      "eclipse-s-core-bazel-cache:/var/cache/bazel",
+      "-w",
+      "/home/source/cc_s-core",
+      "--entrypoint",
+      "bash",
+      "sha256:71efeddcfec43b336a4f4a22b2cc9a73c99b11bd44fe8c657c8c8b210b73e78c",
+      "-c",
+      "bazel --output_base=/var/cache/bazel/sdv-reproduction-70234998f8 cquery --jobs=2 --override_repository=toolchains_llvm++llvm+llvm_toolchain_llvm=/var/cache/bazel/e97fe0dd2c3d7fe69841bf89910a450d/external/toolchains_llvm++llvm+llvm_toolchain_llvm @flatbuffers//:flatc --output=files"
+    ],
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "sdv-repro-70234998f8",
+      "--label",
+      "sdv.reproduction.run=70234998f8874124a02f425eb36e72ca",
+      "--user",
+      "0",
+      "-v",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/score:/home/source",
+      "-v",
+      "eclipse-s-core-bazel-cache:/var/cache/bazel",
+      "-w",
+      "/home/source/cc_s-core",
+      "--entrypoint",
+      "bash",
+      "sha256:71efeddcfec43b336a4f4a22b2cc9a73c99b11bd44fe8c657c8c8b210b73e78c",
+      "-c",
+      "bazel --output_base=/var/cache/bazel/sdv-reproduction-70234998f8 info execution_root"
+    ],
+    [
+      "/usr/bin/python3",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration/scripts/build_fault_diagnostics.py",
+      "--state",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/fault-build",
+      "--target-dir",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/rust-target",
+      "--output",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/evidence/f008-reproduction-final/fault-build",
+      "--check"
+    ],
+    [
+      "/usr/bin/python3",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final/integration/scripts/run_campaign.py",
+      "--config",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/evidence/f008-reproduction-final/reproduction-inputs.json",
+      "--scenario",
+      "core",
+      "--output",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/evidence/f008-reproduction-final/campaign"
+    ],
+    [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "none",
+      "--entrypoint",
+      "chown",
+      "-v",
+      "/home/jefferson/eclipse_sdv_hackathon_2026/.local/reproduction-final:/owned",
+      "sha256:71efeddcfec43b336a4f4a22b2cc9a73c99b11bd44fe8c657c8c8b210b73e78c",
+      "-R",
+      "1000:1000",
+      "/owned"
+    ]
+  ],
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "native_binary_sha256": "fa7d50a5587b95df10911ca18d5c49f3618d285187548cba636c4ae0c73f4ce7",
+  "bazel_output_base_path": "/var/cache/bazel/sdv-reproduction-70234998f8",
+  "status": "passed"
+}

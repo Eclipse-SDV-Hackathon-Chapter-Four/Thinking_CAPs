@@ -1,0 +1,23 @@
+[T+0.003s] run 20260925T183421Z start
+[T+0.027s] path A: reset
+[T+3.044s] PASS  [A] gateway serves the cruise resources: expected=vehicle_speed,cruise_state,speed_sensor_fault_status,speed_sensor_stuck observed=vehicle_speed,cruise_state,speed_sensor_fault_status,speed_sensor_stuck
+[T+3.049s] PASS  [A] no demo.* ids left: expected=0 observed=0
+[T+3.058s] PASS  [A] fault status before injection: expected=passed observed=passed
+[T+3.067s] PASS  [A] cruise control engaged: expected=active observed=active
+[T+3.070s] path A: inject stuck speed sensor over SOVD
+[T+3.078s] PASS  [A] injection accepted: expected=204 observed=204
+[T+3.087s] PASS  [A] status right after injection: expected=prefailed observed=prefailed
+[T+8.317s] PASS  [A] status after debounce: expected=failed observed=failed
+[T+8.321s] path A: debounce qualified after 5.22s
+[T+8.340s] PASS  [A] cruise control reacts (their logic): expected=unavailable observed=unavailable
+[T+8.343s] path A: clear
+[T+10.444s] PASS  [A] status after clear: expected=passed observed=passed
+[T+10.454s] path A: cruise control now standby (waits for the driver)
+[T+10.463s] path B: clear ECU fault memory
+[T+10.483s] PASS  [B] active faults before injection: expected= observed=
+[T+10.488s] path B: inject DTC 0x01E240 status 0x2F into the simulator
+[T+10.515s] PASS  [B] injection accepted: expected=201 observed=201
+[T+10.526s] PASS  [B] CDA reports the DTC over SOVD: expected=01E240/2F observed=01E240/2F
+[T+10.530s] path B: clear
+[T+10.545s] PASS  [B] active faults after clear: expected= observed=
+[T+10.551s] run 20260925T183421Z done: 13/13 passed

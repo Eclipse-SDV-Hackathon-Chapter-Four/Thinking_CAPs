@@ -1,0 +1,72 @@
+{
+  "status": "passed",
+  "scope": "Actual isolated Docker ownership/timeout, process-group child termination and controlled helper signal/config failure paths; not native build acceptance",
+  "producer_sha256": "ec5c4b87d4c828835d765f6e43db971421e68bde7e3ee74374c7164a8a578b56",
+  "checks": [
+    {
+      "id": "actual-timeout-before-container-finalization",
+      "status": "passed"
+    },
+    {
+      "id": "ownership-checked-timeout-removal",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "reason": "owned build container removed",
+        "container_id": "d205e6ce36df3f64ab7ba85050fac1fb4f5036e886ca8ef448a2d1c65bee6075"
+      }
+    },
+    {
+      "id": "already-absent-is-success",
+      "status": "passed",
+      "details": {
+        "status": "passed",
+        "reason": "build container already absent"
+      }
+    },
+    {
+      "id": "unowned-container-refused-and-retained",
+      "status": "passed",
+      "details": {
+        "status": "failed",
+        "reason": "refuse removing unowned build container",
+        "container_id": "bfb6c86872a6a275c4033ce8fbd09dc1db8923ae8d0850a346cec2a0645b37bf"
+      }
+    },
+    {
+      "id": "timeout-terminates-owned-child-process",
+      "status": "passed",
+      "details": {
+        "child_pid": 2472100,
+        "observed_state": "absent",
+        "limit": "A terminated zombie is not claimed to be reaped by host init"
+      }
+    },
+    {
+      "id": "SIGINT-explicit-failure-and-child-stop",
+      "status": "passed",
+      "details": {
+        "exit_code": 130,
+        "child_state": "absent",
+        "scope": "Actual helper interrupted at controlled compiler-wait fixture before native build"
+      }
+    },
+    {
+      "id": "SIGTERM-explicit-failure-and-child-stop",
+      "status": "passed",
+      "details": {
+        "exit_code": 143,
+        "child_state": "absent",
+        "scope": "Actual helper interrupted at controlled compiler-wait fixture before native build"
+      }
+    },
+    {
+      "id": "malformed-config-produces-failed-manifest",
+      "status": "passed"
+    },
+    {
+      "id": "wrong-root-config-produces-failed-manifest",
+      "status": "passed"
+    }
+  ]
+}

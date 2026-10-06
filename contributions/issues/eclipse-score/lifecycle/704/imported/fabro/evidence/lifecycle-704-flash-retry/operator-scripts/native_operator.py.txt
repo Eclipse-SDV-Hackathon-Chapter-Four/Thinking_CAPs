@@ -1,0 +1,143 @@
+from pathlib import Path
+import os,json,hashlib,secrets,subprocess,urllib.request,urllib.error,sys,sqlite3,time,shlex
+from datetime import datetime
+import yaml
+from score_sw_fabric.storage import validate_run_root,build_environment
+from score_sw_fabric.optimization.common import record
+from score_sw_fabric.optimization.token_governor import govern
+from score_sw_fabric.optimization.runtime_boundary import runtime_config
+from score_sw_fabric.optimization.skill_selection import registry,select,render
+from score_sw_fabric.optimization.activation import verify_instruction
+from score_sw_fabric.optimization.provider_boundary import RequestMeter,reported_usage,boundary_server
+ROOT=Path(__file__).parent
+PRIVATE=Path(json.loads((ROOT/'private-path.json').read_text())['path'])
+FABRIC=Path('/home/jefferson/s-core_sw_fabric')
+BIN='/home/jefferson/.local/share/s-core-tools/fabro-1b4fb152-agent32768/fabro'
+SHA='7d1d7bec81d96752b5a9a235044d2dfc3ecd259b'
+URL='http://127.0.0.1:18796'
+CONFIGS=['score/launch_manager/src/daemon/src/control/control_provider_test_mw_com_config.json','score/launch_manager/src/lm_control/src/details/test_lmcontrol_mw_com_config.json','tests/utils/environments/mw_com_config.json']
+BUILDS=['score/launch_manager/src/daemon/src/control/BUILD','score/launch_manager/src/lm_control/BUILD','tests/utils/environments/BUILD']
+def write(path,value,private=False):
+    path.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
+    path.write_text(json.dumps(value,indent=2)+'\n')
+    if private:path.chmod(0o600)
+def api(method,path,value=None):
+    validate_run_root(ROOT)
+    req=urllib.request.Request(URL+'/api/v1'+path,json.dumps(value).encode() if value is not None else None,{'Authorization':'Bearer '+(PRIVATE/'dev-token').read_text(),'Content-Type':'application/json'},method=method)
+    try:
+        with urllib.request.urlopen(req,timeout=15) as reply:return json.loads(reply.read() or b'{}')
+    except urllib.error.HTTPError as e:raise RuntimeError(str(e.code)+': '+e.read().decode()[:500]) from None
+def original(path):return subprocess.check_output(['git','show',SHA+':'+path],cwd=ROOT/'lifecycle').decode()
+def prompt(label):
+    profile=yaml.safe_load((FABRIC/'profiles/optimization-skills-v1.yaml').read_text())
+    reg=registry(FABRIC/'.agents/skills',profile['definitions'])
+    sel=select(reg,'verification' if label=='critique' else 'implementation',profile['mapping'],SHA)
+    skill=render(FABRIC/'.agents/skills',reg,sel,SHA)
+    write(ROOT/(label+'-skill.json'),{'registry':reg,'selection':sel,'rendering':skill})
+    base='qualification:lifecycle-704-'+label+'\n'+skill['text']+'\nImplement eclipse-score/lifecycle#704: deduplicate mw_com_config.json. Original source '+SHA+'. Native ID feat_arc_sta__lifecycle__cfg_params_static version 1 status valid. Qualification only, human acceptance pending. Preserve every effective JSON value, permissions, QM/B, queues, subscribers, instance specifiers and output/runfile/package paths. No tools, commands, prose or markdown: return strict JSON matching the given schema. Never attest checks passed. Native impact/export closure and QNX are unmeasured.\n'
+    if label=='implementation':
+        base+='Create config/mw_com_config.bzl defining mw_com_config(name,profile,out,**kwargs) for provider_test/client_test/integration. Supported load: @bazel_skylib//rules:write_file.bzl write_file; Starlark json.encode_indent. Deduplicate verified common serviceTypes; per-profile configuration must have exactly the native root keys serviceTypes, serviceInstances, global. The enclosing profile-name map below is disclosure metadata, NEVER a root key in generated JSON. Match the full parsed original objects exactly. Include original Apache-2.0 copyright/NOTICE header. Edit the three original BUILD files to load //config:mw_com_config.bzl, call the macro, preserve labels/args/data/visibility/licenses, and remove only integration mw_com_config.json exports_files. Preserve ecu_logging_config.json export. First provider macro output control_provider_test_mw_com_config.json, client output src/details/test_lmcontrol_mw_com_config.json, integration output mw_com_config.json. Choose distinct rule names, retain generated filename labels. Delete the three original JSON source paths. Output schema: {"kind":"agent_result","native_ids":["feat_arc_sta__lifecycle__cfg_params_static"],"path":"config/mw_com_config.bzl","content":"complete Starlark file","edits":[{"path":"one of the three BUILD paths","replacements":[{"old":"exact unique existing substring","new":"replacement"}],"append":"new macro call"}],"delete_paths":'+json.dumps(CONFIGS)+',"unresolved_assumptions":["native impact/export closure pending","QNX unmeasured"],"evidence_refs":["original-source"]}. Exactly one edits entry per BUILD. Include load additions as replacements of the original first load or header substring. Original full native JSON per profile:\n'+json.dumps({k:json.loads(original(p)) for k,p in zip(['provider_test','client_test','integration'],CONFIGS)},separators=(',',':'))
+        base+='\nOriginal BUILD files (first two include their first load only; append calls and replace that load, existing consumers already use required filename labels):\n'+json.dumps({p:(original(p) if p==BUILDS[2] else next(line for line in original(p).splitlines() if line.startswith('load('))) for p in BUILDS},separators=(',',':'))
+        base+='\nOriginal license header:\n'+original('config/BUILD').split('load(')[0]
+    elif label=='critique':
+        base+='S3 advisory review of actual implementation and measured checks. No edits. Output schema: {"kind":"agent_result","native_ids":["feat_arc_sta__lifecycle__cfg_params_static"],"findings":[{"severity":"high|medium|low","path":"affected path","reason":"concrete concern"}],"human_review":"pending","unresolved_assumptions":["native impact/export closure pending","QNX unmeasured"],"evidence_refs":["native-check-summary"],"proposed_next_action":"human engineering review or correction"}. Distinguish passed checks from unmeasured impact/readiness.\n'+json.dumps({'files':{p:(ROOT/'lifecycle'/p).read_text() for p in ['config/mw_com_config.bzl',*BUILDS]},'checks':json.loads((ROOT/'native-check-summary.json').read_text())},separators=(',',':'))
+    else:raise ValueError(label)
+    return base,sel
+
+def prepare(label,body,sel):
+    validate_run_root(ROOT)
+    private=PRIVATE/label;private.mkdir(mode=0o700,exist_ok=True)
+    sources={p:hashlib.sha256(original(p).encode()).hexdigest() for p in [*CONFIGS,*BUILDS,'config/BUILD','MODULE.bazel','MODULE.bazel.lock','docs/features/lifecycle/architecture/index.rst']}
+    context=record('qualification_context',source_commit=SHA,source_hashes=sources,task=label,prompt_sha256=hashlib.sha256(body.encode()).hexdigest(),native_export_completeness='not_evaluated',engineering_acceptance='pending')
+    admission=record('agent_admission',decision='admissible',call_authorized=False,remaining={'input_tokens':128000,'output_tokens':8192,'calls':1},profile={'id':'owner-authorized-real-issue-flash-qualification','max_output_tokens':8192},provider_configured=True,offering={'id':'deepseek-flash'})
+    governor=govern('S3',admission,len(body.encode()),[],manifest_digest=context['digest'],reviewer_required=True,corrections=1 if label=='correction' else 0)
+    assert governor['decision']=='admissible',governor
+    role=record('qualification_role',role=label,model='deepseek-flash',provider='deepseek',allowed_operations='bounded structured output; protected deterministic application',output_limit=8192)
+    files={};bindings={}
+    for name,value in {'context':context,'governor':governor,'role':role,'skills':sel}.items():
+        p=private/(name+'.json');write(p,value,True);files[str(p)]=hashlib.sha256(p.read_bytes()).hexdigest();bindings[name]=value['digest']
+    runbinding=private/'run.json';write(runbinding,{'run_id':'awaiting-native-create','stopped':False},True)
+    instruction={'kind':'qualification_instruction','scope':'qualification_only','owner_instructions':['go','deepseek flash only'],'workspace':str(ROOT),'run_binding':str(runbinding),'stage':label,'task':'lifecycle-704-'+label,'bindings':bindings,'files':files,'provider':'deepseek','models':['deepseek-flash','deepseek-v4-flash'],'limits':{'requests':None,'request_bytes':128000,'output_tokens':8192,'cost_microusd':None},'budget_exception':{'scope':'current_qualification_only','owner_instruction':'do it, but you can ignore by now the limited budget for deepseek','task_prefix':'qualification:lifecycle-704-','operational_limits':{'input_tokens':128000,'output_tokens':8192,'calls':3,'context_tokens':128000}},'price_bounds':{'input_microusd_per_token':0.3,'output_microusd_per_token':1.2},'tool_projection':{'allowed_tools':[]},'authorization_extension':{'owner_reply':'do it, but you can ignore by now the limited budget for deepseek','date':'2026-10-04','scope':'real #704 Flash implementation qualification, temporary budget exception; no publication/acceptance','origin':'current repository user session after explicit Fabro/DeepSeek next step'},'tasks':[{'marker':body.splitlines()[0],'prompt':body,'max_requests':1}]}
+    p=private/'instruction.json';write(p,instruction,True);pin=hashlib.sha256(p.read_bytes()).hexdigest()
+    graph='digraph Flash704 { graph [backend="api", default_max_retries=0]; start [shape=Mdiamond]; '+label+' [prompt='+json.dumps('{% raw %}'+body+'{% endraw %}')+', provider="deepseek", model="deepseek-flash", max_tokens=8192, reasoning_effort="low"]; exit [shape=Msquare]; '
+    if label!='critique':
+        command=shlex.join([str(Path(sys.executable)),str(ROOT/('apply_fix.py' if label=='nativefix' else 'apply_model.py')),label])
+        graph+='apply [shape=parallelogram, script='+json.dumps(command)+']; start -> '+label+'; '+label+' -> apply [condition="outcome=succeeded"]; apply -> exit [condition="outcome=succeeded"]; blocked [shape=hexagon, label="Qualification failure needs review"]; '+label+' -> blocked; apply -> blocked; blocked -> exit [label="[A] Review"]; }'
+    else:
+        command=shlex.join([str(Path(sys.executable)),str(ROOT/'verify_native_evidence.py')]); graph+='checks [shape=parallelogram, script='+json.dumps(command)+']; human [shape=hexagon, label="Engineering review required"]; start -> checks; checks -> critique [condition="outcome=succeeded"]; checks -> human; critique -> human; human -> exit [label="[A] Review complete"]; }'
+    config='_version = 1\n[workflow]\ngraph = "workflow.fabro"\n'+runtime_config(Path(sys.executable),ROOT/'lifecycle',private/'service.json',private/'governor.json',label,instruction=p,instruction_sha256=pin)
+    config=config.replace(json.dumps([str(Path(sys.executable)),'-m','score_sw_fabric.optimization.cli','guard'])[1:-1],json.dumps([str(Path(sys.executable)),str(ROOT/'capture_hook.py')])[1:-1])
+    package={'entrypoint':'workflow.fabro','files':{'workflow.fabro':graph,'workflow.toml':config},'workflow_dependencies':{}}
+    write(ROOT/(label+'-workflow.json'),package)
+    v=api('POST','/workflow-versions',package)
+    run=api('POST','/runs',{'workflow_version_id':v['workflow_version_id'],'target':{'kind':'folder','path':str(ROOT/'native-target')},'environment_id':'local','title':'011 lifecycle704 Flash '+label,'args':{'provider':'deepseek','model':'deepseek-flash','auto_approve':False}})
+    write(runbinding,{'run_id':run['id'],'workflow_version_id':v['workflow_version_id'],'stopped':False,'native_context':{'run_id':'petri','source_commit':'1b4fb15281ebb724426f9e480dce48d0100ff79b','server_root':str(PRIVATE),'cwd':str(PRIVATE/'storage/scratch'/(datetime.now().strftime('%Y%m%d')+'-'+run['id'])/'petri/scopes/invocation-0-scope-0/work')}},True)
+    verify_instruction(p,pin)
+    write(ROOT/(label+'-created.json'),run)
+    return {'label':label,'run_id':run['id'],'instruction':str(p),'pin':pin}
+
+def extract(number):
+    instruction=PRIVATE/'live-meter-proof/instruction.json';pin=hashlib.sha256(instruction.read_bytes()).hexdigest();raw=(ROOT/'provider-records'/pin/f'response-{number:02d}.raw').read_bytes();text='';models=set();finish=[]
+    for line in raw.splitlines():
+        if not line.startswith(b'data: ') or line==b'data: [DONE]':continue
+        value=json.loads(line[6:]);models.add(value.get('model'))
+        for c in value.get('choices',[]):
+            assert not c.get('delta',{}).get('tool_calls'),'UNEXPECTED_TOOL_CALL'
+            text+=c.get('delta',{}).get('content') or ''
+            if c.get('finish_reason'):finish.append(c['finish_reason'])
+    assert models=={'deepseek-flash'},models
+    assert finish==['stop'],finish
+    return json.loads(text),reported_usage(raw,stream=True)
+
+def run_stage(item):
+    current=item['run_id'];label=item['label']
+    api('POST','/runs/'+current+'/start',{})
+    start=time.monotonic()
+    print(json.dumps({'started':label,'run_id':current}),flush=True)
+    while time.monotonic()-start<240:
+        validate_run_root(ROOT)
+        value=api('GET','/runs/'+current)
+        kind=value['lifecycle']['status']['kind']
+        if kind in ('succeeded','failed','canceled','blocked'):break
+        time.sleep(2)
+    else:
+        api('POST','/runs/'+current+'/cancel',{});raise RuntimeError('NATIVE_TIMEOUT')
+    for name,suffix in [('inspect',''),('events','/events?limit=1000'),('stages','/stages')]:write(ROOT/(label+'-'+name+'.json'),api('GET','/runs/'+current+suffix))
+    print(json.dumps({'finished':label,'status':kind}),flush=True)
+    if label!='critique':assert kind=='succeeded',value['lifecycle']['status']
+    return kind
+
+if __name__=='__main__':
+    validate_run_root(ROOT)
+    mode=sys.argv[1]
+    if mode=='init':
+        for name in ['dev-token','session-secret','nonce']:
+            p=PRIVATE/name;p.write_text(('fabro_dev_' if name=='dev-token' else '')+secrets.token_hex(32));p.chmod(0o600)
+        settings='[server.storage]\nroot='+json.dumps(str(PRIVATE/'storage'))+'\n[server.auth]\nmethods=["dev-token"]\n[server.web]\nenabled=false\n[server.sandbox.providers.local]\nenabled=true\n[run.environment]\nid="local"\n[run.model]\nprovider="deepseek"\nname="deepseek-flash"\n[llm.providers.deepseek]\nbase_url='+json.dumps('http://127.0.0.1:18797/'+(PRIVATE/'nonce').read_text())+'\n[llm.providers.deepseek.default_options]\nthinking = { type = \"disabled\" }\nresponse_format = { type = \"json_object\" }\n'
+        p=PRIVATE/'settings.toml';p.write_text(settings);p.chmod(0o600)
+        write(ROOT/'price-source.json',{'url':'https://api-docs.deepseek.com/quick_start/pricing/','checked':'2026-10-04','model':'deepseek-flash','version':'DeepSeek-V4.1-Flash','peak_input_usd_per_million':0.30,'peak_output_usd_per_million':1.20,'actual_billed_cost':None})
+    elif mode=='server':
+        write(PRIVATE/'server-pid.json',{'pid':os.getpid(),'expected_executable':BIN,'server_root':str(PRIVATE),'bind':'127.0.0.1:18796'},True)
+        env={k:v for k,v in os.environ.items() if not any(t in k for t in ('TOKEN','API_KEY','FABRO_'))};env.update(build_environment(ROOT));env['FABRO_DEV_TOKEN']=(PRIVATE/'dev-token').read_text();env['SESSION_SECRET']=(PRIVATE/'session-secret').read_text()
+        os.execve(BIN,[BIN,'server','start','--foreground','--bind','127.0.0.1:18796','--storage-dir',str(PRIVATE/'storage'),'--config',str(PRIVATE/'settings.toml'),'--no-web','--no-upgrade-check','--max-concurrent-runs','1'],env)
+    elif mode=='prepare':
+        with sqlite3.connect('file:/home/jefferson/.fabro/storage/db/fabro.sqlite3?mode=ro',uri=True) as db:key=db.execute('SELECT value FROM secrets WHERE name=?',('DEEPSEEK_API_KEY',)).fetchone()[0]
+        api('POST','/secrets',{'name':'DEEPSEEK_API_KEY','value':key,'type':'token'});del key
+        items=[]
+        for label in ['implementation']:
+            body,sel=prompt(label);items.append(prepare(label,body,sel));(ROOT/(label+'-prompt.txt')).write_text(body)
+        meter_dir=PRIVATE/'live-meter';meter_dir.mkdir(mode=0o700,exist_ok=True)
+        first=json.loads(Path(items[0]['instruction']).read_text())
+        first['tasks']=[{'marker':'qualification:lifecycle-704-'+label,'prompt':'qualification:lifecycle-704-'+label,'max_requests':1} for label in ['implementation','critique','correction']]
+        for item in items:first['files'].update(json.loads(Path(item['instruction']).read_text())['files'])
+        p=meter_dir/'instruction.json';write(p,first,True)
+        verify_instruction(p,hashlib.sha256(p.read_bytes()).hexdigest())
+        write(ROOT/'prepared-runs.json',items)
+        write(ROOT/'authorization.json',{'origin':'explicit owner temporary budget exception for lifecycle #704','scope':'qualification_only','limits':first['limits'],'instruction_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'stage_instructions':items,'earlier_patch_supplied_to_model':False,'native_impact_export_completeness':'not_evaluated','engineering_acceptance':'pending'})
+        print(json.dumps({'prepared':1,'paid_calls':0,'prompt_bytes':{x:len((ROOT/(x+'-prompt.txt')).read_bytes()) for x in ['implementation']}}))
+    elif mode=='meter':
+        p=PRIVATE/'live-meter-proof/instruction.json';meter=RequestMeter(p,hashlib.sha256(p.read_bytes()).hexdigest(),PRIVATE/'live-meter-proof/meter.json');boundary_server(meter,18797,(PRIVATE/'nonce').read_text(),ROOT).serve_forever()
+    elif mode=='run':
+        items=json.loads((ROOT/'prepared-runs.json').read_text());run_stage(next(i for i in items if i['label']==sys.argv[2]))
+    elif mode=='critique':
+        body,sel=prompt('critique');item=prepare('critique',body,sel);write(ROOT/'critique-prepared.json',item);run_stage(item)

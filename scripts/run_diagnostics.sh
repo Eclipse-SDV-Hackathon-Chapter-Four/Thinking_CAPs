@@ -1,0 +1,1 @@
+../OpenSOVD/scripts/run_diagnostics.sh

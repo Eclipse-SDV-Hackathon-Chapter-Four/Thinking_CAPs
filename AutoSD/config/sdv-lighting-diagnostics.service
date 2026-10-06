@@ -1,0 +1,11 @@
+[Unit]
+Description=Native OpenSOVD lighting observations
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/sdv-lighting-diagnostics --state /var/lib/sdv-lighting/state/lighting.json --listen 0.0.0.0:7692 --base-uri http://127.0.0.1:7692/sovd
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

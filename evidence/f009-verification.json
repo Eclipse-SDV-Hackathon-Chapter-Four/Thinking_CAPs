@@ -1,0 +1,93 @@
+{
+  "status": "passed",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "output": "test_empty_checks_do_not_pass (test_baseline_audit.AuditTests.test_empty_checks_do_not_pass) ... ok\ntest_failed_dominates_blocked (test_baseline_audit.AuditTests.test_failed_dominates_blocked) ... ok\ntest_incomplete_checks_never_pass (test_baseline_audit.AuditTests.test_incomplete_checks_never_pass) ... ok\ntest_missing_checkout_is_explicit (test_baseline_audit.AuditTests.test_missing_checkout_is_explicit) ... ok\ntest_blocked_and_skipped_do_not_count_as_pass (test_campaign.VerdictTests.test_blocked_and_skipped_do_not_count_as_pass) ... ok\ntest_carla_readiness_blocked_does_not_pass_selected_campaign (test_campaign.VerdictTests.test_carla_readiness_blocked_does_not_pass_selected_campaign) ... ok\ntest_carla_requires_native_actuation_correlation (test_campaign.VerdictTests.test_carla_requires_native_actuation_correlation) ... ok\ntest_cleanup_failure_cannot_be_expected_injection_success (test_campaign.VerdictTests.test_cleanup_failure_cannot_be_expected_injection_success) ... ok\ntest_exit_zero_does_not_hide_failed_check (test_campaign.VerdictTests.test_exit_zero_does_not_hide_failed_check) ... ok\ntest_failed_precedence_over_blocked (test_campaign.VerdictTests.test_failed_precedence_over_blocked) ... ok\ntest_missing_assertion_is_failed_not_skipped (test_campaign.VerdictTests.test_missing_assertion_is_failed_not_skipped) ... ok\ntest_nonzero_child_cannot_pass_with_passed_checks (test_campaign.VerdictTests.test_nonzero_child_cannot_pass_with_passed_checks) ... ok\ntest_normalized_native_request_requires_subsequent_physical_match (test_carla_readiness.ActuationTests.test_normalized_native_request_requires_subsequent_physical_match) ... ok\ntest_positive_pedal_or_unrelated_actuation_cannot_prove_native_return (test_carla_readiness.ActuationTests.test_positive_pedal_or_unrelated_actuation_cannot_prove_native_return) ... ok\ntest_exited_server_is_not_treated_as_retryable_readiness (test_carla_readiness.ReadinessTests.test_exited_server_is_not_treated_as_retryable_readiness) ... ok\ntest_expired_deadline_does_not_create_another_client (test_carla_readiness.ReadinessTests.test_expired_deadline_does_not_create_another_client) ... ok\ntest_failed_client_is_replaced_before_retry (test_carla_readiness.ReadinessTests.test_failed_client_is_replaced_before_retry) ... ok\n\n----------------------------------------------------------------------\nRan 17 tests in 0.003s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/verify_contributions.py",
+        "--json"
+      ],
+      "exit_code": 0,
+      "output": "{\n  \"status\": \"verified\",\n  \"scope\": \"retained artifact integrity; native tests not rerun; engineering acceptance not evaluated\",\n  \"issues\": [\n    {\n      \"issue\": \"eclipse-score/inc_someip_gateway#84\",\n      \"local_status\": \"scoped_fix_verified\",\n      \"captured_files\": 41,\n      \"portable_entries\": 1046,\n      \"candidate_sources\": 269,\n      \"changed_files\": 6\n    },\n    {\n      \"issue\": \"eclipse-score/lifecycle#704\",\n      \"local_status\": \"implemented_locally\",\n      \"captured_files\": 80,\n      \"original_files\": 77\n    },\n    {\n      \"issue\": \"eclipse-score/inc_diagnostics#16\",\n      \"local_status\": \"evidence_missing\",\n      \"captured_files\": 3\n    }\n  ]\n}\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "py_compile",
+        "scripts/owned_carla.py",
+        "scripts/run_campaign.py",
+        "tests/opendut_receiver_smoke.py"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "id": "current-handover-relative-links",
+      "status": "passed",
+      "missing": []
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "py_compile",
+        "scripts/reproduce_core.py"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/reproduce_core.py",
+        "--help"
+      ],
+      "exit_code": 0,
+      "output": "usage: reproduce_core.py [-h] --config CONFIG --state STATE --output OUTPUT\n                         [--integration-revision INTEGRATION_REVISION]\n\nRebuild frozen sources in new local state and repeat the actual native core.\nThe original host, immutable images, LLVM repository and deployed openDuT\nstate are reused explicitly. This is clean-source self-reproduction, not human\nsignoff.\n\noptions:\n  -h, --help            show this help message and exit\n  --config CONFIG\n  --state STATE\n  --output OUTPUT\n  --integration-revision INTEGRATION_REVISION\n                        Freeze this revision; defaults to the current\n                        committed integration HEAD\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "id": "staged-credential-pattern-check",
+      "status": "passed",
+      "findings": []
+    },
+    {
+      "id": "staged-whitespace",
+      "status": "passed"
+    }
+  ],
+  "scope": "17 meaningful baseline/verdict/readiness/actuation regressions; retained artifact integrity and affected syntax/whitespace"
+}

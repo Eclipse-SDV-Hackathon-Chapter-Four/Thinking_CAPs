@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SOVD Fault Bench</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --ground: #EEF2F1;
+  --surface: #FFFFFF;
+  --sunken: #E3E9E7;
+  --line: #CCD6D3;
+  --ink: #14201D;
+  --muted: #56655F;
+  --signal: #0E7C6B;
+  --signal-soft: #D3EBE6;
+  --hook: #9A5A0C;
+  --pending: #B8741A;
+  --pending-soft: #F6E6CD;
+  --fail: #B3372C;
+  --fail-soft: #F5D9D5;
+  --pass: #2E8550;
+  --pass-soft: #D7EEDD;
+  --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0E1513; --surface: #151F1C; --sunken: #0A100E; --line: #2A3834;
+    --ink: #E2EAE7; --muted: #93A39E; --signal: #3FBFA8; --signal-soft: #143A33;
+    --hook: #E0A452; --pending: #E5A548; --pending-soft: #3A2A12;
+    --fail: #F07A6D; --fail-soft: #43201C; --pass: #5CC585; --pass-soft: #163523;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0E1513; --surface: #151F1C; --sunken: #0A100E; --line: #2A3834;
+  --ink: #E2EAE7; --muted: #93A39E; --signal: #3FBFA8; --signal-soft: #143A33;
+  --hook: #E0A452; --pending: #E5A548; --pending-soft: #3A2A12;
+  --fail: #F07A6D; --fail-soft: #43201C; --pass: #5CC585; --pass-soft: #163523;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 14px/1.5 var(--body); padding-inline: 16px; padding-block: 20px 40px; }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
+h1 { font-size: 32px; font-weight: 700; line-height: 1.05; }
+h2 { font-size: 21px; font-weight: 600; }
+h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+p { margin: 0; }
+a { color: var(--signal); }
+.mono { font-family: var(--mono); }
+.muted { color: var(--muted); }
+
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 14px; }
+.intro { display: grid; gap: 4px; max-width: 64ch; }
+.live { display: inline-flex; align-items: center; gap: 6px; font: 600 12px var(--mono); color: var(--fail); letter-spacing: .06em; }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--fail); animation: blink 1.4s infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+.services { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.svc { display: inline-flex; align-items: center; gap: 7px; font: 500 12px var(--mono); padding: 5px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
+.svc i { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.svc.up i { background: var(--pass); }
+.svc.down { border-color: var(--fail); color: var(--fail); }
+.svc.down i { background: var(--fail); }
+
+button {
+  font: 500 13px var(--body); color: var(--ink); background: var(--sunken);
+  border: 1px solid var(--line); border-radius: 6px; padding: 7px 14px; cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--signal); }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+button.act { background: var(--fail); border-color: var(--fail); color: #fff; font-weight: 600; }
+button.go { background: var(--signal); border-color: var(--signal); color: var(--surface); font-weight: 600; }
+input { font: 500 13px var(--mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 7.5em; }
+label { display: grid; gap: 2px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
+.result { font: 12px var(--mono); color: var(--muted); align-self: center; }
+
+.lanes, .bottom { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 18px; }
+.lane, .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 14px; align-content: start; }
+.lane-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.tag { font: 500 11px var(--mono); padding: 2px 8px; border-radius: 99px; background: var(--sunken); color: var(--muted); white-space: nowrap; }
+.tag.ours { background: var(--signal-soft); color: var(--signal); }
+
+.flow { position: relative; height: 104px; }
+.flow .track { position: absolute; left: 12.5%; right: 12.5%; top: 42px; height: 2px; background: var(--line); }
+.flow .bypass { position: absolute; left: 12.5%; right: 12.5%; top: 8px; height: 34px; border: 1.5px dashed color-mix(in srgb, var(--hook) 55%, transparent); border-bottom: 0; border-radius: 10px 10px 0 0; }
+.flow .bypass-label { position: absolute; left: 50%; top: 0; transform: translateX(-50%); font: 500 10px var(--mono); color: var(--hook); background: var(--surface); padding: 0 6px; white-space: nowrap; }
+.node { position: absolute; top: 26px; width: 25%; display: grid; justify-items: center; gap: 6px; text-align: center; }
+.node .box { width: 34px; height: 34px; border-radius: 8px; background: var(--sunken); border: 1.5px solid var(--line); display: grid; place-items: center; font: 600 11px var(--mono); color: var(--muted); transition: border-color .2s, background .2s, color .2s; }
+.node.lit .box { border-color: var(--signal); background: var(--signal-soft); color: var(--signal); }
+.node.hooklit .box { border-color: var(--hook); background: var(--pending-soft); color: var(--hook); }
+.node .lbl { font-size: 11.5px; line-height: 1.25; font-weight: 500; }
+.node .port { font: 10.5px var(--mono); color: var(--muted); }
+.packet { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--signal); top: 38px; left: 12.5%; transform: translateX(-5px); opacity: 0; box-shadow: 0 0 0 4px var(--signal-soft); pointer-events: none; }
+.packet.hook { background: var(--hook); box-shadow: 0 0 0 4px var(--pending-soft); }
+.packet.poll { width: 6px; height: 6px; top: 40px; transform: translateX(-3px); box-shadow: none; }
+
+.req { font: 12px/1.45 var(--mono); background: var(--sunken); border-radius: 8px; padding: 8px 10px; min-height: 52px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+.req .verb { font-weight: 600; color: var(--signal); }
+.req .verb.hook { color: var(--hook); }
+.req .code { font-weight: 600; }
+
+.row { display: grid; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12px var(--mono); padding: 3px 9px; border-radius: 6px; border: 1px solid var(--signal); background: var(--surface); }
+.machine { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.st { border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; color: var(--muted); transition: all .25s; }
+.st b { font: 600 15px var(--mono); }
+.st small { font-size: 11px; line-height: 1.3; }
+.st.cur.passed { border-color: var(--pass); background: var(--pass-soft); color: var(--ink); }
+.st.cur.passed b { color: var(--pass); }
+.st.cur.prefailed { border-color: var(--pending); background: var(--pending-soft); color: var(--ink); }
+.st.cur.prefailed b { color: var(--pending); }
+.st.cur.failed { border-color: var(--fail); background: var(--fail-soft); color: var(--ink); }
+.st.cur.failed b { color: var(--fail); }
+.bar { height: 8px; background: var(--sunken); border-radius: 4px; overflow: hidden; position: relative; }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--pending); border-radius: 4px; }
+.bar.done i { background: var(--fail); }
+.meta { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.tempbox { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; background: var(--sunken); border-radius: 8px; padding: 10px 12px; }
+.tempval { display: grid; gap: 0; min-width: 7.5em; }
+.tempval span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.tempval b { font: 500 26px var(--mono); font-variant-numeric: tabular-nums; }
+.tempval b.stuck { color: var(--fail); }
+.tempval small { font: 11px var(--mono); color: var(--muted); }
+.tempval small.bad { color: var(--fail); font-weight: 600; }
+/* live architecture */
+.arch { display: grid; gap: 14px; }
+.arch-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.mode { font: 600 12px var(--mono); padding: 3px 10px; border-radius: 999px; background: var(--sunken); color: var(--muted); }
+.mode.score { background: var(--signal-soft); color: var(--signal); }
+.mode.sim { background: var(--pending-soft); color: var(--hook); }
+.chain { display: flex; flex-wrap: wrap; align-items: stretch; row-gap: 14px; }
+.zone { display: flex; align-items: center; gap: 0; border: 1px dashed var(--line); border-radius: 10px; padding: 26px 8px 8px; position: relative; flex: none; }
+.zone .zlabel { position: absolute; top: 6px; left: 8px; right: 8px; overflow: hidden; text-overflow: ellipsis; font: 600 10.5px var(--body); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.zone.veh { border-color: var(--signal); }
+.zone.ecu { border-color: var(--hook); }
+.an { width: 122px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; flex: none; }
+.an b { font: 600 13px var(--body); display: flex; align-items: center; gap: 6px; }
+.an small { font: 11px var(--mono); color: var(--muted); }
+.an .val { font: 500 12px var(--mono); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+.an .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); flex: none; }
+.an.up .dot { background: var(--pass); }
+.an.down { opacity: .55; }
+.an.down .dot { background: var(--fail); }
+.an.ours { border-color: var(--pending); }
+.al { width: 82px; flex: none; display: grid; justify-items: center; gap: 1px; padding: 0 4px; position: relative; }
+.al::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid var(--line); z-index: 0; }
+.al.live::before { border-color: var(--signal); }
+.al.idle::before { border-top-style: dashed; }
+.al > * { position: relative; z-index: 1; background: var(--surface); padding: 0 4px; }
+.al .num { font: 700 13px var(--display); color: var(--ink); }
+.al .proto { font: 11px var(--mono); color: var(--muted); text-align: center; line-height: 1.2; }
+.al .rate { font: 11px var(--mono); color: var(--signal); font-variant-numeric: tabular-nums; text-align: center; line-height: 1.25; }
+.inject-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
+.inject-row .chip.on { background: var(--fail-soft); border-color: var(--fail); color: var(--fail); font-weight: 600; }
+.inject-row .sep { color: var(--muted); }
+@media (max-width: 900px) {
+  .chain, .zone { flex-direction: column; align-items: stretch; }
+  .an, .al { width: auto; }
+  .al { padding: 6px 0; }
+  .al::before { left: 50%; right: auto; top: 0; bottom: 0; border-top: 0; border-left: 2px solid var(--line); }
+  .al.live::before { border-color: var(--signal); }
+  .al.idle::before { border-left-style: dashed; }
+}
+
+#spark { width: 100%; height: 84px; display: block; }
+#spark text { font: 10px var(--mono); fill: var(--muted); }
+#spark .grid { stroke: var(--line); stroke-width: 1; }
+#spark .ok { fill: none; stroke: var(--signal); stroke-width: 2; stroke-linejoin: round; }
+#spark .bad { fill: none; stroke: var(--fail); stroke-width: 2.5; stroke-linejoin: round; }
+#spark .end { fill: var(--ink); }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th { text-align: left; font: 600 11px var(--body); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 4px 8px; border-bottom: 1px solid var(--line); }
+td { padding: 6px 8px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.active td { background: var(--fail-soft); }
+tr.active td.mask { color: var(--fail); font-weight: 600; }
+td.bits { font-size: 11px; color: var(--muted); white-space: normal; min-width: 180px; }
+tr.active td.bits { color: var(--ink); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--line); margin-right: 6px; vertical-align: 1px; }
+tr.active .dot { background: var(--fail); }
+
+.log, .term { font: 12px/1.6 var(--mono); background: var(--sunken); border-radius: 8px; padding: 10px 12px; height: 320px; overflow: auto; }
+.log div, .term div { white-space: pre-wrap; word-break: break-word; }
+.log .t { color: var(--muted); }
+.log .ev { color: var(--ink); font-weight: 500; }
+.log .c2 { color: var(--pass); font-weight: 600; }
+.log .c4 { color: var(--fail); font-weight: 600; }
+.term .PASS { color: var(--pass); font-weight: 600; }
+.term .FAIL { color: var(--fail); font-weight: 600; }
+.term .muted { color: var(--muted); }
+.runhead { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+#runverdict { font: 600 14px var(--mono); }
+#runverdict.pass { color: var(--pass); }
+#runverdict.fail { color: var(--fail); }
+details { font-size: 12.5px; }
+summary { cursor: pointer; color: var(--muted); }
+details pre { font: 11.5px/1.5 var(--mono); background: var(--sunken); border-radius: 8px; padding: 10px; max-height: 280px; overflow: auto; margin: 8px 0 0; }
+footer { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 560px) {
+  h1 { font-size: 26px; }
+  .node .lbl { font-size: 10.5px; }
+  .node .port { font-size: 9.5px; }
+  .machine small { display: none; }
+  .tempbox { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .st, .node .box { transition: none; }
+  .live i { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="intro">
+      <span class="live"><i></i>LIVE</span>
+      <h1>SOVD Fault Bench</h1>
+      <p class="muted" id="intro">A stuck sensor in an S-CORE app, and a DTC in an ECU, both read over SOVD from the services running on this machine.</p>
+    </div>
+    <div class="services" id="services">
+      <span class="svc" data-k="gateway"><i></i>gateway :7690</span>
+      <span class="svc" data-k="cda"><i></i>CDA :20002</span>
+      <span class="svc" data-k="sim"><i></i>ECU sim :8181</span>
+      <a class="svc" href="http://localhost:20002/swagger-ui/" target="_blank" rel="noopener">CDA Swagger ↗</a>
+    </div>
+  </header>
+
+
+  <section class="panel arch" id="arch" aria-label="Live architecture">
+    <div class="arch-head">
+      <h2>Live architecture</h2>
+      <span class="mode" id="archmode">reading…</span>
+    </div>
+    <div class="chain" id="chainA">
+      <div class="zone"><span class="zlabel">Laptop</span>
+        <div class="an up" id="n-ui"><b><i class="dot"></i>This console</b><small>:8080</small><span class="val">tester</span></div>
+        <div class="al" id="l-1"><span class="num">①</span><span class="proto">SOVD · HTTP</span><span class="rate" id="r-1">—</span></div>
+        <div class="an ours" id="n-gw"><b><i class="dot"></i>SOVD gateway</b><small>server ② adapter ③ cruise diag</small><span class="val" id="v-gw">—</span></div>
+      </div>
+      <div class="al" id="l-b"><span class="num">TCP</span><span class="proto">:7700 lines</span><span class="rate" id="r-b">—</span></div>
+      <div class="zone veh"><span class="zlabel">Vehicle computer · S-CORE · 172.28.0.2</span>
+        <div class="an ours" id="n-bridge"><b><i class="dot"></i>cruise_bridge</b><small>Rust · mw::com</small><span class="val" id="v-bridge">—</span></div>
+        <div class="al" id="l-4"><span class="num">④</span><span class="proto">mw::com · LoLa shm</span><span class="rate" id="r-4">—</span></div>
+        <div class="an" id="n-gatewayd"><b><i class="dot"></i>gatewayd</b><small>ASIL side</small><span class="val" id="v-gatewayd">—</span></div>
+        <div class="al" id="l-5"><span class="num">⑤</span><span class="proto">gateway IPC</span><span class="rate" id="r-5">—</span></div>
+        <div class="an" id="n-someipd"><b><i class="dot"></i>someipd</b><small>QM · vsomeip</small><span class="val" id="v-someipd">—</span></div>
+      </div>
+      <div class="al" id="l-6"><span class="num">⑥</span><span class="proto">SOME/IP · UDP<br>SD :30490</span><span class="rate" id="r-6">—</span></div>
+      <div class="zone ecu"><span class="zlabel" title="Cruise control ECU · other team · 172.28.0.3">Cruise ECU · .0.3</span>
+        <div class="an" id="n-ecu"><b><i class="dot"></i>cruise control</b><small>stand-in · vsomeip</small><span class="val" id="v-ecu">—</span></div>
+      </div>
+    </div>
+    <div class="chain" id="chainB">
+      <div class="zone"><span class="zlabel">Classic ECU path · upstream, Docker</span>
+        <div class="an up"><b><i class="dot"></i>This console</b><small>:8080</small><span class="val">tester</span></div>
+        <div class="al" id="l-7"><span class="num">⑦</span><span class="proto">SOVD · Bearer</span><span class="rate" id="r-7">—</span></div>
+        <div class="an" id="n-cda"><b><i class="dot"></i>CDA</b><small>:20002</small><span class="val">SOVD → UDS</span></div>
+        <div class="al live" id="l-8"><span class="num">⑧</span><span class="proto">UDS over DoIP<br>:13400</span></div>
+        <div class="an" id="n-sim"><b><i class="dot"></i>ECU simulator</b><small>flxc1000 · :8181</small><span class="val">DTC memory</span></div>
+      </div>
+    </div>
+    <div class="inject-row" aria-live="polite">
+      <span class="muted">inject_fault seen at</span>
+      <span class="chip" id="i-sovd">SOVD write</span><span class="sep">→</span>
+      <span class="chip" id="i-bridge">cruise_bridge</span><span class="sep">→ gatewayd → someipd →</span>
+      <span class="chip" id="i-ecu">cruise ECU</span>
+    </div>
+  </section>
+
+  <div class="lanes">
+    <section class="lane" id="laneA">
+      <div class="lane-head">
+        <h2>Path A · S-CORE app to SOVD</h2>
+        <span class="tag ours">ours · inc_diagnostics #16</span>
+      </div>
+      <div class="flow">
+        <div class="track"></div>
+        <div class="node" style="left:0"><div class="box">UI</div><div class="lbl">This console</div><div class="port">:8080</div></div>
+        <div class="node" style="left:25%"><div class="box">GW</div><div class="lbl">OpenSOVD gateway</div><div class="port">:7690</div></div>
+        <div class="node" style="left:50%"><div class="box">AD</div><div class="lbl">sovd_adapter</div><div class="port">DataProvider</div></div>
+        <div class="node" style="left:75%"><div class="box" id="appbox">HV</div><div class="lbl" id="applbl">HVAC app</div><div class="port">diag_api</div></div>
+        <div class="packet"></div>
+      </div>
+      <div class="controls">
+        <button class="act" id="freeze" type="button">Freeze sensor</button>
+        <button id="release" type="button">Release sensor</button>
+        <span class="result" id="resA"></span>
+      </div>
+      <div class="req" id="reqA">Reading from the gateway…</div>
+
+      <div class="row">
+        <h3 id="reshead">Resources the gateway serves</h3>
+        <div class="chips" id="resources"><span class="muted">loading…</span></div>
+      </div>
+      <div class="row">
+        <h3 id="faulthead">Fault status</h3>
+        <div class="machine">
+          <div class="st" data-s="passed"><b>passed</b><small id="passedhint">sensor reading moves</small></div>
+          <div class="st" data-s="prefailed"><b>prefailed</b><small>test failed, debouncing</small></div>
+          <div class="st" data-s="failed"><b>failed</b><small>confirmed fault</small></div>
+        </div>
+        <div class="bar" id="bar"><i id="barfill"></i></div>
+        <div class="meta"><span id="dbtext">Freeze the sensor to start the debounce</span><span>threshold 5.00 s</span></div>
+      </div>
+      <div class="tempbox">
+        <div class="tempval">
+          <span id="vallabel">—</span>
+          <b id="temp">—</b>
+          <small id="stuckflag">—</small>
+          <small id="cstate" hidden>—</small>
+        </div>
+        <svg id="spark" viewBox="0 0 320 84" preserveAspectRatio="none" role="img" aria-label="sensor value, last 30 seconds"></svg>
+      </div>
+    </section>
+
+    <section class="lane" id="laneB">
+      <div class="lane-head">
+        <h2>Path B · ECU over DoIP to SOVD</h2>
+        <span class="tag">upstream CDA, unmodified</span>
+      </div>
+      <div class="flow">
+        <div class="bypass"><span class="bypass-label">simulator test hook</span></div>
+        <div class="track"></div>
+        <div class="node" style="left:0"><div class="box">UI</div><div class="lbl">This console</div><div class="port">:8080</div></div>
+        <div class="node" style="left:25%"><div class="box">CDA</div><div class="lbl">CDA SOVD API</div><div class="port">:20002</div></div>
+        <div class="node" style="left:50%"><div class="box">DoIP</div><div class="lbl">DoIP / UDS</div><div class="port">:13400</div></div>
+        <div class="node" style="left:75%"><div class="box">ECU</div><div class="lbl">ECU simulator</div><div class="port">flxc1000 · :8181</div></div>
+        <div class="packet"></div>
+      </div>
+      <div class="controls">
+        <label for="dtc">DTC<input id="dtc" value="01E240" maxlength="6" spellcheck="false"></label>
+        <label for="mask">Status mask<input id="mask" value="2F" maxlength="2" spellcheck="false" style="width:4.5em"></label>
+        <button class="act" id="inject" type="button">Inject DTC</button>
+        <button id="clear" type="button">Clear fault memory</button>
+        <span class="result" id="resB"></span>
+      </div>
+      <div class="req" id="reqB">Reading from the CDA…</div>
+      <div class="row">
+        <h3>flxc1000 fault memory, as the CDA reports it</h3>
+        <p class="meta" id="fmmeta">loading…</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>DTC</th><th>Name</th><th>Mask</th><th>Status bits set</th></tr></thead>
+            <tbody id="fm"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottom">
+    <section class="panel">
+      <h2>Traffic and events</h2>
+      <p class="meta"><span>Every request this console sent, with the service URL it reached. Background polls are counted, not listed.</span><span id="pollrate"></span></p>
+      <div class="log" id="log" aria-live="polite"></div>
+      <details>
+        <summary>Last raw response</summary>
+        <pre id="raw">—</pre>
+      </details>
+    </section>
+    <section class="panel">
+      <div class="runhead">
+        <h2>Automated check</h2>
+        <span id="runverdict"></span>
+      </div>
+      <p class="meta"><span>Runs <span class="mono">demo/run-demo.sh</span> on this machine: <span id="runcount">12</span> assertions, expected values fixed in the script. Watch both lanes react while it runs.</span></p>
+      <div class="controls"><button class="go" id="run" type="button">Run the checks</button><span class="result" id="runstate"></span></div>
+      <div class="term" id="term"><div class="muted">Output appears here.</div></div>
+    </section>
+  </div>
+
+  <footer>Every value on this page is read from the running services through <span class="mono">demo/live/server.py</span>; the page stores and invents nothing.</footer>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Path A follows whatever component the gateway serves (DEMO=hvac or DEMO=cruise in start.sh).
+  const PROFILES = {
+    hvac: { comp: 'hvac', status: 'sensor_fault_status', value: 'cabin_temp', stuck: 'sensor_stuck', unit: '°C',
+      fault: 'CabinTempSensorStuck', app: ['HV', 'HVAC app'], hint: 'sensor reading moves', checks: 12,
+      intro: 'A stuck cabin sensor in an S-CORE app, and a DTC in an ECU, both read over SOVD from the services running on this machine.' },
+    cruise: { comp: 'cruise', status: 'speed_sensor_fault_status', value: 'vehicle_speed', stuck: 'speed_sensor_stuck', unit: 'km/h',
+      state: 'cruise_state', fault: 'VehicleSpeedSensorStuck', app: ['CC', 'cruise diag → cruise app'], hint: 'speed signal moves', checks: 13,
+      intro: 'A stuck speed sensor under the cruise control, and a DTC in an ECU, both read over SOVD from the services running on this machine.' },
+  };
+  let P = PROFILES.hvac;
+  let DATA = 'components/hvac/data';
+  async function loadProfile() {
+    const r = await api('GET', 'gw', 'components');
+    const ids = ((r.json && r.json.items) || []).map((c) => c.id);
+    P = ids.includes('cruise') ? PROFILES.cruise : PROFILES.hvac;
+    DATA = `components/${P.comp}/data`;
+    $('intro').textContent = P.intro;
+    [$('appbox').textContent, $('applbl').textContent] = P.app;
+    $('reshead').textContent = `Resources the gateway serves for component ${P.comp}`;
+    $('faulthead').textContent = `${P.fault} · fault status`;
+    $('passedhint').textContent = P.hint;
+    $('vallabel').textContent = P.value;
+    $('cstate').hidden = !P.state;
+    $('runcount').textContent = P.checks;
+    $('run').textContent = `Run the ${P.checks} checks`;
+  }
+  const ECU = 'flxc1000';
+  const THRESHOLD = 5.0;
+  const BITS = ['test_failed', 'test_failed_this_operation_cycle', 'pending_dtc', 'confirmed_dtc',
+    'test_not_completed_since_last_clear', 'test_failed_since_last_clear',
+    'test_not_completed_this_operation_cycle', 'warning_indicator_requested'];
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const now = () => performance.now();
+  const clock = () => new Date().toTimeString().slice(0, 8);
+
+  // --- transport ----------------------------------------------------------
+  let polls = 0;
+  async function api(method, target, path, body, poll) {
+    const opts = { method, headers: {} };
+    if (poll) opts.headers['X-Poll'] = '1';
+    if (body !== undefined) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    let res, text = '';
+    try {
+      res = await fetch(`/api/${target}/${path}`, opts);
+      text = await res.text();
+    } catch (e) {
+      return { status: 0, json: null, text: String(e), upstream: `${method} /api/${target}/${path}`, ms: 0 };
+    }
+    let json = null;
+    try { json = text ? JSON.parse(text) : null; } catch (_) { /* not JSON */ }
+    const r = { status: res.status, json, text, upstream: res.headers.get('X-Upstream') || `${method} ${path}`, ms: +(res.headers.get('X-Elapsed-Ms') || 0) };
+    if (poll) polls++;
+    else {
+      logReq(r, body);
+      if (text) $('raw').textContent = `// ${r.upstream}  ->  ${r.status}\n` + (json ? JSON.stringify(json, null, 2) : text);
+    }
+    return r;
+  }
+  function logLine(html) {
+    const d = document.createElement('div');
+    d.innerHTML = `<span class="t">${clock()}</span> ${html}`;
+    const log = $('log');
+    const stick = log.scrollHeight - log.scrollTop - log.clientHeight < 30;
+    log.appendChild(d);
+    while (log.children.length > 300) log.firstChild.remove();
+    if (stick) log.scrollTop = log.scrollHeight;
+  }
+  function logReq(r, body) {
+    const cls = r.status >= 200 && r.status < 300 ? 'c2' : 'c4';
+    logLine(`${esc(r.upstream)}${body !== undefined ? ' ' + esc(JSON.stringify(body)) : ''} → <span class="${cls}">${r.status || 'no answer'}</span> <span class="t">${r.ms.toFixed(0)} ms</span>`);
+  }
+  const logEvent = (text) => logLine(`<span class="ev">● ${esc(text)}</span>`);
+
+  function showReq(lane, r, body, hook) {
+    const [verb, url] = r.upstream.split(' ');
+    const b = body !== undefined ? '\n' + esc(JSON.stringify(body)) : '';
+    $('req' + lane).innerHTML = `<span class="verb${hook ? ' hook' : ''}">${esc(verb)}</span> ${esc(url || '')}  →  <span class="code">${r.status || 'no answer'}</span> · ${r.ms.toFixed(0)} ms${b}`;
+  }
+
+  function packet(lane, hook, poll) {
+    const flow = $('lane' + lane).querySelector('.flow');
+    const nodes = flow.querySelectorAll('.node');
+    const involved = hook ? [0, 3] : [0, 1, 2, 3];
+    if (!poll) {
+      nodes.forEach((n, k) => { n.classList.remove('lit', 'hooklit'); if (involved.includes(k)) n.classList.add(hook ? 'hooklit' : 'lit'); });
+      clearTimeout(flow._t);
+      flow._t = setTimeout(() => nodes.forEach((n) => n.classList.remove('lit', 'hooklit')), 1400);
+    }
+    if (reduced) return;
+    const p = flow.querySelector('.packet');
+    p.className = 'packet' + (hook ? ' hook' : '') + (poll ? ' poll' : '');
+    const top = hook ? '4px' : (poll ? '40px' : '38px');
+    const base = poll ? '40px' : '38px';
+    p.animate([
+      { left: '12.5%', top: base, opacity: poll ? .55 : 1 },
+      { left: '12.5%', top, opacity: poll ? .55 : 1, offset: .05 },
+      { left: '87.5%', top, opacity: poll ? .55 : 1, offset: .5 },
+      { left: '12.5%', top, opacity: poll ? .55 : 1, offset: .95 },
+      { left: '12.5%', top: base, opacity: 0 },
+    ], { duration: poll ? 260 : 900, easing: 'ease-in-out' });
+  }
+
+  // --- services -----------------------------------------------------------
+  async function health() {
+    try {
+      const h = await (await fetch('/api/health')).json();
+      document.querySelectorAll('.svc[data-k]').forEach((el) => {
+        const ok = h[el.dataset.k] >= 200 && h[el.dataset.k] < 300;
+        el.classList.toggle('up', ok); el.classList.toggle('down', !ok);
+        el.title = `health check answered ${h[el.dataset.k]}`;
+      });
+    } catch (_) {
+      document.querySelectorAll('.svc[data-k]').forEach((el) => { el.classList.remove('up'); el.classList.add('down'); el.title = 'console server not reachable'; });
+    }
+  }
+
+  // --- path A -------------------------------------------------------------
+  const A = { status: null, stuck: null, cstate: null, freezeAt: null, releaseAt: null, qualified: null, hist: [] };
+  async function loadResources() {
+    const r = await api('GET', 'gw', DATA);
+    showReq('A', r); packet('A');
+    const items = (r.json && r.json.items) || [];
+    $('resources').innerHTML = items.length
+      ? items.map((it) => `<span class="chip" title="${esc(it.name)} · ${esc(it.category)}">${esc(it.id)}</span>`).join('')
+      : `<span class="muted">gateway answered ${r.status}</span>`;
+  }
+  function setStatus(s) {
+    document.querySelectorAll('.st').forEach((el) => el.classList.toggle('cur', el.dataset.s === s));
+  }
+  async function pollA() {
+    const [st, tp, sk, cs] = await Promise.all([
+      api('GET', 'gw', DATA + '/' + P.status, undefined, true),
+      api('GET', 'gw', DATA + '/' + P.value, undefined, true),
+      api('GET', 'gw', DATA + '/' + P.stuck, undefined, true),
+      P.state ? api('GET', 'gw', DATA + '/' + P.state, undefined, true) : null,
+    ]);
+    const cstate = cs && cs.json && cs.json.data ? cs.json.data.state : null;
+    if (cstate && A.cstate && cstate !== A.cstate) logEvent(`${P.state} ${A.cstate} → ${cstate}`);
+    A.cstate = cstate;
+    if (P.state) {
+      $('cstate').textContent = `${P.state}: ${cstate || '—'}`;
+      $('cstate').classList.toggle('bad', cstate === 'unavailable');
+    }
+    packet('A', false, true);
+    const status = st.json && st.json.data && st.json.data.status;
+    const stuck = sk.json && sk.json.data ? !!sk.json.data.stuck : null;
+    const temp = tp.json && tp.json.data ? tp.json.data.value : null;
+
+    if (stuck !== A.stuck && A.stuck !== null) {
+      logEvent(`${P.stuck} is now ${stuck}`);
+      if (stuck && !A.freezeAt) A.freezeAt = now();       // set by someone else, e.g. run-demo.sh
+      if (!stuck && !A.releaseAt) A.releaseAt = now();
+    }
+    A.stuck = stuck;
+    $('stuckflag').textContent = `${P.stuck}: ${stuck === null ? '—' : stuck}`;
+
+    if (status && status !== A.status) {
+      const since = A.status === null ? '' :
+        (A.freezeAt && status !== 'passed') ? ` · ${((now() - A.freezeAt) / 1000).toFixed(2)} s after freeze` :
+        (A.releaseAt && status === 'passed') ? ` · ${((now() - A.releaseAt) / 1000).toFixed(2)} s after release` : '';
+      if (A.status !== null) logEvent(`${P.status} ${A.status} → ${status}${since}`);
+      if (status === 'failed' && A.freezeAt && A.qualified === null) A.qualified = (now() - A.freezeAt) / 1000;
+      if (status === 'passed') { A.freezeAt = null; A.qualified = null; }
+      A.status = status; setStatus(status);
+    }
+    if (status === 'passed') A.releaseAt = null;
+    renderDebounce();
+
+    if (temp !== null) {
+      $('temp').textContent = temp.toFixed(1) + ' ' + P.unit;
+      $('temp').classList.toggle('stuck', !!stuck);
+      A.hist.push({ v: temp, bad: !!stuck });
+      if (A.hist.length > 100) A.hist.shift();
+      drawSpark();
+    }
+  }
+  function renderDebounce() {
+    let sec = 0, done = false, text = 'Freeze the sensor to start the debounce';
+    if (A.qualified !== null) { sec = A.qualified; done = true; text = `Qualified as failed after ${sec.toFixed(2)} s`; }
+    else if (A.freezeAt) { sec = (now() - A.freezeAt) / 1000; text = `Debouncing: ${sec.toFixed(2)} s since freeze`; }
+    if (A.releaseAt && A.status !== 'passed') text = `Released · waiting for passed (${((now() - A.releaseAt) / 1000).toFixed(2)} s)`;
+    $('barfill').style.width = Math.min(sec / THRESHOLD, 1) * 100 + '%';
+    $('bar').classList.toggle('done', done);
+    $('dbtext').textContent = text;
+  }
+  function drawSpark() {
+    const W = 320, H = 84, L = 34, R = 8, T = 8, B = 8;
+    const vs = A.hist.map((p) => p.v);
+    let lo = Math.min(...vs), hi = Math.max(...vs);
+    const mid = (lo + hi) / 2;
+    if (hi - lo < 1) { lo = mid - .5; hi = mid + .5; }
+    lo = Math.floor(lo * 10) / 10; hi = Math.ceil(hi * 10) / 10;
+    const x = (i) => L + (W - L - R) * i / 99;
+    const y = (v) => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+    const off = 100 - A.hist.length;
+    let segs = '', cur = null, pts = [];
+    const flush = () => { if (pts.length > 1) segs += `<polyline class="${cur ? 'bad' : 'ok'}" points="${pts.join(' ')}"/>`; };
+    A.hist.forEach((p, i) => {
+      const pt = `${x(i + off).toFixed(1)},${y(p.v).toFixed(1)}`;
+      if (cur !== null && p.bad !== cur) { pts.push(pt); flush(); pts = [pts[pts.length - 1]]; }
+      cur = p.bad; pts.push(pt);
+    });
+    flush();
+    const last = A.hist[A.hist.length - 1];
+    $('spark').innerHTML =
+      `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(hi)}" y2="${y(hi)}"/>` +
+      `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(lo)}" y2="${y(lo)}"/>` +
+      `<text x="0" y="${y(hi) + 3}">${hi.toFixed(1)}</text><text x="0" y="${y(lo) + 3}">${lo.toFixed(1)}</text>` +
+      segs +
+      (last ? `<circle class="end" cx="${x(99)}" cy="${y(last.v)}" r="3"/>` : '');
+  }
+  async function setStuck(stuck) {
+    const body = { data: { stuck } };
+    if (stuck) { A.freezeAt = now(); A.qualified = null; A.releaseAt = null; } else { A.releaseAt = now(); }
+    const r = await api('PUT', 'gw', DATA + '/' + P.stuck, body);
+    showReq('A', r, body); packet('A');
+    $('resA').textContent = r.status === 204 ? (stuck ? 'Frozen · watch the status' : 'Released') : `gateway answered ${r.status}`;
+    if (stuck && r.status === 204) logEvent('sensor frozen from this console');
+  }
+  $('freeze').onclick = () => setStuck(true);
+  $('release').onclick = () => setStuck(false);
+
+  // --- path B -------------------------------------------------------------
+  const B = { active: new Set(), injectAt: null, injected: null };
+  async function pollB(visible) {
+    const r = await api('GET', 'cda', `components/${ECU}/faults`, undefined, !visible);
+    packet('B', false, !visible);
+    if (visible) showReq('B', r);
+    const items = (r.json && r.json.items) ? [...r.json.items].sort((a, b) => a.code.localeCompare(b.code)) : null;
+    if (!items) { $('fmmeta').textContent = `CDA answered ${r.status}`; return; }
+    $('fm').innerHTML = items.map((it) => {
+      const on = it.status.mask !== '00';
+      const bits = BITS.filter((b) => it.status[b]).map((b) => b.replace(/_/g, ' ')).join(', ') || '—';
+      return `<tr class="${on ? 'active' : ''}"><td><span class="dot"></span>${esc(it.code)}</td><td>${esc(it.fault_name)}</td><td class="mask">${esc(it.status.mask)}</td><td class="bits">${esc(bits)}</td></tr>`;
+    }).join('');
+    const active = new Set(items.filter((it) => it.status.mask !== '00').map((it) => `${it.code}/${it.status.mask}`));
+    active.forEach((k) => {
+      if (!B.active.has(k)) {
+        const after = B.injectAt && B.injected === k ? ` · ${(now() - B.injectAt).toFixed(0)} ms after injection` : '';
+        logEvent(`CDA reports ${k} active over SOVD${after}`);
+      }
+    });
+    B.active.forEach((k) => { if (!active.has(k)) logEvent(`${k} no longer active`); });
+    B.active = active;
+    $('fmmeta').textContent = `${items.length} DTCs known to the ECU · ${active.size ? [...active].join(', ') + ' active' : 'none active'} · read in ${r.ms.toFixed(0)} ms`;
+  }
+  $('inject').onclick = async () => {
+    const id = $('dtc').value.trim().toUpperCase(), mask = $('mask').value.trim().toUpperCase();
+    if (!/^[0-9A-F]{6}$/.test(id) || !/^[0-9A-F]{2}$/.test(mask)) { $('resB').textContent = 'DTC needs 6 hex digits, mask 2'; return; }
+    const body = { id, statusMask: mask, emissionsRelated: false };
+    B.injectAt = now(); B.injected = `${id}/${mask}`;
+    const r = await api('PUT', 'sim', `${ECU}/dtc/Standard`, body);
+    showReq('B', r, body, true); packet('B', true);
+    $('resB').textContent = r.status === 201 ? 'Injected into the ECU · reading back through the CDA' :
+      `simulator answered ${r.status}${r.status === 400 ? ' · the DTC must exist in the ECU description' : ''}`;
+    if (r.status === 201) setTimeout(() => pollB(true), 150);
+  };
+  $('clear').onclick = async () => {
+    const r = await api('DELETE', 'sim', `${ECU}/dtc/Standard`);
+    showReq('B', r, undefined, true); packet('B', true);
+    $('resB').textContent = r.status < 300 ? 'Fault memory cleared' : `simulator answered ${r.status}`;
+    B.injectAt = null;
+    setTimeout(() => pollB(true), 150);
+  };
+
+  // --- automated check ----------------------------------------------------
+  let runTimer = null;
+  function renderRun(s) {
+    $('term').innerHTML = s.lines.length ? s.lines.map((l) => {
+      const m = l.match(/^(\[T\+[\d.]+s\]) (PASS|FAIL)(.*)$/);
+      return m ? `<div><span class="muted">${esc(m[1])}</span> <span class="${m[2]}">${m[2]}</span>${esc(m[3])}</div>` : `<div>${esc(l)}</div>`;
+    }).join('') : '<div class="muted">starting…</div>';
+    $('term').scrollTop = $('term').scrollHeight;
+    const pass = s.lines.filter((l) => / PASS /.test(l)).length, fail = s.lines.filter((l) => / FAIL /.test(l)).length;
+    $('runverdict').textContent = pass + fail ? `${pass}/${pass + fail} PASS` : '';
+    $('runverdict').className = s.running ? '' : (s.exit === 0 ? 'pass' : 'fail');
+    $('runstate').textContent = s.running ? 'running…' : (s.exit === null ? '' : s.exit === 0 ? 'finished · all assertions passed' : `finished · exit ${s.exit}`);
+    $('run').disabled = s.running;
+    ['freeze', 'release', 'inject', 'clear'].forEach((id) => { $(id).disabled = s.running; });
+  }
+  async function pollRun() {
+    const s = await (await fetch('/api/run')).json();
+    renderRun(s);
+    if (!s.running) { clearInterval(runTimer); runTimer = null; if (s.exit !== null) logEvent(`run-demo.sh finished with exit ${s.exit}`); }
+  }
+  $('run').onclick = async () => {
+    const s = await (await fetch('/api/run', { method: 'POST' })).json();
+    logEvent('run-demo.sh started from this console');
+    renderRun(s);
+    if (!runTimer) runTimer = setInterval(pollRun, 400);
+  };
+
+
+  // --- live architecture --------------------------------------------------
+  let topoPrev = null;
+  const rate = (now, prev, get) => {
+    if (!prev) return null;
+    const a = get(now), b = get(prev), dt = now.at - prev.at;
+    return a === undefined || a === null || b === undefined || b === null || dt <= 0 ? null : Math.max(0, (a - b) / dt);
+  };
+  const fmt = (r) => r === null ? '—' : r.toFixed(r < 10 ? 1 : 0) + '/s';
+  function node(id, up, val) {
+    const el = $(id);
+    el.classList.toggle('up', !!up); el.classList.toggle('down', !up);
+    if (val !== undefined) $(id.replace('n-', 'v-')).textContent = up ? val : 'not running';
+  }
+  function link(id, live, text) {
+    $(id).classList.toggle('live', !!live); $(id).classList.toggle('idle', !live);
+    if (text !== undefined) $(id.replace('l-', 'r-')).innerHTML = text;
+  }
+  async function pollTopo() {
+    let t;
+    try { t = await (await fetch('/api/topology')).json(); } catch (_) { return; }
+    const br = t.bridge, ecu = t.ecu, vp = (t.vehicle && t.vehicle.procs) || [], ep = (t.ecu_node && t.ecu_node.procs) || [];
+    const cruise = t.gateway.components.includes('cruise');
+    const bridgeUp = vp.includes('cruise_bridge') && br && br.file_age_s < 3;
+    const ecuUp = ep.includes('cruise_ecu') && ecu && ecu.file_age_s < 3;
+    const scorePath = cruise && bridgeUp && br.clients > 0;
+    $('archmode').textContent = scorePath ? 'cruise via the S-CORE path · real SOME/IP between containers'
+      : cruise ? 'cruise via the stand-in inside the gateway · S-CORE nodes not connected'
+      : t.gateway.status === 200 ? 'HVAC example' : 'SOVD gateway not reachable';
+    $('archmode').className = 'mode ' + (scorePath ? 'score' : cruise ? 'sim' : '');
+
+    const gwUp = t.gateway.status === 200;
+    node('n-gw', gwUp, A.cstate ? `${$('temp').textContent} · ${A.cstate}` : (A.status || 'up'));
+    link('l-1', gwUp, fmt(rate(t, topoPrev, (x) => x.counts.gw)) + ' req');
+    const st = br && br.latest;
+    node('n-bridge', bridgeUp, st ? `${st.speed.toFixed(1)} km/h · ${st.state}` : 'waiting for data');
+    link('l-b', scorePath, scorePath ? fmt(rate(t, topoPrev, (x) => x.bridge && x.bridge.samples_received)) + ' status' : 'no client');
+    const sIn = rate(t, topoPrev, (x) => x.bridge && x.bridge.samples_received);
+    const iOut = rate(t, topoPrev, (x) => x.bridge && x.bridge.injects_published);
+    link('l-4', bridgeUp && br.subscribed, `← status ${fmt(sIn)}<br>→ inject ${fmt(iOut)}`);
+    node('n-gatewayd', vp.includes('gatewayd'), 'running');
+    link('l-5', vp.includes('gatewayd') && vp.includes('someipd'), `same events<br>ASIL ↔ QM`);
+    node('n-someipd', vp.includes('someipd'), 'running');
+    const nOut = rate(t, topoPrev, (x) => x.ecu && x.ecu.notifications_sent);
+    const iIn = rate(t, topoPrev, (x) => x.ecu && x.ecu.injects_received);
+    link('l-6', ecuUp, `← status ${fmt(nOut)}<br>→ inject ${fmt(iIn)}`);
+    node('n-ecu', ecuUp, ecu ? `${ecu.speed.toFixed(1)} km/h · ${ecu.state}` : '—');
+
+    node('n-cda', t.cda >= 200 && t.cda < 300);
+    node('n-sim', t.sim >= 200 && t.sim < 300);
+    link('l-7', t.cda >= 200 && t.cda < 300, fmt(rate(t, topoPrev, (x) => x.counts.cda)) + ' req');
+
+    const chip = (id, on, known) => { $(id).classList.toggle('on', !!on); $(id).textContent = $(id).textContent.split(':')[0] + (known ? (on ? ': ON' : ': off') : ': —'); };
+    chip('i-sovd', A.stuck, A.stuck !== null);
+    chip('i-bridge', br && br.inject, bridgeUp);
+    chip('i-ecu', ecu && ecu.inject, ecuUp);
+    topoPrev = t;
+  }
+
+  // --- loops --------------------------------------------------------------
+  const loop = (fn, ms) => { let busy = false; setInterval(async () => { if (busy) return; busy = true; try { await fn(); } finally { busy = false; } }, ms); };
+  let lastPolls = 0;
+  setInterval(() => { $('pollrate').textContent = `${polls - lastPolls} polls in the last 5 s`; lastPolls = polls; }, 5000);
+  setInterval(renderDebounce, 100);
+
+  (async () => {
+    health(); setInterval(health, 3000);
+    await loadProfile();
+    await loadResources();
+    await pollA();
+    await pollB(true);
+    loop(pollA, 300);
+    loop(() => pollB(false), 1000);
+    pollTopo(); loop(pollTopo, 1000);
+    const s = await (await fetch('/api/run')).json();
+    if (s.running) { renderRun(s); runTimer = setInterval(pollRun, 400); }
+  })();
+})();
+</script>
+</body>
+</html>

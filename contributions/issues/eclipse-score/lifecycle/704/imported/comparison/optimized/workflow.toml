@@ -1,0 +1,26 @@
+_version = 1
+[workflow]
+graph = "workflow.fabro"
+[run.agent]
+fabro_tools = false
+
+[run.agent.mcps.score_bounded]
+type = "stdio"
+command = ["/home/jefferson/s-core_sw_fabric/.venv/bin/python", "-m", "score_sw_fabric.optimization.cli", "serve", "--root", "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-jayvclk9/lifecycle", "--state", "/home/jefferson/.local/state/s-core/fabro/score-fabric-jayvclk9/comparison-preparation/bounded-state.json", "--stage", "review", "--sources", "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-jayvclk9/evidence/comparison/source-manifest.json"]
+
+[[run.hooks]]
+id = "optimization-stage_start"
+event = "stage_start"
+matcher = "^agent$"
+blocking = true
+sandbox = false
+timeout = "5s"
+command = ["/home/jefferson/s-core_sw_fabric/.venv/bin/python", "-m", "score_sw_fabric.optimization.cli", "guard", "--decision", "/home/jefferson/.local/state/s-core/fabro/score-fabric-jayvclk9/comparison-preparation/governor.json", "--stage", "review"]
+
+[[run.hooks]]
+id = "optimization-pre_tool_use"
+event = "pre_tool_use"
+blocking = true
+sandbox = false
+timeout = "5s"
+command = ["/home/jefferson/s-core_sw_fabric/.venv/bin/python", "-m", "score_sw_fabric.optimization.cli", "guard", "--decision", "/home/jefferson/.local/state/s-core/fabro/score-fabric-jayvclk9/comparison-preparation/governor.json", "--stage", "review"]

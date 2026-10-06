@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="36" failures="0" disabled="0" errors="0" time="0.01" timestamp="2026-10-04T02:45:16.714" name="AllTests">
+  <testsuite name="LmControlUT" tests="34" failures="0" disabled="0" skipped="0" errors="0" time="0.01" timestamp="2026-10-04T02:45:16.714">
+    <testcase name="InvalidSpecifierIsRejectedByInit" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="284" status="run" result="completed" time="0.007" timestamp="2026-10-04T02:45:16.714" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="init() with an empty instance specifier returns kInvalidArguments and never starts discovery."/>
+      </properties>
+    </testcase>
+    <testcase name="StartFindServiceFailureIsReportedByInit" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="297" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.721" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When StartFindService fails, init() returns kCommunicationError and the instance can be destroyed without stopping a search it never started."/>
+      </properties>
+    </testcase>
+    <testcase name="StdExceptionDuringSetupIsReportedAsGeneralError" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="314" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.721" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When a std::exception (e.g. std::bad_alloc on allocation failure) is thrown during setup, init() catches it and returns kGeneralError instead of propagating."/>
+      </properties>
+    </testcase>
+    <testcase name="NonStdExceptionDuringSetupIsReportedAsGeneralError" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="329" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When something not derived from std::exception is thrown during setup, init() still catches it and returns kGeneralError."/>
+      </properties>
+    </testcase>
+    <testcase name="InitStartsBackgroundDiscovery" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="346" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="init() with a valid specifier starts asynchronous service discovery via StartFindService."/>
+      </properties>
+    </testcase>
+    <testcase name="MethodsFailWhileNotYetConnected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="358" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="Before the service is discovered, activate_run_target and get_active_run_target return kCommunicationError without issuing any proxy calls."/>
+      </properties>
+    </testcase>
+    <testcase name="DiscoveryCreatesProxySubscribesAndSetsHandler" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="379" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="On discovering the service, the SUT creates the proxy, subscribes to activation results and sets the receive handler."/>
+      </properties>
+    </testcase>
+    <testcase name="EmptyHandlesAreIgnored" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="394" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A discovery callback with an empty handle container is ignored and no proxy is created."/>
+      </properties>
+    </testcase>
+    <testcase name="SecondDiscoveryCallbackIsIgnored" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="408" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A second discovery callback after the proxy is already set up does not create another proxy."/>
+      </properties>
+    </testcase>
+    <testcase name="SynchronousDiscoveryDuringConstructionStopsFindingOnce" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="420" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When discovery completes synchronously while init() is still running, the service discovery is still stopped exactly once, in the destructor."/>
+      </properties>
+    </testcase>
+    <testcase name="DiscoveryCallbackAfterDestructionIsANoOp" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="439" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A discovery callback dispatched after the instance was destroyed does not reach onServiceFound: the destructor expires the scope the callback is bound to."/>
+      </properties>
+    </testcase>
+    <testcase name="SubscribeFailureLeavesInstanceDisconnected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="457" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When Subscribe fails during discovery, the instance stays disconnected and method calls return kCommunicationError."/>
+      </properties>
+    </testcase>
+    <testcase name="SetReceiveHandlerFailureLeavesInstanceDisconnected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="473" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When installing the receive handler fails during discovery, the instance stays disconnected and method calls return kCommunicationError."/>
+      </properties>
+    </testcase>
+    <testcase name="ProxyCreateFailureLeavesInstanceDisconnected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="489" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.722" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When proxy creation fails during discovery, no subscription is attempted and the instance stays disconnected."/>
+      </properties>
+    </testcase>
+    <testcase name="StopFindServiceFailureOnDestructionIsTolerated" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="504" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A StopFindService failure while tearing down is only logged; destruction still completes cleanly."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivateForwardsNameAndQueuedModeByDefault" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="522" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="activate_run_target forwards the Run Target name and defaults to queued activation mode."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivateForcedMapsToForcedMode" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="541" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="activate_run_target with force=true maps to forced activation mode."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivateRejectionSurfacesRejectionReason" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="553" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A rejected activation surfaces the rejection reason as the returned error."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivateTransportFailureReturnsCommunicationError" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="567" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A transport failure during activate_run_target is reported as kCommunicationError."/>
+      </properties>
+    </testcase>
+    <testcase name="GetActiveRunTargetReturnsName" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="584" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="get_active_run_target returns the currently active Run Target name."/>
+      </properties>
+    </testcase>
+    <testcase name="GetActiveRunTargetNotAvailableReturnsActivationInProgress" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="597" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="When no active Run Target is available, get_active_run_target reports kActivationInProgress."/>
+      </properties>
+    </testcase>
+    <testcase name="GetActiveRunTargetTransportFailureReturnsCommunicationError" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="612" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A transport failure during get_active_run_target is reported as kCommunicationError."/>
+      </properties>
+    </testcase>
+    <testcase name="RegisterEmptyCallbackRejected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="630" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="Registering a null activation callback is rejected with kInvalidArguments."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivationResultInvokesRegisteredCallback" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="640" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.723" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A received activation_result sample is forwarded to the registered callback with its source and Run Target."/>
+      </properties>
+    </testcase>
+    <testcase name="InitialActivationSourceIsForwardedToCallback" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="671" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="An activation_result sample carrying kInitialActivation (the automatic first transition started by the Launch Manager on startup) is forwarded verbatim to the registered callback."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivationResultBacklogExceedingSubscriptionIsDrainedInSeveralCalls" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="702" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="Number of available samples larger than subscribed max_sample_count is read with repeated GetNewSamples calls until a batch smaller than the maximum signals an empty queue; every sample is forwarded exactly once."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivationResultDrainStopsOnEmptyBatch" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="736" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A receive handler firing with nothing retrievable issues exactly one GetNewSamples call and does not spin."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivationResultWithoutCallbackIsDroppedSafely" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="752" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="An activation_result received with no registered callback is dropped without crashing."/>
+      </properties>
+    </testcase>
+    <testcase name="ThrowingActivationCallbackIsContainedAndDrainContinues" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="769" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="An exception escaping the user activation callback is caught, the offending sample is dropped and the remaining samples of the batch are still forwarded."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivationCallbackThrowingNonStdExceptionIsContained" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="798" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="An activation callback throwing something not derived from std::exception is caught as well."/>
+      </properties>
+    </testcase>
+    <testcase name="ActivationResultGetNewSamplesFailureIsTolerated" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="818" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="A GetNewSamples failure while reading activation results is tolerated without crashing."/>
+      </properties>
+    </testcase>
+    <testcase name="LatestRegisteredCallbackWins" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="831" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="The most recently registered activation callback replaces any earlier ones."/>
+      </properties>
+    </testcase>
+    <testcase name="DestructorStopsDiscoveryWhenNeverConnected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="865" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="Destroying a never-connected instance stops discovery and does not unsubscribe."/>
+      </properties>
+    </testcase>
+    <testcase name="DestructorUnsubscribesWhenConnected" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="877" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.724" classname="LmControlUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="equivalence-classes"/>
+        <property name="Description" value="Destroying a connected instance unsubscribes from the activation_result event."/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="RunTargetActivationSourceUT" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-04T02:45:16.725">
+    <testcase name="StreamInsertionRendersEachSourceAsItsName" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="890" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.725" classname="RunTargetActivationSourceUT">
+      <properties>
+        <property name="Description" value="operator&lt;&lt; renders every RunTargetActivationSource value as its enumerator name."/>
+      </properties>
+    </testcase>
+    <testcase name="StreamInsertionRendersUnknownSourceAsNumericValue" file="score/launch_manager/src/lm_control/src/details/lm_control_impl_UT.cpp" line="905" status="run" result="completed" time="0." timestamp="2026-10-04T02:45:16.725" classname="RunTargetActivationSourceUT">
+      <properties>
+        <property name="Description" value="operator&lt;&lt; falls back to the numeric value for an out-of-range RunTargetActivationSource."/>
+      </properties>
+    </testcase>
+  </testsuite>
+</testsuites>

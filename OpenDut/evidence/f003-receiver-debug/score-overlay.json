@@ -1,0 +1,56 @@
+{
+  "unicast": "192.168.123.102",
+  "logging": {
+    "level": "debug",
+    "console": "true",
+    "file": {
+      "enable": "false",
+      "path": "/var/log/vsomeip.log"
+    },
+    "dlt": "false"
+  },
+  "applications": [
+    {
+      "name": "someipd",
+      "id": "0x0100"
+    }
+  ],
+  "routing": "someipd",
+  "services": [
+    {
+      "service": 3000,
+      "instance": 1,
+      "reliable": {
+        "port": 30512
+      },
+      "unreliable": {
+        "port": 30513
+      },
+      "events": [
+        {
+          "event": 30600,
+          "is_field": false
+        },
+        {
+          "event": 30601,
+          "is_field": false
+        }
+      ],
+      "eventgroups": [
+        {
+          "eventgroup": 1,
+          "events": [
+            30600,
+            30601
+          ]
+        }
+      ]
+    }
+  ],
+  "service-discovery": {
+    "enable": "true",
+    "multicast": "224.0.0.1",
+    "port": "30490",
+    "protocol": "udp"
+  }
+}
