@@ -19,6 +19,11 @@ runs this controller and the gateway in a real guest, with a separate native
 OpenSOVD lighting App and an optional managed openDuT Ethernet profile.
 See the [integration plan](docs/integration-proposal.md).
 
+**Real hardware:** the same controller also runs on an
+[MXChip AZ3166 board](az3166/README.md) (STM32F412, ThreadX `cortex_m4/gnu`).
+There, CAN frames are simulated over the board's USB UART with the SLCAN
+protocol, and the unchanged Zenoh2CAN bridge connects it to X-Verse.
+
 ## Build on Linux
 
 Use a Linux host with GCC, CMake 3.20+, Git, Python 3.10+ and SocketCAN support.

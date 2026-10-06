@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 
-def profile(interface="vcan0", endpoint="tcp/127.0.0.1:7447"):
+def profile(interface="vcan0", endpoint="tcp/127.0.0.1:7447", bus_type="socketcan", bitrate=None):
     def signal(name, topic, bit):
         return {"name": name, "zenoh_key": topic, "start_bit": bit, "length": 1,
                 "byte_order": "little_endian", "factor": 1, "offset": 0,
@@ -13,7 +13,8 @@ def profile(interface="vcan0", endpoint="tcp/127.0.0.1:7447"):
     return {
         "zenoh": {"mode": "client", "connect": [endpoint]},
         "publish_aggregate": True,
-        "can_buses": [{"name": "zonal", "interface": interface, "bus_type": "socketcan"}],
+        "can_buses": [dict({"name": "zonal", "interface": interface, "bus_type": bus_type},
+                           **({"bitrate": bitrate} if bitrate else {}))],
         "can_forwarding": {"enabled": False},
         "mappings": [
             {"name": "VCU status to zonal controller", "zenoh_key": "vcu/control/status",
@@ -35,8 +36,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--interface", default="vcan0")
     parser.add_argument("--endpoint", default="tcp/127.0.0.1:7447")
+    parser.add_argument("--bus-type", default="socketcan",
+                        help="python-can interface; 'slcan' with --interface /dev/ttyACM1 reaches the AZ3166")
+    parser.add_argument("--bitrate", type=int, help="nominal CAN bitrate for non-SocketCAN buses, e.g. 500000")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(profile(args.interface, args.endpoint), indent=2) + "\n")
+    args.output.write_text(json.dumps(profile(args.interface, args.endpoint, args.bus_type, args.bitrate), indent=2) + "\n")
     print(args.output)
