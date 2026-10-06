@@ -1,0 +1,40 @@
+@startuml forwarding-core
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title DD-10/11 Bridge core — from_serial() and _dispatch()
+|from_serial (reader thread of source port)|
+start
+:with _send_lock:\n  echo.sent(msg) if echo guard\n  bus.send(msg);
+if (CanError?) then (yes)
+  :can_tx_errors++ (logged);
+else (no)
+  :can_tx++;
+endif
+:for each other port: enqueue(msg);
+stop
+|_dispatch (main thread, CAN RX)|
+start
+if (error frame?) then (yes)
+  stop
+endif
+if (echo guard and is_echo(msg)?) then (yes)
+  :echo_suppressed++;
+  stop
+endif
+:can_rx++;
+:for each port: enqueue(msg);
+stop
+|enqueue (any thread)|
+start
+if (to_serial matches?) then (no)
+  :filtered_out++;
+elseif (connected?) then (no)
+  :dropped_offline++;
+elseif (queue full?) then (yes)
+  :dropped_queue_full++;
+else
+  :put_nowait(msg) → writer thread encodes and writes;
+endif
+stop
+@enduml

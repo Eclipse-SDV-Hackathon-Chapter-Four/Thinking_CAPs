@@ -1,0 +1,16 @@
+# Coding guideline CG-02 for the Serial2CAN bridge (see aspice/swe3-detailed-design).
+line-length = 120
+target-version = "py310"
+
+[lint]
+select = ["E", "F", "W", "B", "UP", "SIM", "PL", "RUF", "C4", "C90"]
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.per-file-ignores]
+# Tests assert on literal protocol values and use sys.path to import src/.
+"tests/*" = ["PLR2004", "PLR0915", "PLC0415"]
+# The ASPICE report generator is tooling, not product code: HTML templates and
+# report assembly are exempt from line length, complexity and size rules.
+"aspice/tools/*" = ["E501", "C901", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "RUF001"]

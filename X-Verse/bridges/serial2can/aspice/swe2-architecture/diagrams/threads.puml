@@ -1,0 +1,28 @@
+@startuml threads
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Dynamic view — threads, queues and locks
+left to right direction
+rectangle "main thread\nSerial2CanBridge.run()\nCAN RX loop + stats" as MAIN #E8F1FB
+rectangle "<port>-rx thread\nconnect · handshake · read" as RX #E8F1FB
+rectangle "<port>-tx thread\nqueue → serial" as TX #E8F1FB
+queue "port.queue\nbounded (tx_queue)" as Q
+rectangle "_send_lock\n(bus.send + echo record)" as SL
+rectangle "_write_lock\n(serial writes)" as WL
+rectangle "connected (Event)\nstopping (Event)" as EV
+queue "CAN bus" as BUS
+rectangle "serial device" as DEV
+BUS --> MAIN : recv(0.2 s)
+MAIN --> Q : enqueue (non-blocking)
+RX --> SL : from_serial
+SL --> BUS : send
+RX --> Q : fan-out to other ports
+Q --> TX : get(0.2 s)
+TX --> WL
+RX --> WL : handshake commands
+WL --> DEV
+DEV --> RX : read(0.1 s)
+RX --> EV : set / clear connected
+TX --> EV : clear on write error
+@enduml
