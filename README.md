@@ -274,6 +274,8 @@ Even when individual components work independently, teams still face difficultie
 
 Thinking CAPs will assemble a reusable cyber-physical blueprint that connects open-source SDV technologies with X-Verse and engineering automation.
 
+![Thinking CAPs EE architecture](misc/ee-architecture.png)
+
 ```text
 Simulation and Scenario Execution
               |
