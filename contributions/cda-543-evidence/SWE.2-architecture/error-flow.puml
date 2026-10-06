@@ -1,0 +1,88 @@
+@startuml CDA-543-Error-Flow
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+
+title Error Propagation Flow - CDA Issue #543
+
+participant "load_single_mdd" as LSM
+participant "load_ecu_from_file" as LEF
+participant "build_diagnostic_database" as BDD
+participant "resolve_com_params" as RCP
+participant "create_ecu_manager" as CEM
+
+== Happy Path ==
+
+LSM -> LEF: call with proto_data, ctx
+activate LEF
+
+LEF -> BDD: build database
+activate BDD
+BDD --> LEF: Ok(DiagnosticDatabase)
+deactivate BDD
+
+LEF -> RCP: resolve params
+activate RCP
+RCP --> LEF: Some(ComParams)
+deactivate RCP
+
+LEF -> CEM: create manager
+activate CEM
+CEM --> LEF: Ok(EcuManager)
+deactivate CEM
+
+LEF --> LSM: Ok(EcuLoadResult)
+deactivate LEF
+
+== Error: Missing Payload ==
+
+LSM -> LEF: call with empty proto_data
+activate LEF
+
+LEF -> BDD: build database
+activate BDD
+BDD --> LEF: **Err(MissingPayload)**
+deactivate BDD
+
+LEF --> LSM: **Err(MissingPayload)**
+deactivate LEF
+
+note right of LSM: Error propagated via ? operator
+
+== Error: Invalid ComParams ==
+
+LSM -> LEF: call with proto_data
+activate LEF
+
+LEF -> BDD: build database
+BDD --> LEF: Ok(DiagnosticDatabase)
+
+LEF -> RCP: resolve params
+activate RCP
+RCP --> LEF: None
+deactivate RCP
+
+LEF --> LSM: **Err(ComParamsInvalid)**
+deactivate LEF
+
+note right of LSM: ok_or_else converts Option to Result
+
+== Error: ECU Manager Creation Failed ==
+
+LSM -> LEF: call with proto_data
+activate LEF
+
+LEF -> BDD: build database
+BDD --> LEF: Ok(DiagnosticDatabase)
+
+LEF -> RCP: resolve params
+RCP --> LEF: Some(ComParams)
+
+LEF -> CEM: create manager
+activate CEM
+CEM --> LEF: **Err(EcuManagerFailed)**
+deactivate CEM
+
+LEF --> LSM: **Err(EcuManagerFailed)**
+deactivate LEF
+
+@enduml

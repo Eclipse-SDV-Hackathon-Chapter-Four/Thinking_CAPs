@@ -1,0 +1,53 @@
+@startuml
+
+title CDA MDD Loading Architecture - Issue #543
+
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+
+package "cda-main" {
+
+    class MddLoadingError {
+        LoadFailed
+        DecompressFailed
+        ..
+        MissingPayload
+        DatabaseBuildFailed
+        ComParamsInvalid
+        EcuManagerFailed
+    }
+
+    class load_single_mdd
+    class load_ecu_from_file
+    class build_diagnostic_database
+    class create_ecu_manager
+    class resolve_com_params
+}
+
+package "cda-database" {
+    class DiagnosticDatabase
+    class FileManager
+}
+
+package "cda-core" {
+    class EcuManager
+}
+
+load_single_mdd --> load_ecu_from_file
+load_ecu_from_file --> build_diagnostic_database
+load_ecu_from_file --> resolve_com_params
+load_ecu_from_file --> create_ecu_manager
+
+build_diagnostic_database --> DiagnosticDatabase
+create_ecu_manager --> EcuManager
+load_single_mdd --> FileManager
+
+build_diagnostic_database ..> MddLoadingError
+resolve_com_params ..> MddLoadingError
+create_ecu_manager ..> MddLoadingError
+
+note bottom of MddLoadingError
+  NEW variants for Issue #543
+end note
+
+@enduml
