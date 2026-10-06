@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="ITF" errors="3" failures="0" skipped="0" tests="3" time="0.531" timestamp="2026-10-05T23:06:24.054001+00:00" hostname="master"><testcase classname="" name="test_bigdata_async_with_cancellation" file="../_main/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/com_api_async_api_test.py" line="55" time="0.000"><error message="failed on setup with &quot;subprocess.CalledProcessError: Command 'score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh' returned non-zero exit status 1.&quot;">request = &lt;SubRequest 'target_init' for &lt;Function test_bigdata_async_with_cancellation&gt;&gt;
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+&gt;               raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+E               subprocess.CalledProcessError: Command 'score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh' returned non-zero exit status 1.
+
+../score_itf+/score/itf/plugins/docker.py:352: CalledProcessError</error></testcase><testcase classname="" name="test_bigdata_async_without_cancellation" file="../_main/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/com_api_async_api_test.py" line="69" time="0.000"><error message="failed on setup with &quot;subprocess.CalledProcessError: Command 'score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh' returned non-zero exit status 1.&quot;">request = &lt;SubRequest 'target_init' for &lt;Function test_bigdata_async_without_cancellation&gt;&gt;
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+&gt;               raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+E               subprocess.CalledProcessError: Command 'score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh' returned non-zero exit status 1.
+
+../score_itf+/score/itf/plugins/docker.py:352: CalledProcessError</error></testcase><testcase classname="" name="test_bigdata_async_stream" file="../_main/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/com_api_async_api_test.py" line="82" time="0.000"><error message="failed on setup with &quot;subprocess.CalledProcessError: Command 'score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh' returned non-zero exit status 1.&quot;">request = &lt;SubRequest 'target_init' for &lt;Function test_bigdata_async_stream&gt;&gt;
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+&gt;               raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+E               subprocess.CalledProcessError: Command 'score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh' returned non-zero exit status 1.
+
+../score_itf+/score/itf/plugins/docker.py:352: CalledProcessError</error></testcase></testsuite></testsuites>

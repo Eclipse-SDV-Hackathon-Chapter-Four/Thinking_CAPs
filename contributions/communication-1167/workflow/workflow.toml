@@ -1,0 +1,53 @@
+_version = 1
+
+[workflow]
+graph = "workflow.fabro"
+
+[run.model]
+provider = "deepseek"
+name = "deepseek-v4-flash"
+[run.model.fallbacks]
+deepseek-v4-flash = []
+[run.clone]
+enabled = false
+[run.run_branch]
+enabled = false
+push = false
+[run.agent]
+fabro_tools = false
+
+[[run.hooks]]
+id = "communication1167-admit"
+event = "stage_start"
+matcher = "^node_1b9b48f071c64d4e19b793b9$"
+blocking = true
+sandbox = false
+timeout = "14400s"
+command = ["/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python", "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/collector.py", "admit"]
+
+[[run.hooks]]
+id = "communication1167-apply"
+event = "stage_start"
+matcher = "^node_cccb092233fbfab308110dec$"
+blocking = true
+sandbox = false
+timeout = "14400s"
+command = ["/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python", "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/collector.py", "apply"]
+
+[[run.hooks]]
+id = "communication1167-verify"
+event = "stage_start"
+matcher = "^node_ba3b54de64d974a3bc0bf304$"
+blocking = true
+sandbox = false
+timeout = "14400s"
+command = ["/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python", "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/collector.py", "verify"]
+
+[[run.hooks]]
+id = "communication1167-export"
+event = "stage_start"
+matcher = "^node_d7cf370487bf809702d73667$"
+blocking = true
+sandbox = false
+timeout = "14400s"
+command = ["/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python", "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/collector.py", "export"]

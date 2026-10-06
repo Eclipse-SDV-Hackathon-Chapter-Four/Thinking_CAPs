@@ -1,0 +1,186 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/gateway/gateway_application:gateway_application_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 55 tests from 12 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from GatewayApplicationStartTest
+[0;32m[ RUN      ] [mGatewayApplicationStartTest.InvalidForwardedSpecifierIsSkipped
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 05:20:15.4015830 396382330 000 ECU1 NONE lola log warn verbose 3 Shortname in//valid does not adhere to shortname naming requirements. 
+2026/10/06 05:20:15.4015830 396382330 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Invalid instance specifier:  in//valid 
+[0;32m[       OK ] [mGatewayApplicationStartTest.InvalidForwardedSpecifierIsSkipped (6 ms)
+[0;32m[----------] [m1 test from GatewayApplicationStartTest (6 ms total)
+
+[0;32m[----------] [m1 test from GatewayApplicationProvideServiceTest
+[0;32m[ RUN      ] [mGatewayApplicationProvideServiceTest.NonWhitelistedServiceReturnsError
+2026/10/06 05:20:15.4015830 396382331 000 ECU1 NONE DFLT log warn verbose 2 GatewayApplication: Received request to provide a service instance locally, which has not been whitelisted in the configuration under <expected-received-services>:  svc/not_whitelisted 
+[0;32m[       OK ] [mGatewayApplicationProvideServiceTest.NonWhitelistedServiceReturnsError (0 ms)
+[0;32m[----------] [m1 test from GatewayApplicationProvideServiceTest (0 ms total)
+
+[0;32m[----------] [m1 test from GatewayApplicationOfferServiceTest
+[0;32m[ RUN      ] [mGatewayApplicationOfferServiceTest.NoSkeletonReturnsError
+2026/10/06 05:20:15.4015830 396382331 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: No skeleton found for  svc/b 
+[0;32m[       OK ] [mGatewayApplicationOfferServiceTest.NoSkeletonReturnsError (0 ms)
+[0;32m[----------] [m1 test from GatewayApplicationOfferServiceTest (0 ms total)
+
+[0;32m[----------] [m1 test from GatewayApplicationStopOfferServiceTest
+[0;32m[ RUN      ] [mGatewayApplicationStopOfferServiceTest.NoSkeletonDoesNotCrash
+2026/10/06 05:20:15.4015830 396382332 000 ECU1 NONE DFLT log warn verbose 2 GatewayApplication: No skeleton found for  svc/b 
+[0;32m[       OK ] [mGatewayApplicationStopOfferServiceTest.NoSkeletonDoesNotCrash (0 ms)
+[0;32m[----------] [m1 test from GatewayApplicationStopOfferServiceTest (0 ms total)
+
+[0;32m[----------] [m1 test from GatewayApplicationRegisterUpdateNotificationTest
+[0;32m[ RUN      ] [mGatewayApplicationRegisterUpdateNotificationTest.NoProxyReturnsUnknownServiceInstance
+2026/10/06 05:20:15.4015830 396382332 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: No proxy found for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationRegisterUpdateNotificationTest.NoProxyReturnsUnknownServiceInstance (0 ms)
+[0;32m[----------] [m1 test from GatewayApplicationRegisterUpdateNotificationTest (0 ms total)
+
+[0;32m[----------] [m1 test from GatewayApplicationUnregisterUpdateNotificationTest
+[0;32m[ RUN      ] [mGatewayApplicationUnregisterUpdateNotificationTest.NoProxyReturnsUnknownServiceInstance
+[0;32m[       OK ] [mGatewayApplicationUnregisterUpdateNotificationTest.NoProxyReturnsUnknownServiceInstance (0 ms)
+[0;32m[----------] [m1 test from GatewayApplicationUnregisterUpdateNotificationTest (0 ms total)
+
+[0;32m[----------] [m1 test from GatewayApplicationNotifyUpdateTest
+[0;32m[ RUN      ] [mGatewayApplicationNotifyUpdateTest.NoSkeletonReturnsUnknownServiceInstance
+2026/10/06 05:20:15.4015831 396382332 000 ECU1 NONE DFLT log warn verbose 2 GatewayApplication: No skeleton found for update notification  svc/b 
+[0;32m[       OK ] [mGatewayApplicationNotifyUpdateTest.NoSkeletonReturnsUnknownServiceInstance (0 ms)
+[0;32m[----------] [m1 test from GatewayApplicationNotifyUpdateTest (0 ms total)
+
+[0;32m[----------] [m4 tests from GatewayApplicationSetupTest
+[0;32m[ RUN      ] [mGatewayApplicationSetupTest.SetupDelegatesToTransport
+[0;32m[       OK ] [mGatewayApplicationSetupTest.SetupDelegatesToTransport (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSetupTest.SetupPropagatesTransportError
+[0;32m[       OK ] [mGatewayApplicationSetupTest.SetupPropagatesTransportError (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSetupTest.StartWithNoForwardedServicesSucceeds
+[0;32m[       OK ] [mGatewayApplicationSetupTest.StartWithNoForwardedServicesSucceeds (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSetupTest.SetupWithoutInjectedTransportCallsTransportFactory
+2026/10/06 05:20:15.4015833 396382360 000 ECU1 NONE lola log fatal verbose 7 Parsing sample transport config file /etc/gateway/transport.json failed with error: An error occurred during parsing. :  Failed to open file  . Terminating. 
+[0;32m[       OK ] [mGatewayApplicationSetupTest.SetupWithoutInjectedTransportCallsTransportFactory (97 ms)
+[0;32m[----------] [m4 tests from GatewayApplicationSetupTest (97 ms total)
+
+[0;32m[----------] [m2 tests from GatewayApplicationDestructorTest
+[0;32m[ RUN      ] [mGatewayApplicationDestructorTest.ShutdownCalledOnDestruction
+[0;32m[       OK ] [mGatewayApplicationDestructorTest.ShutdownCalledOnDestruction (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationDestructorTest.NoTransportDoesNotCrash
+[0;32m[       OK ] [mGatewayApplicationDestructorTest.NoTransportDoesNotCrash (0 ms)
+[0;32m[----------] [m2 tests from GatewayApplicationDestructorTest (0 ms total)
+
+[0;32m[----------] [m11 tests from GatewayApplicationSubscriptionTest
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.FirstSubscriberCallsRegisterUpdateNotification
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.FirstSubscriberCallsRegisterUpdateNotification (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.DuplicateSubscriberIsIgnored
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.DuplicateSubscriberIsIgnored (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.LastUnsubscriberCallsUnregisterUpdateNotification
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.LastUnsubscriberCallsUnregisterUpdateNotification (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.UnsubscribeWithNoActiveSubscriptionIsIgnored
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.UnsubscribeWithNoActiveSubscriptionIsIgnored (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.InvalidSpecifierIsIgnored
+2026/10/06 05:20:15.4015928 396383307 000 ECU1 NONE lola log warn verbose 3 Shortname svc/ does not adhere to shortname naming requirements. 
+2026/10/06 05:20:15.4015928 396383307 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Invalid instance specifier in subscription callback:  svc/ 
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.InvalidSpecifierIsIgnored (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.RegisterUpdateNotificationFailureDoesNotCrash
+2026/10/06 05:20:15.4015928 396383308 000 ECU1 NONE DFLT log error verbose 4 GatewayApplication: Failed to register for updates:  EventA  of  svc/a 
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.RegisterUpdateNotificationFailureDoesNotCrash (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.UnregisterUpdateNotificationFailureDoesNotCrash
+2026/10/06 05:20:15.4015928 396383308 000 ECU1 NONE DFLT log error verbose 4 GatewayApplication: Failed to unregister from updates:  EventA  of  svc/a 
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.UnregisterUpdateNotificationFailureDoesNotCrash (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsNoSubscriptionsNoTransportCall
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsNoSubscriptionsNoTransportCall (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsWithActiveSubscriptionsCallsTransport
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsWithActiveSubscriptionsCallsTransport (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsEmptyEntryNoTransportCall
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsEmptyEntryNoTransportCall (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsInvalidSpecifierKeySkipsEvent
+2026/10/06 05:20:15.4015928 396383310 000 ECU1 NONE lola log warn verbose 3 Shortname svc/ does not adhere to shortname naming requirements. 
+[0;32m[       OK ] [mGatewayApplicationSubscriptionTest.ReRegisterActiveEventSubscriptionsInvalidSpecifierKeySkipsEvent (0 ms)
+[0;32m[----------] [m11 tests from GatewayApplicationSubscriptionTest (0 ms total)
+
+[0;32m[----------] [m3 tests from GatewayApplicationRegisterCallbackTest
+[0;32m[ RUN      ] [mGatewayApplicationRegisterCallbackTest.CallbackFiredWithSubscriberCallsRegisterUpdateNotification
+[0;32m[       OK ] [mGatewayApplicationRegisterCallbackTest.CallbackFiredWithSubscriberCallsRegisterUpdateNotification (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationRegisterCallbackTest.CallbackFiredWithoutSubscriberDoesNotCallUnregister
+[0;32m[       OK ] [mGatewayApplicationRegisterCallbackTest.CallbackFiredWithoutSubscriberDoesNotCallUnregister (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationRegisterCallbackTest.UnknownEventDoesNotRegisterCallback
+2026/10/06 05:20:15.4015930 396383325 000 ECU1 NONE DFLT log error verbose 4 GatewayApplication: Event  EventX  not found in skeleton for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationRegisterCallbackTest.UnknownEventDoesNotRegisterCallback (0 ms)
+[0;32m[----------] [m3 tests from GatewayApplicationRegisterCallbackTest (1 ms total)
+
+[0;32m[----------] [m28 tests from GatewayApplicationFlowTest
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.StartRegistersFindServiceForForwardedService
+[0;32m[       OK ] [mGatewayApplicationFlowTest.StartRegistersFindServiceForForwardedService (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.StartHandlesFindServiceFailure
+2026/10/06 05:20:15.4015930 396383329 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Failed to start service discovery for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.StartHandlesFindServiceFailure (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ServiceFoundCreatesProxyAndPropagates
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ServiceFoundCreatesProxyAndPropagates (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ServiceFoundProxyCreationFailureIsHandled
+2026/10/06 05:20:15.4015931 396383338 000 ECU1 NONE lola log error verbose 1 Could not create GenericProxy as binding is null. 
+2026/10/06 05:20:15.4015931 396383339 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Failed to create proxy for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ServiceFoundProxyCreationFailureIsHandled (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ServiceDisappearedForwardsStopOffer
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ServiceDisappearedForwardsStopOffer (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ServiceReFoundRePropagates
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ServiceReFoundRePropagates (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.PropagateServiceFailureErasesProxy
+2026/10/06 05:20:15.4015933 396383355 000 ECU1 NONE DFLT log error verbose 3 GatewayApplication: ProvideService failed for  svc/a , will retry on next discovery 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.PropagateServiceFailureErasesProxy (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.PropagateServiceInvalidSpecifierKeyReturnsEarly
+2026/10/06 05:20:15.4015934 396383368 000 ECU1 NONE lola log warn verbose 3 Shortname svc/ does not adhere to shortname naming requirements. 
+2026/10/06 05:20:15.4015934 396383368 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Invalid instance specifier:  svc/ 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.PropagateServiceInvalidSpecifierKeyReturnsEarly (1 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.RegisterUpdateNotificationSubscribesAndSetsHandler
+[0;32m[       OK ] [mGatewayApplicationFlowTest.RegisterUpdateNotificationSubscribesAndSetsHandler (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.RegisterUpdateNotificationUnknownEventReturnsError
+2026/10/06 05:20:15.4015936 396383386 000 ECU1 NONE DFLT log error verbose 4 GatewayApplication: Event  EventX  not found in proxy for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.RegisterUpdateNotificationUnknownEventReturnsError (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.RegisterUpdateNotificationHandlerFailureReturnsError
+2026/10/06 05:20:15.4015937 396383395 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Failed to set receive handler for  EventA 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.RegisterUpdateNotificationHandlerFailureReturnsError (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ReceiveHandlerFiringForwardsNotifyUpdateOverTransport
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ReceiveHandlerFiringForwardsNotifyUpdateOverTransport (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.UnregisterUpdateNotificationUnsetsHandlerAndUnsubscribes
+[0;32m[       OK ] [mGatewayApplicationFlowTest.UnregisterUpdateNotificationUnsetsHandlerAndUnsubscribes (1 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.UnregisterUpdateNotificationUnknownEventReturnsError
+[0;32m[       OK ] [mGatewayApplicationFlowTest.UnregisterUpdateNotificationUnknownEventReturnsError (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ProvideServiceCreatesSkeletonRegistersCallbacksAndOffers
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ProvideServiceCreatesSkeletonRegistersCallbacksAndOffers (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ProvideServiceReuseExistingSkeletonReRegistersSubscriptions
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ProvideServiceReuseExistingSkeletonReRegistersSubscriptions (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.OfferServiceWithExistingSkeletonSucceeds
+[0;32m[       OK ] [mGatewayApplicationFlowTest.OfferServiceWithExistingSkeletonSucceeds (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.StopOfferServiceWithExistingSkeletonStopsOffer
+[0;32m[       OK ] [mGatewayApplicationFlowTest.StopOfferServiceWithExistingSkeletonStopsOffer (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.NotifyUpdateWithExistingSkeletonNotifiesEvent
+[0;32m[       OK ] [mGatewayApplicationFlowTest.NotifyUpdateWithExistingSkeletonNotifiesEvent (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.NotifyUpdateUnknownEventReturnsError
+2026/10/06 05:20:15.4015945 396383474 000 ECU1 NONE DFLT log warn verbose 3 GatewayApplication: Event  EventX  not found in skeleton for update notification 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.NotifyUpdateUnknownEventReturnsError (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ProvideServiceOfferFailureErasesSkeleton
+2026/10/06 05:20:15.4015945 396383482 000 ECU1 NONE lola log error verbose 4 SkeletonBinding::OfferService failed:  Offering of generic skeleton on destination gateway failed. :  
+2026/10/06 05:20:15.4015946 396383483 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Failed to offer service for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ProvideServiceOfferFailureErasesSkeleton (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ProvideServiceTearsDownSkeletonsOnDestruction
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ProvideServiceTearsDownSkeletonsOnDestruction (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ProvideServiceSkeletonCreationFailureReturnsError
+2026/10/06 05:20:15.4015947 396383497 000 ECU1 NONE Gene log error verbose 1 Failed to create SkeletonBinding for the given identifier. 
+2026/10/06 05:20:15.4015947 396383497 000 ECU1 NONE DFLT log error verbose 2 GatewayApplication: Failed to create skeleton for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ProvideServiceSkeletonCreationFailureReturnsError (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ProvideServiceSetReceiveHandlerRegistrationFailureStillSucceeds
+2026/10/06 05:20:15.4015948 396383505 000 ECU1 NONE DFLT log error verbose 4 GatewayApplication: Failed to set subscription callback for  EventA  of  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ProvideServiceSetReceiveHandlerRegistrationFailureStillSucceeds (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.SecondOfferServiceWorks
+[0;32m[       OK ] [mGatewayApplicationFlowTest.SecondOfferServiceWorks (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ReusedSkeletonOfferFailureIsToleratedAndResubscribes
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ReusedSkeletonOfferFailureIsToleratedAndResubscribes (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ReusedSkeletonReRegisterFailureIsTolerated
+2026/10/06 05:20:15.4015950 396383530 000 ECU1 NONE DFLT log error verbose 4 GatewayApplication: Failed to re-register for updates:  EventA  of  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ReusedSkeletonReRegisterFailureIsTolerated (0 ms)
+[0;32m[ RUN      ] [mGatewayApplicationFlowTest.ServiceDisappearedToleratesStopOfferForwardFailure
+2026/10/06 05:20:15.4015951 396383540 000 ECU1 NONE DFLT log warn verbose 2 GatewayApplication: Failed to forward StopOfferService for  svc/a 
+[0;32m[       OK ] [mGatewayApplicationFlowTest.ServiceDisappearedToleratesStopOfferForwardFailure (0 ms)
+[0;32m[----------] [m28 tests from GatewayApplicationFlowTest (21 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m55 tests from 12 test suites ran. (127 ms total)
+[0;32m[  PASSED  ] [m55 tests.

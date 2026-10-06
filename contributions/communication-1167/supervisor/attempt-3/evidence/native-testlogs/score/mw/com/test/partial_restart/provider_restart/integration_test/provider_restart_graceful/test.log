@@ -1,0 +1,943 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/test/partial_restart/provider_restart/integration_test:provider_restart_graceful
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/bazel-output/3f5123dc6d61824122bb8863a64ee7e0/sandbox/processwrapper-sandbox/552/execroot/_main/bazel-out/k8-fastbuild/bin/score/mw/com/test/partial_restart/provider_restart/integration_test/provider_restart_graceful.runfiles/score_itf+
+configfile: pytest.ini
+collected 1 item
+
+../score_itf+::test_provider_restart_graceful 
+-------------------------------- live log setup --------------------------------
+[2026-10-05 23:27:43.550] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: score/mw/com/test/partial_restart/provider_restart/integration_test/_image_provider_restart_graceful_loader.sh
+[2026-10-05 23:27:43.721] [INFO] [score.itf.plugins.docker] Bootstrap stdout: Loaded image: provider_restart_graceful:latest
+
+[2026-10-05 23:27:43.722] [DEBUG] [docker.utils.config] Trying paths: ['/home/vscode/.docker/config.json', '/home/vscode/.dockercfg']
+[2026-10-05 23:27:43.722] [DEBUG] [docker.utils.config] No config file found
+[2026-10-05 23:27:43.722] [DEBUG] [docker.utils.config] Trying paths: ['/home/vscode/.docker/config.json', '/home/vscode/.dockercfg']
+[2026-10-05 23:27:43.722] [DEBUG] [docker.utils.config] No config file found
+[2026-10-05 23:27:43.731] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 891
+[2026-10-05 23:27:44.977] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/networks/create HTTP/1.1" 201 87
+[2026-10-05 23:27:44.989] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/networks/cd4e899caa785f43c96154566544f585f791dcddbc1cabc2bbe8659b66bed6f3 HTTP/1.1" 200 564
+[2026-10-05 23:27:45.204] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/create HTTP/1.1" 201 88
+[2026-10-05 23:27:45.206] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/containers/7cdd96d3ea93722ef0c6838cdcb2568abdefa74f787477b64e369bf13e1a3b14/json HTTP/1.1" 200 None
+[2026-10-05 23:27:46.663] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/7cdd96d3ea93722ef0c6838cdcb2568abdefa74f787477b64e369bf13e1a3b14/start HTTP/1.1" 204 0
+[2026-10-05 23:27:46.664] [DEBUG] [docker.utils.config] Trying paths: ['/home/vscode/.docker/config.json', '/home/vscode/.dockercfg']
+[2026-10-05 23:27:46.664] [DEBUG] [docker.utils.config] No config file found
+[2026-10-05 23:27:46.664] [DEBUG] [docker.utils.config] Trying paths: ['/home/vscode/.docker/config.json', '/home/vscode/.dockercfg']
+[2026-10-05 23:27:46.664] [DEBUG] [docker.utils.config] No config file found
+[2026-10-05 23:27:46.672] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 891
+-------------------------------- live log call ---------------------------------
+[2026-10-05 23:27:46.676] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/7cdd96d3ea93722ef0c6838cdcb2568abdefa74f787477b64e369bf13e1a3b14/exec HTTP/1.1" 201 74
+[2026-10-05 23:27:46.678] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/start HTTP/1.1" 101 0
+[2026-10-05 23:27:46.732] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:46.735] [INFO] [provider_restart_application] Test Main: Running iteration 1 of 3 of Provider-Restart-Test
+[2026-10-05 23:27:46.735] [INFO] [provider_restart_application] Controller Step (1) - Fork consumer process and set up checkpoint-communication-objects
+[2026-10-05 23:27:46.735] [INFO] [provider_restart_application] Controller: Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-05 23:27:46.735] [INFO] [provider_restart_application] Controller Step (1): forking Consumer process
+[2026-10-05 23:27:46.735] [INFO] [provider_restart_application] Controller Step (1): successfully forked Consumerprocess with PID: 14
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Controller Step (2) - Fork provider process and set up checkpoint-communication-objects
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Controller Step (2): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Controller Step (2): forking Provider process
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Controller Step (2): successfully forked Providerprocess with PID: 15
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking ...
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Controller Step (3) - Waiting for provider to reach checkpoint 1
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:46.736] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking done.
+[2026-10-05 23:27:46.737] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:46.737] [INFO] [provider_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:46.737] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:46.737] [INFO] [provider_restart_application] Provider: Before Skeleton Creation.
+[2026-10-05 23:27:46.737] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:46.737] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866737 184891401 000 ECU1 PROV lola log info verbose 2 2026/10/05 23:27:46.2866737 184891401 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com. 
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application] No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d4be0 "partial_restart_test")
+[2026-10-05 23:27:46.738] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-53 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 30-54 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d48d0 "partial_restart_test")
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-52 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00 00-52 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:46.739] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 08-48 0D-64 FE-7F 00-00 A0-5A 4E-6C 19-5C 00-00 90-5A 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 38-48 0D-64 FE-7F 00-00 40-48 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 40-FD 4D-6C 19-5C 00-00>)
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 F8-44 0D-64 FE-7F 00-00 30-68 4E-6C 19-5C 00-00 20-68 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 28-45 0D-64 FE-7F 00-00 30-45 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 A0-FD 4D-6C 19-5C 00-00>)
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.740] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891404 000 ECU1 PROV lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] Provider: Successfully created lola skeleton
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891408 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891408 000 ECU1 PROV lola log debug verbose 5 Recreating SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891408 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001 
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891409 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001-b
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891409 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000008265-00001
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] Consumer: Successfully called StartFindService
+[2026-10-05 23:27:46.741] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866738 184891412 000 ECU1 PROV lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  8265 : 1  are as follows:
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] QM-Ctrl:  1326 , ASIL_B-Ctrl:  1326 , Data:  344
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891412 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891414 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891415 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readAccessForEveryBody
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:78:
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application]     Function call: AllocateNamedTypedMemory(360, "/lola-data-0000000000008265-00001", @0x7ffe640d4ba0 ('score::memory::shared::permission::WorldReadable(index = 1)' with value 1-byte object <D0>))
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application]           Returns: 12-byte object <90-38 0D-64 FE-7F 00-00 01-3A 0D-64>
+[2026-10-05 23:27:46.742] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891415 000 ECU1 PROV shm log debug verbose 2 AllocateInTypedMemory Shm is in TypedMemory. Set file open flags
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] Uninteresting mock function call - returning default value.
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application]     Function call: RegisterShmObject('*' (42, 0x2A), 18)
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891416 000 ECU1 PROV lola log debug verbose 5 Created shared-memory-object for DATA (S:  8265  I: 1 )
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891420 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:46.743] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891420 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/15_asil-b_18489139976885
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891421 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B) 
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891422 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1 
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866739 184891422 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - found one service instance.
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891422 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891422 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/15_asil-qm_18489139976885
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] Provider: After Skeleton Offered.
+[2026-10-05 23:27:46.744] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891423 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] Controller Step (4) - Waiting for consumer to reach checkpoint 1
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] Controller: Step (3): Provider reached checkpoint 1
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 30-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.745] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] Provider: Sent data: (2, 43)
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891426 000 ECU1 PROV lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891427 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891427 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891429 000 ECU1 PROV lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] Consumer: Successfully created lola proxy
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] Consumer: Successfully subscribed
+[2026-10-05 23:27:46.746] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891431 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:46.747] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891431 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_15_ASIL_B
+[2026-10-05 23:27:46.747] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866740 184891432 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_15_ASIL_B
+[2026-10-05 23:27:46.747] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866741 184891433 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:46.747] [INFO] [provider_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-05 23:27:46.747] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:46.780] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866780 184891827 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866780 184891828 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_14_ASIL_B
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866780 184891829 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_14_ASIL_B
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866780 184891830 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (1) / member_2 (42)
+[2026-10-05 23:27:46.781] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (2) / member_2 (43)
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 02-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 38-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:46.782] [INFO] [provider_restart_application] Provider: Sent data: (3, 44)
+[2026-10-05 23:27:46.821] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:46.821] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (3) / member_2 (44)
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 03-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 40-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:46.822] [INFO] [provider_restart_application] Provider: Sent data: (4, 45)
+[2026-10-05 23:27:46.833] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:46.861] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (4) / member_2 (45)
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 04-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 48-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.862] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.863] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:46.863] [INFO] [provider_restart_application] Provider: Sent data: (5, 46)
+[2026-10-05 23:27:46.902] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:46.902] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:46.902] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.902] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.902] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 05-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 50-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application] Provider: Sent data: (6, 47)
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (5) / member_2 (46)
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application] Consumer: Expected number of samples received - checkpoint (1) reached!
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application] Controller: Step (4): Consumer reached checkpoint 1
+[2026-10-05 23:27:46.903] [INFO] [provider_restart_application] Controller Step (5) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:46.904] [INFO] [provider_restart_application] Controller Step (6) - Trigger provider to proceed to next checkpoint
+[2026-10-05 23:27:46.904] [INFO] [provider_restart_application] Controller Step (7) - Wait for provider to reach checkpoint
+[2026-10-05 23:27:46.904] [INFO] [provider_restart_application] Provider: Stopping cyclic event sending.
+[2026-10-05 23:27:46.904] [INFO] [provider_restart_application] Consumer: Now waiting for event switch to kSubscriptionPending!
+[2026-10-05 23:27:46.935] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:46.942] [INFO] [provider_restart_application] Provider: Stopping service offering.
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:58:
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application]     Function call: UnregisterShmObject('*' (42, 0x2A), 0)
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893455 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Removed /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893455 000 ECU1 PROV lola log info verbose 1 Skeleton::PrepareStopOffer(): Could not exclusively lock service instance usage marker file indicating that some proxies are still subscribed. Will not remove shared memory.
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] Provider: Notifying controller, that checkpoint(2) has been reached.
+[2026-10-05 23:27:46.943] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893455 000 ECU1 PROV lola log info verbose 1 Service was stop offered successfully 
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893456 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Removed /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B) 
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893456 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 0 handles
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Consumer: find service handler called with 0 instances.
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - service instance disappeared.
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Consumer: Event switched to kSubscriptionPending - checkpoint (2) reached!
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893456 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893456 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 1 with 0 handles 
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893456 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Controller: Step (7): Provider reached checkpoint 2
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Controller Step (8) - Wait for consumer to reach checkpoint
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Controller Step (9) - Trigger provider to proceed to finish
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Controller Step (10) - Wait for provider process to terminate
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Provider: Finishing Actions!
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Controller: Step (8): Consumer reached checkpoint 2
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:46.944] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866943 184893460 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:46.954] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866954 184893563 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-05 23:27:46.954] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866954 184893563 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:46.954] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866954 184893564 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:46.964] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866964 184893666 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-05 23:27:46.964] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866964 184893666 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-05 23:27:46.964] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866964 184893666 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 15 died with exit status: 0
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Controller Step (11) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Controller Step (12) - (Re)Fork the Provider process
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Controller Step (12): forking Provider process
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Controller Step (12): successfully forked Providerprocess with PID: 30
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Controller Step (13) - Wait for (re-forked) provider to reach checkpoint (1)
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking ...
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking done.
+[2026-10-05 23:27:46.994] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:46.996] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:46.996] [INFO] [provider_restart_application] Provider: Before Skeleton Creation.
+[2026-10-05 23:27:46.996] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866997 184893995 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d48d0 "partial_restart_test")
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-52 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00 00-52 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:46.997] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 F8-44 0D-64 FE-7F 00-00 70-20 4E-6C 19-5C 00-00 60-20 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 28-45 0D-64 FE-7F 00-00 30-45 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 00-96 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application] Provider: Successfully created lola skeleton
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866998 184894003 000 ECU1 PROV lola log debug verbose 5 Reusing SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-05 23:27:46.998] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866998 184894007 000 ECU1 PROV lola log debug verbose 6 Updating PID of Skeleton (S:  8265  I: 1 ) with: 30
+[2026-10-05 23:27:46.999] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866998 184894012 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:46.999] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894013 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/30_asil-b_18489399425215
+[2026-10-05 23:27:46.999] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894014 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-05 23:27:46.999] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894015 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-05 23:27:46.999] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - found one service instance.
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894015 000 ECU1 PROV lola log info verbose 2 2026/10/05 23:27:46.2866999 184894015 000 ECU1 PROV lola log debug verbose 3 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1 
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] Provider: After Skeleton Offered.
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894016 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 1 with 1 handles 
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894016 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/30_asil-qm_18489399425215 
+[2026-10-05 23:27:47.000] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894017 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894017 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_30_ASIL_B 
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894018 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_30_ASIL_B
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] Controller Step (14) - Wait for consumer to reach checkpoint (3)
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] Controller: Step (13): Provider reached checkpoint 1
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894018 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] Provider: Sent data: (2, 43)
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894020 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:47.001] [INFO] [provider_restart_application] 2026/10/05 23:27:46.2866999 184894021 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:47.037] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.040] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867039 184894421 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:47.040] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867039 184894422 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_14_ASIL_B
+[2026-10-05 23:27:47.040] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867040 184894423 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_14_ASIL_B 
+[2026-10-05 23:27:47.041] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867040 184894423 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.041] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.041] [INFO] [provider_restart_application] Provider: Sent data: (3, 44)
+[2026-10-05 23:27:47.044] [INFO] [provider_restart_application] Controller: Step (14): Consumer reached checkpoint 3
+[2026-10-05 23:27:47.044] [INFO] [provider_restart_application] Controller Step (15) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:47.044] [INFO] [provider_restart_application] Controller Step (16) - Wait for consumer to reach checkpoint (4)
+[2026-10-05 23:27:47.044] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (1) / member_2 (42)
+[2026-10-05 23:27:47.044] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (2) / member_2 (43)
+[2026-10-05 23:27:47.080] [INFO] [provider_restart_application] Provider: Sent data: (4, 45)
+[2026-10-05 23:27:47.080] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.081] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (3) / member_2 (44)
+[2026-10-05 23:27:47.120] [INFO] [provider_restart_application] Provider: Sent data: (5, 46)
+[2026-10-05 23:27:47.120] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.121] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (4) / member_2 (45)
+[2026-10-05 23:27:47.138] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.161] [INFO] [provider_restart_application] Provider: Sent data: (6, 47)
+[2026-10-05 23:27:47.161] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.161] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (5) / member_2 (46)
+[2026-10-05 23:27:47.161] [INFO] [provider_restart_application] Controller Step (17) - Trigger Consumer to terminate
+[2026-10-05 23:27:47.161] [INFO] [provider_restart_application] Controller Step (18) - Wait for Consumer process to terminate
+[2026-10-05 23:27:47.161] [INFO] [provider_restart_application] Consumer: Finishing Actions!
+[2026-10-05 23:27:47.162] [INFO] [provider_restart_application] Controller: Step (16): Consumer reached checkpoint 4
+[2026-10-05 23:27:47.162] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867161 184895636 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-05 23:27:47.162] [INFO] [provider_restart_application] Consumer: Finishing Actions.
+[2026-10-05 23:27:47.162] [INFO] [provider_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:47.162] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867161 184895639 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:47.172] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867172 184895742 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-05 23:27:47.172] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867172 184895743 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-05 23:27:47.172] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867172 184895743 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:47.172] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867172 184895744 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:47.182] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867182 184895846 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-05 23:27:47.182] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867182 184895847 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-05 23:27:47.183] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867182 184895847 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:47.201] [INFO] [provider_restart_application] Provider: Sent data: (7, 48)
+[2026-10-05 23:27:47.211] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 14 died with exit status: 0
+[2026-10-05 23:27:47.211] [INFO] [provider_restart_application] Controller Step (19) - Trigger Provider to terminate
+[2026-10-05 23:27:47.211] [INFO] [provider_restart_application] Controller Step (20) - Wait for provider process to terminate
+[2026-10-05 23:27:47.211] [INFO] [provider_restart_application] Provider Step (4): Expected to get notification to continue to next checkpoint but got: 3
+[2026-10-05 23:27:47.240] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.241] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867241 184896437 000 ECU1 PROV lola log warn verbose 1 ClearCachedFileDescriptorForReregisteringShmObject called on non-existing cached file descriptor. Ignoring. 
+[2026-10-05 23:27:47.241] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867241 184896437 000 ECU1 PROV lola log debug verbose 5 Skeleton::PrepareStopOffer(): Removing SHM and marker file (S: 8265  I: 1 )
+[2026-10-05 23:27:47.242] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867241 184896439 000 ECU1 PROV lola log info verbose 1 Service was stop offered successfully
+[2026-10-05 23:27:47.242] [INFO] [provider_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:47.242] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867241 184896440 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:47.261] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 30 died with exit status: 0
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Controller: Test sequence finished with SUCCESS!
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Calling KillChildProcess(): 30
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Calling KillChildProcess(): 14
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] ChildProcessGuard: Child process with PID 30 was already dead, no need killing it with SIGKILL.
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] ChildProcessGuard: Child process with PID 14 was already dead, no need killing it with SIGKILL.
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Test Main: Running iteration 2 of 3 of Provider-Restart-Test
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Controller Step (1) - Fork consumer process and set up checkpoint-communication-objects
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Controller: Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Controller Step (1): forking Consumer process
+[2026-10-05 23:27:47.262] [INFO] [provider_restart_application] Controller Step (1): successfully forked Consumerprocess with PID: 39
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Controller Step (2) - Fork provider process and set up checkpoint-communication-objects
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Controller Step (2): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Controller Step (2): forking Provider process
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Controller Step (2): successfully forked Providerprocess with PID: 40
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking ...
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Controller Step (3) - Waiting for provider to reach checkpoint 1
+[2026-10-05 23:27:47.263] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking done.
+[2026-10-05 23:27:47.264] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:47.264] [INFO] [provider_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:47.264] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:47.264] [INFO] [provider_restart_application] Provider: Before Skeleton Creation.
+[2026-10-05 23:27:47.264] [INFO] [provider_restart_application] mw::log mw::log initialization error: initialization error: Error Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead.Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred occurred with context information:  with context information: Requested log mode not available. Falling back to console.Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896673 000 ECU1 PROV lola log info verbose 2 2026/10/05 23:27:47.2867265 184896673 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com. 
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application] No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d4be0 "partial_restart_test")
+[2026-10-05 23:27:47.265] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-53 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 30-54 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d48d0 "partial_restart_test")
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-52 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00 00-52 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:47.266] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 F8-44 0D-64 FE-7F 00-00 70-20 4E-6C 19-5C 00-00 60-20 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 28-45 0D-64 FE-7F 00-00 30-45 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 10-8D 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:47.267] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.267] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.267] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.267] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 08-48 0D-64 FE-7F 00-00 70-20 4E-6C 19-5C 00-00 60-20 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 38-48 0D-64 FE-7F 00-00 40-48 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 50-5E 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896678 000 ECU1 PROV lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896679 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application] Provider: Successfully created lola skeleton
+[2026-10-05 23:27:47.269] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896681 000 ECU1 PROV lola log debug verbose 5 Recreating SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896681 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] Consumer: Successfully called StartFindService
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896681 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001-b
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867265 184896682 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000008265-00001
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867266 184896685 000 ECU1 PROV lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  8265 : 1  are as follows:
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] QM-Ctrl:  1326 , ASIL_B-Ctrl:  1326 , Data:  344
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867266 184896686 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867266 184896688 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867266 184896690 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readAccessForEveryBody
+[2026-10-05 23:27:47.270] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:78:
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application]     Function call: AllocateNamedTypedMemory(360, "/lola-data-0000000000008265-00001", @0x7ffe640d4ba0 ('score::memory::shared::permission::WorldReadable(index = 1)' with value 1-byte object <D0>))
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application]           Returns: 12-byte object <90-38 0D-64 FE-7F 00-00 01-3A 0D-64>
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867266 184896691 000 ECU1 PROV shm log debug verbose 2 AllocateInTypedMemory Shm is in TypedMemory. Set file open flags
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] Uninteresting mock function call - returning default value.
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application]     Function call: RegisterShmObject('*' (42, 0x2A), 18)
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.271] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896693 000 ECU1 PROV lola log debug verbose 5 Created shared-memory-object for DATA (S:  8265  I: 1 )
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896697 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896698 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/40_asil-b_18489667267549 
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896699 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B) 
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896700 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - found one service instance.
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896701 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896701 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867267 184896702 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/40_asil-qm_18489667267549
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] Provider: After Skeleton Offered.
+[2026-10-05 23:27:47.272] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896702 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] Controller: Step (3): Provider reached checkpoint 1
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896705 000 ECU1 PROV lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] Controller Step (4) - Waiting for consumer to reach checkpoint 1
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 30-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.273] [INFO] [provider_restart_application] Provider: Sent data: (2, 43)
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896706 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896706 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896708 000 ECU1 PROV lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] Consumer: Successfully created lola proxy
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] Consumer: Successfully subscribed
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896709 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896709 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_40_ASIL_B
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896710 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_40_ASIL_B
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867268 184896711 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.274] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.275] [INFO] [provider_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-05 23:27:47.308] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867308 184897108 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867308 184897108 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_39_ASIL_B
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867308 184897109 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_39_ASIL_B 
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867308 184897110 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (1) / member_2 (42)
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (2) / member_2 (43)
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.309] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.310] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.310] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.310] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 02-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 38-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.310] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.310] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.310] [INFO] [provider_restart_application] Provider: Sent data: (3, 44)
+[2026-10-05 23:27:47.342] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.349] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.349] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (3) / member_2 (44)
+[2026-10-05 23:27:47.349] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.349] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 03-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 40-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application] Provider: Sent data: (4, 45)
+[2026-10-05 23:27:47.350] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.389] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.389] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (4) / member_2 (45)
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 04-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 48-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] Provider: Sent data: (5, 46)
+[2026-10-05 23:27:47.390] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.429] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (5) / member_2 (46)
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 05-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 50-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.430] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Provider: Sent data: (6, 47)
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Consumer: Expected number of samples received - checkpoint (1) reached!
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Controller Step (5) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Controller Step (6) - Trigger provider to proceed to next checkpoint
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Controller Step (7) - Wait for provider to reach checkpoint
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Consumer: Now waiting for event switch to kSubscriptionPending!
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Controller: Step (4): Consumer reached checkpoint 1
+[2026-10-05 23:27:47.431] [INFO] [provider_restart_application] Provider: Stopping cyclic event sending.
+[2026-10-05 23:27:47.443] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] Provider: Stopping service offering.
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898724 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Removed /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM) 
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:58:
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application]     Function call: UnregisterShmObject('*' (42, 0x2A), 0)
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898725 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Removed /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B) 
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898726 000 ECU1 PROV lola log info verbose 1 Skeleton::PrepareStopOffer(): Could not exclusively lock service instance usage marker file indicating that some proxies are still subscribed. Will not remove shared memory. 
+[2026-10-05 23:27:47.470] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898726 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 0 handles 
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Consumer: find service handler called with 0 instances.
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - service instance disappeared.
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Consumer: Event switched to kSubscriptionPending - checkpoint (2) reached!
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Provider: Notifying controller, that checkpoint(2) has been reached.
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898726 000 ECU1 PROV lola log info verbose 1 2026/10/05 23:27:47.2867470 184898726 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Service was stop offered successfully 
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898726 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 1 with 0 handles 
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898726 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Controller: Step (7): Provider reached checkpoint 2
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Controller Step (8) - Wait for consumer to reach checkpoint
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Controller: Step (8): Consumer reached checkpoint 2
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Controller Step (9) - Trigger provider to proceed to finish
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Controller Step (10) - Wait for provider process to terminate
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Provider: Finishing Actions!
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:47.471] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867470 184898730 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:47.481] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867481 184898834 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-05 23:27:47.481] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867481 184898834 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:47.481] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867481 184898835 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:47.491] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867491 184898936 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-05 23:27:47.491] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867491 184898937 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-05 23:27:47.492] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867491 184898937 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:47.521] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 40 died with exit status: 0
+[2026-10-05 23:27:47.521] [INFO] [provider_restart_application] Controller Step (11) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:47.521] [INFO] [provider_restart_application] Controller Step (12) - (Re)Fork the Provider process
+[2026-10-05 23:27:47.521] [INFO] [provider_restart_application] Controller Step (12): forking Provider process
+[2026-10-05 23:27:47.521] [INFO] [provider_restart_application] Controller Step (12): successfully forked Providerprocess with PID: 55
+[2026-10-05 23:27:47.521] [INFO] [provider_restart_application] Controller Step (13) - Wait for (re-forked) provider to reach checkpoint (1)
+[2026-10-05 23:27:47.522] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking ...
+[2026-10-05 23:27:47.522] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking done.
+[2026-10-05 23:27:47.522] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:47.523] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:47.524] [INFO] [provider_restart_application] Provider: Before Skeleton Creation.
+[2026-10-05 23:27:47.524] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:47.525] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867525 184899273 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:47.525] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.525] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.525] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:47.525] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d48d0 "partial_restart_test")
+[2026-10-05 23:27:47.525] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-52 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00 00-52 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 F8-44 0D-64 FE-7F 00-00 40-2C 4E-6C 19-5C 00-00 30-2C 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 28-45 0D-64 FE-7F 00-00 30-45 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 B0-95 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.526] [INFO] [provider_restart_application] Provider: Successfully created lola skeleton
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867525 184899281 000 ECU1 PROV lola log debug verbose 5 Reusing SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867526 184899285 000 ECU1 PROV lola log debug verbose 6 Updating PID of Skeleton (S:  8265  I: 1 ) with: 55
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867526 184899289 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867526 184899291 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/55_asil-b_18489927197682
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867526 184899292 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899293 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - found one service instance.
+[2026-10-05 23:27:47.527] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899293 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1 
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899293 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899294 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 1 with 1 handles 
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899294 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/55_asil-qm_18489927197682
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899295 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] Provider: After Skeleton Offered.
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899295 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_55_ASIL_B
+[2026-10-05 23:27:47.528] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899296 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_55_ASIL_B
+[2026-10-05 23:27:47.529] [INFO] [provider_restart_application] Provider: Sent data: (2, 43)
+[2026-10-05 23:27:47.529] [INFO] [provider_restart_application] Controller Step (14) - Wait for consumer to reach checkpoint (3)
+[2026-10-05 23:27:47.529] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899297 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1 
+[2026-10-05 23:27:47.529] [INFO] [provider_restart_application] Controller: Step (13): Provider reached checkpoint 1
+[2026-10-05 23:27:47.529] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899299 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:47.529] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867527 184899300 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:47.545] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.567] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867567 184899699 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:47.568] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867567 184899700 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_39_ASIL_B
+[2026-10-05 23:27:47.568] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867567 184899700 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_39_ASIL_B
+[2026-10-05 23:27:47.568] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867567 184899701 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.568] [INFO] [provider_restart_application] Provider: Sent data: (3, 44)
+[2026-10-05 23:27:47.568] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.571] [INFO] [provider_restart_application] Controller: Step (14): Consumer reached checkpoint 3
+[2026-10-05 23:27:47.571] [INFO] [provider_restart_application] Controller Step (15) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:47.572] [INFO] [provider_restart_application] Controller Step (16) - Wait for consumer to reach checkpoint (4)
+[2026-10-05 23:27:47.572] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (1) / member_2 (42)
+[2026-10-05 23:27:47.572] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (2) / member_2 (43)
+[2026-10-05 23:27:47.608] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.608] [INFO] [provider_restart_application] Provider: Sent data: (4, 45)
+[2026-10-05 23:27:47.608] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (3) / member_2 (44)
+[2026-10-05 23:27:47.647] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.649] [INFO] [provider_restart_application] Provider: Sent data: (5, 46)
+[2026-10-05 23:27:47.649] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.649] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (4) / member_2 (45)
+[2026-10-05 23:27:47.689] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.689] [INFO] [provider_restart_application] Provider: Sent data: (6, 47)
+[2026-10-05 23:27:47.689] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (5) / member_2 (46)
+[2026-10-05 23:27:47.689] [INFO] [provider_restart_application] Controller: Step (16): Consumer reached checkpoint 4
+[2026-10-05 23:27:47.689] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867689 184900917 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-05 23:27:47.690] [INFO] [provider_restart_application] Controller Step (17) - Trigger Consumer to terminate
+[2026-10-05 23:27:47.690] [INFO] [provider_restart_application] Controller Step (18) - Wait for Consumer process to terminate
+[2026-10-05 23:27:47.690] [INFO] [provider_restart_application] Consumer: Finishing Actions!
+[2026-10-05 23:27:47.690] [INFO] [provider_restart_application] Consumer: Finishing Actions.
+[2026-10-05 23:27:47.690] [INFO] [provider_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:47.690] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867689 184900919 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:47.700] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867699 184901022 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-05 23:27:47.700] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867700 184901022 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-05 23:27:47.700] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867700 184901022 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:47.700] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867700 184901023 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:47.710] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867710 184901125 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-05 23:27:47.710] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867710 184901125 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:47.710] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867710 184901126 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:47.729] [INFO] [provider_restart_application] Provider: Sent data: (7, 48)
+[2026-10-05 23:27:47.739] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 39 died with exit status: 0
+[2026-10-05 23:27:47.739] [INFO] [provider_restart_application] Controller Step (19) - Trigger Provider to terminate
+[2026-10-05 23:27:47.740] [INFO] [provider_restart_application] Controller Step (20) - Wait for provider process to terminate
+[2026-10-05 23:27:47.740] [INFO] [provider_restart_application] Provider Step (4): Expected to get notification to continue to next checkpoint but got: 3
+[2026-10-05 23:27:47.749] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.769] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867769 184901719 000 ECU1 PROV lola log warn verbose 1 ClearCachedFileDescriptorForReregisteringShmObject called on non-existing cached file descriptor. Ignoring.
+[2026-10-05 23:27:47.770] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867769 184901719 000 ECU1 PROV lola log debug verbose 5 Skeleton::PrepareStopOffer(): Removing SHM and marker file (S: 8265  I: 1 )
+[2026-10-05 23:27:47.770] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867769 184901721 000 ECU1 PROV lola log info verbose 1 Service was stop offered successfully
+[2026-10-05 23:27:47.770] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867770 184901723 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:47.770] [INFO] [provider_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:47.789] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 55 died with exit status: 0
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Controller: Test sequence finished with SUCCESS!
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Calling KillChildProcess(): 55
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Calling KillChildProcess(): 39
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] ChildProcessGuard: Child process with PID 55 was already dead, no need killing it with SIGKILL.
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] ChildProcessGuard: Child process with PID 39 was already dead, no need killing it with SIGKILL.
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Test Main: Running iteration 3 of 3 of Provider-Restart-Test
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Controller Step (1) - Fork consumer process and set up checkpoint-communication-objects
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Controller: Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-05 23:27:47.790] [INFO] [provider_restart_application] Controller Step (1): forking Consumer process
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Controller Step (1): successfully forked Consumerprocess with PID: 64
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Controller Step (2) - Fork provider process and set up checkpoint-communication-objects
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Controller Step (2): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Controller Step (2): forking Provider process
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Controller Step (2): successfully forked Providerprocess with PID: 65
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking ...
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Controller Step (3) - Waiting for provider to reach checkpoint 1
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking done.
+[2026-10-05 23:27:47.791] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] Provider: Before Skeleton Creation.
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867792 184901949 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.792] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d48d0 "partial_restart_test")
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-52 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00 00-52 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 F8-44 0D-64 FE-7F 00-00 40-2C 4E-6C 19-5C 00-00 30-2C 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 28-45 0D-64 FE-7F 00-00 30-45 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 F0-8F 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.793] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867792 184901951 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d4be0 "partial_restart_test")
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-53 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 30-54 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 08-48 0D-64 FE-7F 00-00 40-2C 4E-6C 19-5C 00-00 30-2C 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 38-48 0D-64 FE-7F 00-00 40-48 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 C0-1F 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.794] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] Provider: Successfully created lola skeleton
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901954 000 ECU1 PROV lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0 
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901954 000 ECU1 PROV lola log debug verbose 5 Recreating SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901954 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901955 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001-b
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901955 000 ECU1 PROV shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000008265-00001
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901955 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] Consumer: Successfully called StartFindService
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901957 000 ECU1 PROV lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  8265 : 1  are as follows:
+[2026-10-05 23:27:47.795] [INFO] [provider_restart_application] QM-Ctrl:  1326 , ASIL_B-Ctrl:  1326 , Data:  344
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901958 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901959 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901960 000 ECU1 PROV shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readAccessForEveryBody
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:78:
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application]     Function call: AllocateNamedTypedMemory(360, "/lola-data-0000000000008265-00001", @0x7ffe640d4ba0 ('score::memory::shared::permission::WorldReadable(index = 1)' with value 1-byte object <D0>))
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application]           Returns: 12-byte object <90-38 0D-64 FE-7F 00-00 01-3A 0D-64>
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867793 184901961 000 ECU1 PROV shm log debug verbose 2 AllocateInTypedMemory Shm is in TypedMemory. Set file open flags
+[2026-10-05 23:27:47.796] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] Uninteresting mock function call - returning default value.
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application]     Function call: RegisterShmObject('*' (42, 0x2A), 18)
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901963 000 ECU1 PROV lola log debug verbose 5 Created shared-memory-object for DATA (S:  8265  I: 1 )
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901968 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901969 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/65_asil-b_18490194838811
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901970 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901971 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:47.797] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - found one service instance.
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901971 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867794 184901972 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901973 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/65_asil-qm_18490194838811
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] Provider: After Skeleton Offered.
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901973 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901974 000 ECU1 PROV lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-05 23:27:47.798] [INFO] [provider_restart_application] Controller Step (4) - Waiting for consumer to reach checkpoint 1
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901975 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901975 000 ECU1 PROV lola log debug verbose 3 Controller: Step (3): Provider reached checkpoint 1
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 30-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] Provider: Sent data: (2, 43)
+[2026-10-05 23:27:47.799] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901976 000 ECU1 PROV lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] Consumer: Successfully created lola proxy
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] Consumer: Successfully subscribed
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901977 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901977 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_65_ASIL_B
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901978 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_65_ASIL_B
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867795 184901979 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.800] [INFO] [provider_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-05 23:27:47.835] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867835 184902378 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867835 184902379 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_64_ASIL_B
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867835 184902379 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_64_ASIL_B
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867835 184902380 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (1) / member_2 (42)
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (2) / member_2 (43)
+[2026-10-05 23:27:47.836] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 02-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 38-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application] Provider: Sent data: (3, 44)
+[2026-10-05 23:27:47.837] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.851] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.876] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.876] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.876] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (3) / member_2 (44)
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 03-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 40-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.877] [INFO] [provider_restart_application] Provider: Sent data: (4, 45)
+[2026-10-05 23:27:47.916] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 04-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 48-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] Provider: Sent data: (5, 46)
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] Consumer: Waiting for sample
+[2026-10-05 23:27:47.917] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (4) / member_2 (45)
+[2026-10-05 23:27:47.953] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application] Consumer: Calling GetNewSamples
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:65:
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application]     Function call: Trace('*' (42, 0x2A), @0x722ca5afa320 ('score::analysis::tracing::MetaInfo<score::analysis::tracing::AraComProperties>(index = 0)' with value 48-byte object <00-00 00-00 00-00 00-00 00-00 00-00 49-20 00-00 01-00 00-00 00-00 00-00 01-00 00-00 01-00 00-00 00-00 00-00 05-00 00-00 01-5C 00-00 19-5C 00-00>), @0x722ca5afa360 408-byte object <EF-BE AD-DE 2C-72 00-00 00-00 00-00 2C-72 00-00 50-01 00-00 00-00 00-00 08-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 ... 00-00 00-00 00-00 00-00 BE-BA FE-CA 19-5C 00-00 EF-BE AD-DE 2C-72 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 BE-BA FE-CA 2C-72 00-00 01-A5 AF-A5 2C-72 00-00>, 0)
+[2026-10-05 23:27:47.957] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Provider: Sent data: (6, 47)
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (5) / member_2 (46)
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Consumer: Expected number of samples received - checkpoint (1) reached!
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Controller Step (5) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Controller Step (6) - Trigger provider to proceed to next checkpoint
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Controller Step (7) - Wait for provider to reach checkpointConsumer: Now waiting for event switch to kSubscriptionPending!
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Controller: Step (4): Consumer reached checkpoint 1
+[2026-10-05 23:27:47.958] [INFO] [provider_restart_application] Provider: Stopping cyclic event sending.
+[2026-10-05 23:27:47.997] [INFO] [provider_restart_application] Provider: Stopping service offering.
+[2026-10-05 23:27:47.997] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184903998 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Removed /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:47.997] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:58:
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application]     Function call: UnregisterShmObject('*' (42, 0x2A), 0)
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184903999 000 ECU1 PROV lola log info verbose 1 Skeleton::PrepareStopOffer(): Could not exclusively lock service instance usage marker file indicating that some proxies are still subscribed. Will not remove shared memory.
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] Provider: Notifying controller, that checkpoint(2) has been reached.
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184903999 000 ECU1 PROV lola log info verbose 1 Service was stop offered successfully 
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184903999 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Removed /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-05 23:27:47.998] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184904000 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 0 handles
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Consumer: find service handler called with 0 instances.
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - service instance disappeared.
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Consumer: Event switched to kSubscriptionPending - checkpoint (2) reached!
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184904000 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184904001 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 1 with 0 handles
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Controller Step (8) - Wait for consumer to reach checkpoint
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Controller: Step (7): Provider reached checkpoint 2
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867997 184904001 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Controller: Step (8): Consumer reached checkpoint 2
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Controller Step (9) - Trigger provider to proceed to finish
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Controller Step (10) - Wait for provider process to terminate
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Provider: Finishing Actions!
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:47.999] [INFO] [provider_restart_application] 2026/10/05 23:27:47.2867998 184904004 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:48.008] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868008 184904108 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-05 23:27:48.008] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868008 184904108 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:48.009] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868008 184904109 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:48.019] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868018 184904211 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-05 23:27:48.019] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868018 184904211 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:48.019] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868018 184904211 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:48.048] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 65 died with exit status: 0
+[2026-10-05 23:27:48.048] [INFO] [provider_restart_application] Controller Step (11) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:48.048] [INFO] [provider_restart_application] Controller Step (12) - (Re)Fork the Provider process
+[2026-10-05 23:27:48.048] [INFO] [provider_restart_application] Controller Step (12): forking Provider process
+[2026-10-05 23:27:48.049] [INFO] [provider_restart_application] Controller Step (12): successfully forked Providerprocess with PID: 80
+[2026-10-05 23:27:48.049] [INFO] [provider_restart_application] Controller Step (13) - Wait for (re-forked) provider to reach checkpoint (1)
+[2026-10-05 23:27:48.049] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking ...
+[2026-10-05 23:27:48.049] [INFO] [provider_restart_application] Provider: Setting up GenericTraceAPI mocking done.
+[2026-10-05 23:27:48.049] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-05 23:27:48.050] [INFO] [provider_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-05 23:27:48.050] [INFO] [provider_restart_application] Provider: Before Skeleton Creation.
+[2026-10-05 23:27:48.051] [INFO] [provider_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-05 23:27:48.052] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868052 184904543 000 ECU1 PROV lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-05 23:27:48.052] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:48.052] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:48.052] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:55:
+[2026-10-05 23:27:48.052] [INFO] [provider_restart_application]     Function call: RegisterClient(1-byte object <00>, @0x7ffe640d48d0 "partial_restart_test")
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application]           Returns: 40-byte object <2A-52 0D-64 FE-7F 00-00 30-00 00-00 00-00 00-00 D8-5F 0D-64 FE-7F 00-00 00-53 0D-64 FE-7F 00-00 00-52 0D-64 FE-7F 00-00>
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] GMOCK WARNING:
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] Uninteresting mock function call - taking default action specified at:
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] score/mw/com/test/common_test_resources/generic_trace_api_test_resources.cpp:60:
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application]     Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <70-92 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 F8-44 0D-64 FE-7F 00-00 70-20 4E-6C 19-5C 00-00 60-20 4E-6C 19-5C 00-00 00-00 00-00 00-00 00-00 88-99 02-5B 19-5C 00-00 00-00 00-00 00-00 00-00 28-45 0D-64 FE-7F 00-00 30-45 0D-64 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 70-95 4E-6C 19-5C 00-00>)
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application]           Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] Provider: Successfully created lola skeleton
+[2026-10-05 23:27:48.053] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868052 184904551 000 ECU1 PROV lola log debug verbose 5 Reusing SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-05 23:27:48.054] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868053 184904555 000 ECU1 PROV lola log debug verbose 6 Updating PID of Skeleton (S:  8265  I: 1 ) with: 80
+[2026-10-05 23:27:48.054] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868053 184904560 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:48.054] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868053 184904561 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/80_asil-b_18490454185777
+[2026-10-05 23:27:48.054] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904562 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-05 23:27:48.054] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904563 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] Consumer: find service handler called
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] Consumer: FindServiceHandler handler done - found one service instance.
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904564 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904564 000 ECU1 PROV lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904564 000 ECU1 PROV lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 1 with 1 handles 
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904565 000 ECU1 PROV lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/80_asil-qm_18490454185777
+[2026-10-05 23:27:48.055] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904566 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] Provider: After Skeleton Offered.
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] Provider: Service instance is offered.
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904566 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_80_ASIL_B
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904567 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_80_ASIL_B
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904568 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] Provider: Sent data: (2, 43)
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] Controller: Step (13): Provider reached checkpoint 1
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] Controller Step (14) - Wait for consumer to reach checkpoint (3)
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904569 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 1 finished
+[2026-10-05 23:27:48.056] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868054 184904570 000 ECU1 PROV lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-05 23:27:48.095] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868094 184904970 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-05 23:27:48.095] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868094 184904971 000 ECU1 PROV mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_64_ASIL_B
+[2026-10-05 23:27:48.095] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868094 184904972 000 ECU1 PROV mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_64_ASIL_B
+[2026-10-05 23:27:48.095] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868095 184904973 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-05 23:27:48.095] [INFO] [provider_restart_application] Provider: Sent data: (3, 44)
+[2026-10-05 23:27:48.095] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:48.098] [INFO] [provider_restart_application] Controller Step (15) - Trigger Consumer to proceed to next checkpoint
+[2026-10-05 23:27:48.098] [INFO] [provider_restart_application] Controller Step (16) - Wait for consumer to reach checkpoint (4)
+[2026-10-05 23:27:48.098] [INFO] [provider_restart_application] Controller: Step (14): Consumer reached checkpoint 3
+[2026-10-05 23:27:48.099] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (1) / member_2 (42)
+[2026-10-05 23:27:48.099] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (2) / member_2 (43)
+[2026-10-05 23:27:48.135] [INFO] [provider_restart_application] Provider: Sent data: (4, 45)
+[2026-10-05 23:27:48.135] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:48.136] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (3) / member_2 (44)
+[2026-10-05 23:27:48.157] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:48.175] [INFO] [provider_restart_application] Provider: Sent data: (5, 46)
+[2026-10-05 23:27:48.176] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:48.176] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (4) / member_2 (45)
+[2026-10-05 23:27:48.216] [INFO] [provider_restart_application] Provider: Sent data: (6, 47)
+[2026-10-05 23:27:48.216] [INFO] [provider_restart_application] Consumer: Event receive handler called
+[2026-10-05 23:27:48.216] [INFO] [provider_restart_application] Consumer: Received sample from GetNewSamples: member_1 (5) / member_2 (46)
+[2026-10-05 23:27:48.216] [INFO] [provider_restart_application] Controller Step (17) - Trigger Consumer to terminate
+[2026-10-05 23:27:48.216] [INFO] [provider_restart_application] Controller Step (18) - Wait for Consumer process to terminate
+[2026-10-05 23:27:48.216] [INFO] [provider_restart_application] Consumer: Finishing Actions!
+[2026-10-05 23:27:48.217] [INFO] [provider_restart_application] Controller: Step (16): Consumer reached checkpoint 4
+[2026-10-05 23:27:48.217] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868216 184906189 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-05 23:27:48.217] [INFO] [provider_restart_application] Consumer: Finishing Actions.
+[2026-10-05 23:27:48.217] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868216 184906192 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:48.217] [INFO] [provider_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:48.232] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868232 184906342 000 ECU1 PROV lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-05 23:27:48.232] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868232 184906344 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-05 23:27:48.232] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868232 184906344 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:48.232] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868232 184906345 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:48.242] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868242 184906446 000 ECU1 PROV mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-05 23:27:48.242] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868242 184906446 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-05 23:27:48.242] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868242 184906447 000 ECU1 PROV mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-05 23:27:48.256] [INFO] [provider_restart_application] Provider: Sent data: (7, 48)
+[2026-10-05 23:27:48.258] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 531
+[2026-10-05 23:27:48.266] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 64 died with exit status: 0
+[2026-10-05 23:27:48.267] [INFO] [provider_restart_application] Controller Step (19) - Trigger Provider to terminate
+[2026-10-05 23:27:48.267] [INFO] [provider_restart_application] Controller Step (20) - Wait for provider process to terminate
+[2026-10-05 23:27:48.267] [INFO] [provider_restart_application] Provider Step (4): Expected to get notification to continue to next checkpoint but got: 3
+[2026-10-05 23:27:48.296] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868296 184906986 000 ECU1 PROV lola log warn verbose 1 ClearCachedFileDescriptorForReregisteringShmObject called on non-existing cached file descriptor. Ignoring. 
+[2026-10-05 23:27:48.296] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868296 184906986 000 ECU1 PROV lola log debug verbose 5 Skeleton::PrepareStopOffer(): Removing SHM and marker file (S: 8265  I: 1 )
+[2026-10-05 23:27:48.296] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868296 184906988 000 ECU1 PROV lola log info verbose 1 Service was stop offered successfully
+[2026-10-05 23:27:48.297] [INFO] [provider_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-05 23:27:48.297] [INFO] [provider_restart_application] 2026/10/05 23:27:48.2868296 184906989 000 ECU1 PROV lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-05 23:27:48.317] [INFO] [provider_restart_application] ChildProcessGuard: Process with PID 80 died with exit status: 0
+[2026-10-05 23:27:48.317] [INFO] [provider_restart_application] Controller: Test sequence finished with SUCCESS!
+[2026-10-05 23:27:48.317] [INFO] [provider_restart_application] Calling KillChildProcess(): 80
+[2026-10-05 23:27:48.317] [INFO] [provider_restart_application] Calling KillChildProcess(): 64
+[2026-10-05 23:27:48.317] [INFO] [provider_restart_application] ChildProcessGuard: Child process with PID 80 was already dead, no need killing it with SIGKILL.
+[2026-10-05 23:27:48.317] [INFO] [provider_restart_application] ChildProcessGuard: Child process with PID 64 was already dead, no need killing it with SIGKILL.
+[2026-10-05 23:27:48.360] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 529
+[2026-10-05 23:27:48.361] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/3df4d5f08c8421d5862d71f05088d5485f9cb7d250feb56271a213ffb19cc260/json HTTP/1.1" 200 529
+[2026-10-05 23:27:48.361] [DEBUG] [score.itf.core.process.wrapped_process] Application [provider_restart_application] exit code: [0]
+PASSED                                                                   [100%]
+------------------------------ live log teardown -------------------------------
+[2026-10-05 23:27:49.364] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/7cdd96d3ea93722ef0c6838cdcb2568abdefa74f787477b64e369bf13e1a3b14/stop?t=1 HTTP/1.1" 204 0
+[2026-10-05 23:27:49.410] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/containers/7cdd96d3ea93722ef0c6838cdcb2568abdefa74f787477b64e369bf13e1a3b14?v=False&link=False&force=True HTTP/1.1" 204 0
+[2026-10-05 23:27:50.448] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/networks/cd4e899caa785f43c96154566544f585f791dcddbc1cabc2bbe8659b66bed6f3 HTTP/1.1" 204 0
+
+
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/bazel-output/3f5123dc6d61824122bb8863a64ee7e0/sandbox/processwrapper-sandbox/552/execroot/_main/bazel-out/k8-fastbuild/testlogs/score/mw/com/test/partial_restart/provider_restart/integration_test/provider_restart_graceful/test.xml -
+============================== 1 passed in 6.92s ===============================

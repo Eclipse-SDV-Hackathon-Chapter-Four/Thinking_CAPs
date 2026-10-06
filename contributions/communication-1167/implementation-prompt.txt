@@ -1,0 +1,3318 @@
+Implement eclipse-score/communication issue #1167 as a draft C++17 contribution.
+Return ONLY JSON with keys files (array of {path, content}), rationale (string), assumptions (array of strings).
+Write one dedicated integration test under score/mw/com/test/api_idempotency/ with an application, configuration,
+BUILD targets and the native Python integration harness. Never modify production code or existing tests.
+Cover OfferService, StopOfferService, StartFindService, Subscribe, Unsubscribe.
+Each API must be called repeatedly and checked for the native documented behavior, errors and functional state.
+Use real LoLa objects and integration macros, not mocked APIs. Include bounded waits and explicit failing exits.
+Verify service remains discoverable and usable after duplicate offers; discovery absent after repeated stops;
+repeat StartFindService registrations and verify discovery results without incorrectly asserting equal registration handles;
+clean up every registration with StopFindService. Duplicate Subscribe uses the same sample limit, preserve the subscribed
+state and prove real sample reception; repeated Unsubscribe preserves unsubscribed state and re-subscription works.
+Respect asynchronous subscription and discovery; use synchronization with finite deadlines rather than arbitrary sleeps.
+Use the supplied source examples and their actual public API signatures. Keep configuration self-contained and valid.
+Preserve upstream license headers and follow CONTRIBUTING.md. Do not claim tests passed, acceptance or issue closure.
+The only permitted new paths are below score/mw/com/test/api_idempotency/. No shell scripts, CI changes, fake IDs or approvals.
+Issue text follows:
+### What
+
+For a specific set of public APIs we want calls to be idempotent, i.e. another call of this function would not change state and would not cause an error. An example for such a call would be OfferService() on as mw::com Skeleton. 
+
+Goal of this task would be to have one dedicated integration test that ensures that all API calls work as expected. (So far this has been included in different integration tests.)
+
+This is the (current) list of  APIs that should be covered by this integration test:
+
+- OfferService
+
+- StopOfferService
+
+- StartFindService
+
+- Subscribe
+
+- Unsubscribe
+
+### How
+
+Add an integration test to score/communication. 
+
+### Estimates for realization
+
+_No response_
+
+### Category
+
+- [ ] Affects Detailed Design
+
+### Requirements / Architecture
+
+- [x] Requirements / Architecture are not affected by this change?
+
+Pinned native source context:
+
+FILE CONTRIBUTING.md
+# Contributing
+
+- Thank you for your interest in contributing to the Communication Module of the Eclipse SCORE project!
+- This guide will walk you through the necessary steps to get started with development, adhere to our standards, and successfully submit your contributions.
+
+## Eclipse Contributor Agreement (ECA)
+
+Before making any contributions, **you must sign the Eclipse Contributor Agreement (ECA)**. This is a mandatory requirement for all contributors to Eclipse projects.
+
+Sign the ECA here: https://www.eclipse.org/legal/ECA.php
+
+Pull requests from contributors who have not signed the ECA **will not be accepted**.
+
+## Contribution Workflow
+
+To ensure a smooth contribution process, please follow the steps below:
+
+1. **Fork** the repository to your GitHub account.
+2. **Create a feature branch** from your fork:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Write clean and modular code**, adhering to:
+   - **C++17 standard**
+   - **Google C++ Style Guide**
+4. **Add tests** for any new functionality.
+5. **Ensure all tests pass** before submitting:
+   ```bash
+   bazel test //...
+   ```
+6. **Open a Pull Request** from your feature branch to the `main` branch of the upstream repository.
+   - Provide a clear title and description of your changes.
+   - Reference any related issues.
+
+## Development Setup
+
+### General Prerequisites
+
+- Bazel (Instructions for installing here: https://bazel.build/install)
+- Docker (Instructions for installing here: https://docs.docker.com/engine/install/)
+  - Note. Running Docker in rootless mode is not yet officially supported but may work. See https://docs.docker.com/engine/security/rootless/ for more information.
+
+### OS-specific Prerequisites
+
+We strive to be independent of the host platform via bazel sandboxing.
+Some host platforms come with limitations that bazel cannot sandbox sufficiently.
+For these platforms we collect instructions below.
+
+Please be aware, that while we officially support Ubuntu 24.04 as the host platform that we also test in our CI.
+While other platforms generally should work, we can give no such guarantee.
+Should you face issues with your host platform, feel free to raise an issue or discussion where we will try to support.
+
+#### Ubuntu 24.04 and newer
+
+Starting with Ubuntu 24.04 the security framework apparmor was introduced.
+The standard configuration of apparmor prohibits unprivileged user namespaces.
+This interferes with the bazel sandboxing mechanism and inhibits the linux-sandbox.
+Bazel falls back to a less powerful sandboxing mechanism that is insufficient for our project.
+This affects many bazel tests and potentially any bazel runnables.
+
+To work around this issue, you can run a bash script, which you can get by cloning the cicd-actions repository
+
+```
+git clone --depth=1 https://github.com/eclipse-score/cicd-actions
+```
+
+after which you can run
+
+```bash
+bash <path to cicd-actions repository>/unblock_user_namespace_for_linux_sandbox/action_callable.sh
+```
+
+Note. To take this into effect force, a bazel restart by shutting it down 1st
+
+```bash
+bazel shutdown
+```
+
+These steps must be rerun whenever the bazel version is updated.
+
+### Build Instructions
+
+To build and test the Communication Module, follow the steps below from the project root:
+
+```bash
+# Build all targets
+bazel build //...
+
+# Run all tests
+bazel test //...
+```
+
+### Optional: Configure a local Ubuntu snapshot mirror
+
+The Ubuntu snapshot mirrors are sometimes unreliable. See: https://answers.launchpad.net/launchpad/+question/824541
+
+If you have access to a more reliable Ubuntu snapshot mirror, you can make Bazel try it first while keeping
+the public `snapshot.ubuntu.com` URL as fallback.
+
+An example for such a snapshot mirror service is https://stablebuild.com
+
+1. Create a local downloader config at `user.downloader_config` (this file is ignored by git).
+   Replace the `<private-mirror-tag>` with the tag provided by the StableBuild API
+
+```text
+rewrite snapshot.ubuntu.com/ubuntu/[^/]*/(.*) <private-mirror-tag>.debmirror.stablebuild.com/2026-04-01T10:40:01Z/archive.ubuntu.com/ubuntu/$1
+rewrite snapshot.ubuntu.com/ubuntu/[^/]*/(.*) <private-mirror-tag>.debmirror.stablebuild.com/2026-04-01T10:40:01Z/ports.ubuntu.com/$1
+rewrite snapshot.ubuntu.com/ubuntu/(.*) snapshot.ubuntu.com/ubuntu/$1
+```
+
+2. Point Bazel to this local config in `user.bazelrc` (also ignored by git):
+
+```text
+common --downloader_config=user.downloader_config
+```
+
+3. Restart the Bazel server to reload the downloader config
+
+```shell
+bazel shutdown
+```
+
+### Linting Instructions
+
+For Linting the Code following solutions are available:
+
+Copyright Checker:
+```bash
+# Check Sources
+bazel run //:copyright.check
+
+# Fix Sources
+bazel run //:copyright.fix
+```
+
+C++ and Bazel files formatter:
+```bash
+# Check Sources
+bazel run //:format.check
+
+# Fix Sources
+bazel run //:format
+```
+
+### Testing Instructions
+
+The Communication Module includes extensive tests. Use the following commands:
+
+#### Run All Tests
+```bash
+bazel test //...
+```
+
+#### Run Specific Test Suites
+```bash
+bazel test //score/mw/com/impl:all
+bazel test //score/mw/com/message_passing:all
+```
+
+#### Test Categories
+- **Unit Tests**: Component-level testing
+- **Integration Tests**: Cross-component interactions
+- **Performance Tests**: Latency and throughput benchmarks
+- **Safety Tests**: ASIL-B compliance verification
+
+## Additional Resources
+
+For project details, documentation, and support resources, please refer to the main [README.md](README.md).
+For the release process, see [RELEASING.md](RELEASING.md).
+
+---
+
+## How to Document
+
+This section explains how to document C++ code so it appears in the generated API documentation.
+
+> API documentation is generated using Doxygen and integrated via Breathe.
+> Due to Sphinx version < 9.x limitations with complex C++ templates, use specific class
+> and function directives rather than namespace-level documentation.
+
+### Automatic API Documentation with @api Tag
+
+The project includes an automated RST generation utility that extracts items
+tagged with `@api` in Doxygen comments and generates categorized documentation.
+
+Add the `@api` tag to any Doxygen comment block to include it in the generated API documentation:
+
+```cpp
+/**
+ * @brief Connection handler for client communication
+ * @api
+ */
+class ClientConnection {
+    // ...
+};
+
+/**
+ * @brief Initialize the communication system
+ * @return true if successful
+ * @api
+ */
+bool initialize();
+```
+
+The utility automatically creates:
+
+- **API Index** — overview of all tagged items
+- **Namespace Reference** — namespaces containing `@api` items
+- **Class Reference** — classes and structs with `@api` tag
+- **Member Reference** — functions and methods with `@api` tag
+
+Build integration:
+
+```starlark
+generate_api_rst(
+    name = "generate_api_rst",
+    doxygen_xml = "//path/to:doxygen_target",
+    output_dir = "generated",
+    project_name = "mw::com",
+)
+```
+
+The generated RST files are automatically included in the Sphinx documentation
+under the "Generated API Documentation" section.
+
+### Using Breathe Directives
+
+To document specific classes or functions, use these Breathe directives in RST files:
+
+**Document a specific class:**
+
+```rst
+.. doxygenclass:: score::message_passing::detail::ClientConnection
+    :members:
+    :protected-members:
+    :undoc-members:
+```
+
+**Document a specific function:**
+
+```rst
+.. doxygenfunction:: score::mw::com::functionName
+```
+
+**Document a struct:**
+
+```rst
+.. doxygenstruct:: score::mw::com::ConfigStruct
+    :members:
+```
+
+### Further Resources
+
+- Browse the Doxygen-generated HTML at `bazel-bin/score/mw/com/design/doxygen_build/html/index.html`
+- Review header files in `score/mw/com/` for inline documentation
+- Check the design documentation at `score/mw/com/design/`
+
+**Thank you for contributing to the Eclipse SCORE Communication Module!**
+
+
+FILE score/mw/com/impl/proxy_base.h
+/********************************************************************************
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+#ifndef SCORE_MW_COM_IMPL_PROXY_BASE_H
+#define SCORE_MW_COM_IMPL_PROXY_BASE_H
+
+#include "score/mw/com/impl/find_service_handle.h"
+#include "score/mw/com/impl/find_service_handler.h"
+#include "score/mw/com/impl/handle_type.h"
+#include "score/mw/com/impl/instance_identifier.h"
+#include "score/mw/com/impl/instance_specifier.h"
+#include "score/mw/com/impl/proxy_binding.h"
+#include "score/mw/com/impl/reference_to_moveable.h"
+
+#include "score/result/result.h"
+
+#include <score/span.hpp>
+
+#include <memory>
+#include <string_view>
+
+namespace score::mw::com::impl
+{
+
+class ProxyEventBase;
+class ProxyFieldBase;
+class ProxyMethodBase;
+
+/// \brief Base class for all binding-unspecific proxies that are generated from the IDL.
+class ProxyBase
+{
+
+    // Suppress "AUTOSAR C++14 A11-3-1", The rule states: "Friend declarations shall not be used".
+    // Design decision. This class provides a view to the private members of this class.
+    // coverity[autosar_cpp14_a11_3_1_violation]
+    friend class ProxyBaseView;
+
+  public:
+    /// \brief Identifier for a specific instance of a specific service
+    using HandleType = ::score::mw::com::impl::HandleType;
+
+    /// \brief Creation of ProxyBase which should be called by parent class (generated Proxy or GenericProxy)
+    ProxyBase(std::unique_ptr<ProxyBinding> proxy_binding, HandleType handle);
+
+    virtual ~ProxyBase() = default;
+
+    /// \brief A Proxy shall not be copyable
+    /// \requirement SWS_CM_00136
+    ProxyBase(const ProxyBase&) = delete;
+    ProxyBase& operator=(const ProxyBase&) = delete;
+
+    /**
+     * \api
+     * \brief Tries to find a service that matches the given specifier synchronously.
+     * \details Does a synchronous one-shot lookup/find, which service instance(s) matching the specifier are there.
+     * \param specifier The instance specifier of the service.
+     * \return A result which on success contains a list of found handles that can be used to create a proxy. On
+     *         failure, returns an error code.
+     * \requirement SWS_CM_00622
+     */
+    static Result<ServiceHandleContainer<HandleType>> FindService(InstanceSpecifier specifier);
+
+    /**
+     * \api
+     * \brief Tries to find a service that matches the given instance identifier synchronously.
+     * \details Does a synchronous one-shot lookup/find, which service instance(s) matching the specifier are there.
+     * \param instance_identifier The instance_identifier of the service.
+     * \return A result which on success contains a list of found handles that can be used to create a proxy. On
+     *         failure, returns an error code.
+     */
+    static Result<ServiceHandleContainer<HandleType>> FindService(InstanceIdentifier instance_identifier);
+
+    /**
+     * \api
+     * \brief Starts asynchronous service discovery that matches the given instance identifier.
+     * \details Initiates a continuous service discovery operation. The provided handler will be called whenever
+     *          matching service instances become available or unavailable.
+     * \param handler The callback handler to be invoked when service availability changes.
+     * \param instance_identifier The instance identifier of the service to find.
+     * \return A result which on success contains a handle to control the find operation. On failure, returns an
+     *         error code.
+     */
+    static Result<FindServiceHandle> StartFindService(FindServiceHandler<HandleType> handler,
+                                                      InstanceIdentifier instance_identifier);
+
+    /**
+     * \api
+     * \brief Starts asynchronous service discovery that matches the given instance specifier.
+     * \details Initiates a continuous service discovery operation. The provided handler will be called whenever
+     *          matching service instances become available or unavailable.
+     * \param handler The callback handler to be invoked when service availability changes.
+     * \param instance_specifier The instance specifier of the service to find.
+     * \return A result which on success contains a handle to control the find operation. On failure, returns an
+     *         error code.
+     */
+    static Result<FindServiceHandle> StartFindService(FindServiceHandler<HandleType> handler,
+                                                      InstanceSpecifier instance_specifier);
+
+    /**
+     * \api
+     * \brief Stops an ongoing asynchronous service discovery operation.
+     * \details Terminates the service discovery initiated by StartFindService. After this call, the associated
+     *          handler will no longer be invoked.
+     * \param handle The handle returned by StartFindService identifying the find operation to stop.
+     * \return A result indicating success or failure of stopping the find operation.
+     */
+    static score::Result<void> StopFindService(const FindServiceHandle handle);
+
+    /**
+     * \api
+     * \brief Returns the handle that was used to instantiate this proxy.
+     * \return Handle identifying the service that this proxy is connected to.
+     */
+    const HandleType& GetHandle() const& noexcept;
+
+  protected:
+    using ProxyEvents =
+        std::map<std::string_view, std::reference_wrapper<ReferenceToMoveable<ProxyEventBase>::Reference>>;
+    using ProxyFields =
+        std::map<std::string_view, std::reference_wrapper<ReferenceToMoveable<ProxyFieldBase>::Reference>>;
+    using ProxyMethods =
+        std::map<std::string_view, std::reference_wrapper<ReferenceToMoveable<ProxyMethodBase>::Reference>>;
+
+    /// \brief A Proxy shall be movable
+    /// \requirement SWS_CM_00137
+    ProxyBase(ProxyBase&& other) noexcept = default;
+    ProxyBase& operator=(ProxyBase&& other) noexcept = default;
+
+    /// \brief Deinitialize all events and fields and tears down binding-level state.
+    ///  Must only be invoked from the wrapper class destructor (ProxyWrapperClass / GenericProxy).
+    ///      Calling this from user code leaves the binding in a torn-down state mid-life.
+    void Deinitialize();
+
+    bool AreBindingsValid() const noexcept;
+
+    /// \brief Dispatches to the binding for any binding specific setup and then initializes all method InArgs and
+    /// Return values.
+    ///
+    /// The initialization of the InArgs and Return values is done on the binding independent level since the binding
+    /// level is type erased. The values are initialized once on startup and then reused (i.e. we never re-initialize
+    /// the values when calling a method).
+    ///
+    /// \param additional_shm_size_bytes Additional shared memory size in bytes to be allocated for methods in addition
+    /// to the size calculated for the size of the method in args and return values. This is a temporary workaround
+    /// added to allow using types which dynamically allocate memory once at runtime. This is not currently public and
+    /// should not be used by user applications. (SWP-269486)
+    Result<void> SetupMethods(std::size_t additional_shm_size_bytes);
+
+    // Suppress "AUTOSAR C++14 M11-0-1" rule findings. This rule states: "Member data in non-POD class types shall
+    // be private.". We need these data elements to exchange this information between the ProxyBase and the
+    // GenericProxy. There are no class invariants to maintain which could be violated by directly accessing these
+    // member variables.
+    // coverity[autosar_cpp14_m11_0_1_violation]
+    std::unique_ptr<ProxyBinding> proxy_binding_;
+    // coverity[autosar_cpp14_m11_0_1_violation]
+    HandleType handle_;
+
+    ProxyEvents events_;
+    ProxyFields fields_;
+    ProxyMethods methods_;
+};
+
+class ProxyBaseView final
+{
+  public:
+    /// \brief Create a view on the ProxyBase instance to allow for additional methods on the ProxyBase.
+    ///
+    /// \param proxy_base The ProxyBase to create the view on.
+    explicit ProxyBaseView(ProxyBase& proxy_base) noexcept;
+
+    /// \brief Return a reference to the underlying implementation provided by the binding.
+    ProxyBinding& GetBinding() noexcept;
+
+    const HandleType& GetAssociatedHandleType() const& noexcept;
+
+    void RegisterEvent(const std::string_view event_name, ReferenceToMoveable<ProxyEventBase>::Reference& event);
+
+    void RegisterField(const std::string_view field_name, ReferenceToMoveable<ProxyFieldBase>::Reference& field);
+
+    void RegisterMethod(const std::string_view method_name, ReferenceToMoveable<ProxyMethodBase>::Reference& method);
+
+    bool AreBindingsValid() const;
+
+  private:
+    ProxyBase& proxy_base_;
+};
+
+}  // namespace score::mw::com::impl
+
+#endif  // SCORE_MW_COM_IMPL_PROXY_BASE_H
+
+
+FILE score/mw/com/impl/proxy_event.h
+/********************************************************************************
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+#ifndef SCORE_MW_COM_IMPL_PROXYEVENT_H
+#define SCORE_MW_COM_IMPL_PROXYEVENT_H
+
+#include "score/mw/com/impl/instance_identifier.h"
+#include "score/mw/com/impl/plumbing/proxy_event_binding_factory.h"
+#include "score/mw/com/impl/plumbing/sample_ptr.h"
+#include "score/mw/com/impl/proxy_base.h"
+#include "score/mw/com/impl/proxy_event_base.h"
+#include "score/mw/com/impl/proxy_event_binding.h"
+#include "score/mw/com/impl/runtime.h"
+#include "score/mw/com/impl/tracing/proxy_event_tracing.h"
+
+#include "score/mw/com/impl/mocking/i_proxy_event.h"
+
+#include "score/mw/log/logging.h"
+#include "score/result/result.h"
+
+#include <score/assert.hpp>
+
+#include <cstddef>
+#include <memory>
+#include <string_view>
+#include <utility>
+
+namespace score::mw::com::impl
+{
+
+// False Positive: this is a normal forward declaration.
+// Which is used to avoid cyclic dependency with proxy_field.h
+// coverity[autosar_cpp14_m3_2_3_violation]
+template <typename, typename...>
+class ProxyField;
+
+/// \brief This is the user-visible class of an event that is part of a proxy. It contains ProxyEvent functionality that
+/// requires knowledge of the SampleType. All type agnostic functionality is stored in the base class, ProxyEventBase.
+///
+/// The class itself is a concrete type. However, it delegates all actions to an implementation
+/// that is provided by the binding the proxy is operating on.
+///
+/// \tparam SampleDataType Type of data that is transferred by the event.
+template <typename SampleDataType>
+class ProxyEvent final : public ProxyEventBase
+{
+    template <typename T>
+    // Design decission: This friend class provides a view on the internals of ProxyEvent.
+    // This enables us to hide unncecessary internals from the enduser.
+    // coverity[autosar_cpp14_a11_3_1_violation]
+    friend class ProxyEventView;
+
+    // Design decission: ProxyField uses composition pattern to reuse code from ProxyEvent. These two classes also have
+    // shared private APIs which necessitates the use of the friend keyword.
+    // coverity[autosar_cpp14_a11_3_1_violation]
+    template <typename, typename...>
+    friend class ProxyFieldImpl;
+
+    // Empty struct that is used to make the second constructor only accessible to ProxyField (as it is a friend).
+    struct FieldOnlyConstructorEnabler
+    {
+    };
+
+  public:
+    using SampleType = SampleDataType;
+
+    /// Constructor which is dispatched to by the other public constructors.
+    ///
+    /// Instantiates the base class and members of ProxyEvent. Should only be called directly in tests.
+    ///
+    /// \param proxy_binding The binding that shall be associated with this proxy.
+    ProxyEvent(const std::string_view event_name, std::unique_ptr<ProxyEventBinding> proxy_event_binding);
+
+    /// \brief Constructor that allows to set the binding directly.
+    ///
+    /// This is used by ProxyField to pass in a ProxyEventBinding created using the ProxyFieldBindingFactory.
+    ///
+    /// \param proxy_binding The binding that shall be associated with this proxy.
+    ProxyEvent(ProxyBase& base,
+               const std::string_view event_name,
+               Result<std::unique_ptr<ProxyEventBinding>> proxy_event_binding,
+               FieldOnlyConstructorEnabler);
+
+    /// \brief Constructs a ProxyEvent by querying the base proxie's ProxyBinding for the respective ProxyEventBinding.
+    ///
+    /// \param base Proxy that contains this event
+    /// \param event_name Event name of the event, taken from the AUTOSAR model
+    /// \todo Remove unneeded parameter once we get these information from the configuration
+    ProxyEvent(ProxyBase& base, const std::string_view event_name);
+
+    /// \brief A ProxyEvent shall not be copyable
+    ProxyEvent(const ProxyEvent&) = delete;
+    ProxyEvent& operator=(const ProxyEvent&) & = delete;
+
+    /// \brief A ProxyEvent shall be movable
+    ProxyEvent(ProxyEvent&& other) noexcept = default;
+    ProxyEvent& operator=(ProxyEvent&& other) noexcept = default;
+
+    ~ProxyEvent() override = default;
+
+    /**
+     * \api
+     * \brief Receive pending data from the event.
+     * \details The user needs to provide a callable that fulfills the following signature:
+     *          void F(SamplePtr<const SampleType>) noexcept. This callback will be called for each sample
+     *          that is available at the time of the call. Notice that the number of callback calls cannot
+     *          exceed std::min(GetFreeSampleCount(), max_num_samples) times.
+     * \tparam F Callable with the signature void(SamplePtr<const SampleType>) noexcept
+     * \param receiver Callable with the appropriate signature. GetNewSamples will take ownership
+     *                 of this callable.
+     * \param max_num_samples Maximum number of samples to return via the given callable.
+     * \return Number of samples that were handed over to the callable or an error.
+     */
+    template <typename F>
+    Result<std::size_t> GetNewSamples(F&& receiver, std::size_t max_num_samples) noexcept;
+
+    void InjectMock(IProxyEvent<SampleType>& proxy_event_mock)
+    {
+        proxy_event_mock_ = &proxy_event_mock;
+        ProxyEventBase::InjectMock(proxy_event_mock);
+    }
+
+  private:
+    IProxyEvent<SampleType>* proxy_event_mock_;
+
+    /// \brief Indicates whether this event is a field event (i.e. owned by a ProxyField, which is a composite of
+    /// method/event) or not.
+};
+
+template <typename SampleType>
+ProxyEvent<SampleType>::ProxyEvent(const std::string_view event_name,
+                                   std::unique_ptr<ProxyEventBinding> proxy_event_binding)
+    : ProxyEventBase{event_name, std::move(proxy_event_binding)}, proxy_event_mock_{nullptr}
+{
+}
+
+template <typename SampleType>
+ProxyEvent<SampleType>::ProxyEvent(ProxyBase& base, const std::string_view event_name)
+
+    : ProxyEventBase{event_name,
+                     ProxyEventBindingFactory<SampleType>::Create(base.GetHandle(),
+                                                                  ProxyBaseView{base}.GetBinding(),
+                                                                  event_name,
+                                                                  ServiceElementType::EVENT)
+                         .and_then([](std::unique_ptr<ProxyEventBinding> binding) {
+                             return Result<std::unique_ptr<ProxyEventBinding>>{std::move(binding)};
+                         })},
+      proxy_event_mock_{nullptr}
+{
+    ProxyBaseView proxy_base_view{base};
+    proxy_base_view.RegisterEvent(event_name, GetReferenceToMoveable());
+    if (binding_ != nullptr)
+    {
+        const auto& instance_identifier = proxy_base_view.GetAssociatedHandleType().GetInstanceIdentifier();
+        tracing_data_ = tracing::GenerateProxyTracingStructFromEventConfig(instance_identifier, event_name);
+    }
+}
+
+template <typename SampleType>
+ProxyEvent<SampleType>::ProxyEvent(ProxyBase& base,
+                                   const std::string_view event_name,
+                                   Result<std::unique_ptr<ProxyEventBinding>> proxy_event_binding,
+                                   FieldOnlyConstructorEnabler)
+    : ProxyEventBase{event_name, std::move(proxy_event_binding)}, proxy_event_mock_{nullptr}
+{
+    // This is the specific ctor that is used by ProxyField for its "dispatch event" composite. Therefore, we do not
+    // register the event in the ProxyBase's event map, since registration in the correct field map is done by
+    // ProxyField ctor
+    if (binding_ != nullptr)
+    {
+        ProxyBaseView proxy_base_view{base};
+        const auto& instance_identifier = proxy_base_view.GetAssociatedHandleType().GetInstanceIdentifier();
+        tracing_data_ = tracing::GenerateProxyTracingStructFromFieldConfig(instance_identifier, event_name);
+    }
+}
+
+template <typename SampleType>
+template <typename F>
+Result<std::size_t> ProxyEvent<SampleType>::GetNewSamples(F&& receiver, std::size_t max_num_samples) noexcept
+{
+    if (proxy_event_mock_ != nullptr)
+    {
+        typename IProxyEvent<SampleType>::Callback mock_callback =
+            [receiver = std::forward<F>(receiver)](SamplePtr<SampleType> sample_ptr) noexcept {
+                receiver(std::move(sample_ptr));
+            };
+        return proxy_event_mock_->GetNewSamples(std::move(mock_callback), max_num_samples);
+    }
+
+    tracing::TraceGetNewSamples(tracing_data_, *binding_);
+
+    auto guard_factory = tracker_->Allocate(max_num_samples);
+
+    if (guard_factory.GetNumAvailableGuards() == 0U)
+    {
+        score::mw::log::LogWarn("lola")
+            << "Unable to emit new samples, no free sample slots for this subscription available.";
+        return MakeUnexpected(ComErrc::kMaxSamplesReached);
+    }
+
+    // The tracing_receiver created here always dispatches to the user provided receiver. Opposed to the user provided
+    // receiver, which gets a typed sample (SamplePtr<SampleType>), it expects to receive type-erased sample#+
+    // (SamplePtr<void>). Because this is what the type-erased binding layer provides. Before the tracing_receiver
+    // dispatches to the user provided receiver, it conditionally traces the received sample and then does a "rebind"
+    // from the type-erased SamplePtr<void>, the binding provides to the typed SamplePtr<SampleType>, the user provided
+    // receiver expects.
+    auto tracing_receiver =
+        tracing::CreateTracingGetNewSamplesCallback<SampleType, F>(tracing_data_, *binding_, std::forward<F>(receiver));
+
+    const auto get_new_samples_result = binding_->GetNewSamples(std::move(tracing_receiver), guard_factory);
+    if (!get_new_samples_result.has_value())
+    {
+        if (get_new_samples_result.error() == ComErrc::kNotSubscribed)
+        {
+            return get_new_samples_result;
+        }
+        else
+        {
+            return MakeUnexpected(ComErrc::kBindingFailure);
+        }
+    }
+    return get_new_samples_result;
+}
+
+template <typename SampleType>
+class ProxyEventView
+{
+  public:
+    explicit ProxyEventView(ProxyEvent<SampleType>& proxy_event) : proxy_event_{proxy_event} {}
+
+    ProxyEventBinding* GetBinding() const noexcept
+    {
+        return proxy_event_.binding_.get();
+    }
+
+  private:
+    ProxyEvent<SampleType>& proxy_event_;
+};
+
+}  // namespace score::mw::com::impl
+
+#endif  // SCORE_MW_COM_IMPL_PROXYEVENT_H
+
+
+FILE score/mw/com/impl/skeleton_base.h
+/********************************************************************************
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+#ifndef SCORE_MW_COM_IMPL_SKELETON_BASE_H
+#define SCORE_MW_COM_IMPL_SKELETON_BASE_H
+
+#include "score/mw/com/impl/flag_owner.h"
+#include "score/mw/com/impl/instance_identifier.h"
+#include "score/mw/com/impl/instance_specifier.h"
+#include "score/mw/com/impl/methods/skeleton_method_base.h"
+#include "score/mw/com/impl/reference_to_moveable.h"
+#include "score/mw/com/impl/skeleton_binding.h"
+
+#include "score/mw/com/impl/mocking/i_skeleton_base.h"
+
+#include "score/result/result.h"
+#include "score/scope_exit/scope_exit.h"
+
+#include <score/span.hpp>
+#include <optional>
+
+#include <functional>
+#include <map>
+#include <memory>
+#include <string_view>
+
+namespace score::mw::com::impl
+{
+
+class SkeletonEventBase;
+class SkeletonFieldBase;
+class SkeletonMethodBase;
+
+/// \brief Parent class for all generated skeletons. Only the generated skeletons will be user facing. But in order to
+/// reduce code duplication, we encapsulate the common logic in here.
+class SkeletonBase
+{
+  public:
+    using SkeletonEvents =
+        std::map<std::string_view, std::reference_wrapper<ReferenceToMoveable<SkeletonEventBase>::Reference>>;
+    using SkeletonFields =
+        std::map<std::string_view, std::reference_wrapper<ReferenceToMoveable<SkeletonFieldBase>::Reference>>;
+    using SkeletonMethods =
+        std::map<std::string_view, std::reference_wrapper<ReferenceToMoveable<SkeletonMethodBase>::Reference>>;
+
+    /// \brief Creation of service skeleton with provided Skeleton binding
+    ///
+    /// \requirement SWS_CM_00130
+    ///
+    /// \param skeleton_binding The SkeletonBinding which is created using SkeletonBindingFactory.
+    /// \param instance_id The instance identifier which uniquely identifies this Skeleton instance.
+    SkeletonBase(std::unique_ptr<SkeletonBinding> skeleton_binding, InstanceIdentifier instance_id);
+
+    virtual ~SkeletonBase() = default;
+
+    /// \brief A Skeleton shall not be copyable
+    /// \requirement SWS_CM_00134
+    SkeletonBase(const SkeletonBase&) = delete;
+    SkeletonBase& operator=(const SkeletonBase&) = delete;
+
+    /**
+     * \api
+     * \brief Offer the respective service to other applications
+     * \return On failure, returns an error code according to the SW Component Requirements SCR-17434118 and
+     * SCR-566325.
+     */
+    [[nodiscard]] Result<void> OfferService();
+
+    /**
+     * \api
+     * \brief Stops offering the respective service to other applications
+     * \requirement SWS_CM_00111
+     */
+    void StopOfferService();
+
+    void InjectMock(ISkeletonBase& skeleton_mock)
+    {
+        skeleton_mock_ = &skeleton_mock;
+    }
+
+  protected:
+    [[nodiscard]] bool AreBindingsValid() const noexcept;
+
+    // Suppress "AUTOSAR C++14 A11-3-1", The rule states: "Friend declarations shall not be used".
+    // Design decision. This class provides a view to the private members of this class.
+    // coverity[autosar_cpp14_a11_3_1_violation]
+    friend class SkeletonBaseView;
+
+    /// \brief A Skeleton shall be movable
+    /// \requirement SWS_CM_00135
+    SkeletonBase(SkeletonBase&& other) noexcept = default;
+    SkeletonBase& operator=(SkeletonBase&& other) noexcept = default;
+
+  private:
+    std::unique_ptr<SkeletonBinding> binding_;
+    SkeletonEvents events_;
+    SkeletonFields fields_;
+    SkeletonMethods methods_;
+    InstanceIdentifier instance_id_;
+
+    ISkeletonBase* skeleton_mock_;
+
+    [[nodiscard]] score::Result<std::vector<utils::ScopeExit<>>> OfferServiceEvents() const noexcept;
+    [[nodiscard]] score::Result<std::vector<utils::ScopeExit<>>> OfferServiceFields() const noexcept;
+
+    FlagOwner service_offered_flag_;
+};
+
+class SkeletonBaseView
+{
+  public:
+    explicit SkeletonBaseView(SkeletonBase& skeleton_base);
+
+    [[nodiscard]] InstanceIdentifier GetAssociatedInstanceIdentifier() const;
+
+    [[nodiscard]] SkeletonBinding& GetBinding() const;
+
+    void RegisterEvent(std::string_view event_name, ReferenceToMoveable<SkeletonEventBase>::Reference& event);
+
+    void RegisterField(std::string_view field_name, ReferenceToMoveable<SkeletonFieldBase>::Reference& field);
+
+    void RegisterMethod(std::string_view method_name, ReferenceToMoveable<SkeletonMethodBase>::Reference& method);
+
+    [[nodiscard]] const SkeletonBase::SkeletonEvents& GetEvents() const& noexcept;
+
+    [[nodiscard]] const SkeletonBase::SkeletonFields& GetFields() const& noexcept;
+
+    [[nodiscard]] const SkeletonBase::SkeletonMethods& GetMethods() const& noexcept;
+
+    [[nodiscard]] bool AreBindingsValid() const;
+
+  private:
+    SkeletonBase& skeleton_base_;
+};
+
+std::optional<InstanceIdentifier> GetInstanceIdentifier(const InstanceSpecifier& specifier);
+
+}  // namespace score::mw::com::impl
+
+#endif  // SCORE_MW_COM_IMPL_SKELETON_BASE_H
+
+
+FILE score/mw/com/test/all_service_elements/BUILD
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@score_baselibs//score/language/safecpp:toolchain_features.bzl", "COMPILER_WARNING_FEATURES")
+load("//bazel/tools:json_schema_validator.bzl", "validate_json_schema_test")
+load("//score/mw/com/test:pkg_application.bzl", "pkg_application")
+
+validate_json_schema_test(
+    name = "validate_lola_schema",
+    json = "config/mw_com_config.json",
+    schema = "//score/mw/com:config_schema",
+    tags = ["lint"],
+)
+
+cc_library(
+    name = "test_constants",
+    srcs = ["test_constants.cpp"],
+    hdrs = ["test_constants.h"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":datatype",
+        "//score/mw/com",
+    ],
+)
+
+cc_library(
+    name = "datatype",
+    srcs = ["all_service_elements_datatype.cpp"],
+    hdrs = ["all_service_elements_datatype.h"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = ["//score/mw/com"],
+)
+
+cc_library(
+    name = "consumer",
+    srcs = ["consumer.cpp"],
+    hdrs = ["consumer.h"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":datatype",
+        ":test_constants",
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:fail_test",
+        "//score/mw/com/test/common_test_resources:process_synchronizer",
+        "//score/mw/com/test/common_test_resources:proxy_container",
+        "//score/mw/com/test/common_test_resources:proxy_event_receiver",
+        "//score/mw/com/test/common_test_resources:proxy_event_state_change_notifier",
+        "//score/mw/com/test/fields/test_resources:getter_and_setter_checkers",
+    ],
+)
+
+cc_library(
+    name = "provider",
+    srcs = ["provider.cpp"],
+    hdrs = ["provider.h"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":datatype",
+        ":test_constants",
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:fail_test",
+        "//score/mw/com/test/common_test_resources:process_synchronizer",
+        "//score/mw/com/test/common_test_resources:skeleton_container",
+    ],
+)
+
+cc_binary(
+    name = "main_provider",
+    srcs = ["main_provider.cpp"],
+    data = [
+        "config/mw_com_config.json",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        "aborts_upon_exception",
+    ],
+    deps = [
+        ":provider",
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:assert_handler",
+        "//score/mw/com/test/common_test_resources:command_line_parser",
+        "//score/mw/com/test/common_test_resources:fail_test",
+        "//score/mw/com/test/common_test_resources:service_instance_manifest_parser",
+        "//score/mw/com/test/common_test_resources:stop_token_sig_term_handler",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+cc_binary(
+    name = "main_consumer",
+    srcs = ["main_consumer.cpp"],
+    data = [
+        "config/mw_com_config.json",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        "aborts_upon_exception",
+    ],
+    deps = [
+        ":consumer",
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:assert_handler",
+        "//score/mw/com/test/common_test_resources:service_instance_manifest_parser",
+        "//score/mw/com/test/common_test_resources:stop_token_sig_term_handler",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+cc_binary(
+    name = "main_consumer_and_provider",
+    srcs = ["main_consumer_and_provider.cpp"],
+    data = [
+        "config/mw_com_config.json",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        "aborts_upon_exception",
+    ],
+    deps = [
+        ":consumer",
+        ":provider",
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:assert_handler",
+        "//score/mw/com/test/common_test_resources:service_instance_manifest_parser",
+        "//score/mw/com/test/common_test_resources:stop_token_sig_term_handler",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+pkg_application(
+    name = "main_provider-pkg",
+    app_name = "MainProviderApp",
+    bin = [":main_provider"],
+    etc = [
+        "config/logging.json",
+        "config/mw_com_config.json",
+    ],
+    visibility = [
+        "//platform/aas/test/mw/com:__pkg__",
+        "//score/mw/com/test/all_service_elements:__subpackages__",
+    ],
+)
+
+pkg_application(
+    name = "main_consumer-pkg",
+    app_name = "MainConsumerApp",
+    bin = [":main_consumer"],
+    etc = [
+        "config/logging.json",
+        "config/mw_com_config.json",
+    ],
+    visibility = [
+        "//platform/aas/test/mw/com:__pkg__",
+        "//score/mw/com/test/all_service_elements:__subpackages__",
+    ],
+)
+
+pkg_application(
+    name = "main_consumer_and_provider-pkg",
+    app_name = "MainConsumerAndProviderApp",
+    bin = [":main_consumer_and_provider"],
+    etc = [
+        "config/logging.json",
+        "config/mw_com_config.json",
+    ],
+    visibility = [
+        "//platform/aas/test/mw/com:__pkg__",
+        "//score/mw/com/test/all_service_elements:__subpackages__",
+    ],
+)
+
+
+FILE score/mw/com/test/all_service_elements/all_service_elements_datatype.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/mw/com/test/all_service_elements/all_service_elements_datatype.h"
+
+
+FILE score/mw/com/test/all_service_elements/all_service_elements_datatype.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+#ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_ALL_SERVICE_ELEMENTS_DATATYPE_H
+#define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_ALL_SERVICE_ELEMENTS_DATATYPE_H
+
+#include "score/mw/com/types.h"
+
+#include <cstdint>
+
+namespace score::mw::com::test
+{
+
+using TestType = std::int32_t;
+
+template <typename Trait>
+class AllServiceElementsInterface : public Trait::Base
+{
+  public:
+    using Trait::Base::Base;
+
+    // Note. The events, methods and fields are intentionally interleaved since they will be constructed in the order of
+    // declaration and we want to test that the order of construction does not matter for the underlying implementation.
+    typename Trait::template Event<TestType> event_1{*this, "event_1"};
+
+    typename Trait::template Method<TestType(TestType, TestType)> with_in_args_and_return{*this,
+                                                                                          "with_in_args_and_return"};
+
+    typename Trait::template Field<TestType, WithGetter, WithNotifier> get_and_notifier_enabled_field{
+        *this,
+        "get_and_notifier_enabled_field"};
+
+    typename Trait::template Method<void(TestType, TestType)> with_in_args_only{*this, "with_in_args_only"};
+
+    typename Trait::template Field<TestType, WithGetter> get_only_enabled_field{*this, "get_only_enabled_field"};
+
+    typename Trait::template Method<TestType()> with_return_only{*this, "with_return_only"};
+
+    typename Trait::template Field<TestType, WithNotifier> notifier_only_enabled_field{*this,
+                                                                                       "notifier_only_enabled_field"};
+
+    typename Trait::template Method<void()> without_args_or_return{*this, "without_args_or_return"};
+
+    typename Trait::template Field<TestType, WithSetter, WithGetter, WithNotifier>
+        set_and_get_and_notifier_enabled_field{*this, "set_and_get_and_notifier_enabled_field"};
+
+    typename Trait::template Field<TestType, WithSetter, WithGetter> set_and_get_enabled_field{
+        *this,
+        "set_and_get_enabled_field"};
+
+    typename Trait::template Event<TestType> event_2{*this, "event_2"};
+
+    typename Trait::template Field<TestType, WithSetter, WithNotifier> set_and_notifier_enabled_field{
+        *this,
+        "set_and_notifier_enabled_field"};
+};
+
+using AllServiceElementsProxy = score::mw::com::AsProxy<AllServiceElementsInterface>;
+using AllServiceElementsSkeleton = score::mw::com::AsSkeleton<AllServiceElementsInterface>;
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_ALL_SERVICE_ELEMENTS_DATATYPE_H
+
+
+FILE score/mw/com/test/all_service_elements/config/logging.json
+{
+  "appId": "ASET",
+  "appDesc": "all_service_elements",
+  "logLevel": "kDebug",
+  "logLevelThresholdConsole": "kDebug",
+  "logMode": "kRemote"
+}
+
+
+FILE score/mw/com/test/all_service_elements/config/mw_com_config.json
+{
+  "serviceTypes": [
+    {
+      "serviceTypeName": "/score/mw/com/test/all_service_elements/all_service_elements_type",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "bindings": [
+        {
+          "binding": "SHM",
+          "serviceId": 3428,
+          "events": [
+            {
+              "eventName": "event_1",
+              "eventId": 1
+            },
+            {
+              "eventName": "event_2",
+              "eventId": 2
+            }
+          ],
+          "fields": [
+            {
+              "fieldName": "notifier_only_enabled_field",
+              "fieldId": 3
+            },
+            {
+              "fieldName": "set_and_notifier_enabled_field",
+              "fieldId": 4
+            },
+            {
+              "fieldName": "get_only_enabled_field",
+              "fieldId": 5
+            },
+            {
+              "fieldName": "get_and_notifier_enabled_field",
+              "fieldId": 6
+            },
+            {
+              "fieldName": "set_and_get_enabled_field",
+              "fieldId": 7
+            },
+            {
+              "fieldName": "set_and_get_and_notifier_enabled_field",
+              "fieldId": 8
+            }
+          ],
+          "methods": [
+            {
+              "methodName": "with_in_args_and_return",
+              "methodId": 9
+            },
+            {
+              "methodName": "with_in_args_only",
+              "methodId": 10
+            },
+            {
+              "methodName": "with_return_only",
+              "methodId": 11
+            },
+            {
+              "methodName": "without_args_or_return",
+              "methodId": 12
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "serviceInstances": [
+    {
+      "instanceSpecifier": "/score/mw/com/test/all_service_elements/all_service_elements_instance",
+      "serviceTypeName": "/score/mw/com/test/all_service_elements/all_service_elements_type",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "instances": [
+        {
+          "instanceId": 1024,
+          "asil-level": "B",
+          "binding": "SHM",
+          "events": [
+            {
+              "eventName": "event_1",
+              "maxSamples": 10,
+              "maxSubscribers": 3
+            },
+            {
+              "eventName": "event_2",
+              "maxSamples": 10,
+              "maxSubscribers": 3
+            }
+          ],
+          "fields": [
+            {
+              "fieldName": "notifier_only_enabled_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 4
+            },
+            {
+              "fieldName": "set_and_notifier_enabled_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 4
+            },
+            {
+              "fieldName": "get_only_enabled_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 4
+            },
+            {
+              "fieldName": "get_and_notifier_enabled_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 4
+            },
+            {
+              "fieldName": "set_and_get_enabled_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 4
+            },
+            {
+              "fieldName": "set_and_get_and_notifier_enabled_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 4
+            }
+          ],
+          "methods": [
+            {
+              "methodName": "with_in_args_and_return",
+              "queueSize": 1
+            },
+            {
+              "methodName": "with_in_args_only",
+              "queueSize": 1
+            },
+            {
+              "methodName": "with_return_only",
+              "queueSize": 1
+            },
+            {
+              "methodName": "without_args_or_return",
+              "queueSize": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "global": {
+    "asil-level": "B"
+  }
+}
+
+
+FILE score/mw/com/test/all_service_elements/consumer.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+#include "score/mw/com/test/all_service_elements/consumer.h"
+
+#include "score/mw/com/test/all_service_elements/all_service_elements_datatype.h"
+#include "score/mw/com/test/all_service_elements/test_constants.h"
+#include "score/mw/com/test/common_test_resources/fail_test.h"
+#include "score/mw/com/test/common_test_resources/process_synchronizer.h"
+#include "score/mw/com/test/common_test_resources/proxy_container.h"
+#include "score/mw/com/test/common_test_resources/proxy_event_receiver.h"
+#include "score/mw/com/test/common_test_resources/proxy_event_state_change_notifier.h"
+#include "score/mw/com/test/fields/test_resources/getter_and_setter_checkers.h"
+
+#include <future>
+#include <iostream>
+#include <vector>
+
+namespace score::mw::com::test
+{
+namespace
+{
+
+void CallMethodsOrFail(AllServiceElementsProxy& proxy)
+{
+    const auto with_in_args_and_return_result =
+        proxy.with_in_args_and_return(kInArgsAndReturnMethodTestValueA, kInArgsAndReturnMethodTestValueB);
+    if (!with_in_args_and_return_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Consumer: with_in_args_and_return call failed: ",
+                 with_in_args_and_return_result.error());
+    }
+    const auto expected_sum = kInArgsAndReturnMethodTestValueA + kInArgsAndReturnMethodTestValueB;
+    if (*(with_in_args_and_return_result.value()) != expected_sum)
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Consumer: with_in_args_and_return expected ",
+                 expected_sum,
+                 " but got ",
+                 *(with_in_args_and_return_result.value()));
+    }
+
+    const auto with_in_args_only_result =
+        proxy.with_in_args_only(kInArgOnlyMethodTestValueA, kInArgOnlyMethodTestValueB);
+    if (!with_in_args_only_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix, " Consumer: with_in_args_only call failed: ", with_in_args_only_result.error());
+    }
+
+    const auto with_return_only_result = proxy.with_return_only();
+    if (!with_return_only_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix, " Consumer: with_return_only call failed: ", with_return_only_result.error());
+    }
+    if (*(with_return_only_result.value()) != kReturnOnlyMethodReturnValue)
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Consumer: with_return_only expected ",
+                 kReturnOnlyMethodReturnValue,
+                 " but got ",
+                 *(with_return_only_result.value()));
+    }
+
+    const auto without_args_or_return_result = proxy.without_args_or_return();
+    if (!without_args_or_return_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Consumer: without_args_or_return call failed: ",
+                 without_args_or_return_result.error());
+    }
+}
+
+template <typename EventType>
+void SubscribeAndReceiveEventsOrFail(EventType& proxy_event,
+                                     const std::vector<TestType>& expected_values,
+                                     const score::cpp::stop_token& stop_token)
+{
+    ProxyEventReceiver event_receiver{proxy_event};
+    ProxyEventStateChangeNotifier subscription_notifier{proxy_event};
+
+    const auto subscribe_event_result = proxy_event.Subscribe(expected_values.size());
+    if (!subscribe_event_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix, " Consumer: Subscribe to event failed: ", subscribe_event_result.error());
+    }
+
+    if (!subscription_notifier.WaitForStateChange(stop_token, SubscriptionState::kSubscribed))
+    {
+        FailTest(kFailureMessagePrefix, " Consumer: Event subscription did not reach kSubscribed");
+    }
+
+    if (!event_receiver.WaitForSamples(stop_token, expected_values))
+    {
+        FailTest(kFailureMessagePrefix, " Consumer: Did not receive all expected samples for event");
+    }
+}
+
+}  // namespace
+
+void RunConsumer(const score::cpp::stop_token& stop_token)
+{
+    auto process_synchronizer_result = ProcessSynchronizer::Create(kInterprocessNotificationShmPath);
+    if (!process_synchronizer_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix, " Consumer: Could not create consumer-done ProcessSynchronizer");
+    }
+    ExitFunctionGuard exit_guard{[&process_synchronizer_result]() {
+        process_synchronizer_result->Notify();
+    }};
+
+    // Step 1. Find service and create proxy
+    std::cout << "\nConsumer: Step 1 - Find service and create proxy" << std::endl;
+    ProxyContainer<AllServiceElementsProxy> proxy_container{};
+    proxy_container.CreateProxy(kInstanceSpecifier, kFailureMessagePrefix);
+    auto& proxy = proxy_container.GetProxy();
+
+    // Step 2. Call all methods and verify their results
+    std::cout << "\nConsumer: Step 2 - Call methods" << std::endl;
+    CallMethodsOrFail(proxy);
+
+    // Step 3. Subscribe to events and fields and verify received samples. We call these asynchronously to ensure that
+    // there are no issues with calling these functions on different service elements concurrently. We ensure that each
+    // step is finished before the next one begins because the test itself assumes this (e.g. calling Get will get the
+    // latest value that was received by GetNewSamples)
+    std::cout << "\nConsumer: Step 3 - Test events" << std::endl;
+    std::vector<std::future<void>> step_3_futures{};
+    // Call a lambda within each async since the compiler cannot deduce the template type when calling
+    // SubscribeAndReceiveEventsOrFail directly within std::async.
+    step_3_futures.push_back(std::async(std::launch::async, [&]() {
+        SubscribeAndReceiveEventsOrFail(proxy.event_1, kEvent1ValuesToSend, stop_token);
+    }));
+    step_3_futures.push_back(std::async(std::launch::async, [&]() {
+        SubscribeAndReceiveEventsOrFail(proxy.event_2, kEvent2ValuesToSend, stop_token);
+    }));
+    step_3_futures.push_back(std::async(std::launch::async, [&]() {
+        SubscribeAndReceiveEventsOrFail(proxy.get_and_notifier_enabled_field, kAllGetAndNotifierValues, stop_token);
+    }));
+    step_3_futures.push_back(std::async(std::launch::async, [&]() {
+        SubscribeAndReceiveEventsOrFail(
+            proxy.set_and_get_and_notifier_enabled_field, kAllSetAndGetAndNotifierValues, stop_token);
+    }));
+    step_3_futures.push_back(std::async(std::launch::async, [&]() {
+        SubscribeAndReceiveEventsOrFail(proxy.notifier_only_enabled_field, kAllNotifierOnlyValues, stop_token);
+    }));
+    step_3_futures.push_back(std::async(std::launch::async, [&]() {
+        SubscribeAndReceiveEventsOrFail(proxy.set_and_notifier_enabled_field, kAllSetAndNotifierValues, stop_token);
+    }));
+
+    for (auto& future : step_3_futures)
+    {
+        future.get();
+    }
+
+    // Step 4. Test getters
+    std::cout << "\nConsumer: Step 4 - Test getters" << std::endl;
+    std::vector<std::future<void>> step_4_futures{};
+    step_4_futures.push_back(std::async(std::launch::async, [&]() {
+        CallGetAndCheckValue(proxy.get_only_enabled_field, kGetOnlyFieldInitialValue);
+    }));
+    step_4_futures.push_back(std::async(std::launch::async, [&]() {
+        CallGetAndCheckValue(proxy.get_and_notifier_enabled_field, kGetAndNotifierFieldValuesToSend.back());
+    }));
+    step_4_futures.push_back(std::async(std::launch::async, [&]() {
+        CallGetAndCheckValue(proxy.set_and_get_enabled_field, kSetAndGetFieldInitialValue);
+    }));
+    step_4_futures.push_back(std::async(std::launch::async, [&]() {
+        CallGetAndCheckValue(proxy.set_and_get_and_notifier_enabled_field,
+                             kSetAndGetAndNotifierFieldValuesToSend.back());
+    }));
+
+    for (auto& future : step_4_futures)
+    {
+        future.get();
+    }
+
+    // Step 5. Test setters
+    std::cout << "\nConsumer: Step 5 - Test setters" << std::endl;
+    std::vector<std::future<void>> step_5_futures{};
+    step_5_futures.push_back(std::async(std::launch::async, [&]() {
+        CallSetAndCheckReturnValue(
+            proxy.set_and_get_enabled_field, kSetAndGetRequestValue, (kSetAndGetRequestValue * 2) + 1);
+    }));
+    step_5_futures.push_back(std::async(std::launch::async, [&]() {
+        CallSetAndCheckReturnValue(
+            proxy.set_and_notifier_enabled_field, kSetAndNotifierRequestValue, (kSetAndNotifierRequestValue * 2) + 1);
+    }));
+    step_5_futures.push_back(std::async(std::launch::async, [&]() {
+        CallSetAndCheckReturnValue(proxy.set_and_get_and_notifier_enabled_field,
+                                   kSetAndGetAndNotifierRequestValue,
+                                   (kSetAndGetAndNotifierRequestValue * 2) + 1);
+    }));
+
+    for (auto& future : step_5_futures)
+    {
+        future.get();
+    }
+}
+
+}  // namespace score::mw::com::test
+
+
+FILE score/mw/com/test/all_service_elements/consumer.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_CONSUMER_H
+#define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_CONSUMER_H
+
+#include <score/stop_token.hpp>
+
+namespace score::mw::com::test
+{
+
+void RunConsumer(const score::cpp::stop_token& stop_token);
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_CONSUMER_H
+
+
+FILE score/mw/com/test/all_service_elements/integration_test/BUILD
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup")
+load("//quality/integration_testing:integration_testing.bzl", "integration_test")
+
+integration_test(
+    name = "all_service_elements_same_process_test",
+    srcs = [
+        "all_service_elements_same_process_test.py",
+    ],
+    filesystem = "//score/mw/com/test/all_service_elements:main_consumer_and_provider-pkg",
+)
+
+pkg_filegroup(
+    name = "different_processes_filesystem",
+    srcs = [
+        "//score/mw/com/test/all_service_elements:main_consumer-pkg",
+        "//score/mw/com/test/all_service_elements:main_provider-pkg",
+    ],
+)
+
+integration_test(
+    name = "all_service_elements_different_processes_test",
+    srcs = [
+        "all_service_elements_different_processes_test.py",
+    ],
+    filesystem = ":different_processes_filesystem",
+)
+
+
+FILE score/mw/com/test/all_service_elements/integration_test/all_service_elements_different_processes_test.py
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+
+def provider(target, **kwargs):
+    args = ["--service_instance_manifest", "./etc/mw_com_config.json"]
+    return target.wrap_exec(
+        "bin/main_provider",
+        args,
+        cwd="/opt/MainProviderApp",
+        wait_on_exit=True,
+        **kwargs,
+    )
+
+
+def consumer(target, **kwargs):
+    args = ["--service_instance_manifest", "./etc/mw_com_config.json"]
+    return target.wrap_exec(
+        "bin/main_consumer",
+        args,
+        cwd="/opt/MainConsumerApp",
+        wait_on_exit=True,
+        **kwargs,
+    )
+
+
+def test_basic_acceptance_different_processes_test(target):
+    """Test LoLa functionality between provider and consumer which contain fields, methods
+    and events in the different processes.
+
+    The first process creates a Skeleton instance with events, fields and methods, verifying
+    the service can be offered.
+
+    The second process creates a Proxy instance subscribing to the Skeleton, interacting with
+    all events, fields and methods, verifying both succeed with expected return values.
+    """
+    with provider(target), consumer(target):
+        pass
+
+
+FILE score/mw/com/test/all_service_elements/integration_test/all_service_elements_same_process_test.py
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+
+def consumer_and_provider(target, **kwargs):
+    args = ["--service_instance_manifest", "./etc/mw_com_config.json"]
+    return target.wrap_exec(
+        "bin/main_consumer_and_provider",
+        args,
+        cwd="/opt/MainConsumerAndProviderApp",
+        wait_on_exit=True,
+        **kwargs,
+    )
+
+
+def test_basic_acceptance_same_process_test(target):
+    """Test LoLa functionality between provider and consumer which contain fields, methods and events in the same process.
+
+    The test starts a single process with two threads. The first thread creates a Skeleton
+    instance with events, fields and methods. The second thread creates a Proxy
+    subscribing to the Skeleton, interacting with all events, fields and methods, verifying both
+    succeed with expected return values.
+    """
+    with consumer_and_provider(target):
+        pass
+
+
+FILE score/mw/com/test/all_service_elements/main_consumer.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+#include "score/mw/com/runtime.h"
+#include "score/mw/com/test/all_service_elements/consumer.h"
+#include "score/mw/com/test/common_test_resources/assert_handler.h"
+#include "score/mw/com/test/common_test_resources/service_instance_manifest_parser.h"
+#include "score/mw/com/test/common_test_resources/stop_token_sig_term_handler.h"
+
+#include <cstdlib>
+
+int main(int argc, const char** argv)
+{
+    auto service_instance_manifest_path = score::mw::com::test::ParseServiceInstanceManifest(argc, argv);
+
+    score::mw::com::test::SetupAssertHandler();
+    score::mw::com::runtime::InitializeRuntime(
+        score::mw::com::runtime::RuntimeConfiguration{service_instance_manifest_path});
+
+    score::cpp::stop_source stop_source{};
+    const bool sig_term_handler_setup_success = score::mw::com::SetupStopTokenSigTermHandler(stop_source);
+    if (!sig_term_handler_setup_success)
+    {
+        std::cerr << "Unable to set signal handler for SIGINT and/or SIGTERM, cautiously continuing\n";
+    }
+
+    score::mw::com::test::RunConsumer(stop_source.get_token());
+    return EXIT_SUCCESS;
+}
+
+
+FILE score/mw/com/test/all_service_elements/main_consumer_and_provider.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/mw/com/runtime.h"
+#include "score/mw/com/test/all_service_elements/consumer.h"
+#include "score/mw/com/test/all_service_elements/provider.h"
+#include "score/mw/com/test/common_test_resources/assert_handler.h"
+#include "score/mw/com/test/common_test_resources/service_instance_manifest_parser.h"
+#include "score/mw/com/test/common_test_resources/stop_token_sig_term_handler.h"
+
+#include <cstdlib>
+#include <future>
+#include <iostream>
+
+int main(int argc, const char** argv)
+{
+    auto service_instance_manifest_path = score::mw::com::test::ParseServiceInstanceManifest(argc, argv);
+
+    score::mw::com::test::SetupAssertHandler();
+    score::mw::com::runtime::InitializeRuntime(
+        score::mw::com::runtime::RuntimeConfiguration{service_instance_manifest_path});
+
+    score::cpp::stop_source stop_source{};
+    const bool sig_term_handler_setup_success = score::mw::com::SetupStopTokenSigTermHandler(stop_source);
+    if (!sig_term_handler_setup_success)
+    {
+        std::cerr << "Unable to set signal handler for SIGINT and/or SIGTERM, cautiously continuing\n";
+    }
+
+    auto provider_future = std::async(std::launch::async, score::mw::com::test::RunProvider, stop_source.get_token());
+    auto consumer_future = std::async(std::launch::async, score::mw::com::test::RunConsumer, stop_source.get_token());
+
+    provider_future.get();
+    consumer_future.get();
+
+    std::cout << "Provider and Consumer completed successfully" << std::endl;
+    return EXIT_SUCCESS;
+}
+
+
+FILE score/mw/com/test/all_service_elements/main_provider.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/mw/com/runtime.h"
+#include "score/mw/com/test/all_service_elements/provider.h"
+#include "score/mw/com/test/common_test_resources/assert_handler.h"
+#include "score/mw/com/test/common_test_resources/service_instance_manifest_parser.h"
+#include "score/mw/com/test/common_test_resources/stop_token_sig_term_handler.h"
+
+#include <cstdlib>
+#include <iostream>
+
+int main(int argc, const char** argv)
+{
+    auto service_instance_manifest_path = score::mw::com::test::ParseServiceInstanceManifest(argc, argv);
+
+    score::mw::com::test::SetupAssertHandler();
+    score::mw::com::runtime::InitializeRuntime(
+        score::mw::com::runtime::RuntimeConfiguration{service_instance_manifest_path});
+
+    score::cpp::stop_source stop_source{};
+    const bool sig_term_handler_setup_success = score::mw::com::SetupStopTokenSigTermHandler(stop_source);
+    if (!sig_term_handler_setup_success)
+    {
+        std::cerr << "Unable to set signal handler for SIGINT and/or SIGTERM, cautiously continuing\n";
+    }
+
+    score::mw::com::test::RunProvider(stop_source.get_token());
+    return EXIT_SUCCESS;
+}
+
+
+FILE score/mw/com/test/all_service_elements/provider.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+#include "score/mw/com/test/all_service_elements/provider.h"
+
+#include "score/mw/com/test/all_service_elements/all_service_elements_datatype.h"
+#include "score/mw/com/test/all_service_elements/test_constants.h"
+#include "score/mw/com/test/common_test_resources/fail_test.h"
+#include "score/mw/com/test/common_test_resources/process_synchronizer.h"
+#include "score/mw/com/test/common_test_resources/skeleton_container.h"
+
+#include <iostream>
+
+namespace score::mw::com::test
+{
+namespace
+{
+
+template <typename SkeletonFieldType>
+void UpdateField(SkeletonFieldType& field, const TestType value)
+{
+    const auto update_result = field.Update(value);
+    if (!update_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix, " Provider: Unable to update with value ", value, ": ", update_result.error());
+    }
+}
+
+template <typename SkeletonEventType>
+void SendEventSamplesOrFail(SkeletonEventType& skeleton_event, const std::vector<TestType>& values_to_send)
+{
+    for (const auto value : values_to_send)
+    {
+        const auto send_result = skeleton_event.Send(value);
+        if (!send_result.has_value())
+        {
+            FailTest(kFailureMessagePrefix, " Provider: Unable to send with value ", value, ": ", send_result.error());
+        }
+    }
+}
+
+template <typename SkeletonFieldType>
+void SendFieldSamplesOrFail(SkeletonFieldType& skeleton_field, const std::vector<TestType>& values_to_send)
+{
+    for (const auto value : values_to_send)
+    {
+        UpdateField(skeleton_field, value);
+    }
+}
+
+void ValueTransformSetHandler(TestType& value) noexcept
+{
+    value = (value * 2) + 1;
+}
+
+void RegisterFieldHandlersOrFail(AllServiceElementsSkeleton& skeleton)
+{
+    const auto register_setter_and_notifier_result =
+        skeleton.set_and_notifier_enabled_field.RegisterSetHandler([](TestType& value) noexcept {
+            ValueTransformSetHandler(value);
+        });
+    if (!register_setter_and_notifier_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Provider: Unable to register setter_and_notifier_field set handler: ",
+                 register_setter_and_notifier_result.error());
+    }
+
+    const auto register_setter_and_getter_result =
+        skeleton.set_and_get_enabled_field.RegisterSetHandler([](TestType& value) noexcept {
+            ValueTransformSetHandler(value);
+        });
+    if (!register_setter_and_getter_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Provider: Unable to register setter_and_getter_field set handler: ",
+                 register_setter_and_getter_result.error());
+    }
+
+    const auto register_setter_getter_notifier_result =
+        skeleton.set_and_get_and_notifier_enabled_field.RegisterSetHandler([](TestType& value) noexcept {
+            ValueTransformSetHandler(value);
+        });
+    if (!register_setter_getter_notifier_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix,
+                 " Provider: Unable to register setter_getter_notifier_field set handler: ",
+                 register_setter_getter_notifier_result.error());
+    }
+}
+
+void RegisterMethodHandlersOrFail(AllServiceElementsSkeleton& skeleton)
+{
+    auto handler_with_in_args_and_return = [](TestType& return_value, const TestType& a, const TestType& b) {
+        std::cout << "Provider: with_in_args_and_return called with " << a << " + " << b << std::endl;
+        return_value = a + b;
+    };
+    const auto register_in_args_and_return_result =
+        skeleton.with_in_args_and_return.RegisterHandler(std::move(handler_with_in_args_and_return));
+    if (!register_in_args_and_return_result)
+    {
+        FailTest(kFailureMessagePrefix, " Provider: Failed to register with_in_args_and_return handler");
+    }
+
+    auto handler_with_in_args_only = [](const TestType& a, const TestType& b) {
+        SCORE_LANGUAGE_FUTURECPP_ASSERT_MESSAGE(a == kInArgOnlyMethodTestValueA, "Unexpected first InArg received!");
+        SCORE_LANGUAGE_FUTURECPP_ASSERT_MESSAGE(b == kInArgOnlyMethodTestValueB, "Unexpected second InArg received!");
+    };
+    const auto register_with_in_args_only_result =
+        skeleton.with_in_args_only.RegisterHandler(std::move(handler_with_in_args_only));
+    if (!register_with_in_args_only_result)
+    {
+        FailTest(kFailureMessagePrefix, " Provider: Failed to register with_in_args_only handler");
+    }
+
+    auto handler_with_return_only = [](TestType& return_value) {
+        return_value = kReturnOnlyMethodReturnValue;
+    };
+    const auto register_with_return_only_result =
+        skeleton.with_return_only.RegisterHandler(std::move(handler_with_return_only));
+    if (!register_with_return_only_result)
+    {
+        FailTest(kFailureMessagePrefix, " Provider: Failed to register with_return_only handler");
+    }
+
+    auto handler_without_in_args_or_return = []() {};
+    const auto register_without_in_args_or_return_result =
+        skeleton.without_args_or_return.RegisterHandler(std::move(handler_without_in_args_or_return));
+    if (!register_without_in_args_or_return_result)
+    {
+        FailTest(kFailureMessagePrefix, " Provider: Failed to register without_args_or_return handler");
+    }
+}
+
+}  // namespace
+
+void RunProvider(const score::cpp::stop_token& stop_token)
+{
+    auto process_synchronizer_result = ProcessSynchronizer::Create(kInterprocessNotificationShmPath);
+    if (!process_synchronizer_result.has_value())
+    {
+        FailTest(kFailureMessagePrefix, " Provider: Could not create ProcessSynchronizer");
+    }
+
+    // Step 1. Create skeleton
+    std::cout << "\nProvider: Step 1 - Create skeleton" << std::endl;
+    SkeletonContainer<AllServiceElementsSkeleton> skeleton_container{};
+    skeleton_container.CreateSkeleton(kInstanceSpecifier, kFailureMessagePrefix);
+    auto& service = skeleton_container.GetSkeleton();
+
+    // Step 2. Register field handlers
+    std::cout << "\nProvider: Step 2 - Register field handlers" << std::endl;
+    RegisterFieldHandlersOrFail(service);
+
+    // Step 3. Register method handlers
+    std::cout << "\nProvider: Step 3 - Register method handlers" << std::endl;
+    RegisterMethodHandlersOrFail(service);
+
+    // Step 4. Set initial value for all fields
+    std::cout << "\nProvider: Step 4 - Set initial field values" << std::endl;
+    UpdateField(service.get_only_enabled_field, kGetOnlyFieldInitialValue);
+    UpdateField(service.set_and_get_enabled_field, kSetAndGetFieldInitialValue);
+    UpdateField(service.get_and_notifier_enabled_field, kGetAndNotifierFieldInitialValue);
+    UpdateField(service.set_and_notifier_enabled_field, kSetAndNotifierFieldInitialValue);
+    UpdateField(service.set_and_get_and_notifier_enabled_field, kSetAndGetAndNotifierFieldInitialValue);
+    UpdateField(service.notifier_only_enabled_field, kNotifierOnlyFieldInitialValue);
+
+    // Step 5. Offer service
+    std::cout << "\nProvider: Step 5 - Offer service" << std::endl;
+    skeleton_container.OfferService(kFailureMessagePrefix);
+
+    // Step 6. Send event and field samples
+    std::cout << "\nProvider: Step 6 - Send event and field samples" << std::endl;
+    SendEventSamplesOrFail(service.event_1, kEvent1ValuesToSend);
+    SendEventSamplesOrFail(service.event_2, kEvent2ValuesToSend);
+    SendFieldSamplesOrFail(service.get_and_notifier_enabled_field, kGetAndNotifierFieldValuesToSend);
+    SendFieldSamplesOrFail(service.set_and_notifier_enabled_field, kSetAndNotifierFieldValuesToSend);
+    SendFieldSamplesOrFail(service.set_and_get_and_notifier_enabled_field, kSetAndGetAndNotifierFieldValuesToSend);
+    SendFieldSamplesOrFail(service.notifier_only_enabled_field, kNotifierOnlyFieldValuesToSend);
+
+    // Step 7. Wait for consumer to finish
+    std::cout << "\nProvider: Step 7 - Wait for consumer done notification" << std::endl;
+    if (!process_synchronizer_result->WaitWithAbort(stop_token))
+    {
+        FailTest(kFailureMessagePrefix, " Provider: WaitWithAbort was stopped by stop_token instead of notification");
+    }
+}
+
+}  // namespace score::mw::com::test
+
+
+FILE score/mw/com/test/all_service_elements/provider.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_PROVIDER_H
+#define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_PROVIDER_H
+
+#include <score/stop_token.hpp>
+
+namespace score::mw::com::test
+{
+
+void RunProvider(const score::cpp::stop_token& stop_token);
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_PROVIDER_H
+
+
+FILE score/mw/com/test/all_service_elements/test_constants.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/mw/com/test/all_service_elements/test_constants.h"
+
+
+FILE score/mw/com/test/all_service_elements/test_constants.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_TEST_CONSTANTS_H
+#define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_TEST_CONSTANTS_H
+
+#include "score/mw/com/test/all_service_elements/all_service_elements_datatype.h"
+#include "score/mw/com/types.h"
+
+#include <string>
+#include <vector>
+
+namespace score::mw::com::test
+{
+
+const std::string kInterprocessNotificationShmPath{"/all_service_elements_test_interprocess_notification"};
+const std::string kFailureMessagePrefix{"all_service_elements"};
+
+const InstanceSpecifier kInstanceSpecifier =
+    InstanceSpecifier::Create(std::string{"/score/mw/com/test/all_service_elements/all_service_elements_instance"})
+        .value();
+
+// Method test values
+const TestType kReturnOnlyMethodReturnValue{15};
+const TestType kInArgOnlyMethodTestValueA{17};
+const TestType kInArgOnlyMethodTestValueB{18};
+const TestType kInArgsAndReturnMethodTestValueA{42};
+const TestType kInArgsAndReturnMethodTestValueB{23};
+
+// Event test values
+const std::vector<TestType> kEvent1ValuesToSend{21U, 22U, 23U};
+const std::vector<TestType> kEvent2ValuesToSend{100U, 200U, 300U};
+
+// Field initial values, set by the provider before offering the service
+const TestType kGetOnlyFieldInitialValue{1};
+const TestType kSetAndGetFieldInitialValue{2};
+const TestType kGetAndNotifierFieldInitialValue{3};
+const TestType kSetAndNotifierFieldInitialValue{4};
+const TestType kSetAndGetAndNotifierFieldInitialValue{5};
+const TestType kNotifierOnlyFieldInitialValue{6};
+
+// Field values to send, set by the provider after offering the service
+const std::vector<TestType> kGetAndNotifierFieldValuesToSend{7, 8, 9};
+const std::vector<TestType> kSetAndNotifierFieldValuesToSend{10, 11, 12};
+const std::vector<TestType> kSetAndGetAndNotifierFieldValuesToSend{13, 14, 15};
+const std::vector<TestType> kNotifierOnlyFieldValuesToSend{16, 17, 18};
+
+const std::vector<TestType> kAllGetAndNotifierValues{kGetAndNotifierFieldInitialValue, 7, 8, 9};
+const std::vector<TestType> kAllSetAndNotifierValues{kSetAndNotifierFieldInitialValue, 10, 11, 12};
+const std::vector<TestType> kAllSetAndGetAndNotifierValues{kSetAndGetAndNotifierFieldInitialValue, 13, 14, 15};
+const std::vector<TestType> kAllNotifierOnlyValues{kNotifierOnlyFieldInitialValue, 16, 17, 18};
+
+// Value requested by the consumer via Set()
+const TestType kSetAndGetRequestValue{51};
+const TestType kSetAndNotifierRequestValue{50};
+const TestType kSetAndGetAndNotifierRequestValue{52};
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_TEST_CONSTANTS_H
+
+
+FILE score/mw/com/test/common_test_resources/fail_test.h
+/********************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+#ifndef SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_FAIL_TEST_H
+#define SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_FAIL_TEST_H
+
+#include "score/result/error.h"
+
+#include <functional>
+#include <sstream>
+#include <utility>
+
+namespace score::mw::com::test
+{
+
+namespace detail
+{
+
+void FailTest(std::stringstream&& strstr);
+
+template <typename Start, typename... Tail>
+void FailTest(std::stringstream&& strstr, Start&& start, Tail&&... tail)
+{
+    // Since score::result::Error does not have an operator<< overload for a stringstream and no method to convert it to
+    // a string, we manually stringify it here.
+    if constexpr (std::is_same_v<std::decay_t<Start>, score::result::Error>)
+    {
+        strstr << start.Message() << " / " << start.UserMessage();
+    }
+    else
+    {
+        strstr << std::forward<Start>(start);
+    }
+
+    if constexpr (sizeof...(Tail) > 0U)
+    {
+        FailTest(std::move(strstr), std::forward<Tail>(tail)...);
+    }
+    else
+    {
+        FailTest(std::move(strstr));
+    }
+}
+
+}  // namespace detail
+
+/// \brief RAII guard to set a test exit function that will be called when FailTest is invoked or when the guard is
+/// destroyed.
+class ExitFunctionGuard
+{
+  public:
+    using ExitFunction = std::function<void()>;
+
+    explicit ExitFunctionGuard(ExitFunction exit_function);
+    ~ExitFunctionGuard();
+
+    ExitFunctionGuard(const ExitFunctionGuard&) = delete;
+    ExitFunctionGuard& operator=(const ExitFunctionGuard&) = delete;
+    ExitFunctionGuard(ExitFunctionGuard&&) = delete;
+    ExitFunctionGuard& operator=(ExitFunctionGuard&&) = delete;
+};
+
+/// \brief Fail a test by exiting the program with EXIT_FAILURE and printing a message to stderr.
+/// \param args variadic number of arguments, each one must be streamable to a standard stringstream.
+template <typename... Args>
+void FailTest(Args&&... args)
+{
+    std::stringstream strstr;
+    strstr << "\033[1m\033[31m";
+    detail::FailTest(std::move(strstr), std::forward<Args>(args)...);
+}
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_FAIL_TEST_H
+
+
+FILE score/mw/com/test/common_test_resources/proxy_observer.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/concurrency/future/interruptible_promise.h"
+#include "score/mw/com/com_error_domain.h"
+#include "score/mw/com/types.h"
+
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <optional>
+#include <unordered_map>
+#include <utility>
+
+namespace score::mw::com::test
+{
+
+namespace
+{
+template <typename Proxy>
+class ProxyObserver
+{
+  public:
+    ProxyObserver(std::string_view instance_Specifier)
+        : instance_specifier_result_{InstanceSpecifier::Create(std::string{instance_Specifier})}
+    {
+        if (!instance_specifier_result_.has_value())
+        {
+            std::cerr << "Unable to create instance specifier\n";
+        }
+    }
+
+    ~ProxyObserver()
+    {
+        if (handle_.has_value())
+        {
+            std::ignore = Proxy::StopFindService(handle_.value());
+        }
+    }
+
+    Result<FindServiceHandle> StartServiceDiscovery(std::size_t required_number_of_services) noexcept
+    {
+        auto callback = [this, required_number_of_services](auto service_handle_container,
+                                                            auto find_service_handle) noexcept {
+            std::cout << "handler called" << std::endl;
+            for (auto& handle : service_handle_container)
+            {
+                auto lola_proxy_result = Proxy::Create(handle);
+                if (lola_proxy_result.has_value())
+                {
+                    std::cout << "successfully created lola proxy" << std::endl;
+                    proxies_.insert({handle, std::move(lola_proxy_result.value())});
+                }
+                else
+                {
+                    std::cerr << "unable to create lola proxy:" << lola_proxy_result.error().Message() << std::endl;
+                }
+            }
+            if (proxies_.size() == required_number_of_services)
+            {
+                std::cout << "Requested number of proxies created" << std::endl;
+                promise_.SetValue();
+                score::cpp::ignore = Proxy::StopFindService(find_service_handle);
+            }
+        };
+
+        handle_ = Proxy::StartFindService(callback, instance_specifier_result_.value());
+        return handle_;
+    }
+
+    std::int32_t CheckProxyCreation(const score::cpp::stop_token& stop_token) noexcept
+    {
+        auto future = promise_.GetInterruptibleFuture().value();
+        auto future_status = future.Wait(stop_token);
+        if (!future_status.has_value())
+        {
+            std::cerr << "Could not find the requested number of services" << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        return EXIT_SUCCESS;
+    }
+
+  private:
+    score::Result<score::mw::com::InstanceSpecifier> instance_specifier_result_;
+    std::unordered_map<typename Proxy::HandleType, Proxy> proxies_{};
+    concurrency::InterruptiblePromise<void> promise_{};
+    // handle has deleted default constructor
+    Result<FindServiceHandle> handle_ = MakeUnexpected(score::mw::com::ComErrc::kUnsetFailure);
+};
+
+}  // namespace
+
+}  // namespace score::mw::com::test
+
+
+FILE score/mw/com/test/common_test_resources/sctf_test_runner.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#ifndef SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_SCTF_TEST_RUNNER_H
+#define SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_SCTF_TEST_RUNNER_H
+
+#include <score/stop_token.hpp>
+#include <optional>
+
+#include <algorithm>
+#include <chrono>
+#include <future>
+#include <string>
+#include <vector>
+
+namespace score::mw::com::test
+{
+
+class SctfTestRunner
+{
+  public:
+    class RunParameters
+    {
+      public:
+        enum class Parameters
+        {
+            CYCLE_TIME,
+            MODE,
+            NUM_CYCLES,
+            SERVICE_INSTANCE_MANIFEST,
+            UID,
+            NUM_RETRIES,
+            RETRY_BACKOFF_TIME,
+            SHOULD_MODIFY_DATA_SEGMENT,
+        };
+
+        RunParameters(const std::vector<RunParameters::Parameters>& allowed_parameters,
+                      std::optional<std::chrono::milliseconds> cycle_time,
+                      std::optional<std::string> mode,
+                      std::optional<std::size_t> num_cycles,
+                      std::optional<std::string> service_instance_manifest,
+                      std::optional<uid_t> uid,
+                      std::optional<std::size_t> num_retries,
+                      std::optional<std::chrono::milliseconds> retry_backoff_time,
+                      std::optional<bool> should_modify_data_segment) noexcept;
+
+        std::chrono::milliseconds GetCycleTime() const;
+        std::string GetMode() const;
+        std::size_t GetNumCycles() const;
+        std::string GetServiceInstanceManifest() const;
+        uid_t GetUid() const;
+        std::size_t GetNumRetries() const;
+        std::chrono::milliseconds GetRetryBackoffTime() const;
+        bool GetShouldModifyDataSegment() const;
+
+        std::optional<std::chrono::milliseconds> GetOptionalCycleTime() const;
+        std::optional<std::string> GetOptionalMode() const;
+        std::optional<std::size_t> GetOptionalNumCycles() const;
+        std::optional<std::string> GetOptionalServiceInstanceManifest() const;
+        std::optional<uid_t> GetOptionalUid() const;
+        std::optional<std::size_t> GetOptionalNumRetries() const;
+        std::optional<std::chrono::milliseconds> GetOptionalRetryBackoffTime() const;
+
+      private:
+        const std::vector<RunParameters::Parameters> allowed_parameters_;
+        const std::optional<std::chrono::milliseconds> cycle_time_;
+        const std::optional<std::string> mode_;
+        const std::optional<std::size_t> num_cycles_;
+        const std::optional<std::string> service_instance_manifest_;
+        const std::optional<uid_t> uid_;
+        const std::optional<std::size_t> num_retries_;
+        const std::optional<std::chrono::milliseconds> retry_backoff_time_;
+        const std::optional<bool> should_modify_data_segment_;
+    };
+
+    SctfTestRunner(int argc, const char** argv, const std::vector<RunParameters::Parameters>& allowed_parameters);
+
+    score::cpp::stop_token GetStopToken() const noexcept
+    {
+        return stop_source_.get_token();
+    }
+    score::cpp::stop_source GetStopSource() noexcept
+    {
+        return stop_source_;
+    }
+    RunParameters GetRunParameters() const noexcept
+    {
+        return run_parameters_;
+    }
+
+    static int WaitForAsyncTestResults(std::vector<std::future<int>>& future_return_values);
+
+  private:
+    RunParameters ParseCommandLineArguments(int argc,
+                                            const char** argv,
+                                            const std::vector<RunParameters::Parameters>& allowed_parameters) const;
+    void SetupSigTermHandler();
+
+    const RunParameters run_parameters_;
+    score::cpp::stop_source stop_source_;
+};
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_SCTF_TEST_RUNNER_H
+
+
+FILE score/mw/com/test/common_test_resources/test_interface.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#ifndef SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_TEST_INTERFACE_H
+#define SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_TEST_INTERFACE_H
+
+#include "score/mw/com/types.h"
+
+#include <cstdint>
+#include <vector>
+
+namespace score::mw::com::test
+{
+
+template <typename T>
+class TestInterface : public T::Base
+{
+  public:
+    using T::Base::Base;
+
+    // Only WithNotifier is needed since the proxy subscribes to receive the initial value the skeleton
+    // publishes via Update(). No Get/Set so, WithGetter and WithSetter must stay absent until we add tests that require
+    // them.
+    typename T::template Field<std::int32_t, score::mw::com::WithNotifier> test_field{*this, "test_field"};
+};
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_COMMON_TEST_RESOURCES_TEST_INTERFACE_H
+
+
+FILE score/mw/com/test/pkg_application.bzl
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+"""Macro packaging an application together with its configuration files."""
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files")
+
+visibility(["//..."])
+
+def pkg_application(name, app_name, bin = [], etc = [], etc_deps = [], **kwargs):
+    pkg_files(
+        name = "{}_binary".format(name),
+        srcs = bin,
+        prefix = "/opt/{}/bin".format(app_name),
+        attributes = pkg_attributes(
+            mode = "0777",
+        ),
+        **kwargs
+    )
+
+    pkg_files(
+        name = "{}_etc_files".format(name),
+        srcs = etc,
+        **kwargs
+    )
+
+    pkg_filegroup(
+        name = "{}_etc".format(name),
+        srcs = [
+            "{}_etc_files".format(name),
+        ] + etc_deps,
+        prefix = "/opt/{}/etc".format(app_name),
+    )
+
+    pkg_filegroup(
+        name = name,
+        srcs = [
+            "{}_binary".format(name),
+            "{}_etc".format(name),
+        ],
+        prefix = "/",
+        **kwargs
+    )
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/BUILD
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
+load("@score_baselibs//score/language/safecpp:toolchain_features.bzl", "COMPILER_WARNING_FEATURES")
+load("//bazel/tools:json_schema_validator.bzl", "validate_json_schema_test")
+load("//score/mw/com/test:pkg_application.bzl", "pkg_application")
+
+validate_json_schema_test(
+    name = "validate_lola_service_schema",
+    json = "config/service/mw_com_config.json",
+    schema = "//score/mw/com:config_schema",
+    tags = ["lint"],
+)
+
+validate_json_schema_test(
+    name = "validate_lola_client_schema",
+    json = "config/client/mw_com_config.json",
+    schema = "//score/mw/com:config_schema",
+    tags = ["lint"],
+)
+
+cc_library(
+    name = "test_datatype",
+    srcs = ["test_datatype.cpp"],
+    hdrs = ["test_datatype.h"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:test_interface",
+    ],
+)
+
+cc_binary(
+    name = "service",
+    srcs = ["service.cpp"],
+    data = ["config/service/mw_com_config.json"],
+    features = COMPILER_WARNING_FEATURES + [
+        "aborts_upon_exception",
+    ],
+    deps = [
+        ":test_datatype",
+        "//score/mw/com",
+        "//score/mw/com/test/common_test_resources:common_service",
+        "//score/mw/com/test/common_test_resources:sctf_test_runner",
+        "//score/mw/com/test/common_test_resources:sync_utils",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_binary(
+    name = "client",
+    srcs = ["client.cpp"],
+    data = ["config/client/mw_com_config.json"],
+    features = COMPILER_WARNING_FEATURES + [
+        "aborts_upon_exception",
+    ],
+    deps = [
+        ":test_datatype",
+        "//score/mw/com",
+        "//score/mw/com:runtime",
+        "//score/mw/com/test/common_test_resources:proxy_observer",
+        "//score/mw/com/test/common_test_resources:sctf_test_runner",
+        "//score/mw/com/test/common_test_resources:sync_utils",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+pkg_application(
+    name = "service-pkg",
+    app_name = "ServiceApp",
+    bin = [":service"],
+    etc = [
+        "config/service/mw_com_config.json",
+        "config/logging.json",
+    ],
+    visibility = [
+        "//platform/aas/test/mw/com:__pkg__",
+        "//score/mw/com/test:__pkg__",
+        "//score/mw/com/test/service_discovery_offer_and_search:__subpackages__",
+    ],
+)
+
+pkg_application(
+    name = "client-pkg",
+    app_name = "ClientApp",
+    bin = [":client"],
+    etc = [
+        "config/client/mw_com_config.json",
+        "config/logging.json",
+    ],
+    visibility = [
+        "//platform/aas/test/mw/com:__pkg__",
+        "//score/mw/com/test:__pkg__",
+        "//score/mw/com/test/service_discovery_offer_and_search:__subpackages__",
+    ],
+)
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/client.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/concurrency/future/interruptible_promise.h"
+#include "score/mw/com/test/common_test_resources/proxy_observer.h"
+#include "score/mw/com/test/common_test_resources/sctf_test_runner.h"
+#include "score/mw/com/test/common_test_resources/sync_utils.h"
+#include "score/mw/com/test/service_discovery_offer_and_search/test_datatype.h"
+#include "score/mw/com/types.h"
+
+#include <fstream>
+#include <iostream>
+#include <utility>
+#include <vector>
+
+namespace score::mw::com::test
+{
+
+namespace
+{
+
+int run_client(const score::cpp::stop_token& stop_token)
+{
+    using score::mw::com::test::TestDataProxy;
+
+    score::mw::com::test::SyncCoordinator sync_coordinator(std::string{kFileName});
+    // waiting for Service to offer service then start searching
+    sync_coordinator.Wait(stop_token);
+
+    ProxyObserver<TestDataProxy> proxy_observer(kInstanceSpecifierStringClient);
+    const auto find_service_handle_result = proxy_observer.StartServiceDiscovery(kNumberOfOfferedServices);
+    if (!find_service_handle_result.has_value())
+    {
+        std::cerr << "unable to start service discovery" << find_service_handle_result.error().Message() << std::endl;
+    }
+    return proxy_observer.CheckProxyCreation(stop_token);
+}
+
+}  // namespace
+
+}  // namespace score::mw::com::test
+
+int main(int argc, const char** argv)
+{
+    score::mw::com::test::SctfTestRunner test_runner(argc, argv, {});
+
+    const auto stop_token = test_runner.GetStopToken();
+
+    score::mw::com::test::run_client(stop_token);
+    score::mw::com::test::SyncCoordinator::CleanUp(std::string{score::mw::com::test::kFileName});
+
+    return 0;
+}
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/config/client/mw_com_config.json
+{
+  "serviceTypes": [
+    {
+      "serviceTypeName": "/score/mw/com/test/service_discovery_offer_and_search",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "bindings": [
+        {
+          "binding": "SHM",
+          "serviceId": 3428,
+          "fields": [
+            {
+              "fieldName": "test_field",
+              "fieldId": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "serviceInstances": [
+    {
+      "instanceSpecifier": "test/service_discovery_offer_and_search_client",
+      "serviceTypeName": "/score/mw/com/test/service_discovery_offer_and_search",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "instances": [
+        {
+          "asil-level": "QM",
+          "binding": "SHM",
+          "fields": [
+            {
+              "fieldName": "test_field",
+              "useGetIfAvailable": false,
+              "useSetIfAvailable": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/config/logging.json
+{
+  "appId": "SDOS",
+  "appDesc": "test_service_discovery_offer_search",
+  "logLevel": "kDebug",
+  "logLevelThresholdConsole": "kDebug",
+  "logMode": "kRemote|kConsole"
+}
+
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/config/service/mw_com_config.json
+{
+  "serviceTypes": [
+    {
+      "serviceTypeName": "/score/mw/com/test/service_discovery_offer_and_search",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "bindings": [
+        {
+          "binding": "SHM",
+          "serviceId": 3428,
+          "fields": [
+            {
+              "fieldName": "test_field",
+              "fieldId": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "serviceInstances": [
+    {
+      "instanceSpecifier": "test/service_discovery_offer_and_search_service_first",
+      "serviceTypeName": "/score/mw/com/test/service_discovery_offer_and_search",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "instances": [
+        {
+          "instanceId": 1024,
+          "asil-level": "QM",
+          "binding": "SHM",
+          "fields": [
+            {
+              "fieldName": "test_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "instanceSpecifier": "test/service_discovery_offer_and_search_service_second",
+      "serviceTypeName": "/score/mw/com/test/service_discovery_offer_and_search",
+      "version": {
+        "major": 1,
+        "minor": 0
+      },
+      "instances": [
+        {
+          "instanceId": 1025,
+          "asil-level": "QM",
+          "binding": "SHM",
+          "fields": [
+            {
+              "fieldName": "test_field",
+              "maxSubscribers": 1,
+              "numberOfSampleSlots": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/integration_test/BUILD
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup")
+load("//quality/integration_testing:integration_testing.bzl", "integration_test")
+
+pkg_filegroup(
+    name = "filesystem",
+    srcs = [
+        "//score/mw/com/test/service_discovery_offer_and_search:client-pkg",
+        "//score/mw/com/test/service_discovery_offer_and_search:service-pkg",
+    ],
+)
+
+integration_test(
+    name = "test_service_discovery_offer_and_search",
+    timeout = "moderate",
+    srcs = ["test_service_discovery_offer_and_search.py"],
+    filesystem = ":filesystem",
+)
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/integration_test/test_service_discovery_offer_and_search.py
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+"""Integration tests for service discovery offer and search."""
+
+
+def client(target):
+    args = []
+    return target.wrap_exec("bin/client", args, cwd="/opt/ClientApp", wait_on_exit=True)
+
+
+def service(target):
+    args = ["--cycle-time", "250"]
+    return target.wrap_exec("bin/service", args, cwd="/opt/ServiceApp")
+
+
+def test_service_discovery_offer_and_search(target):
+    """Test service discovery where service offers first, then client searches.
+
+    The service also issues a second OfferService() call on the first
+    service instance to verify that offering an already-offered service is
+    handled without affecting the already-offered instance or the client's
+    ability to discover it.
+    """
+    with service(target), client(target):
+        pass
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/service.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/concurrency/future/interruptible_future.h"
+#include "score/concurrency/future/interruptible_promise.h"
+#include "score/mw/com/com_error_domain.h"
+#include "score/mw/com/test/common_test_resources/common_service.h"
+#include "score/mw/com/test/common_test_resources/sctf_test_runner.h"
+#include "score/mw/com/test/common_test_resources/sync_utils.h"
+
+#include "score/mw/com/test/service_discovery_offer_and_search/test_datatype.h"
+
+#include "score/result/error.h"
+#include "score/result/result.h"
+
+#include <score/stop_token.hpp>
+
+#include <chrono>
+#include <fstream>
+#include <iostream>
+#include <thread>
+#include <utility>
+
+namespace score::mw::com::test
+{
+
+using namespace std::chrono_literals;
+
+namespace
+{
+int run_service(const std::chrono::milliseconds& cycle_time, const score::cpp::stop_token& stop_token)
+{
+    auto first_service_result = Service<TestDataSkeleton>::Create(kInstanceSpecifierStringServiceFirst);
+    if (!first_service_result.has_value())
+    {
+        std::cerr << first_service_result.error().Message() << std::endl;
+        return 1;
+    }
+    const auto first_offer_service_result = first_service_result.value().OfferService(kTestValue);
+    if (!first_offer_service_result.has_value())
+    {
+        std::cerr << "Could not offer first service, terminating\n";
+        return 3;
+    }
+
+    // Offering the same service a second time must not cause any issues (e.g. crashing or corrupting the
+    // already-offered service) and the call should simply return successfully.
+    // TODO: Should be moved into dedicated integration test
+    // (https://github.com/eclipse-score/communication/issues/1167)
+    const auto duplicate_offer_service_result = first_service_result.value().OfferService(kTestValue);
+    if (!duplicate_offer_service_result.has_value())
+    {
+        std::cerr << "Second OfferService() call unexpectedly failed, terminating\n";
+        return 4;
+    }
+
+    auto second_service_result = Service<TestDataSkeleton>::Create(kInstanceSpecifierStringServiceSecond);
+    if (!second_service_result.has_value())
+    {
+        std::cerr << second_service_result.error().Message() << std::endl;
+        return 2;
+    }
+    const auto second_offer_service_result = second_service_result.value().OfferService(kTestValue);
+    if (!second_offer_service_result.has_value())
+    {
+        std::cerr << "Could not offer second service, terminating\n";
+        return 3;
+    }
+
+    // Offer Service first then Sync. with Client to start searching for service
+    score::mw::com::test::SyncCoordinator sync_coordinator(std::string{kFileName});
+    sync_coordinator.Signal();
+    std::cout << "Sending Sync. Signal to Client" << std::endl;
+
+    while (!stop_token.stop_requested())
+    {
+        std::this_thread::sleep_for(cycle_time);
+    }
+
+    return 0;
+}
+}  // namespace
+
+}  // namespace score::mw::com::test
+
+int main(int argc, const char** argv)
+{
+    using Parameters = score::mw::com::test::SctfTestRunner::RunParameters::Parameters;
+
+    const std::vector<Parameters> allowed_parameters{Parameters::CYCLE_TIME};
+    score::mw::com::test::SctfTestRunner test_runner(argc, argv, allowed_parameters);
+    const auto& run_parameters = test_runner.GetRunParameters();
+    const auto cycle_time = run_parameters.GetCycleTime();
+    const auto stop_token = test_runner.GetStopToken();
+
+    return score::mw::com::test::run_service(cycle_time, stop_token);
+}
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/test_datatype.cpp
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#include "score/mw/com/test/service_discovery_offer_and_search/test_datatype.h"
+
+
+FILE score/mw/com/test/service_discovery_offer_and_search/test_datatype.h
+/*******************************************************************************
+ * Copyright (c) 2026 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *******************************************************************************/
+
+#ifndef SCORE_MW_COM_TEST_SERVICE_DISCOVERY_OFFER_AND_SEARCH_TEST_DATATYPE_H
+#define SCORE_MW_COM_TEST_SERVICE_DISCOVERY_OFFER_AND_SEARCH_TEST_DATATYPE_H
+
+#include "score/mw/com/test/common_test_resources/test_interface.h"
+#include "score/mw/com/types.h"
+
+#include <cstdint>
+#include <vector>
+
+namespace score::mw::com::test
+{
+constexpr std::string_view kFileName = "/tmp/service_discovery_offer_and_search.txt";
+constexpr std::string_view kInstanceSpecifierStringClient = "test/service_discovery_offer_and_search_client";
+constexpr std::string_view kInstanceSpecifierStringServiceFirst =
+    "test/service_discovery_offer_and_search_service_first";
+constexpr std::string_view kInstanceSpecifierStringServiceSecond =
+    "test/service_discovery_offer_and_search_service_second";
+const std::int32_t kNumberOfOfferedServices = 2;
+const std::int32_t kTestValue = 986;
+
+using TestDataProxy = score::mw::com::AsProxy<TestInterface>;
+using TestDataSkeleton = score::mw::com::AsSkeleton<TestInterface>;
+
+}  // namespace score::mw::com::test
+
+#endif  // SCORE_MW_COM_TEST_SERVICE_DISCOVERY_OFFER_AND_SEARCH_TEST_DATATYPE_H
+
+
+FILE score/mw/com/types.h
+/********************************************************************************
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+#ifndef SCORE_MW_COM_TYPES_H
+#define SCORE_MW_COM_TYPES_H
+
+#include "score/mw/com/impl/methods/method_signature_element_ptr.h"
+#include "score/mw/com/impl/plumbing/sample_allocatee_ptr.h"
+#include "score/mw/com/impl/plumbing/sample_ptr.h"
+
+#include "score/mw/com/impl/event_receive_handler.h"
+#include "score/mw/com/impl/field_tags.h"
+#include "score/mw/com/impl/find_service_handle.h"
+#include "score/mw/com/impl/find_service_handler.h"
+#include "score/mw/com/impl/generic_proxy.h"
+#include "score/mw/com/impl/generic_proxy_event.h"
+#include "score/mw/com/impl/generic_skeleton.h"
+#include "score/mw/com/impl/generic_skeleton_event.h"
+#include "score/mw/com/impl/handle_type.h"
+#include "score/mw/com/impl/instance_identifier.h"
+#include "score/mw/com/impl/instance_specifier.h"
+#include "score/mw/com/impl/receive_handler_registration_changed_handler.h"
+#include "score/mw/com/impl/skeleton_base.h"
+#include "score/mw/com/impl/subscription_state.h"
+#include "score/mw/com/impl/traits.h"
+
+#include <vector>
+/// \api
+/// \brief The Types header file includes the data type definitions which are specific for the
+/// mw::com API.
+/// \requirement SWS_CM_01018, SWS_CM_01013
+
+namespace score::mw::com
+{
+/// \api
+/// \brief Represents a specific instance of a service.
+/// \requirement SWS_CM_01019
+using InstanceIdentifier = ::score::mw::com::impl::InstanceIdentifier;
+
+/// \api
+/// \brief Identifier for an application port. Maps design to deployment.
+/// \requirement SWS_CM_00350
+using InstanceSpecifier = ::score::mw::com::impl::InstanceSpecifier;
+
+/// \api
+/// \brief The container holds a list of instance identifiers and is used as
+/// a return value of the ResolveInstanceIDs method.
+/// \requirement SWS_CM_00319
+using InstanceIdentifierContainer = std::vector<InstanceIdentifier>;
+
+/// \api
+/// \brief Handle for service discovery operations.
+/// See StartFindService() and StopFindService() for more information.
+using FindServiceHandle = ::score::mw::com::impl::FindServiceHandle;
+
+/// \api
+/// \brief Handle to a service instance.
+using HandleType = ::score::mw::com::impl::HandleType;
+
+/// \api
+/// \brief Container with handles representing currently available service instances.
+/// See StartFindService() for more information.
+template <typename T>
+using ServiceHandleContainer = ::score::mw::com::impl::ServiceHandleContainer<T>;
+
+/// \api
+/// \brief Callback that notifies the callee about service availability changes.
+/// See ProxyBase::StartFindService for more information.
+template <typename T>
+using FindServiceHandler = ::score::mw::com::impl::FindServiceHandler<T>;
+
+/// \api
+/// \brief Subscription state of a proxy event.
+/// See ProxyEvent::GetSubscriptionStatus for slightly more information.
+using SubscriptionState = ::score::mw::com::impl::SubscriptionState;
+
+/// Carries the received data on proxy side
+template <typename SampleType>
+using SamplePtr = impl::SamplePtr<SampleType>;
+
+/// Carries a reference to the allocated memory that will hold the data that is to be sent to the receivers after having
+/// been filled by the sending application.
+template <typename SampleType>
+using SampleAllocateePtr = impl::SampleAllocateePtr<SampleType>;
+
+/// \api
+/// A pointer type which carries a pointer to the method return value in shared memory.
+template <typename ReturnType>
+using MethodReturnTypePtr = impl::MethodReturnTypePtr<ReturnType>;
+
+/// \api
+/// A pointer type which carries a pointer to a method input argument value in shared memory.
+template <typename ReturnType>
+using MethodInArgTypePtr = impl::MethodInArgPtr<ReturnType>;
+
+/// \api
+/// \brief Callback for event notifications on proxy side.
+/// \requirement SWS_CM_00309
+using EventReceiveHandler = impl::EventReceiveHandler;
+
+/// \api
+/// \brief Field tag type used in service-interface definitions to enable Get on a field.
+using WithGetter = impl::WithGetter;
+
+/// \api
+/// \brief Field tag type used in service-interface definitions to enable Set on a field.
+using WithSetter = impl::WithSetter;
+
+/// \api
+/// \brief Field tag type used in service-interface definitions to enable Notifier on a field.
+using WithNotifier = impl::WithNotifier;
+
+/// \api
+/// \brief Interpret an interface that follows our traits as proxy (cf. impl/traits.h)
+template <template <class> class T>
+using AsProxy = impl::AsProxy<T>;
+
+/// \api
+/// \brief Interpret an interface that follows our traits as skeleton (cf. impl/traits.h)
+template <template <class> class T>
+using AsSkeleton = impl::AsSkeleton<T>;
+
+/// \api
+/// \brief A type erased proxy that can be used to read the raw data from a skeleton without knowing the SampleType
+using GenericProxy = impl::GenericProxy;
+
+/// \api
+/// \brief A type erased proxy event that can be used to receive data without knowing the SampleType.
+using GenericProxyEvent = impl::GenericProxyEvent;
+
+/// \api
+/// \brief A type erased skeleton that can be used to offer a service without knowing the SampleType
+using GenericSkeleton = impl::GenericSkeleton;
+
+/// \api
+/// \brief Meta information about a data type, used for generic services.
+using DataTypeMetaInfo = impl::DataTypeMetaInfo;
+
+/// \api
+/// \brief Information required to create a generic event.
+using EventInfo = impl::EventInfo;
+
+/// \api
+/// \brief Parameters for creating a GenericSkeleton.
+using GenericSkeletonServiceElementInfo = impl::GenericSkeletonServiceElementInfo;
+
+/// \api
+/// \brief A type erased skeleton event that can be used to send data without knowing the SampleType.
+using GenericSkeletonEvent = impl::GenericSkeletonEvent;
+
+/// \api
+/// \brief A callback that can be registered on a GenericSkeletonEvent to be notified about changes in the
+/// availability of receive-handlers for this event.
+using ReceiveHandlerRegistrationChangedCallback = impl::ReceiveHandlerRegistrationChangedCallback;
+
+}  // namespace score::mw::com
+
+#endif  // SCORE_MW_COM_TYPES_H
+

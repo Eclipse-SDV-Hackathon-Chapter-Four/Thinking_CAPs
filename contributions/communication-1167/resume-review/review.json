@@ -1,0 +1,132 @@
+{
+  "authority": {
+    "additional_paid_calls": 0,
+    "consumed": 3,
+    "engineering_acceptance": "pending_offline_review",
+    "original_supervisor_correction_limit": 3,
+    "publication_authorized": false,
+    "remaining": 0,
+    "source_changes_this_resume": 0
+  },
+  "checkpoint_inventory_verified": {
+    "files": 21553,
+    "inventory": {
+      "path": "resume-review/checkpoint-before-resume/artifact-manifest.json",
+      "sha256": "d01bc7b24b5fdd7837d6095e0c00112524285aa60e884d22906e09c881318440"
+    },
+    "mismatches": 0
+  },
+  "copyright": {
+    "baseline_comparison": {
+      "path": "follow-up/copyright-comparison.json",
+      "sha256": "e1327b44441c4d91806463e7f36dff7163bede2fd924903024c97cb702929fe5"
+    },
+    "baseline_limitation": "Baseline contains only the same BUILD checker filesystem-path overlay; untouched target fails before scanning",
+    "failed": true,
+    "findings": 204,
+    "portable_baseline_subject_reverification": {
+      "path": "resume-review/baseline-subject-reverification.json",
+      "sha256": "d56ef65f7293bb406c2c86d5b4ebf09d659cafad31ff43053f0a8d500a2b9efc"
+    }
+  },
+  "created_at_utc": "2026-10-06T07:43:48.739266+00:00",
+  "evidence": [
+    {
+      "path": "verify-result.json",
+      "sha256": "d209d4ef7d94bbe95ee5fb1b816749a1ab83556bf5e9c81ef238df95037e0a2d"
+    },
+    {
+      "path": "native-final-state.json",
+      "sha256": "b85cad96c8bfa67f6b12131c269083eadd340844fa63c052dabb9c0dc83872eb"
+    },
+    {
+      "path": "evidence/test-all.stdout",
+      "sha256": "ea71c120700ffffcaecb6e888e38eccac546c62f38d86378b39cb7d81148a4c4"
+    },
+    {
+      "path": "evidence/focused.stdout",
+      "sha256": "6f2e847b9e420961a26c144e08f4183421dea979af95544e89e43771b36a8c33"
+    },
+    {
+      "path": "evidence/copyright.stderr",
+      "sha256": "1ba4fdd29b1bf131643da1d2af0612dbc304c9f39f80137e74d6de7d22c4f3f9"
+    },
+    {
+      "path": "follow-up/skipped-tests.json",
+      "sha256": "abf894efd468e5520259ca681c5ac2550433389fa4b2d836a8cb2a75c0cb5a8e"
+    },
+    {
+      "path": "upstream/issue.json",
+      "sha256": "55bc2dfb4eaabb22a8762558d8ba1b26290a7cb4ae91abe95f1d27986f0acc0f"
+    },
+    {
+      "path": "upstream/CONTRIBUTING.md",
+      "sha256": "17f00dff83b38766a68d306f8d15a6836c1b537526ddffb23987fe8acad490a7"
+    },
+    {
+      "path": "communication-1167.patch",
+      "sha256": "4ab6d1292ff289793b2f98003def4146f8e6249dd7c771e9df45ca6a3357db94"
+    }
+  ],
+  "full_suite": {
+    "failed": 0,
+    "passed": 503,
+    "skipped": 6
+  },
+  "issue": "https://github.com/eclipse-score/communication/issues/1167",
+  "kind": "agent_offline_review_draft",
+  "local_review_questions": [
+    {
+      "classification": "coverage_gap",
+      "finding": "Each StartFindService iteration constructs a callback capturing a different index. Multiple successful registrations do not exercise repeated calls with identical callback arguments or establish unchanged discovery state.",
+      "id": "review-question-01",
+      "line": 148,
+      "native_identifier": null,
+      "proposed_follow_up": "Review the native operation/registration contract, repeat the same callback and specifier, and compare relevant observable discovery state. Keep valid returned handles for cleanup; do not invent a handle-equality requirement.",
+      "status": "pending_offline_human_review",
+      "subject": {
+        "path": "candidate/score/mw/com/test/api_idempotency/main_api_idempotency.cpp",
+        "sha256": "453d7ff7870433d813bdad8875f19adeb4f2b023798f4024c7f28ffd3fb01118"
+      }
+    },
+    {
+      "classification": "coverage_gap",
+      "finding": "Availability is checked after two OfferService calls and after two StopOfferService calls, without before/after comparisons around the duplicate call. Duplicate discovery entries or a stop effective only on the second call would not be excluded by those checks.",
+      "id": "review-question-02",
+      "line": 138,
+      "native_identifier": null,
+      "proposed_follow_up": "Check service availability and relevant discovered-handle cardinality after the first offer and after the repeated offer; wait for absence after the first stop, then assert absence after the repeated stop. Use native supported observations and finite deadlines.",
+      "status": "pending_offline_human_review",
+      "subject": {
+        "path": "candidate/score/mw/com/test/api_idempotency/main_api_idempotency.cpp",
+        "sha256": "453d7ff7870433d813bdad8875f19adeb4f2b023798f4024c7f28ffd3fb01118"
+      }
+    }
+  ],
+  "native_baseline": "e3d126c2d7569345cf5f790310702eb00cd86b06",
+  "native_run_id": "01M47TK6AQAR009HFM6QDPFV7A",
+  "remaining_obligations": [
+    "Dispose or resolve the mandatory baseline copyright failure through authorized upstream review; no automatic waiver",
+    "Review six platform/configuration skips and qualification scope",
+    "Confirm intended StartFindService idempotency semantics",
+    "Verify ECA eligibility and contribution authorship",
+    "Human engineering acceptance remains pending"
+  ],
+  "runtime": {
+    "bound_storage_available": false,
+    "current_native_api_status": "not queried; saved terminal state checksum verified",
+    "native_execution": "stopped; no workspace relocation",
+    "observed_matching_usb_or_saved_devices": [],
+    "required_loop": "/dev/loop27",
+    "saved_image_available": false,
+    "saved_ssd_uuid": "002B-CE31"
+  },
+  "schema_version": 1,
+  "source_count": 2885,
+  "source_unchanged": true,
+  "subject_binding": {
+    "path": "candidate-hashes.json",
+    "sha256": "0fe5003de2e7fa20b33bc58c7d2688e5662000cb0c00e62d3dab0d2672f6c171"
+  },
+  "verification_evidence": "carried_measured_results; candidate subject hashes reverified; no native checks rerun"
+}

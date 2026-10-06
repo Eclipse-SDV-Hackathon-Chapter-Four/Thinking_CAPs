@@ -1,0 +1,193 @@
+diff --git a/score/mw/com/test/api_idempotency/main_api_idempotency.cpp b/score/mw/com/test/api_idempotency/main_api_idempotency.cpp
+--- a/score/mw/com/test/api_idempotency/main_api_idempotency.cpp
++++ b/score/mw/com/test/api_idempotency/main_api_idempotency.cpp
+@@ -21,10 +21,10 @@
+ #include "score/mw/com/types.h"
+ #include "score/result/result.h"
+ 
+-#include <array>
+-#include <atomic>
++#include <algorithm>
+ #include <chrono>
+ #include <cstdlib>
++#include <mutex>
+ #include <string>
+ #include <string_view>
+ #include <thread>
+@@ -63,23 +63,31 @@
+     return predicate();
+ }
+ 
+-void WaitForServiceAvailability(const InstanceSpecifier& instance_specifier, const bool expected_available)
+-{
++ServiceHandleContainer<HandleType> WaitForServiceAvailability(const InstanceSpecifier& instance_specifier,
++                                                            const bool expected_available)
++{
++    ServiceHandleContainer<HandleType> service_handles;
+     const bool success = WaitUntil(
+-        [&instance_specifier, expected_available]() {
++        [&instance_specifier, expected_available, &service_handles]() {
+             const auto find_result = ApiIdempotencyProxy::FindService(instance_specifier);
+             if (!find_result.has_value())
+             {
+                 return false;
+             }
+             const bool available = !find_result.value().empty();
+-            return available == expected_available;
++            if (available != expected_available)
++            {
++                return false;
++            }
++            service_handles = find_result.value();
++            return true;
+         },
+         5s);
+     if (!success)
+     {
+         FailTest(kFailureMessagePrefix, " Timed out waiting for service availability to become ", expected_available);
+     }
++    return service_handles;
+ }
+ 
+ void ReceiveSamples(ApiIdempotencyProxy& proxy,
+@@ -136,22 +144,40 @@
+     auto& skeleton = skeleton_container.GetSkeleton();
+ 
+     CheckResult(skeleton.OfferService(), "first OfferService");
++    const auto offered_service_handles = WaitForServiceAvailability(instance_specifier, true);
++    if (offered_service_handles.size() != 1U)
++    {
++        FailTest(kFailureMessagePrefix, " Expected the single configured service instance after first offer");
++    }
++
+     CheckResult(skeleton.OfferService(), "duplicate OfferService");
+-
+-    WaitForServiceAvailability(instance_specifier, true);
+-
+-    std::array<std::atomic<bool>, 3> discovery_flags{};
++    if (WaitForServiceAvailability(instance_specifier, true) != offered_service_handles)
++    {
++        FailTest(kFailureMessagePrefix, " Duplicate OfferService changed the discovered service handles");
++    }
++
++    std::mutex discovery_mutex;
++    std::vector<std::pair<FindServiceHandle, ServiceHandleContainer<HandleType>>> discovery_results;
++    const auto handler = [&discovery_mutex, &discovery_results](ServiceHandleContainer<HandleType> handles,
++                                                               FindServiceHandle find_service_handle) noexcept {
++        std::lock_guard<std::mutex> lock{discovery_mutex};
++        const auto existing = std::find_if(
++            discovery_results.begin(), discovery_results.end(), [&find_service_handle](const auto& discovery) {
++                return discovery.first == find_service_handle;
++            });
++        if (existing == discovery_results.end())
++        {
++            discovery_results.emplace_back(find_service_handle, std::move(handles));
++        }
++        else
++        {
++            existing->second = std::move(handles);
++        }
++    };
++
+     std::vector<FindServiceHandle> find_service_handles;
+-    for (std::size_t i = 0U; i < discovery_flags.size(); ++i)
+-    {
+-        discovery_flags[i].store(false);
+-        auto handler = [&discovery_flags, i](ServiceHandleContainer<HandleType> handles,
+-                                             FindServiceHandle /* find_service_handle */) noexcept {
+-            if (!handles.empty())
+-            {
+-                discovery_flags[i].store(true);
+-            }
+-        };
++    for (std::size_t i = 0U; i < 3U; ++i)
++    {
+         const auto start_find_result = ApiIdempotencyProxy::StartFindService(handler, instance_specifier);
+         if (!start_find_result.has_value())
+         {
+@@ -160,11 +186,16 @@
+         find_service_handles.push_back(start_find_result.value());
+     }
+ 
+-    const bool all_discovery_flags_set = WaitUntil(
+-        [&discovery_flags]() {
+-            for (const auto& flag : discovery_flags)
+-            {
+-                if (!flag.load())
++    const bool all_discoveries_match = WaitUntil(
++        [&]() {
++            std::lock_guard<std::mutex> lock{discovery_mutex};
++            for (const auto& find_service_handle : find_service_handles)
++            {
++                const auto discovery = std::find_if(
++                    discovery_results.begin(), discovery_results.end(), [&find_service_handle](const auto& result) {
++                        return result.first == find_service_handle;
++                    });
++                if (discovery == discovery_results.end() || discovery->second != offered_service_handles)
+                 {
+                     return false;
+                 }
+@@ -172,9 +203,13 @@
+             return true;
+         },
+         5s);
+-    if (!all_discovery_flags_set)
+-    {
+-        FailTest(kFailureMessagePrefix, " Timed out waiting for StartFindService handlers");
++    if (!all_discoveries_match)
++    {
++        FailTest(kFailureMessagePrefix, " Repeated StartFindService calls did not discover the unchanged service");
++    }
++    if (WaitForServiceAvailability(instance_specifier, true) != offered_service_handles)
++    {
++        FailTest(kFailureMessagePrefix, " Repeated StartFindService changed the discovered service handles");
+     }
+ 
+     for (const auto handle : find_service_handles)
+@@ -209,6 +244,10 @@
+         }
+ 
+         CheckResult(proxy.test_event.Subscribe(kMaxSamples), "duplicate Subscribe");
++        if (proxy.test_event.GetSubscriptionState() != SubscriptionState::kSubscribed)
++        {
++            FailTest(kFailureMessagePrefix, " Duplicate Subscribe changed the subscribed state");
++        }
+ 
+         const std::vector<ApiIdempotencySample> first_expected_values{101, 102, 103};
+         for (const auto value : first_expected_values)
+@@ -217,15 +256,16 @@
+         }
+         ReceiveSamples(proxy, first_expected_values, kMaxSamples);
+ 
+-        proxy.test_event.Unsubscribe();
+-        proxy.test_event.Unsubscribe();
+-
+-        const auto get_after_unsubscribe_result =
+-            proxy.test_event.GetNewSamples([](SamplePtr<ApiIdempotencySample>) noexcept {}, 1U);
+-        if (get_after_unsubscribe_result.has_value() ||
+-            (get_after_unsubscribe_result.error() != ComErrc::kNotSubscribed))
+-        {
+-            FailTest(kFailureMessagePrefix, " Event was still subscribed after repeated Unsubscribe");
++        for (std::size_t i = 0U; i < 2U; ++i)
++        {
++            proxy.test_event.Unsubscribe();
++            const auto get_after_unsubscribe_result =
++                proxy.test_event.GetNewSamples([](SamplePtr<ApiIdempotencySample>) noexcept {}, 1U);
++            if (get_after_unsubscribe_result.has_value() ||
++                (get_after_unsubscribe_result.error() != ComErrc::kNotSubscribed))
++            {
++                FailTest(kFailureMessagePrefix, " Event was still subscribed after Unsubscribe");
++            }
+         }
+ 
+         CheckResult(proxy.test_event.Subscribe(kMaxSamples), "re-subscribe");
+@@ -249,8 +289,8 @@
+     }
+ 
+     skeleton.StopOfferService();
++    WaitForServiceAvailability(instance_specifier, false);
+     skeleton.StopOfferService();
+-
+     WaitForServiceAvailability(instance_specifier, false);
+ 
+     CheckResult(skeleton.OfferService(), "OfferService after duplicate stops");

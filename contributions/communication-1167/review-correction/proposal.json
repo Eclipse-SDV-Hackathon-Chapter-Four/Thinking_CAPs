@@ -1,0 +1,44 @@
+{
+  "additional_paid_calls": 0,
+  "changed_source_path": "score/mw/com/test/api_idempotency/main_api_idempotency.cpp",
+  "created_at_utc": "2026-10-06T07:54:12.463476+00:00",
+  "engineering_acceptance": "pending_offline_review",
+  "implementation_constraints": [
+    "StartFindService generates a fresh search handle and stores a user callback; do not assert equal registration handles",
+    "The callback receives a FindServiceHandle identifying the operation; use this to associate asynchronous results",
+    "Keep the callable captures identical on repeated invocations; callback wrappers may remain distinct operations",
+    "The manifest declares one concrete service instance; compare the single discovered handle before/after repeat operations",
+    "Keep callback captures alive until all searches have stopped, and use a mutex for callback result access",
+    "All native configuration, production implementation, source pins and licenses remain unchanged",
+    "All five required native check commands must be retained for the new source; old passing tests do not qualify this proposal"
+  ],
+  "kind": "agent_correction_proposal",
+  "native_baseline": "e3d126c2d7569345cf5f790310702eb00cd86b06",
+  "native_verification": "terminal_exported_four_checks_pass_copyright_baseline_failure",
+  "original_supervisor_attempts_remaining": 0,
+  "run_id": "01M485DJP96AGJYWA02WE41KQA",
+  "source_applied": true,
+  "source_applied_to": "/home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-1167/review-correction/verification-run/candidate",
+  "source_refs": [
+    {
+      "path": "candidate/score/mw/com/impl/service_discovery.cpp",
+      "sha256": "76994da30368d792870a7bf249209f7e4d7561681fad09456805245f5208b85c"
+    },
+    {
+      "path": "candidate/score/mw/com/impl/find_service_handler.h",
+      "sha256": "d75e304ecf17586aa32b78cc5fe566b43f65635636c9ec7d519a014e08464dbb"
+    },
+    {
+      "path": "candidate/score/mw/com/impl/find_service_handle.h",
+      "sha256": "7b21e4c7763a31d533882a47a8ac10cc3f337a8139bf149375961f11d2b8b161"
+    },
+    {
+      "path": "candidate/score/mw/com/impl/handle_type.h",
+      "sha256": "8b8c1840690c75f9fbf4f6fc6e66612fd41161b56045e320a8eeb8bcecb2bd9c"
+    },
+    {
+      "path": "candidate/score/mw/com/test/api_idempotency/config/mw_com_config.json",
+      "sha256": "20f74205cdae3cfa15a37c9e9c2a67a661e9ef32881a26814de336b1e2b93ad8"
+    }
+  ]
+}

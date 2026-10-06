@@ -1,0 +1,85 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:memory_region_map_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 27 tests from 5 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from MemoryRegionMapDeathTest
+[0;32m[ RUN      ] [mMemoryRegionMapDeathTest.RemovingNonExistantRegionTerminates
+[0;32m[       OK ] [mMemoryRegionMapDeathTest.RemovingNonExistantRegionTerminates (100 ms)
+[0;32m[----------] [m1 test from MemoryRegionMapDeathTest (100 ms total)
+
+[0;32m[----------] [m7 tests from MockMemoryRegionMapDeathTest
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.ExceedingMaxConcurrentReadersWhenAcquiringVersionForReadingTerminates
+2026/10/06 08:46:44.6404387 451569544 000 ECU1 NONE shm log fatal verbose 1 AcquireLatestRegionVersionForRead - Unexpected refcount overflow! 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.ExceedingMaxConcurrentReadersWhenAcquiringVersionForReadingTerminates (146 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.ExceedingMaxConcurrentReadersWhenAcquiringVersionForReadingDuringWritingTerminates
+2026/10/06 08:46:44.6404534 451571012 000 ECU1 NONE shm log fatal verbose 1 AcquireLatestRegionVersionForRead - Unexpected refcount overflow! 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.ExceedingMaxConcurrentReadersWhenAcquiringVersionForReadingDuringWritingTerminates (100 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.FailingToAcquireWriteVersionWhenUpdatingRegionTerminates
+2026/10/06 08:46:44.6404736 451573036 000 ECU1 NONE shm log fatal verbose 3 Couldn't acquire free region version for writing! Configured VERSION_COUNT ( 10 ) might be too small 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.FailingToAcquireWriteVersionWhenUpdatingRegionTerminates (206 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.FailingToAcquireWriteVersionWhenRemovingRegionTerminates
+2026/10/06 08:46:44.6404943 451575105 000 ECU1 NONE shm log fatal verbose 3 Couldn't acquire free region version for writing! Configured VERSION_COUNT ( 10 ) might be too small 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.FailingToAcquireWriteVersionWhenRemovingRegionTerminates (192 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.FailingToAcquireWriteVersionWhenClearingRegionTerminates
+2026/10/06 08:46:45.6405135 451577020 000 ECU1 NONE shm log fatal verbose 3 Couldn't acquire free region version for writing! Configured VERSION_COUNT ( 10 ) might be too small 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.FailingToAcquireWriteVersionWhenClearingRegionTerminates (183 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.FailingToAcquireReadVersionWhenGettingBoundsTerminates
+2026/10/06 08:46:45.6405218 451577852 000 ECU1 NONE shm log fatal verbose 1 Couldn't acquire latest region version for reading! Unexpected refcount overflow!? 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.FailingToAcquireReadVersionWhenGettingBoundsTerminates (90 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapDeathTest.FailingToAcquireReadVersionWhenGettingSizeTerminates
+2026/10/06 08:46:45.6405308 451578757 000 ECU1 NONE shm log fatal verbose 1 Couldn't acquire latest region version for reading! Unexpected refcount overflow!? 
+[0;32m[       OK ] [mMockMemoryRegionMapDeathTest.FailingToAcquireReadVersionWhenGettingSizeTerminates (86 ms)
+[0;32m[----------] [m7 tests from MockMemoryRegionMapDeathTest (1006 ms total)
+
+[0;32m[----------] [m6 tests from MemoryRegionMapTest
+[0;32m[ RUN      ] [mMemoryRegionMapTest.ReturnsNullMemoryBoundsIfKnownRegionsEmpty
+[0;32m[       OK ] [mMemoryRegionMapTest.ReturnsNullMemoryBoundsIfKnownRegionsEmpty (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapTest.ReturnsMemoryBoundsForPointersInBounds
+[0;32m[       OK ] [mMemoryRegionMapTest.ReturnsMemoryBoundsForPointersInBounds (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapTest.GetBoundsFromAddressWillNotReturnRangeForRegionWhichFailedToInsert
+[0;32m[       OK ] [mMemoryRegionMapTest.GetBoundsFromAddressWillNotReturnRangeForRegionWhichFailedToInsert (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapTest.InsertAndRemove
+[0;32m[       OK ] [mMemoryRegionMapTest.InsertAndRemove (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapTest.Clear
+[0;32m[       OK ] [mMemoryRegionMapTest.Clear (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapTest.ConcurrentAccess
+[0;32m[       OK ] [mMemoryRegionMapTest.ConcurrentAccess (825 ms)
+[0;32m[----------] [m6 tests from MemoryRegionMapTest (825 ms total)
+
+[0;32m[----------] [m2 tests from MockMemoryRegionMapTest
+[0;32m[ RUN      ] [mMockMemoryRegionMapTest.ExceedingMaxCallsToAcquiringVersionForReadingWhileWritingReturnsBlank
+[0;32m[       OK ] [mMockMemoryRegionMapTest.ExceedingMaxCallsToAcquiringVersionForReadingWhileWritingReturnsBlank (101 ms)
+[0;32m[ RUN      ] [mMockMemoryRegionMapTest.AcquiringVersionForWritingWhenAllVersionsAreCurrentlyBeingReadReturnsBlank
+[0;32m[       OK ] [mMockMemoryRegionMapTest.AcquiringVersionForWritingWhenAllVersionsAreCurrentlyBeingReadReturnsBlank (0 ms)
+[0;32m[----------] [m2 tests from MockMemoryRegionMapTest (102 ms total)
+
+[0;32m[----------] [m11 tests from MemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/0
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/0 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/1
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/1 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/2
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/2 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/3
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/3 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/4
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/4 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/5
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/5 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/6
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/6 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/7
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/7 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/8
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/8 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/9
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/9 (0 ms)
+[0;32m[ RUN      ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/10
+[0;32m[       OK ] [mMemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture.UpdateKnownRegionFailsIfProvidedMemoryRangeOverlapsWithExistingRange/10 (0 ms)
+[0;32m[----------] [m11 tests from MemoryRegionMapUpdateRegionParamaterisedFixture/MemoryRegionMapUpdateRegionParamaterisedFixture (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m27 tests from 5 test suites ran. (2035 ms total)
+[0;32m[  PASSED  ] [m27 tests.

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="36" failures="0" disabled="0" errors="0" time="0.183" timestamp="2026-10-05T23:06:20.249" name="AllTests">
+  <testsuite name="SkeletonEventGetBindingTypeFixture" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.005" timestamp="2026-10-05T23:06:20.250">
+    <testcase name="GetBindingType" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="62" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.250" classname="SkeletonEventGetBindingTypeFixture" />
+  </testsuite>
+  <testsuite name="SkeletonEventAllocateFixture" tests="4" failures="0" disabled="0" skipped="0" errors="0" time="0.02" timestamp="2026-10-05T23:06:20.255">
+    <testcase name="CannotAllocateBeforeCallingOffer" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="71" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.255" classname="SkeletonEventAllocateFixture" />
+    <testcase name="AllocateErrorLeadsToErrorResult" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="85" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.260" classname="SkeletonEventAllocateFixture">
+      <properties>
+        <property name="Verifies" value="SCR-21840368, SCR-17434933, SCR-5899090, SSR-6225206"/>
+        <property name="Description" value="Checks that allocation algo aborts correctly (req. SSR-6225206) and an error is returned on allocation error (req. SCR-21840368, SCR-17434933) and that the number of slots is a configurable param handed over in ctor (req. SCR-5899090)"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="SkeletonEventWithNotMaxSamplesEnforcementAllocateErrorLeadsToError" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="128" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.266" classname="SkeletonEventAllocateFixture" />
+    <testcase name="AllocateReturnsUniquePointersForMultipleCalls" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="162" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.271" classname="SkeletonEventAllocateFixture">
+      <properties>
+        <property name="Description" value="Checks that multiple calls to Allocate() return unique memory pointers."/>
+        <property name="TestType" value="Unit Test"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="SkeletonEventPrepareOfferFixture" tests="12" failures="0" disabled="0" skipped="0" errors="0" time="0.057" timestamp="2026-10-05T23:06:20.276">
+    <testcase name="RegisterEventNotificationExistenceChangedCallback" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="198" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.276" classname="SkeletonEventPrepareOfferFixture" />
+    <testcase name="SubscriptionsAcceptedIfMaxSamplesCanBeProvided" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="231" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.281" classname="SkeletonEventPrepareOfferFixture">
+      <properties>
+        <property name="Verifies" value="SCR-7088394, SCR-21269964, SCR-14033248"/>
+        <property name="lobster-tracing" value="Communication.ProxyFieldSubscribe, Communication.ProxyEventSubscribe, Communication.GenericProxyEventSubscribe"/>
+        <property name="Description" value="Checks that a subscription will be accepted by the provider if the requested max_sample_count can be provided."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="SubscriptionRejectedIfMaxSubscriptionCountOverflowOccurs" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="267" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.285" classname="SkeletonEventPrepareOfferFixture">
+      <properties>
+        <property name="Verifies" value="SCR-7088394, SCR-21269964"/>
+        <property name="lobster-tracing" value="Communication.ProxyFieldSubscribe, Communication.ProxyEventSubscribe, Communication.GenericProxyEventSubscribe"/>
+        <property name="Description" value="Checks that a subscription will be rejected if an &apos;over-subscription&apos; occurs on the skeleton."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="SubscriptionAcceptedIfOversubscriptionAllowedOnConstruction" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="303" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.290" classname="SkeletonEventPrepareOfferFixture">
+      <properties>
+        <property name="Verifies" value="SCR-7088394, SCR-21269964"/>
+        <property name="lobster-tracing" value="Communication.ProxyFieldSubscribe, Communication.ProxyEventSubscribe, Communication.GenericProxyEventSubscribe"/>
+        <property name="Description" value="Checks that a skeleton event allows &apos;over-subscription&apos; in case it is constructed accordingly"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="SubscriptionRejectedIfNumberOfSubscriberExceedsLimit" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="337" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.295" classname="SkeletonEventPrepareOfferFixture">
+      <properties>
+        <property name="Verifies" value="SCR-7088394, SCR-21269964, SCR-14033248"/>
+        <property name="lobster-tracing" value="Communication.ProxyFieldSubscribe, Communication.ProxyEventSubscribe, Communication.GenericProxyEventSubscribe"/>
+        <property name="Description" value="Checks that a subscription will be rejected if the number of subscriptions is already equal or greater than the max number of subscribers allowed."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="UnsubscribeIncreasesAvailableSampleSlots" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="381" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.300" classname="SkeletonEventPrepareOfferFixture">
+      <properties>
+        <property name="Verifies" value="SCR-21286218"/>
+        <property name="lobster-tracing" value="Communication.ProxyFieldUnsubscribe, Communication.ProxyEventUnsubscribe, Communication.GenericProxyEventUnsubscribe"/>
+        <property name="Description" value="The available sample count will be incremented when an unsubscribe message is received."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="RegisterEventNotificationCallbacksForAsilBTriggersMessagePassingRegistration" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="843" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.305" classname="SkeletonEventPrepareOfferFixture" />
+    <testcase name="UnregisterEventNotificationCallbacksForAsilBTriggersMessagePassingUnregistration" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="864" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.310" classname="SkeletonEventPrepareOfferFixture" />
+    <testcase name="WhenGetterEnabledAndTracingDisabledForAsilBEventQmAndAsilBTransactionLogsAreRegistered" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="886" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.315" classname="SkeletonEventPrepareOfferFixture" />
+    <testcase name="WhenGetterEnabledAndTracingDisabledForQmEventOnlyQmTransactionLogIsRegistered" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="907" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.320" classname="SkeletonEventPrepareOfferFixture" />
+    <testcase name="WhenGetterAndTracingDisabledForAsilBEventNoTransactionLogsAreRegistered" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="930" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.324" classname="SkeletonEventPrepareOfferFixture" />
+    <testcase name="WhenGetterAndTracingDisabledForQmEventNoTransactionLogsAreRegistered" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="950" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.329" classname="SkeletonEventPrepareOfferFixture" />
+  </testsuite>
+  <testsuite name="SkeletonEventPrepareStopOfferFixture" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.009" timestamp="2026-10-05T23:06:20.334">
+    <testcase name="UnregisterEventNotificationExistenceChangedCallback" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="420" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.334" classname="SkeletonEventPrepareStopOfferFixture" />
+    <testcase name="PrepareStopOfferUnregistersAsilBTransactionLogFromAsilBTransactionLogSet" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="975" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.338" classname="SkeletonEventPrepareStopOfferFixture" />
+  </testsuite>
+  <testsuite name="SkeletonEventQmGetLatestSampleFixture" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.029" timestamp="2026-10-05T23:06:20.343">
+    <testcase name="GetLatestSampleReturnsErrorIfNoSampleWasSent" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="613" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.343" classname="SkeletonEventQmGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsMostRecentlySentSample" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="634" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.349" classname="SkeletonEventQmGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsErrorWhenCalledWhilePreviousSamplePtrIsAlive" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="662" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.354" classname="SkeletonEventQmGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleSucceedsAfterPreviousSamplePtrIsReleased" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="690" status="run" result="completed" time="0.008" timestamp="2026-10-05T23:06:20.360" classname="SkeletonEventQmGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleTerminateWhenAsilBIsPassed" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="719" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.369" classname="SkeletonEventQmGetLatestSampleFixture" />
+  </testsuite>
+  <testsuite name="SkeletonEventTimestampFixture" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.007" timestamp="2026-10-05T23:06:20.373">
+    <testcase name="SendUpdatesTimestampInControlData" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="741" status="run" result="completed" time="0.003" timestamp="2026-10-05T23:06:20.373" classname="SkeletonEventTimestampFixture" />
+    <testcase name="PrepareOfferInitializesCurrentTimestampFromReopenedControlData" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="792" status="run" result="completed" time="0.004" timestamp="2026-10-05T23:06:20.376" classname="SkeletonEventTimestampFixture">
+      <properties>
+        <property name="Description" value="Checks that a SkeletonEvent which reopens existing shared memory continues the timestamp sequence from the latest timestamp already present in the event control data."/>
+        <property name="TestType" value="Unit Test"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" tests="10" failures="0" disabled="0" skipped="0" errors="0" time="0.052" timestamp="2026-10-05T23:06:20.381">
+    <testcase name="GetLatestSampleReturnsErrorIfNoSampleWasSent/0" value_param="QM" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="454" status="run" result="completed" time="0.003" timestamp="2026-10-05T23:06:20.381" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsErrorIfNoSampleWasSent/1" value_param="B" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="454" status="run" result="completed" time="0.003" timestamp="2026-10-05T23:06:20.384" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsMostRecentlySentSample/0" value_param="QM" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="477" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.388" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsMostRecentlySentSample/1" value_param="B" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="477" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.394" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsErrorWhenCalledWhilePreviousSamplePtrIsAlive/0" value_param="QM" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="507" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.399" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsErrorWhenCalledWhilePreviousSamplePtrIsAlive/1" value_param="B" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="507" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.405" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleSucceedsAfterPreviousSamplePtrIsReleased/0" value_param="QM" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="537" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.411" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleSucceedsAfterPreviousSamplePtrIsReleased/1" value_param="B" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="537" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.416" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsErrorForDifferentQualityTypeWhilePreviousSamplePtrIsAlive/0" value_param="QM" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="568" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.422" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+    <testcase name="GetLatestSampleReturnsErrorForDifferentQualityTypeWhilePreviousSamplePtrIsAlive/1" value_param="B" file="score/mw/com/impl/bindings/lola/skeleton_event_test.cpp" line="568" status="run" result="completed" time="0.005" timestamp="2026-10-05T23:06:20.428" classname="QualityTypes/SkeletonEventAsilBGetLatestSampleFixture" />
+  </testsuite>
+</testsuites>

@@ -1,0 +1,9 @@
+# Prepared submission for communication #1167
+
+The exact previously measured source is staged on local branch `test/1167-api-idempotency-reviewed` in the externally bound disposable workspace recorded in `preparation-result.json`. No commit, sign-off or remote publication has occurred. `source.tar.gz` independently exports all 2,885 verified files; combined/test-only/utility patches and the source hash vector are here. `PR-TITLE.txt` and `PR-BODY.md` are ready for the eventual pull request.
+
+Authenticated GitHub account: `jnsagai`. Official Eclipse ECA lookup returned HTTP 404: no user found with that username. This does not prove that no agreement exists under another unlinked account. ECA verification remains unresolved. Log in to https://accounts.eclipse.org, link GitHub `jnsagai`, and complete/check the ECA through https://www.eclipse.org/legal/eca/. The agent cannot sign the contributor’s legal agreement or invent a human decision. The uncompleted subject-bound decision record is `HUMAN-DISPOSITION.md`.
+
+The patch applies cleanly to current upstream `9fa5a2f6cc78dd3f756df3ec3ea9466d38ee7dfd`, which is 10 commits ahead of the measured baseline. Its changes include LoLa skeleton/event-control code. This checks patch applicability only; the 503-pass/6-skip result remains bound to the measured baseline and is not relabeled as a current-main result. `upstream-comparison.json` preserves changed-path evidence. Current contribution guide matches the measured baseline guide; exact binding is in `contribution-guide-binding.json`.
+
+Native run `01M4878Q65ENC6PJ5AEJ6NMWB3` and the completed technical review are preserved under `../final-review/`. No new Fabro run, paid call or supervisor retry was used for submission preparation. Credentials remain internal. Dashboard: http://172.18.17.0:8787 (`fabro_dashboard`).

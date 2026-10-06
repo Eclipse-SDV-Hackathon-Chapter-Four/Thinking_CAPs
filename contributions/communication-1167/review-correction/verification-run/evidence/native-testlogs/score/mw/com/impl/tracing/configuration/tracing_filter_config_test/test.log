@@ -1,0 +1,112 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/tracing/configuration:tracing_filter_config_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 32 tests from 10 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from TracingFilterConfigDeathTest
+[0;32m[ RUN      ] [mTracingFilterConfigDeathTest.AddingInvalidTracePointTypeTerminates
+2026/10/06 08:47:08.6428583 451811506 000 ECU1 NONE lola log fatal verbose 2 Invalid TracePointType:  0 
+[0;32m[       OK ] [mTracingFilterConfigDeathTest.AddingInvalidTracePointTypeTerminates (81 ms)
+[0;32m[----------] [m1 test from TracingFilterConfigDeathTest (81 ms total)
+
+[0;32m[----------] [m5 tests from TracingFilterConfigGetNumberOfTracingSlotsDeathTest
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.InstanceSpecifierCanNotBeParsed
+2026/10/06 08:47:08.6428665 451812326 000 ECU1 NONE lola log warn verbose 3 Shortname specifier_with_bad_charachters%-& does not adhere to shortname naming requirements. 
+2026/10/06 08:47:08.6428665 451812326 000 ECU1 NONE DFLT log fatal verbose 1 Lola: Could not create instance specifier. Terminating. 
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.InstanceSpecifierCanNotBeParsed (84 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.InstanceSpecifierCanNotBeFound
+2026/10/06 08:47:08.6428750 451813175 000 ECU1 NONE DFLT log fatal verbose 3 Lola: provided service instance with name: legal_but_wrong_instance_specifier  could not be found. 
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.InstanceSpecifierCanNotBeFound (83 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.ProvidedServiceElementNameForTracingWhichDoesNotExistInConfig
+2026/10/06 08:47:08.6428833 451814009 000 ECU1 NONE lola log fatal verbose 8 Requested service element ( service type:  EVENT , service element:  ThisServiceElementDoesNotExist , service element type:  EVENT ) does not exist. 
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.ProvidedServiceElementNameForTracingWhichDoesNotExistInConfig (83 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.RequestTooManyTracingSlots
+2026/10/06 08:47:08.6428920 451814874 000 ECU1 NONE lola log fatal verbose 1 Invalid Trace points: the sum exceeds std::uint16_t max 
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.RequestTooManyTracingSlots (89 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.ConfigurationContainsBlankDeployment
+2026/10/06 08:47:09.6429006 451815739 000 ECU1 NONE lola log fatal verbose 1 FindNumberOfTracingSlots: Wrong Binding! ServiceInstanceDeployment doesn't contain a LoLa deployment! 
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsDeathTest.ConfigurationContainsBlankDeployment (91 ms)
+[0;32m[----------] [m5 tests from TracingFilterConfigGetNumberOfTracingSlotsDeathTest (433 ms total)
+
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/0, where TypeParam = score::mw::com::impl::tracing::SkeletonEventTracePointType
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/0.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/0.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/0.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/0.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/0.CallingIsTracePointEnabledAfterCallingAddReturnsTrue
+[0;32m[       OK ] [mTracingFilterConfigFixture/0.CallingIsTracePointEnabledAfterCallingAddReturnsTrue (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/0.AddingSameTracePointTwiceWillNotCrash
+[0;32m[       OK ] [mTracingFilterConfigFixture/0.AddingSameTracePointTwiceWillNotCrash (0 ms)
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/0 (0 ms total)
+
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/1, where TypeParam = score::mw::com::impl::tracing::SkeletonFieldTracePointType
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/1.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/1.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/1.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/1.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/1.CallingIsTracePointEnabledAfterCallingAddReturnsTrue
+[0;32m[       OK ] [mTracingFilterConfigFixture/1.CallingIsTracePointEnabledAfterCallingAddReturnsTrue (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/1.AddingSameTracePointTwiceWillNotCrash
+[0;32m[       OK ] [mTracingFilterConfigFixture/1.AddingSameTracePointTwiceWillNotCrash (0 ms)
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/1 (0 ms total)
+
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/2, where TypeParam = score::mw::com::impl::tracing::ProxyEventTracePointType
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/2.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/2.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/2.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/2.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/2.CallingIsTracePointEnabledAfterCallingAddReturnsTrue
+[0;32m[       OK ] [mTracingFilterConfigFixture/2.CallingIsTracePointEnabledAfterCallingAddReturnsTrue (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/2.AddingSameTracePointTwiceWillNotCrash
+[0;32m[       OK ] [mTracingFilterConfigFixture/2.AddingSameTracePointTwiceWillNotCrash (0 ms)
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/2 (0 ms total)
+
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/3, where TypeParam = score::mw::com::impl::tracing::ProxyFieldTracePointType
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/3.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/3.CallingIsTracePointEnabledWithoutCallingAddReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/3.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse
+[0;32m[       OK ] [mTracingFilterConfigFixture/3.CallingIsTracePointEnabledAfterCallingAddWithDifferentInstanceIdReturnsFalse (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/3.CallingIsTracePointEnabledAfterCallingAddReturnsTrue
+[0;32m[       OK ] [mTracingFilterConfigFixture/3.CallingIsTracePointEnabledAfterCallingAddReturnsTrue (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigFixture/3.AddingSameTracePointTwiceWillNotCrash
+[0;32m[       OK ] [mTracingFilterConfigFixture/3.AddingSameTracePointTwiceWillNotCrash (0 ms)
+[0;32m[----------] [m4 tests from TracingFilterConfigFixture/3 (0 ms total)
+
+[0;32m[----------] [m1 test from TracingFilterConfigTest
+[0;32m[ RUN      ] [mTracingFilterConfigTest.CheckingTracePointTypesWithSameNumericalValueDoNotMatch
+[0;32m[       OK ] [mTracingFilterConfigTest.CheckingTracePointTypesWithSameNumericalValueDoNotMatch (0 ms)
+[0;32m[----------] [m1 test from TracingFilterConfigTest (0 ms total)
+
+[0;32m[----------] [m1 test from AraComConfigJsonForTracingFilterConfigParserTestFixture
+[0;32m[ RUN      ] [mAraComConfigJsonForTracingFilterConfigParserTestFixture.InsertingMultipleTracePointsFromSameServiceElementWithTraceDoneDoesNotCountMultiple
+[0;32m[       OK ] [mAraComConfigJsonForTracingFilterConfigParserTestFixture.InsertingMultipleTracePointsFromSameServiceElementWithTraceDoneDoesNotCountMultiple (0 ms)
+[0;32m[----------] [m1 test from AraComConfigJsonForTracingFilterConfigParserTestFixture (0 ms total)
+
+[0;32m[----------] [m3 tests from TracingFilterConfigGetNumberOfTraceingSlots
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTraceingSlots.minimalTest
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 08:47:09.6429098 451816653 000 ECU1 NONE lola log warn verbose 1 <maxSamples> property for event is DEPRECATED! use <numberOfSampleSlots> property for event  
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTraceingSlots.minimalTest (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTraceingSlots.AFieldAlloneIsPresentAndWantsToBeTraced
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTraceingSlots.AFieldAlloneIsPresentAndWantsToBeTraced (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTraceingSlots.AFieldAndAnEventArePresentAndWantsToBeTraced
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTraceingSlots.AFieldAndAnEventArePresentAndWantsToBeTraced (0 ms)
+[0;32m[----------] [m3 tests from TracingFilterConfigGetNumberOfTraceingSlots (1 ms total)
+
+[0;32m[----------] [m5 tests from TracingFilterConfigGetNumberOfTracingSlotsFixture
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.InsertingNoTracePointsWithTraceDoneCBReturnsZero
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.InsertingNoTracePointsWithTraceDoneCBReturnsZero (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.InsertingTracePointsWithTraceDoneCBReturnsCorrectNumber
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.InsertingTracePointsWithTraceDoneCBReturnsCorrectNumber (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.InsertingMultipleTracePointsFromSameServiceElementWithTraceDoneCBDoesNotCountMultiple
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.InsertingMultipleTracePointsFromSameServiceElementWithTraceDoneCBDoesNotCountMultiple (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.EmptyTracePointSetReturnsZero
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.EmptyTracePointSetReturnsZero (0 ms)
+[0;32m[ RUN      ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.SkeletonFieldTracePointsWithTraceDoneCBAreCountedCorrectly
+[0;32m[       OK ] [mTracingFilterConfigGetNumberOfTracingSlotsFixture.SkeletonFieldTracePointsWithTraceDoneCBAreCountedCorrectly (0 ms)
+[0;32m[----------] [m5 tests from TracingFilterConfigGetNumberOfTracingSlotsFixture (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m32 tests from 10 test suites ran. (518 ms total)
+[0;32m[  PASSED  ] [m32 tests.

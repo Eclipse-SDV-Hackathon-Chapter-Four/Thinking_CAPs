@@ -1,0 +1,816 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/test/partial_restart/consumer_restart/integration_test:consumer_restart_graceful
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/bazel-output/3f5123dc6d61824122bb8863a64ee7e0/sandbox/processwrapper-sandbox/530/execroot/_main/bazel-out/k8-fastbuild/bin/score/mw/com/test/partial_restart/consumer_restart/integration_test/consumer_restart_graceful.runfiles/score_itf+
+configfile: pytest.ini
+collected 1 item
+
+../score_itf+::test_partial_restart_consumer_graceful 
+-------------------------------- live log setup --------------------------------
+[2026-10-06 05:25:25.304] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: score/mw/com/test/partial_restart/consumer_restart/integration_test/_image_consumer_restart_graceful_loader.sh
+[2026-10-06 05:25:25.481] [INFO] [score.itf.plugins.docker] Bootstrap stdout: Loaded image: consumer_restart_graceful:latest
+
+[2026-10-06 05:25:25.482] [DEBUG] [docker.utils.config] Trying paths: ['/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.docker/config.json', '/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.dockercfg']
+[2026-10-06 05:25:25.482] [DEBUG] [docker.utils.config] No config file found
+[2026-10-06 05:25:25.482] [DEBUG] [docker.utils.config] Trying paths: ['/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.docker/config.json', '/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.dockercfg']
+[2026-10-06 05:25:25.482] [DEBUG] [docker.utils.config] No config file found
+[2026-10-06 05:25:25.491] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 891
+[2026-10-06 05:25:26.785] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/networks/create HTTP/1.1" 201 87
+[2026-10-06 05:25:26.788] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/networks/191c1721c259637ce36f4ec39a26edf44854257a91cbe49ce45eb2ff9d4ea433 HTTP/1.1" 200 564
+[2026-10-06 05:25:26.917] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/create HTTP/1.1" 201 88
+[2026-10-06 05:25:26.919] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/containers/fe3798b35d04bfc646421434a06d438ba1eab38d9b38a524d6c62840e96dc0b2/json HTTP/1.1" 200 None
+[2026-10-06 05:25:28.631] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fe3798b35d04bfc646421434a06d438ba1eab38d9b38a524d6c62840e96dc0b2/start HTTP/1.1" 204 0
+[2026-10-06 05:25:28.631] [DEBUG] [docker.utils.config] Trying paths: ['/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.docker/config.json', '/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.dockercfg']
+[2026-10-06 05:25:28.632] [DEBUG] [docker.utils.config] No config file found
+[2026-10-06 05:25:28.632] [DEBUG] [docker.utils.config] Trying paths: ['/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.docker/config.json', '/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/container-home/.dockercfg']
+[2026-10-06 05:25:28.632] [DEBUG] [docker.utils.config] No config file found
+[2026-10-06 05:25:28.642] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 891
+-------------------------------- live log call ---------------------------------
+[2026-10-06 05:25:28.645] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fe3798b35d04bfc646421434a06d438ba1eab38d9b38a524d6c62840e96dc0b2/exec HTTP/1.1" 201 74
+[2026-10-06 05:25:28.648] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/start HTTP/1.1" 101 0
+[2026-10-06 05:25:28.693] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:28.694] [INFO] [consumer_restart_application] Test Main: Running iteration 1 of 3 of Consumer-Restart-Test
+[2026-10-06 05:25:28.695] [INFO] [consumer_restart_application] Controller Step (1): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-06 05:25:28.695] [INFO] [consumer_restart_application] Controller Step (1): forking Consumer process
+[2026-10-06 05:25:28.695] [INFO] [consumer_restart_application] Controller Step (1): successfully forked Consumerprocess with PID: 14
+[2026-10-06 05:25:28.695] [INFO] [consumer_restart_application] Controller Step (2): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-06 05:25:28.695] [INFO] [consumer_restart_application] Controller Step (2): forking Provider process
+[2026-10-06 05:25:28.695] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Controller Step (2): successfully forked Providerprocess with PID: 15
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Controller Step (3): Waiting for consumer to reach checkpoint 1
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Consumer Step (C.1): Call StartFindService
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:28.696] [INFO] [consumer_restart_application] Provider: Before Skeleton Creation.
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] Provider Step (P.1): Create service instance/skeleton
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328696 399510991 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328697 399510994 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328697 399510997 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] Consumer Step (C.1): Successfully called StartFindService
+[2026-10-06 05:25:28.697] [INFO] [consumer_restart_application] Consumer Step (C.2): Wait for FindServiceHandler to be called
+[2026-10-06 05:25:28.698] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328697 399511001 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:28.698] [INFO] [consumer_restart_application] Provider: Successfully created lola skeleton
+[2026-10-06 05:25:28.698] [INFO] [consumer_restart_application] Provider Step (P.2): Offer Service
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328698 399511008 000 ECU1 CONS lola log debug verbose 5 Recreating SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328698 399511009 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328698 399511009 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001-b
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328698 399511010 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000008265-00001
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328699 399511013 000 ECU1 CONS lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  8265 : 1  are as follows:
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] QM-Ctrl:  1316 , ASIL_B-Ctrl:  1316 , Data:  336
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328699 399511014 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-06 05:25:28.699] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328699 399511017 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-06 05:25:28.700] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328699 399511019 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readAccessForEveryBody
+[2026-10-06 05:25:28.700] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328699 399511020 000 ECU1 CONS lola log debug verbose 5 Created shared-memory-object for DATA (S:  8265  I: 1 )
+[2026-10-06 05:25:28.700] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511025 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:28.700] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511026 000 ECU1 CONS lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/15_asil-b_39951099985184
+[2026-10-06 05:25:28.700] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511027 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:28.700] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511028 000 ECU1 CONS lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Consumer Step (C.1): find service handler called
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Consumer Step (C.1): FindServiceHandler handler done - found one service instance.
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511029 000 ECU1 CONS lola log info verbose 2 2026/10/06 05:25:28.4328700 399511029 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0 
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1 
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Consumer Step (C.3): Create a Proxy for found service
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511029 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328700 399511030 000 ECU1 CONS lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/15_asil-qm_39951099985184
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Provider: After Skeleton Offered.
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Provider: Service instance is offered.
+[2026-10-06 05:25:28.701] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (2, 2)
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511032 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511033 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511035 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511035 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511036 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511036 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511038 000 ECU1 CONS lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] Consumer Step (C.3): Successfully created lola proxy
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] Consumer Step (C.3): Created a proxy
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] Consumer Step (C.4): Subscribe to Event
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] Consumer Step (C.4): Successfully subscribed
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] Consumer Step (C.5): Registering EventReceiveHandler
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511039 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511039 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_15_ASIL_B
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511040 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_15_ASIL_B
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328701 399511041 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:28.702] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.703] [INFO] [consumer_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-06 05:25:28.741] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328741 399511433 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:28.741] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328741 399511434 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_14_ASIL_B
+[2026-10-06 05:25:28.741] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328741 399511435 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_14_ASIL_B
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] 2026/10/06 05:25:28.4328741 399511436 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (3, 3)
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (1) / member_2 (1)
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (2) / member_2 (2)
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.742] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.781] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (4, 4)
+[2026-10-06 05:25:28.782] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.782] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.782] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (3) / member_2 (3)
+[2026-10-06 05:25:28.782] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.782] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.794] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:28.822] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (5, 5)
+[2026-10-06 05:25:28.822] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.822] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.822] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (4) / member_2 (4)
+[2026-10-06 05:25:28.822] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.822] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.862] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.862] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (6, 6)
+[2026-10-06 05:25:28.862] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.862] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (5) / member_2 (5)
+[2026-10-06 05:25:28.862] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.863] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.895] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:28.902] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (7, 7)
+[2026-10-06 05:25:28.902] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.902] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (6) / member_2 (6)
+[2026-10-06 05:25:28.902] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.903] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.903] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.942] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (8, 8)
+[2026-10-06 05:25:28.942] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.943] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.943] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (7) / member_2 (7)
+[2026-10-06 05:25:28.943] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.943] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.982] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (9, 9)
+[2026-10-06 05:25:28.983] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:28.983] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:28.983] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (8) / member_2 (8)
+[2026-10-06 05:25:28.983] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:28.983] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:28.997] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.032] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.033] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (10, 10)
+[2026-10-06 05:25:29.033] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.033] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (9) / member_2 (9)
+[2026-10-06 05:25:29.033] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.033] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.071] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (11, 11)
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (10) / member_2 (10)
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Consumer Step (C.7): Notify controller that checkpoint 1 has been reached
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Consumer Step (C.8): Wait for proceed trigger from Controller to indicate that consumer can finish or termination.
+[2026-10-06 05:25:29.072] [INFO] [consumer_restart_application] Controller: Step (3): Consumer reached checkpoint 1
+[2026-10-06 05:25:29.073] [INFO] [consumer_restart_application] Controller Step (4.3): Trigger consumer to finish
+[2026-10-06 05:25:29.073] [INFO] [consumer_restart_application] Controller Step (4.4): Waiting for consumer to finish
+[2026-10-06 05:25:29.073] [INFO] [consumer_restart_application] Consumer: Finishing actions!
+[2026-10-06 05:25:29.073] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329063 399514655 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1 
+[2026-10-06 05:25:29.073] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329063 399514656 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:29.073] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329073 399514759 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:29.074] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329073 399514759 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:29.074] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329073 399514760 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:29.088] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329083 399514862 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-06 05:25:29.088] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329084 399514862 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-06 05:25:29.088] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329084 399514863 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:29.099] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.103] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (12, 12)
+[2026-10-06 05:25:29.120] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 14 died with exit status: 0
+[2026-10-06 05:25:29.120] [INFO] [consumer_restart_application] Controller Step (5): forking Consumer process
+[2026-10-06 05:25:29.120] [INFO] [consumer_restart_application] Controller Step (5): successfully forked Consumerprocess with PID: 26
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer Step (C.1): find service handler called
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer Step (C.1): FindServiceHandler handler done - found one service instance.
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer Step (C.1): Successfully called StartFindService
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer Step (C.3): Successfully created lola proxy
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer Step (C.3): Created a proxy
+[2026-10-06 05:25:29.121] [INFO] [consumer_restart_application] Consumer Step (C.4): Successfully subscribed
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] Controller Step (5): Re-forking consumer process
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] Controller Step (6): Waiting for consumer to reach checkpoint 2
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] Consumer Step (C.1): Call StartFindService
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329116 399515186 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com. 
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329116 399515189 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0 
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329116 399515190 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1 
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329116 399515192 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B) 
+[2026-10-06 05:25:29.122] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515193 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM) 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515193 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 0 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515194 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515194 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] Consumer Step (C.2): Wait for FindServiceHandler to be called
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] Consumer Step (C.3): Create a Proxy for found service
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515197 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515197 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_15_ASIL_B 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515198 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_15_ASIL_B 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515198 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515199 000 ECU1 CONS lola log info verbose 5 MessagePassingService: HandleOutdatedNodeIdMsg for outdated node id: 14 from node 26 . No update notifications for outdated node existed. 
+[2026-10-06 05:25:29.123] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515199 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515200 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1 
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515201 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515201 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished 
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329117 399515202 000 ECU1 CONS lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup. 
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] Consumer Step (C.4): Subscribe to Event
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] Consumer Step (C.5): Registering EventReceiveHandler
+[2026-10-06 05:25:29.124] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.143] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329143 399515455 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:29.143] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329143 399515456 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_26_ASIL_B
+[2026-10-06 05:25:29.143] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329143 399515457 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_26_ASIL_B
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329143 399515457 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (13, 13)
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (8) / member_2 (8)
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (9) / member_2 (9)
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (10) / member_2 (10)
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (11) / member_2 (11)
+[2026-10-06 05:25:29.144] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (12) / member_2 (12)
+[2026-10-06 05:25:29.145] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.145] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.184] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.184] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (14, 14)
+[2026-10-06 05:25:29.184] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.184] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (13) / member_2 (13)
+[2026-10-06 05:25:29.184] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.184] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.201] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.224] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (15, 15)
+[2026-10-06 05:25:29.224] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.224] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (14) / member_2 (14)
+[2026-10-06 05:25:29.224] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.224] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.224] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.264] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (16, 16)
+[2026-10-06 05:25:29.264] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.264] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.264] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (15) / member_2 (15)
+[2026-10-06 05:25:29.265] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.265] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.302] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.304] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.304] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (17, 17)
+[2026-10-06 05:25:29.304] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.304] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (16) / member_2 (16)
+[2026-10-06 05:25:29.304] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.305] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.344] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (18, 18)
+[2026-10-06 05:25:29.344] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (17) / member_2 (17)
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Consumer Step (C.7): Notify controller that checkpoint 1 has been reached
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Consumer Step (C.8): Wait for proceed trigger from Controller to indicate that consumer can finish or termination.
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Controller Step (6): Consumer reached checkpoint 1
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Controller Step (7): Trigger consumer to finish
+[2026-10-06 05:25:29.345] [INFO] [consumer_restart_application] Consumer: Finishing actions!
+[2026-10-06 05:25:29.346] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329344 399517471 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-06 05:25:29.346] [INFO] [consumer_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:29.346] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329345 399517473 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:29.355] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329355 399517576 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:29.355] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329355 399517576 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:29.355] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329355 399517577 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:29.365] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329365 399517678 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-06 05:25:29.366] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329365 399517678 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:29.366] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329365 399517679 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:29.384] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (19, 19)
+[2026-10-06 05:25:29.395] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 26 died with exit status: 0
+[2026-10-06 05:25:29.395] [INFO] [consumer_restart_application] Controller Step (9): Trigger provider to finish
+[2026-10-06 05:25:29.404] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.424] [INFO] [consumer_restart_application] Provider: Finishing actions!
+[2026-10-06 05:25:29.425] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329425 399518273 000 ECU1 CONS lola log debug verbose 5 Skeleton::PrepareStopOffer(): Removing SHM and marker file (S: 8265  I: 1 )
+[2026-10-06 05:25:29.425] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329425 399518274 000 ECU1 CONS lola log info verbose 1 Service was stop offered successfully
+[2026-10-06 05:25:29.425] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329425 399518275 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:29.425] [INFO] [consumer_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:29.445] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 15 died with exit status: 0
+[2026-10-06 05:25:29.445] [INFO] [consumer_restart_application] ChildProcessGuard: Child process with PID 15 was already dead, no need killing it with SIGKILL.
+[2026-10-06 05:25:29.445] [INFO] [consumer_restart_application] ChildProcessGuard: Child process with PID 26 was already dead, no need killing it with SIGKILL.
+[2026-10-06 05:25:29.445] [INFO] [consumer_restart_application] Calling KillChildProcess(): 15
+[2026-10-06 05:25:29.445] [INFO] [consumer_restart_application] Calling KillChildProcess(): 26
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Test Main: Running iteration 2 of 3 of Consumer-Restart-Test
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Controller Step (1): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Controller Step (1): forking Consumer process
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Controller Step (1): successfully forked Consumerprocess with PID: 32
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...Controller Step (2): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Controller Step (2): forking Provider process
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Controller Step (2): successfully forked Providerprocess with PID: 33
+[2026-10-06 05:25:29.446] [INFO] [consumer_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] Controller Step (3): Waiting for consumer to reach checkpoint 1
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] Consumer Step (C.1): Call StartFindService
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] Provider Step (P.1): Create service instance/skeleton
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] Provider: Before Skeleton Creation.
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:29.447] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329447 399518497 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329447 399518499 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329447 399518500 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329447 399518501 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] Consumer Step (C.1): Successfully called StartFindService
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] Consumer Step (C.2): Wait for FindServiceHandler to be called
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] Provider: Successfully created lola skeleton
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] Provider Step (P.2): Offer Service
+[2026-10-06 05:25:29.448] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518504 000 ECU1 CONS lola log debug verbose 5 Recreating SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518504 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518504 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001-b 
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518504 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000008265-00001
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518507 000 ECU1 CONS lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  8265 : 1  are as follows:
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] QM-Ctrl:  1316 , ASIL_B-Ctrl:  1316 , Data:  336
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518507 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518509 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518510 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readAccessForEveryBody
+[2026-10-06 05:25:29.449] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329448 399518511 000 ECU1 CONS lola log debug verbose 5 Created shared-memory-object for DATA (S:  8265  I: 1 )
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518514 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518514 000 ECU1 CONS lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/33_asil-b_39951849888481
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518516 000 ECU1 CONS lola log debug verbose 3 2026/10/06 05:25:29.4329449 399518516 000 ECU1 CONS lola log info verbose 2 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B) 
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518516 000 ECU1 CONS lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/33_asil-qm_39951849888481 
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518516 000 ECU1 CONS lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] Provider: After Skeleton Offered.
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] Provider: Service instance is offered.
+[2026-10-06 05:25:29.450] [INFO] [consumer_restart_application] Consumer Step (C.1): find service handler called
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] Consumer Step (C.1): FindServiceHandler handler done - found one service instance.
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (2, 2)
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518517 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0 
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] Consumer Step (C.3): Create a Proxy for found service
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329449 399518517 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518523 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518524 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518527 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:29.451] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518528 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518529 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518530 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329450 399518532 000 ECU1 CONS lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] Consumer Step (C.3): Successfully created lola proxy
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] Consumer Step (C.3): Created a proxy
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] Consumer Step (C.4): Subscribe to Event
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] Consumer Step (C.5): Registering EventReceiveHandler
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] Consumer Step (C.4): Successfully subscribed
+[2026-10-06 05:25:29.452] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329451 399518533 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:29.453] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329451 399518534 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_33_ASIL_B
+[2026-10-06 05:25:29.453] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329451 399518534 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_33_ASIL_B
+[2026-10-06 05:25:29.453] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329451 399518535 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:29.453] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.453] [INFO] [consumer_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-06 05:25:29.489] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329489 399518919 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329489 399518919 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_32_ASIL_B
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329489 399518920 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_32_ASIL_B
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329489 399518921 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (3, 3)
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (1) / member_2 (1)
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (2) / member_2 (2)
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.490] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.507] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.530] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (4, 4)
+[2026-10-06 05:25:29.530] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.530] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.531] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (3) / member_2 (3)
+[2026-10-06 05:25:29.531] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.531] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.570] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (5, 5)
+[2026-10-06 05:25:29.570] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.570] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.571] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (4) / member_2 (4)
+[2026-10-06 05:25:29.571] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.571] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.609] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.610] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (6, 6)
+[2026-10-06 05:25:29.610] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.611] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.611] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (5) / member_2 (5)
+[2026-10-06 05:25:29.611] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.611] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.651] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (7, 7)
+[2026-10-06 05:25:29.651] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.651] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.651] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (6) / member_2 (6)
+[2026-10-06 05:25:29.651] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.651] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.691] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (8, 8)
+[2026-10-06 05:25:29.691] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.691] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.691] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (7) / member_2 (7)
+[2026-10-06 05:25:29.691] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.692] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.715] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.731] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (9, 9)
+[2026-10-06 05:25:29.731] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.731] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.731] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (8) / member_2 (8)
+[2026-10-06 05:25:29.731] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.731] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.771] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (10, 10)
+[2026-10-06 05:25:29.771] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.771] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.771] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (9) / member_2 (9)
+[2026-10-06 05:25:29.772] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.772] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.811] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (11, 11)
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (10) / member_2 (10)
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer Step (C.7): Notify controller that checkpoint 1 has been reached
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer Step (C.8): Wait for proceed trigger from Controller to indicate that consumer can finish or termination.
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Controller: Step (3): Consumer reached checkpoint 1
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Controller Step (4.3): Trigger consumer to finish
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Controller Step (4.4): Waiting for consumer to finish
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer: Finishing actions!
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329812 399522144 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:29.812] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329812 399522146 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:29.817] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.822] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329822 399522249 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:29.823] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329822 399522249 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:29.823] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329822 399522251 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:29.833] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329833 399522352 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-06 05:25:29.833] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329833 399522353 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-06 05:25:29.833] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329833 399522353 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:29.854] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (12, 12)
+[2026-10-06 05:25:29.862] [INFO] [consumer_restart_application] Controller Step (5): Re-forking consumer process
+[2026-10-06 05:25:29.862] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 32 died with exit status: 0
+[2026-10-06 05:25:29.862] [INFO] [consumer_restart_application] Controller Step (5): forking Consumer process
+[2026-10-06 05:25:29.863] [INFO] [consumer_restart_application] Controller Step (5): successfully forked Consumerprocess with PID: 44
+[2026-10-06 05:25:29.863] [INFO] [consumer_restart_application] Controller Step (6): Waiting for consumer to reach checkpoint 2
+[2026-10-06 05:25:29.863] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:29.863] [INFO] [consumer_restart_application] Consumer Step (C.1): Call StartFindService
+[2026-10-06 05:25:29.864] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:29.864] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:29.864] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329864 399522668 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:29.865] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329864 399522671 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-06 05:25:29.865] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522672 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:29.865] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522674 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:29.865] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522675 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-06 05:25:29.865] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522676 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 0
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] Consumer Step (C.1): find service handler called
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] Consumer Step (C.1): FindServiceHandler handler done - found one service instance.
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522676 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522676 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] Consumer Step (C.2): Wait for FindServiceHandler to be called
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] Consumer Step (C.3): Create a Proxy for found service
+[2026-10-06 05:25:29.866] [INFO] [consumer_restart_application] Consumer Step (C.1): Successfully called StartFindService
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522679 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522680 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_33_ASIL_B
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522681 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_33_ASIL_B 
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329865 399522682 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329866 399522683 000 ECU1 CONS lola log info verbose 5 MessagePassingService: HandleOutdatedNodeIdMsg for outdated node id: 32 from node 44 . No update notifications for outdated node existed. 
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329866 399522684 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329866 399522684 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-06 05:25:29.867] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329866 399522684 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329866 399522685 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329866 399522686 000 ECU1 CONS lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup. 
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] Consumer Step (C.4): Subscribe to Event
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] Consumer Step (C.3): Successfully created lola proxy
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] Consumer Step (C.3): Created a proxy
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] Consumer Step (C.5): Registering EventReceiveHandler
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] Consumer Step (C.4): Successfully subscribed
+[2026-10-06 05:25:29.868] [INFO] [consumer_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-06 05:25:29.869] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.892] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329891 399522941 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:29.892] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329891 399522942 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_44_ASIL_B
+[2026-10-06 05:25:29.892] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329892 399522943 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_44_ASIL_B
+[2026-10-06 05:25:29.892] [INFO] [consumer_restart_application] 2026/10/06 05:25:29.4329892 399522944 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:29.892] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (13, 13)
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (8) / member_2 (8)
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (9) / member_2 (9)
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (10) / member_2 (10)
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (11) / member_2 (11)
+[2026-10-06 05:25:29.893] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (12) / member_2 (12)
+[2026-10-06 05:25:29.894] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.894] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.919] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:29.932] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (14, 14)
+[2026-10-06 05:25:29.933] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:29.933] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.933] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (13) / member_2 (13)
+[2026-10-06 05:25:29.933] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.933] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.973] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (15, 15)
+[2026-10-06 05:25:29.974] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:29.974] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (14) / member_2 (14)
+[2026-10-06 05:25:29.974] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:29.974] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:29.974] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.013] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (16, 16)
+[2026-10-06 05:25:30.013] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.014] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.014] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (15) / member_2 (15)
+[2026-10-06 05:25:30.014] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.014] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.021] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.053] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (17, 17)
+[2026-10-06 05:25:30.054] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.054] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.054] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (16) / member_2 (16)
+[2026-10-06 05:25:30.054] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.054] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.093] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (18, 18)
+[2026-10-06 05:25:30.094] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.094] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.094] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (17) / member_2 (17)
+[2026-10-06 05:25:30.094] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.094] [INFO] [consumer_restart_application] Consumer Step (C.7): Notify controller that checkpoint 1 has been reached
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] Consumer Step (C.8): Wait for proceed trigger from Controller to indicate that consumer can finish or termination.
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] Controller Step (6): Consumer reached checkpoint 1
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] Controller Step (7): Trigger consumer to finish
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] Consumer: Finishing actions!
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330094 399524964 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:30.095] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330094 399524966 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:30.105] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330104 399525070 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:30.105] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330104 399525071 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:30.105] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330104 399525072 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:30.115] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330115 399525174 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-06 05:25:30.115] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330115 399525174 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:30.115] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330115 399525175 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:30.123] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.135] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (19, 19)
+[2026-10-06 05:25:30.144] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 44 died with exit status: 0
+[2026-10-06 05:25:30.144] [INFO] [consumer_restart_application] Controller Step (9): Trigger provider to finish
+[2026-10-06 05:25:30.174] [INFO] [consumer_restart_application] Provider: Finishing actions!
+[2026-10-06 05:25:30.174] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330174 399525766 000 ECU1 CONS lola log debug verbose 5 Skeleton::PrepareStopOffer(): Removing SHM and marker file (S: 8265  I: 1 )
+[2026-10-06 05:25:30.174] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330174 399525768 000 ECU1 CONS lola log info verbose 1 Service was stop offered successfully
+[2026-10-06 05:25:30.175] [INFO] [consumer_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:30.175] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330174 399525769 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:30.194] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 33 died with exit status: 0
+[2026-10-06 05:25:30.194] [INFO] [consumer_restart_application] ChildProcessGuard: Child process with PID 33 was already dead, no need killing it with SIGKILL.
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] ChildProcessGuard: Child process with PID 44 was already dead, no need killing it with SIGKILL.
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Calling KillChildProcess(): 33
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Calling KillChildProcess(): 44
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Test Main: Running iteration 3 of 3 of Consumer-Restart-Test
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (1): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (1): forking Consumer process
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (1): successfully forked Consumerprocess with PID: 50
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (2): Successfully created SharedMemoryObjectCreator for checkpoint_control
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (2): forking Provider process
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (2): successfully forked Providerprocess with PID: 51
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Controller Step (3): Waiting for consumer to reach checkpoint 1
+[2026-10-06 05:25:30.195] [INFO] [consumer_restart_application] Provider: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:30.196] [INFO] [consumer_restart_application] Consumer Step (C.1): Call StartFindService
+[2026-10-06 05:25:30.196] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:30.197] [INFO] [consumer_restart_application] Provider: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:30.197] [INFO] [consumer_restart_application] Provider: Before Skeleton Creation.
+[2026-10-06 05:25:30.197] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:30.197] [INFO] [consumer_restart_application] Provider Step (P.1): Create service instance/skeleton
+[2026-10-06 05:25:30.197] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:30.198] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330197 399525999 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:30.198] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330198 399526004 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-06 05:25:30.198] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330198 399526004 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:30.198] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330198 399526006 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:30.198] [INFO] [consumer_restart_application] Consumer Step (C.1): Successfully called StartFindService
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] Consumer Step (C.2): Wait for FindServiceHandler to be called
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] Provider: Successfully created lola skeleton
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] Provider Step (P.2): Offer Service
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330198 399526012 000 ECU1 CONS lola log debug verbose 5 Recreating SHM of Skeleton (S: 8265 I: 1 )
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330199 399526012 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330199 399526013 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000008265-00001-b
+[2026-10-06 05:25:30.199] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330199 399526013 000 ECU1 CONS shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000008265-00001
+[2026-10-06 05:25:30.200] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330199 399526017 000 ECU1 CONS lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  8265 : 1  are as follows:
+[2026-10-06 05:25:30.200] [INFO] [consumer_restart_application] QM-Ctrl:  1316 , ASIL_B-Ctrl:  1316 , Data:  336
+[2026-10-06 05:25:30.200] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330199 399526018 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-06 05:25:30.200] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330199 399526022 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForEveryBody
+[2026-10-06 05:25:30.200] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330200 399526024 000 ECU1 CONS shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readAccessForEveryBody
+[2026-10-06 05:25:30.200] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330200 399526026 000 ECU1 CONS lola log debug verbose 5 Created shared-memory-object for DATA (S:  8265  I: 1 )
+[2026-10-06 05:25:30.201] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330200 399526031 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:30.201] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526033 000 ECU1 CONS lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/51_asil-b_39952600294271
+[2026-10-06 05:25:30.201] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526034 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:30.201] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526035 000 ECU1 CONS lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles
+[2026-10-06 05:25:30.201] [INFO] [consumer_restart_application] Consumer Step (C.1): find service handler called
+[2026-10-06 05:25:30.201] [INFO] [consumer_restart_application] Consumer Step (C.1): FindServiceHandler handler done - found one service instance.
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526036 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1 
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526036 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] Consumer Step (C.3): Create a Proxy for found service
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526036 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526037 000 ECU1 CONS lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/8265/1/51_asil-qm_39952600294271
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] Provider: After Skeleton Offered.
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] Provider: Service instance is offered.
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (2, 2)
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526041 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330201 399526042 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526044 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526045 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526045 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526046 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-06 05:25:30.202] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526047 000 ECU1 CONS lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer Step (C.4): Subscribe to Event
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer Step (C.3): Successfully created lola proxy
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer Step (C.3): Created a proxy
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer Step (C.5): Registering EventReceiveHandler
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer Step (C.4): Successfully subscribed
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526048 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526049 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_51_ASIL_B
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526050 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_51_ASIL_B
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330202 399526051 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-06 05:25:30.203] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.225] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.242] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330241 399526441 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:30.242] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330241 399526441 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_50_ASIL_B
+[2026-10-06 05:25:30.242] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330242 399526443 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_50_ASIL_B 
+[2026-10-06 05:25:30.242] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330242 399526444 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:30.242] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.242] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (3, 3)
+[2026-10-06 05:25:30.243] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.243] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (1) / member_2 (1)
+[2026-10-06 05:25:30.243] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (2) / member_2 (2)
+[2026-10-06 05:25:30.243] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.243] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.282] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (4, 4)
+[2026-10-06 05:25:30.283] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.283] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.283] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (3) / member_2 (3)
+[2026-10-06 05:25:30.283] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.283] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.322] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (5, 5)
+[2026-10-06 05:25:30.323] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.323] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.323] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (4) / member_2 (4)
+[2026-10-06 05:25:30.323] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.323] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.327] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.363] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (6, 6)
+[2026-10-06 05:25:30.363] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.363] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.363] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (5) / member_2 (5)
+[2026-10-06 05:25:30.363] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.363] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.403] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (7, 7)
+[2026-10-06 05:25:30.403] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.403] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.403] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (6) / member_2 (6)
+[2026-10-06 05:25:30.404] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.404] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.428] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.443] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (8, 8)
+[2026-10-06 05:25:30.443] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.443] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.443] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (7) / member_2 (7)
+[2026-10-06 05:25:30.444] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.444] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.483] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (9, 9)
+[2026-10-06 05:25:30.483] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.484] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (8) / member_2 (8)
+[2026-10-06 05:25:30.484] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.484] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.484] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.523] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (10, 10)
+[2026-10-06 05:25:30.524] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.524] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.524] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (9) / member_2 (9)
+[2026-10-06 05:25:30.524] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.524] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.531] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.564] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.564] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (11, 11)
+[2026-10-06 05:25:30.564] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.564] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (10) / member_2 (10)
+[2026-10-06 05:25:30.564] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.564] [INFO] [consumer_restart_application] Consumer Step (C.7): Notify controller that checkpoint 1 has been reached
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] Consumer Step (C.8): Wait for proceed trigger from Controller to indicate that consumer can finish or termination.
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] Controller: Step (3): Consumer reached checkpoint 1
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] Controller Step (4.3): Trigger consumer to finish
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] Controller Step (4.4): Waiting for consumer to finish
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] Consumer: Finishing actions!
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330564 399529664 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:30.565] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330564 399529666 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:30.575] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330574 399529770 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:30.575] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330574 399529771 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:30.575] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330574 399529772 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:30.585] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330585 399529873 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-06 05:25:30.585] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330585 399529874 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:30.585] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330585 399529874 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:30.604] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (12, 12)
+[2026-10-06 05:25:30.614] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 50 died with exit status: 0
+[2026-10-06 05:25:30.614] [INFO] [consumer_restart_application] Controller Step (5): forking Consumer process
+[2026-10-06 05:25:30.614] [INFO] [consumer_restart_application] Controller Step (5): Re-forking consumer process
+[2026-10-06 05:25:30.614] [INFO] [consumer_restart_application] Controller Step (5): successfully forked Consumerprocess with PID: 62
+[2026-10-06 05:25:30.614] [INFO] [consumer_restart_application] Controller Step (6): Waiting for consumer to reach checkpoint 2
+[2026-10-06 05:25:30.614] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime from cmd-line args handed over by parent/controller ...
+[2026-10-06 05:25:30.615] [INFO] [consumer_restart_application] Consumer Step (C.1): Call StartFindService
+[2026-10-06 05:25:30.615] [INFO] [consumer_restart_application] Consumer: Initializing LoLa/mw::com runtime done.
+[2026-10-06 05:25:30.616] [INFO] [consumer_restart_application] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-06 05:25:30.616] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330616 399530186 000 ECU1 CONS lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-06 05:25:30.616] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330616 399530189 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 0
+[2026-10-06 05:25:30.616] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330616 399530190 000 ECU1 CONS lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/8265/1
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330616 399530191 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-B)
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330616 399530192 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/8265/1 (ASIL-QM)
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] Consumer Step (C.1): find service handler called
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] Consumer Step (C.1): FindServiceHandler handler done - found one service instance.
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530193 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 0 
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530193 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530193 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 0 finished 
+[2026-10-06 05:25:30.617] [INFO] [consumer_restart_application] Consumer Step (C.2): Wait for FindServiceHandler to be called
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] Consumer Step (C.3): Create a Proxy for found service
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] Consumer Step (C.1): Successfully called StartFindService
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530196 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530196 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_51_ASIL_B
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530197 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_51_ASIL_B
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530198 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530200 000 ECU1 CONS lola log info verbose 5 MessagePassingService: HandleOutdatedNodeIdMsg for outdated node id: 50 from node 62 . No update notifications for outdated node existed. 
+[2026-10-06 05:25:30.618] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530200 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530201 000 ECU1 CONS lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/8265/1 with FindServiceHandle 1
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530202 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330617 399530202 000 ECU1 CONS lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] Consumer Step (C.3): Successfully created lola proxy
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] Consumer Step (C.3): Created a proxy
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330618 399530203 000 ECU1 CONS lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup. 
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] Consumer Step (C.4): Subscribe to Event
+[2026-10-06 05:25:30.619] [INFO] [consumer_restart_application] Consumer Step (C.5): Registering EventReceiveHandler
+[2026-10-06 05:25:30.620] [INFO] [consumer_restart_application] Consumer Step (C.4): Successfully subscribed
+[2026-10-06 05:25:30.620] [INFO] [consumer_restart_application] Consumer: SetReceiveHandler succeeded
+[2026-10-06 05:25:30.620] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.632] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.644] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330644 399530463 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-06 05:25:30.644] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330644 399530464 000 ECU1 CONS mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_62_ASIL_B
+[2026-10-06 05:25:30.644] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330644 399530465 000 ECU1 CONS mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_62_ASIL_B
+[2026-10-06 05:25:30.644] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330644 399530465 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (13, 13)
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (8) / member_2 (8)
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (9) / member_2 (9)
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (10) / member_2 (10)
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (11) / member_2 (11)
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (12) / member_2 (12)
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.645] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.685] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (14, 14)
+[2026-10-06 05:25:30.685] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.685] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.685] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (13) / member_2 (13)
+[2026-10-06 05:25:30.685] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.685] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.725] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (15, 15)
+[2026-10-06 05:25:30.725] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.725] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.725] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (14) / member_2 (14)
+[2026-10-06 05:25:30.725] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.726] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.734] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.768] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.768] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (16, 16)
+[2026-10-06 05:25:30.769] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.769] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (15) / member_2 (15)
+[2026-10-06 05:25:30.769] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.769] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.808] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (17, 17)
+[2026-10-06 05:25:30.808] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.808] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.808] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (16) / member_2 (16)
+[2026-10-06 05:25:30.809] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.809] [INFO] [consumer_restart_application] Consumer Step (C.6): Waiting for sample
+[2026-10-06 05:25:30.836] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.848] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (18, 18)
+[2026-10-06 05:25:30.848] [INFO] [consumer_restart_application] Consumer: Event receive handler called
+[2026-10-06 05:25:30.848] [INFO] [consumer_restart_application] Consumer Step (C.6): Calling GetNewSamples
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Consumer Step (C.6): Received sample from GetNewSamples: member_1 (17) / member_2 (17)
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Consumer Step (C.6): Reset event received notifier
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Consumer Step (C.7): Notify controller that checkpoint 1 has been reached
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Consumer Step (C.8): Wait for proceed trigger from Controller to indicate that consumer can finish or termination.
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Controller Step (6): Consumer reached checkpoint 1
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Controller Step (7): Trigger consumer to finish
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] Consumer: Finishing actions!
+[2026-10-06 05:25:30.849] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330848 399532510 000 ECU1 CONS lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1
+[2026-10-06 05:25:30.850] [INFO] [consumer_restart_application] Consumer: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:30.850] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330848 399532512 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:30.859] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330859 399532617 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-06 05:25:30.859] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330859 399532617 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:30.860] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330859 399532618 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:30.870] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330869 399532720 000 ECU1 CONS mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-06 05:25:30.870] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330869 399532720 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-06 05:25:30.870] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330869 399532721 000 ECU1 CONS mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-06 05:25:30.888] [INFO] [consumer_restart_application] Provider Step (P.3): Sent data: (19, 19)
+[2026-10-06 05:25:30.898] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 62 died with exit status: 0
+[2026-10-06 05:25:30.899] [INFO] [consumer_restart_application] Controller Step (9): Trigger provider to finish
+[2026-10-06 05:25:30.928] [INFO] [consumer_restart_application] Provider: Finishing actions!
+[2026-10-06 05:25:30.929] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330929 399533313 000 ECU1 CONS lola log debug verbose 5 Skeleton::PrepareStopOffer(): Removing SHM and marker file (S: 8265  I: 1 )
+[2026-10-06 05:25:30.929] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330929 399533315 000 ECU1 CONS lola log info verbose 1 Service was stop offered successfully
+[2026-10-06 05:25:30.929] [INFO] [consumer_restart_application] Provider: Child callable returned. Calling EXIT!
+[2026-10-06 05:25:30.929] [INFO] [consumer_restart_application] 2026/10/06 05:25:30.4330929 399533316 000 ECU1 CONS lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-06 05:25:30.938] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 520
+[2026-10-06 05:25:30.949] [INFO] [consumer_restart_application] ChildProcessGuard: Process with PID 51 died with exit status: 0
+[2026-10-06 05:25:30.949] [INFO] [consumer_restart_application] Calling KillChildProcess(): 51
+[2026-10-06 05:25:30.949] [INFO] [consumer_restart_application] Calling KillChildProcess(): 62
+[2026-10-06 05:25:30.949] [INFO] [consumer_restart_application] ChildProcessGuard: Child process with PID 51 was already dead, no need killing it with SIGKILL.
+[2026-10-06 05:25:30.949] [INFO] [consumer_restart_application] ChildProcessGuard: Child process with PID 62 was already dead, no need killing it with SIGKILL.
+[2026-10-06 05:25:31.040] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 518
+[2026-10-06 05:25:31.041] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/a9a97caf41514ca0aa82e45a197ab4dcda96ffa6cc2fb00ce707f1ed491d96c3/json HTTP/1.1" 200 518
+[2026-10-06 05:25:31.042] [DEBUG] [score.itf.core.process.wrapped_process] Application [consumer_restart_application] exit code: [0]
+PASSED                                                                   [100%]
+------------------------------ live log teardown -------------------------------
+[2026-10-06 05:25:32.185] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fe3798b35d04bfc646421434a06d438ba1eab38d9b38a524d6c62840e96dc0b2/stop?t=1 HTTP/1.1" 204 0
+[2026-10-06 05:25:32.228] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/containers/fe3798b35d04bfc646421434a06d438ba1eab38d9b38a524d6c62840e96dc0b2?v=False&link=False&force=True HTTP/1.1" 204 0
+[2026-10-06 05:25:33.701] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/networks/191c1721c259637ce36f4ec39a26edf44854257a91cbe49ce45eb2ff9d4ea433 HTTP/1.1" 204 0
+
+
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/bazel-output/3f5123dc6d61824122bb8863a64ee7e0/sandbox/processwrapper-sandbox/530/execroot/_main/bazel-out/k8-fastbuild/testlogs/score/mw/com/test/partial_restart/consumer_restart/integration_test/consumer_restart_graceful/test.xml -
+============================== 1 passed in 8.42s ===============================
