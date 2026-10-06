@@ -1,0 +1,24 @@
+@startuml context
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Context — Serial2CAN in the X-COM layer
+left to right direction
+node "Serial ECUs" {
+  [AZ3166 ThreadX\nzonal ECU] as A
+  [S32K148 OpenBSW\n(planned)] as B
+}
+rectangle "Serial2CAN bridge" as S #E8F1FB
+queue "CAN bus\nvcan0 | udp_multicast" as BUS
+[Zenoh2CAN bridge\n(unchanged)] as Z
+[Zenoh router] as R
+[X-Verse: VCU, virtual vehicle,\nCARLA, Manual Control] as X
+[candump / test tools] as T
+A <--> S : SLCAN / USB UART
+B <--> S : SLCAN / USB UART
+S <--> BUS : python-can
+BUS <--> Z
+Z <--> R : vcu/control/*\nvehicle/lights/*
+R <--> X
+BUS <--> T
+@enduml
