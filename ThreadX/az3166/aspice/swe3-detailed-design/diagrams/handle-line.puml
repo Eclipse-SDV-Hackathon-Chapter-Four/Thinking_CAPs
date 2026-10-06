@@ -1,0 +1,48 @@
+@startuml handle-line
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+title DD-08 handle_line() — SLCAN command handling (ingress thread)
+skinparam shadowing false
+start
+if (overlong or slcan_parse() fails?) then (yes)
+  :line_errors++;
+  :reply BELL;
+  stop
+endif
+switch (command.kind)
+case (O)
+  :set_link(true);\nLINK event, Azure LED on;
+  :reply CR;
+case (C)
+  :set_link(false);\nLINK event, Azure LED off;
+  :reply CR;
+case (S / s / Z0)
+  if (link open?) then (yes)
+    :reply BELL;
+  else (no)
+    :reply CR (nominal only);
+  endif
+case (V / N)
+  :reply V1010 / NAZ31;
+case (F)
+  if (link open?) then (yes)
+    :reply F00, or F08 if losses changed;
+  else (no)
+    :reply BELL;
+  endif
+case (frame)
+  if (link open?) then (no)
+    :line_errors++; reply BELL;
+  else (yes)
+    :reply z / Z;
+    if (lights_decode() accepts?) then (yes)
+      if (tx_queue_send(frame_queue, NO_WAIT)) then (full)
+        :dropped++;
+      endif
+    else (no)
+      :rejected++;
+    endif
+  endif
+endswitch
+stop
+@enduml
