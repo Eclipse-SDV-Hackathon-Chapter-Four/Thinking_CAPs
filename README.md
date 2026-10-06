@@ -24,7 +24,7 @@ Our goal is to show how open-source SDV projects, simulation assets, physical pl
 | Bruno Campos | Software Engineer | [bruno](github.com/campos1796) | S-CORE application; OTA feature; IVI HPC; X-Verse communication layer |
 | Yasser | Software Engineer | [yasser](https://github.com/yasser2026-spec)  | OpenSOVD; automated AI code review; solution documentation |
 | Puru | Software Engineer | [puru](https://github.com/EP1991)  | OpenSOVD; CDA; diagnostics dashboard |
-| Siva | Test Engineer | [siva](https://github.com/siveshvar) | openDUT; OpenSOVD |
+| Siva | Test Engineer | [siva](https://github.com/siveshvar) | openDuT; OpenSOVD |
 
 ## Responsibilities
 
@@ -69,6 +69,7 @@ Roles are assigned by work package, but the team maintains collective responsibi
 - Provide fault-injection controls where feasible.
 - Support architecture documentation and presentation material.
 - Ensure the technical flow is understandable during the demonstration.
+- Boardbring activity support and test via openDuT MXCHIP HW
 
 ### Deployment and Test Orchestration
 
@@ -121,7 +122,7 @@ The blueprint will provide an integrated environment for developing, running, di
 The primary demonstration will use a fault-aware cruise-control scenario in which:
 
 1. X-Verse executes a virtual driving scenario.
-2. An S-CORE application controls the cruise-control function.
+2. An S-CORE application controls the cruise-control function. With the sovd_adapter feature implementation, we bridge the S-CORE diagnostic framework and the OpenSOVD gateway, enabling standardized vehicle diagnostics over REST/HTTP.
 3. A controlled fault is introduced into the vehicle-speed path.
 4. The application detects the invalid signal.
 5. Cruise control transitions to a safe disabled state.
@@ -130,6 +131,13 @@ The primary demonstration will use a fault-aware cruise-control scenario in whic
 8. Test and deployment assets validate the scenario.
 
 This extends the previously agreed S-CORE, OpenSOVD, X-Verse, and fault-injection demonstration.
+
+PR and issue links we are going to address
+  Diagnostics #16 (sovd_adapter)
+  Target: https://github.com/eclipse-score/inc_diagnostics
+  https://github.com/eclipse-score/inc_diagnostics/pull/6
+  CDA 543
+  Target: https://github.com/eclipse-opensovd/classic-diagnostic-adapter
 
 #### Dark Software Factory and Local Engineering Assistant
 
