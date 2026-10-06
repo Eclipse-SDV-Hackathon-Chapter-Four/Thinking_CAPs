@@ -1,0 +1,25 @@
+# Claim and requirement evidence
+All work here is prepared on4 October2026. Code existence, component tests, actual native
+integration and human reproduction are separate claims.
+
+| Requirement / claim | Achieved evidence | Boundary |
+| --- | --- | --- |
+| REQ001–005: receiver provenance, freshness, process separation, controller state | F002 C++ patch + native OpenSOVD provider; six cache tests; actual receiver data and controller-return assertions in F005/F008 core | Receiver observations, not Zenoh-only inference. Integrity is unavailable without a selected integrity mechanism. |
+| REQ006–009: timeout, held recovery, upstream fault lifecycle/exposure | F004 five monitor tests + query-history regression;40 real openDuT/native lifecycle assertions and explicit App data fallback |300ms provisional timeout,100ms debounce,150ms recovery,25ms monitor,50ms query. Native `/faults` absent. No physical root cause or automatic controller re-engagement inferred. |
+| REQ010/011/016: complete honest evidence | F005 manifest/results/JUnit/timeline/source/config/binary hashes, seven verdict regressions;42 native core checks; missing binary blocked2 | Fixtures, prepared work and conditional skips explicit; no skipped test counted as passed. |
+| REQ012: failure restoration | F003/F005 forced failure; F005 SIGTERM during tunnel-down with expected failed1 and cleanup passed | Only task-owned namespaces/link/captures/apps; SIGKILL cannot guarantee cleanup. |
+| Selected persistence | Upstream original separate-process regression fails; write-through write/reload/delete/clear/error tests pass. Actual diagnostic/DFM restart reloads fault/history | Memory mutation can survive a failed flush. No power-loss/hardware guarantee. |
+| Actual openDuT networking | Matched0.10.2 TLS CARL/two EDGAR peers, attached veth DUTs/managed GRE, SOME/IP receiver/return packet summaries; F003/F005/F008 | Local co-hosted Ethernet, VPN/OIDC disabled. No distributed clock, NetBird/WireGuard or native VIPER claim. |
+| Clean-source reproduction | F009 current frozen `0b8a67e` clones, new native build directories, controller unit target, fault tests/Clippy,42 core and46 subsequent physical assertions passed; actual fresh compiler/schema paths verified | Original host/images/LLVM shared. Historical F008 used baseline cached configuration tools through variable shadowing; that defect is corrected and historical evidence retained. Cold/new-machine build and human signoff remain unverified. |
+| REQ017 second contributor | Pending [signoff form](reproduction-signoff.json) | Implementation agent self-run does not fulfil human acceptance. |
+| Real CARLA | F009 controlled early/late client comparison identifies persistent pre-bind client failure; actual CARLA0.9.15 world/Tesla actor/native campaign passes46 checks with advancing frames, physical speed and67 positive native/VCU/subsequent actuator matches | Pedal/engagement and waypoint steering are harness-generated through existing topics; no original X-Verse/bridge change. Correlation has no E2E sample ID or latency guarantee. Earlier failures retained. AAOS/FOTA absent. |
+| REQ013–015 / genuine update | Deferred by user | No AAOS/FOTA invocation/version transition/regression or simulated successful update. |
+| REQ018–021 conditional extensions | Not admitted | No E2E, plausibility/sequence profile, native updates or VIPER acceptance. |
+| REQ022 bounded contribution | Native fault storage patch/PR draft/regressions + receiver/OpenSOVD companion integration/campaign | Local, reviewable; no maintainer approval, public submission/merge or full upstream CI claim. |
+| Current preservation | `f009-preservation-recheck`: original auditor confirms all seven revision/status/diff comparisons, locked config/image/binary identity and scoped teardown | Earlier partial comparison omitted universal newline normalization. No original file changed to resolve it; raw and normalized identities are separately recorded. |
+| Presentation and saved fallback | Eight-minute technical interview,9:30 browser deck, seven-page print output and actual recorded physical replay; browser/negative gates pass | Prepared materials and browser verification, not human rehearsal. Recorded replay supplies historical evidence, never current health. |
+| F012 AutoSD lighting target | [Fresh-guest evidence](../AutoSD/artifacts/README.md): pinned real AutoSD VM, all 256 CAN status values, 13 local and 16 managed CARLA/diagnostic checks, optional CAN timeout, actual GRE cut/recovery, reboot/history and owned cleanup | VCU inputs are fixtures. ThreadX uses Linux simulation and guest vxcan. OpenSOVD fault history is an integration-owned journal; shared S-CORE dashboard/DFM remains separate. |
+
+The historical native self-reproduction checkpoint is6d7bef9. The current helper freezes
+the selected committed HEAD, including subsequent F009 startup/tool fixes. The [prepared work inventory](prepared-work.md) records the
+actual preparation start; event start/delta remains to be recorded when the event begins.

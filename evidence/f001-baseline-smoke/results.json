@@ -1,0 +1,72 @@
+{
+  "mode": "real existing processes; no vehicle inputs",
+  "claim": "startup smoke only",
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "start",
+        "docker_setup-adas_score-1"
+      ],
+      "exit_code": 0,
+      "output": "docker_setup-adas_score-1\n",
+      "error": ""
+    },
+    {
+      "command": [
+        "docker",
+        "start",
+        "bridge-e2e"
+      ],
+      "exit_code": 0,
+      "output": "bridge-e2e\n",
+      "error": ""
+    },
+    {
+      "command": [
+        "docker",
+        "top",
+        "docker_setup-adas_score-1"
+      ],
+      "exit_code": 0,
+      "output": "UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD\nroot                1319772             1319731             0                   03:32               ?                   00:00:00            /bin/bash deployment/xverse/docker_setup/entrypoint.sh\nroot                1319827             1319772             0                   03:32               ?                   00:00:00            /home/source/bazel-bin/tests/integration/gatewayd/gatewayd.exe --configuration /tmp/score-xverse/gatewayd_config.bin --service_instance_manifest /tmp/score-xverse/gatewayd_mw_com_config.json\nroot                1320154             1319772             0                   03:32               ?                   00:00:00            /home/source/bazel-bin/tests/integration/someipd/someipd.exe --configuration /tmp/score-xverse/gatewayd_config.bin\nroot                1320211             1319772             0                   03:32               ?                   00:00:00            /home/source/bazel-bin/score/cruise_control/cruise_control_main --service_instance_manifest /home/source/score/cruise_control/config/mw_com_config.json\n",
+      "error": ""
+    },
+    {
+      "command": [
+        "docker",
+        "top",
+        "bridge-e2e"
+      ],
+      "exit_code": 0,
+      "output": "UID                 PID                 PPID                C                   STIME               TTY                 TIME                CMD\nroot                1319949             1319911             0                   03:32               ?                   00:00:00            ./gateway\n",
+      "error": ""
+    },
+    {
+      "command": [
+        "docker",
+        "stop",
+        "-t",
+        "5",
+        "bridge-e2e"
+      ],
+      "exit_code": 0,
+      "output": "bridge-e2e\n",
+      "error": ""
+    },
+    {
+      "command": [
+        "docker",
+        "stop",
+        "-t",
+        "5",
+        "docker_setup-adas_score-1"
+      ],
+      "exit_code": 0,
+      "output": "docker_setup-adas_score-1\n",
+      "error": ""
+    }
+  ],
+  "status": "blocked",
+  "limitation": "Process presence observed; bridge log collection exceeded its 10 s bound. No vehicle inputs/return path asserted. Containers restored to stopped state."
+}

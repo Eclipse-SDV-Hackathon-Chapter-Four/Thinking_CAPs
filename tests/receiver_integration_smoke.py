@@ -1,0 +1,1 @@
+../OpenSOVD/tests/receiver_integration_smoke.py

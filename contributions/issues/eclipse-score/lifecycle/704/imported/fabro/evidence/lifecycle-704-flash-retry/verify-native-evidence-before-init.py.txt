@@ -1,0 +1,17 @@
+from pathlib import Path
+from score_sw_fabric.storage import validate_run_root
+import json,hashlib
+root=Path(__file__).parent;validate_run_root(root)
+summary=json.loads((root/'native-check-summary.json').read_text())
+assert summary['native_tests_total']==113 and summary['native_test_targets_passed']==5
+assert summary['configuration_equivalence']=='all_three_exact_parsed_JSON_equal'
+assert summary['packaged_configuration']=='original_etc_filename_and_JSON_preserved'
+for path,pin in summary['source_hashes'].items():
+    source=root/'lifecycle'/path;worker=Path.cwd()/path
+    assert hashlib.sha256(source.read_bytes()).hexdigest()==pin
+    assert hashlib.sha256(worker.read_bytes()).hexdigest()==pin
+for path in summary['deleted_paths']:assert not (root/'lifecycle'/path).exists() and not (Path.cwd()/path).exists()
+for name,pin in summary['evidence_hashes'].items():assert hashlib.sha256((root/name).read_bytes()).hexdigest()==pin
+assert json.loads((root/'logs/affected-tests.json').read_text())['exit_code']==0
+validate_run_root(root)
+print(json.dumps({'check':'fresh_native_evidence','result':'pass','engineering_acceptance':'pending'}))

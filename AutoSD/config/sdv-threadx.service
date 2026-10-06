@@ -1,0 +1,15 @@
+[Unit]
+Description=ThreadX Linux zonal lighting controller
+Requires=sdv-can.service sdv-image.service
+After=sdv-can.service sdv-image.service sdv-zenoh-can.service
+
+[Service]
+EnvironmentFile=/etc/sdv-lighting.env
+ExecStart=/usr/bin/podman run --rm --name sdv-threadx --network host --cap-add SYS_NICE --ulimit rtprio=3:3 --env CAN_INTERFACE --env INPUT_TIMEOUT_MS -v /var/lib/sdv-lighting/state:/state:z sdv-autosd-lighting:1.0 python3 controller.py
+ExecStop=/usr/bin/podman stop --time 5 sdv-threadx
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

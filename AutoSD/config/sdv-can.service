@@ -1,0 +1,15 @@
+[Unit]
+Description=AutoSD zonal lighting virtual CAN bus
+Before=sdv-threadx.service sdv-zenoh-can.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/sdv-lighting.env
+ExecStart=/sbin/modprobe vxcan
+ExecStart=/bin/sh -c 'ip link show "$CAN_INTERFACE" >/dev/null 2>&1 || ip link add dev "$CAN_INTERFACE" type vxcan peer name "$BRIDGE_CAN_INTERFACE"'
+ExecStart=/bin/sh -c 'ip link set dev "$CAN_INTERFACE" up'
+ExecStart=/bin/sh -c 'ip link set dev "$BRIDGE_CAN_INTERFACE" up'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

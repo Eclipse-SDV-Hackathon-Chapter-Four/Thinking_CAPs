@@ -1,0 +1,666 @@
+<title>SOVD Fault Replay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  --ground: #EEF2F1;
+  --surface: #FFFFFF;
+  --sunken: #E3E9E7;
+  --line: #CCD6D3;
+  --ink: #14201D;
+  --muted: #56655F;
+  --signal: #0E7C6B;
+  --signal-soft: #D3EBE6;
+  --hook: #9A5A0C;
+  --pending: #B8741A;
+  --pending-soft: #F6E6CD;
+  --fail: #B3372C;
+  --fail-soft: #F5D9D5;
+  --pass: #2E8550;
+  --pass-soft: #D7EEDD;
+  --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #0E1513;
+    --surface: #151F1C;
+    --sunken: #0A100E;
+    --line: #2A3834;
+    --ink: #E2EAE7;
+    --muted: #93A39E;
+    --signal: #3FBFA8;
+    --signal-soft: #143A33;
+    --hook: #E0A452;
+    --pending: #E5A548;
+    --pending-soft: #3A2A12;
+    --fail: #F07A6D;
+    --fail-soft: #43201C;
+    --pass: #5CC585;
+    --pass-soft: #163523;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #0E1513;
+  --surface: #151F1C;
+  --sunken: #0A100E;
+  --line: #2A3834;
+  --ink: #E2EAE7;
+  --muted: #93A39E;
+  --signal: #3FBFA8;
+  --signal-soft: #143A33;
+  --hook: #E0A452;
+  --pending: #E5A548;
+  --pending-soft: #3A2A12;
+  --fail: #F07A6D;
+  --fail-soft: #43201C;
+  --pass: #5CC585;
+  --pass-soft: #163523;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font: 14px/1.5 var(--body);
+  padding-inline: 16px;
+  padding-block: 24px 48px;
+}
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; letter-spacing: .01em; }
+h1 { font-size: 34px; font-weight: 700; line-height: 1.05; }
+h2 { font-size: 21px; font-weight: 600; }
+h3 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.mono { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+p { margin: 0; }
+
+/* header */
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; }
+.intro { display: grid; gap: 6px; max-width: 62ch; }
+.intro p { color: var(--muted); }
+.score { display: flex; gap: 20px; align-items: end; }
+.score div { display: grid; }
+.score b { font-family: var(--mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.score span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+#verdict.pass { color: var(--pass); }
+#verdict.fail { color: var(--fail); }
+
+/* transport */
+.transport {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; display: grid; gap: 10px;
+}
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button {
+  font: 500 13px var(--body); color: var(--ink); background: var(--sunken);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { border-color: var(--signal); }
+button:focus-visible, .scrub:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+button.primary { background: var(--signal); border-color: var(--signal); color: var(--surface); min-width: 84px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--signal-soft); color: var(--ink); }
+.modehint { font-size: 12px; color: var(--muted); flex: 1 1 220px; }
+.scrub { position: relative; height: 22px; cursor: pointer; border-radius: 4px; }
+.scrub .rail { position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--line); }
+.scrub .fill { position: absolute; left: 0; top: 10px; height: 2px; background: var(--signal); width: 0; }
+.scrub .tick { position: absolute; top: 5px; width: 2px; height: 12px; background: var(--line); transform: translateX(-1px); }
+.scrub .tick.a { background: color-mix(in srgb, var(--signal) 45%, var(--line)); }
+.scrub .tick.b { background: color-mix(in srgb, var(--hook) 45%, var(--line)); }
+.scrub .tick.done { background: var(--ink); }
+.scrub .head { position: absolute; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--signal); transform: translateX(-7px); box-shadow: 0 0 0 3px var(--surface); }
+
+/* lanes */
+.lanes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 20px; }
+.lane { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 14px; align-content: start; }
+.lane-head { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.tag { font: 500 11px var(--mono); padding: 2px 8px; border-radius: 99px; background: var(--sunken); color: var(--muted); white-space: nowrap; }
+.tag.ours { background: var(--signal-soft); color: var(--signal); }
+
+/* flow diagram */
+.flow { position: relative; height: 104px; }
+.flow .track { position: absolute; left: 12.5%; right: 12.5%; top: 42px; height: 2px; background: var(--line); }
+.flow .bypass { position: absolute; left: 12.5%; right: 12.5%; top: 8px; height: 34px; border: 1.5px dashed color-mix(in srgb, var(--hook) 55%, transparent); border-bottom: 0; border-radius: 10px 10px 0 0; }
+.flow .bypass-label { position: absolute; left: 50%; top: 0; transform: translateX(-50%); font: 500 10px var(--mono); color: var(--hook); background: var(--surface); padding: 0 6px; white-space: nowrap; }
+.node { position: absolute; top: 26px; width: 25%; display: grid; justify-items: center; gap: 6px; text-align: center; }
+.node .box {
+  width: 34px; height: 34px; border-radius: 8px; background: var(--sunken); border: 1.5px solid var(--line);
+  display: grid; place-items: center; font: 600 11px var(--mono); color: var(--muted);
+  transition: border-color .2s, background .2s, color .2s;
+}
+.node.lit .box { border-color: var(--signal); background: var(--signal-soft); color: var(--signal); }
+.node.hooklit .box { border-color: var(--hook); background: var(--pending-soft); color: var(--hook); }
+.node .lbl { font-size: 11.5px; line-height: 1.25; font-weight: 500; }
+.node .port { font: 10.5px var(--mono); color: var(--muted); }
+.packet { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--signal); top: 38px; left: 12.5%; transform: translateX(-5px); opacity: 0; box-shadow: 0 0 0 4px var(--signal-soft); }
+.packet.hook { background: var(--hook); box-shadow: 0 0 0 4px var(--pending-soft); }
+
+.req {
+  font: 12px/1.45 var(--mono); background: var(--sunken); border-radius: 8px; padding: 8px 10px;
+  min-height: 52px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+}
+.req .verb { font-weight: 600; color: var(--signal); }
+.req .verb.hook { color: var(--hook); }
+.req .code { font-weight: 600; }
+.req .idle { color: var(--muted); }
+
+/* path A state */
+.state { display: grid; gap: 14px; }
+.row { display: grid; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 500 12px var(--mono); padding: 3px 9px; border-radius: 6px; border: 1px solid var(--line); color: var(--muted); background: var(--surface); }
+.chip.on { color: var(--ink); border-color: var(--signal); }
+.machine { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.st { border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 2px; color: var(--muted); transition: all .25s; }
+.st b { font: 600 15px var(--mono); }
+.st small { font-size: 11px; line-height: 1.3; }
+.st.cur.passed { border-color: var(--pass); background: var(--pass-soft); color: var(--ink); }
+.st.cur.passed b { color: var(--pass); }
+.st.cur.prefailed { border-color: var(--pending); background: var(--pending-soft); color: var(--ink); }
+.st.cur.prefailed b { color: var(--pending); }
+.st.cur.failed { border-color: var(--fail); background: var(--fail-soft); color: var(--ink); }
+.st.cur.failed b { color: var(--fail); }
+.debounce { display: grid; gap: 4px; }
+.bar { height: 8px; background: var(--sunken); border-radius: 4px; overflow: hidden; position: relative; }
+.bar i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--pending); border-radius: 4px; }
+.bar.done i { background: var(--fail); }
+.bar .mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); opacity: .5; }
+.debounce .meta { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.polls { font: 11px var(--mono); color: var(--muted); }
+.readouts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.readout { background: var(--sunken); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; }
+.readout span { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.readout b { font: 500 22px var(--mono); font-variant-numeric: tabular-nums; }
+.readout b.stuck { color: var(--fail); }
+.readout small { font: 11px var(--mono); color: var(--muted); }
+
+/* path B fault memory */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th { text-align: left; font: 600 11px var(--body); text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 4px 8px; border-bottom: 1px solid var(--line); }
+td { padding: 6px 8px; border-bottom: 1px solid var(--line); font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.active td { background: var(--fail-soft); }
+tr.active td.mask { color: var(--fail); font-weight: 600; }
+td.bits { font-size: 11px; color: var(--muted); white-space: normal; min-width: 180px; }
+tr.active td.bits { color: var(--ink); }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--line); margin-right: 6px; vertical-align: 1px; }
+tr.active .dot { background: var(--fail); }
+.fm-meta { font-size: 12px; color: var(--muted); }
+
+/* bottom */
+.bottom { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 20px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; align-content: start; }
+.asserts { list-style: none; margin: 0; padding: 0; display: grid; }
+.asserts li { display: grid; grid-template-columns: 22px 44px 1fr auto; gap: 8px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--line); color: var(--muted); }
+.asserts li:last-child { border-bottom: 0; }
+.asserts .p { font: 600 11px var(--mono); }
+.asserts .v { font: 600 11px var(--mono); padding: 1px 7px; border-radius: 4px; background: var(--sunken); }
+.asserts .obs { grid-column: 3 / 5; font: 11.5px var(--mono); color: var(--muted); overflow-wrap: anywhere; }
+.asserts li.done { color: var(--ink); }
+.asserts li.done.PASS .v { background: var(--pass-soft); color: var(--pass); }
+.asserts li.done.FAIL .v { background: var(--fail-soft); color: var(--fail); }
+.asserts li.flash { animation: flash .9s ease-out; }
+@keyframes flash { from { background: var(--signal-soft); } to { background: transparent; } }
+.log { font: 12px/1.6 var(--mono); background: var(--sunken); border-radius: 8px; padding: 10px 12px; height: 360px; overflow: auto; }
+.log div { white-space: pre-wrap; word-break: break-word; color: var(--muted); }
+.log div.cur { color: var(--ink); }
+.log .t { color: var(--signal); }
+.log .PASS { color: var(--pass); font-weight: 600; }
+.log .FAIL { color: var(--fail); font-weight: 600; }
+details { font-size: 12.5px; }
+summary { cursor: pointer; color: var(--muted); }
+details pre { font: 11.5px/1.5 var(--mono); background: var(--sunken); border-radius: 8px; padding: 10px; max-height: 280px; overflow: auto; margin: 8px 0 0; }
+footer { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
+
+@media (max-width: 560px) {
+  h1 { font-size: 28px; }
+  .node .lbl { font-size: 10.5px; }
+  .node .port { font-size: 9.5px; }
+  .readouts { grid-template-columns: 1fr; }
+  .machine small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .st, .node .box { transition: none; }
+  .asserts li.flash { animation: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="intro">
+      <div class="eyebrow">Replay of recorded run <span id="runid"></span></div>
+      <h1>A stuck cabin sensor, diagnosed over SOVD twice</h1>
+      <p>Path A carries an S-CORE HVAC fault through our adapter to the OpenSOVD gateway. Path B reads a DTC from an ECU through the upstream Classic Diagnostic Adapter. Every value below is the response the run recorded.</p>
+    </div>
+    <div class="score">
+      <div><b id="clock">0.000</b><span>T+ seconds</span></div>
+      <div><b id="verdict">0/12</b><span>assertions</span></div>
+    </div>
+  </header>
+
+  <section class="transport" aria-label="Playback">
+    <div class="controls">
+      <button id="play" class="primary" type="button">Play</button>
+      <button id="step" type="button">Next step</button>
+      <button id="restart" type="button">Restart</button>
+      <div class="seg" role="group" aria-label="Timing">
+        <button id="mode-paced" type="button" aria-pressed="true">Paced</button>
+        <button id="mode-real" type="button" aria-pressed="false">Real time</button>
+      </div>
+      <span class="modehint" id="modehint"></span>
+    </div>
+    <div class="scrub" id="scrub" tabindex="0" role="slider" aria-label="Seek" aria-valuemin="0">
+      <div class="rail"></div><div class="fill" id="fill"></div><div id="ticks"></div><div class="head" id="head"></div>
+    </div>
+  </section>
+
+  <div class="lanes">
+    <section class="lane" id="laneA">
+      <div class="lane-head">
+        <h2>Path A · S-CORE app to SOVD</h2>
+        <span class="tag ours">ours · inc_diagnostics #16</span>
+      </div>
+      <div class="flow">
+        <div class="track"></div>
+        <div class="node" style="left:0"><div class="box">T</div><div class="lbl">Tester</div><div class="port">run-demo.sh</div></div>
+        <div class="node" style="left:25%"><div class="box">GW</div><div class="lbl">OpenSOVD gateway</div><div class="port">:7690</div></div>
+        <div class="node" style="left:50%"><div class="box">AD</div><div class="lbl">sovd_adapter</div><div class="port">DataProvider</div></div>
+        <div class="node" style="left:75%"><div class="box">HV</div><div class="lbl">HVAC app</div><div class="port">diag_api</div></div>
+        <div class="packet"></div>
+      </div>
+      <div class="req" id="reqA"><span class="idle">Waiting for the first request</span></div>
+
+      <div class="state">
+        <div class="row">
+          <h3>Resources the gateway serves</h3>
+          <div class="chips" id="resA"><span class="chip">not read yet</span></div>
+        </div>
+        <div class="row">
+          <h3>CabinTempSensorStuck · fault status</h3>
+          <div class="machine">
+            <div class="st passed" data-s="passed"><b>passed</b><small>sensor reading moves</small></div>
+            <div class="st prefailed" data-s="prefailed"><b>prefailed</b><small>test failed, debouncing</small></div>
+            <div class="st failed" data-s="failed"><b>failed</b><small>confirmed fault</small></div>
+          </div>
+          <div class="debounce">
+            <div class="bar" id="bar"><i id="barfill"></i><div class="mark" style="left:calc(100% - 2px)"></div></div>
+            <div class="meta"><span id="dbtext">Debounce: 0.00 s</span><span>threshold 5.00 s</span></div>
+            <div class="polls" id="polls"></div>
+          </div>
+        </div>
+        <div class="readouts">
+          <div class="readout"><span>sensor_stuck</span><b id="stuck">false</b><small>fault injection flag</small></div>
+          <div class="readout"><span>cabin_temp</span><b id="temp">—</b><small id="tempnote">not read yet</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lane" id="laneB">
+      <div class="lane-head">
+        <h2>Path B · ECU over DoIP to SOVD</h2>
+        <span class="tag">upstream CDA, unmodified</span>
+      </div>
+      <div class="flow">
+        <div class="bypass"><span class="bypass-label">simulator test hook</span></div>
+        <div class="track"></div>
+        <div class="node" style="left:0"><div class="box">T</div><div class="lbl">Tester</div><div class="port">run-demo.sh</div></div>
+        <div class="node" style="left:25%"><div class="box">CDA</div><div class="lbl">CDA SOVD API</div><div class="port">:20002</div></div>
+        <div class="node" style="left:50%"><div class="box">DoIP</div><div class="lbl">DoIP / UDS</div><div class="port">:13400</div></div>
+        <div class="node" style="left:75%"><div class="box">ECU</div><div class="lbl">ECU simulator</div><div class="port">flxc1000 · :8181</div></div>
+        <div class="packet"></div>
+      </div>
+      <div class="req" id="reqB"><span class="idle">Waiting for the first request</span></div>
+
+      <div class="state">
+        <div class="row">
+          <h3>flxc1000 fault memory, as the CDA reports it</h3>
+          <p class="fm-meta" id="fmmeta">Not read yet. A DTC is active when its status mask is not 00.</p>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th>DTC</th><th>Name</th><th>Mask</th><th>Status bits set</th></tr></thead>
+              <tbody id="fm"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="bottom">
+    <section class="panel">
+      <h2>Assertions</h2>
+      <p class="fm-meta">Expected values were fixed in <span class="mono">run-demo.sh</span> before the run started.</p>
+      <ol class="asserts" id="asserts"></ol>
+    </section>
+    <section class="panel">
+      <h2>Timeline</h2>
+      <div class="log" id="log" aria-live="polite"></div>
+      <details id="rawbox">
+        <summary>Last raw response</summary>
+        <pre id="raw">—</pre>
+      </details>
+    </section>
+  </div>
+
+  <footer>
+    <p>Source: <span class="mono" id="src"></span> (timeline.log, run.json, raw/). Regenerate with <span class="mono">demo/replay/build.py &lt;run-id&gt;</span>.</p>
+    <p>Paced mode stretches gaps shorter than 0.9 s so each step can be seen; the clock always shows the real T+ time.</p>
+  </footer>
+</div>
+
+<script id="run-data" type="application/json">{"run":"20260922T134533Z","debounce_s":5.21,"assertions":[{"path":"A","assertion":"gateway serves diag_api resources","expected":"cabin_temp,sensor_fault_status,sensor_stuck","observed":"cabin_temp,sensor_fault_status,sensor_stuck","verdict":"PASS"},{"path":"A","assertion":"no demo.* ids left","expected":"0","observed":"0","verdict":"PASS"},{"path":"A","assertion":"fault status before injection","expected":"passed","observed":"passed","verdict":"PASS"},{"path":"A","assertion":"injection accepted","expected":"204","observed":"204","verdict":"PASS"},{"path":"A","assertion":"status right after injection","expected":"prefailed","observed":"prefailed","verdict":"PASS"},{"path":"A","assertion":"status after debounce","expected":"failed","observed":"failed","verdict":"PASS"},{"path":"A","assertion":"stuck reading is frozen","expected":"21.3","observed":"21.3","verdict":"PASS"},{"path":"A","assertion":"status after clear","expected":"passed","observed":"passed","verdict":"PASS"},{"path":"B","assertion":"active faults before injection","expected":"","observed":"","verdict":"PASS"},{"path":"B","assertion":"injection accepted","expected":"201","observed":"201","verdict":"PASS"},{"path":"B","assertion":"CDA reports the DTC over SOVD","expected":"01E240/2F","observed":"01E240/2F","verdict":"PASS"},{"path":"B","assertion":"active faults after clear","expected":"","observed":"","verdict":"PASS"}],"timeline":[{"t":0.003,"msg":"run 20260922T134533Z start"},{"t":0.022,"msg":"path A: reset"},{"t":3.047,"msg":"PASS  [A] gateway serves diag_api resources: expected=cabin_temp,sensor_fault_status,sensor_stuck observed=cabin_temp,sensor_fault_status,sensor_stuck"},{"t":3.054,"msg":"PASS  [A] no demo.* ids left: expected=0 observed=0"},{"t":3.065,"msg":"PASS  [A] fault status before injection: expected=passed observed=passed"},{"t":3.069,"msg":"path A: inject stuck sensor over SOVD"},{"t":3.078,"msg":"PASS  [A] injection accepted: expected=204 observed=204"},{"t":3.089,"msg":"PASS  [A] status right after injection: expected=prefailed observed=prefailed"},{"t":8.319,"msg":"PASS  [A] status after debounce: expected=failed observed=failed"},{"t":8.323,"msg":"path A: debounce qualified after 5.21s"},{"t":9.343,"msg":"PASS  [A] stuck reading is frozen: expected=21.3 observed=21.3"},{"t":9.347,"msg":"path A: clear"},{"t":11.422,"msg":"PASS  [A] status after clear: expected=passed observed=passed"},{"t":11.43,"msg":"path B: clear ECU fault memory"},{"t":11.45,"msg":"PASS  [B] active faults before injection: expected= observed="},{"t":11.453,"msg":"path B: inject DTC 0x01E240 status 0x2F into the simulator"},{"t":11.479,"msg":"PASS  [B] injection accepted: expected=201 observed=201"},{"t":11.489,"msg":"PASS  [B] CDA reports the DTC over SOVD: expected=01E240/2F observed=01E240/2F"},{"t":11.492,"msg":"path B: clear"},{"t":11.506,"msg":"PASS  [B] active faults after clear: expected= observed="},{"t":11.511,"msg":"run 20260922T134533Z done: 12/12 passed"}],"raw":{"a-data-list":{"items":[{"id":"cabin_temp","name":"Cabin temperature","category":"currentData","groups":["hvac"]},{"id":"sensor_fault_status","name":"Cabin temperature sensor fault status","category":"currentData","groups":["hvac"]},{"id":"sensor_stuck","name":"Fault injection: cabin temperature sensor stuck","category":"storedData","groups":["hvac"]}]},"a-status-before":{"id":"sensor_fault_status","data":{"confirmed":false,"fault":"CabinTempSensorStuck","status":"passed","test_failed":false}},"a-status-failed":{"id":"sensor_fault_status","data":{"confirmed":true,"fault":"CabinTempSensorStuck","status":"failed","test_failed":true}},"a-status-prefailed":{"id":"sensor_fault_status","data":{"confirmed":false,"fault":"CabinTempSensorStuck","status":"prefailed","test_failed":true}},"a-temp-1":{"id":"cabin_temp","data":{"unit":"degC","value":21.3}},"a-temp-2":{"id":"cabin_temp","data":{"unit":"degC","value":21.3}},"b-faults-after":{"items":[{"code":"01E242","scope":"FaultMem","fault_name":"Code4","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"039447","scope":"FaultMem","fault_name":"Code2","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E243","scope":"FaultMem","fault_name":"Code5","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E244","scope":"FaultMem","fault_name":"Code6","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E240","scope":"FaultMem","fault_name":"DTC Code 1","severity":0,"status":{"test_failed":true,"test_failed_this_operation_cycle":true,"pending_dtc":true,"confirmed_dtc":true,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":true,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"2F"}},{"code":"01E241","scope":"FaultMem","fault_name":"Code3","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}}]},"b-faults-before":{"items":[{"code":"01E240","scope":"FaultMem","fault_name":"Code1","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E241","scope":"FaultMem","fault_name":"Code3","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E243","scope":"FaultMem","fault_name":"Code5","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E244","scope":"FaultMem","fault_name":"Code6","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E242","scope":"FaultMem","fault_name":"Code4","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"039447","scope":"FaultMem","fault_name":"Code2","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}}]},"b-faults-cleared":{"items":[{"code":"01E240","scope":"FaultMem","fault_name":"Code1","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E243","scope":"FaultMem","fault_name":"Code5","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E242","scope":"FaultMem","fault_name":"Code4","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"039447","scope":"FaultMem","fault_name":"Code2","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E244","scope":"FaultMem","fault_name":"Code6","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}},{"code":"01E241","scope":"FaultMem","fault_name":"Code3","severity":0,"status":{"test_failed":false,"test_failed_this_operation_cycle":false,"pending_dtc":false,"confirmed_dtc":false,"test_not_completed_since_last_clear":false,"test_failed_since_last_clear":false,"test_not_completed_this_operation_cycle":false,"warning_indicator_requested":false,"mask":"00"}}]}}}</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('run-data').textContent);
+  const $ = (id) => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const HVAC = '/sovd/v1/components/hvac/data';
+  const FAULTS = '/vehicle/v15/components/flxc1000/faults';
+  const SIMDTC = ':8181/flxc1000/dtc/Standard';
+  const THRESHOLD = 5.0;
+  const BITS = ['test_failed', 'test_failed_this_operation_cycle', 'pending_dtc', 'confirmed_dtc',
+    'test_not_completed_since_last_clear', 'test_failed_since_last_clear',
+    'test_not_completed_this_operation_cycle', 'warning_indicator_requested'];
+
+  $('runid').textContent = D.run;
+  $('src').textContent = 'evidence/runs/' + D.run + '/';
+
+  const EV = D.timeline.map((e, i) => {
+    const m = e.msg.match(/^(PASS|FAIL)\s+\[(A|B)\] (.+?): expected=(.*) observed=(.*)$/);
+    return m ? { ...e, i, verdict: m[1], path: m[2], name: m[3], expected: m[4], observed: m[5] }
+             : { ...e, i, path: /^path A/.test(e.msg) ? 'A' : /^path B/.test(e.msg) ? 'B' : null };
+  });
+  const tFor = (name) => (EV.find((e) => e.name === name) || {}).t;
+  const tPrefailed = tFor('status right after injection');
+  const tFailed = tFor('status after debounce');
+
+  // --- static scaffolding --------------------------------------------------
+  const lastT = EV[EV.length - 1].t;
+  EV.forEach((e) => {
+    const tk = document.createElement('div');
+    tk.className = 'tick' + (e.path ? ' ' + e.path.toLowerCase() : '');
+    tk.style.left = (e.t / lastT * 100) + '%';
+    e.tick = tk;
+    $('ticks').appendChild(tk);
+  });
+  const A_ROWS = D.assertions.map((a, k) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="mono">${String(k + 1).padStart(2, '0')}</span><span class="p">Path ${a.path}</span><span>${esc(a.assertion)}</span><span class="v">pending</span><span class="obs">expected ${esc(a.expected || '(none)')}</span>`;
+    $('asserts').appendChild(li);
+    return li;
+  });
+  function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+  // --- scene state ---------------------------------------------------------
+  let S;
+  function resetScene() {
+    S = { status: null, stuck: false, done: 0, pass: 0, polls: 0 };
+    setStatus(null);
+    $('stuck').textContent = 'false'; $('stuck').className = '';
+    $('temp').textContent = '—'; $('temp').className = ''; $('tempnote').textContent = 'not read yet';
+    $('resA').innerHTML = '<span class="chip">not read yet</span>';
+    $('reqA').innerHTML = $('reqB').innerHTML = '<span class="idle">Waiting for the first request</span>';
+    $('fm').innerHTML = ''; $('fmmeta').textContent = 'Not read yet. A DTC is active when its status mask is not 00.';
+    $('log').innerHTML = ''; $('raw').textContent = '—';
+    $('polls').textContent = '';
+    setDebounce(0, false);
+    A_ROWS.forEach((li, k) => {
+      li.className = '';
+      li.querySelector('.v').textContent = 'pending';
+      li.querySelector('.obs').textContent = 'expected ' + (D.assertions[k].expected || '(none)');
+    });
+    EV.forEach((e) => e.tick.classList.remove('done'));
+    updateScore();
+  }
+  function setStatus(s) {
+    S && (S.status = s);
+    document.querySelectorAll('.st').forEach((el) => el.classList.toggle('cur', el.dataset.s === s));
+  }
+  function setDebounce(sec, done) {
+    const pct = Math.min(sec / THRESHOLD, 1) * 100;
+    $('barfill').style.width = pct + '%';
+    $('bar').classList.toggle('done', !!done);
+    $('dbtext').textContent = done ? `Debounce qualified after ${sec.toFixed(2)} s` : `Debounce: ${sec.toFixed(2)} s`;
+  }
+  function updateScore() {
+    $('verdict').textContent = `${S.pass}/${D.assertions.length}`;
+    $('verdict').className = S.done === D.assertions.length ? (S.pass === S.done ? 'pass' : 'fail') : '';
+  }
+  function req(lane, verb, path, body, code, hook) {
+    const b = body ? '\n' + esc(body) : '';
+    const c = code ? `  →  <span class="code">${esc(code)}</span>` : '';
+    $('req' + lane).innerHTML = `<span class="verb${hook ? ' hook' : ''}">${verb}</span> ${esc(path)}${c}${b}`;
+  }
+  function showRaw(name) {
+    const r = D.raw[name];
+    if (r) $('raw').textContent = `// raw/${name}.json\n` + JSON.stringify(r, null, 2);
+  }
+  function faultTable(name) {
+    const r = D.raw[name];
+    if (!r) return;
+    const items = [...r.items].sort((x, y) => x.code.localeCompare(y.code));
+    $('fm').innerHTML = items.map((it) => {
+      const on = it.status.mask !== '00';
+      const bits = BITS.filter((b) => it.status[b]).map((b) => b.replace(/_/g, ' ')).join(', ') || '—';
+      return `<tr class="${on ? 'active' : ''}"><td><span class="dot"></span>${it.code}</td><td>${esc(it.fault_name)}</td><td class="mask">${it.status.mask}</td><td class="bits">${esc(bits)}</td></tr>`;
+    }).join('');
+    const active = items.filter((it) => it.status.mask !== '00');
+    $('fmmeta').textContent = `raw/${name}.json · ${items.length} DTCs known to the ECU, ${active.length ? active.map((a) => a.code + '/' + a.status.mask).join(', ') + ' active' : 'none active'}.`;
+  }
+
+  // packet animation: hops are node indices 0..3 on the lane's flow
+  function packet(lane, to, hook, anim) {
+    const flow = $('lane' + lane).querySelector('.flow');
+    const nodes = flow.querySelectorAll('.node');
+    const involved = hook ? [0, 3] : [...Array(to + 1).keys()];
+    nodes.forEach((n, k) => { n.classList.remove('lit', 'hooklit'); if (involved.includes(k)) n.classList.add(hook ? 'hooklit' : 'lit'); });
+    if (!anim || reduced) return;
+    const p = flow.querySelector('.packet');
+    p.classList.toggle('hook', !!hook);
+    const x = (k) => (12.5 + 25 * k) + '%';
+    const top = hook ? '4px' : '38px';
+    const leg = Math.max(160, Math.min(420, 900 * pace() / 4));
+    p.animate([
+      { left: x(0), top: hook ? '38px' : top, opacity: 1 },
+      { left: x(0), top, opacity: 1, offset: 0.05 },
+      { left: x(to), top, opacity: 1, offset: 0.5 },
+      { left: x(0), top, opacity: 1, offset: 0.95 },
+      { left: x(0), top: '38px', opacity: 0 },
+    ], { duration: leg * 2, easing: 'ease-in-out' });
+  }
+
+  function markAssert(e, anim) {
+    const k = D.assertions.findIndex((a) => a.assertion === e.name && a.path === e.path);
+    if (k < 0) return;
+    const li = A_ROWS[k];
+    li.className = 'done ' + e.verdict + (anim && !reduced ? ' flash' : '');
+    li.querySelector('.v').textContent = e.verdict;
+    li.querySelector('.obs').textContent = `expected ${e.expected || '(none)'} · observed ${e.observed || '(none)'}`;
+    S.done++; if (e.verdict === 'PASS') S.pass++;
+    updateScore();
+  }
+
+  // --- what each timeline line means on screen -----------------------------
+  function apply(e, anim) {
+    const log = document.createElement('div');
+    const v = e.verdict ? `<span class="${e.verdict}">${e.verdict}</span>` + esc(e.msg.slice(4)) : esc(e.msg);
+    log.innerHTML = `<span class="t">[T+${e.t.toFixed(3)}s]</span> ${v}`;
+    $('log').querySelectorAll('.cur').forEach((d) => d.classList.remove('cur'));
+    log.className = 'cur';
+    $('log').appendChild(log);
+    $('log').scrollTop = $('log').scrollHeight;
+    e.tick.classList.add('done');
+
+    const n = e.name, m = e.msg;
+    if (m === 'path A: reset') {
+      req('A', 'PUT', HVAC + '/sensor_stuck', '{"data":{"stuck":false}}');
+      packet('A', 3, false, anim);
+      $('stuck').textContent = 'false';
+    } else if (n === 'gateway serves diag_api resources') {
+      req('A', 'GET', HVAC, null, '200');
+      packet('A', 3, false, anim); showRaw('a-data-list');
+      $('resA').innerHTML = D.raw['a-data-list'].items.map((it) => `<span class="chip on" title="${esc(it.name)}">${esc(it.id)}</span>`).join('');
+    } else if (n === 'fault status before injection') {
+      req('A', 'GET', HVAC + '/sensor_fault_status', null, '200 · ' + e.observed);
+      packet('A', 3, false, anim); showRaw('a-status-before'); setStatus(e.observed);
+    } else if (m === 'path A: inject stuck sensor over SOVD') {
+      req('A', 'PUT', HVAC + '/sensor_stuck', '{"data":{"stuck":true}}');
+      packet('A', 3, false, anim);
+      $('stuck').textContent = 'true'; $('stuck').className = 'stuck';
+    } else if (e.path === 'A' && n === 'injection accepted') {
+      req('A', 'PUT', HVAC + '/sensor_stuck', '{"data":{"stuck":true}}', e.observed);
+    } else if (n === 'status right after injection') {
+      req('A', 'GET', HVAC + '/sensor_fault_status', null, '200 · ' + e.observed);
+      packet('A', 3, false, anim); showRaw('a-status-prefailed'); setStatus(e.observed);
+      $('polls').textContent = 'Tester polls the status every 0.25 s until it reads failed.';
+    } else if (n === 'status after debounce') {
+      req('A', 'GET', HVAC + '/sensor_fault_status', null, '200 · ' + e.observed);
+      packet('A', 3, false, anim); showRaw('a-status-failed'); setStatus(e.observed);
+      setDebounce(D.debounce_s ?? (tFailed - tPrefailed), true);
+      $('polls').textContent = '';
+    } else if (n === 'stuck reading is frozen') {
+      req('A', 'GET', HVAC + '/cabin_temp  (twice, 1 s apart)', null, `200 · ${D.raw['a-temp-1'].data.value} → ${D.raw['a-temp-2'].data.value} ${D.raw['a-temp-2'].data.unit}`);
+      packet('A', 3, false, anim); showRaw('a-temp-2');
+      $('temp').textContent = D.raw['a-temp-2'].data.value + ' °C'; $('temp').className = 'stuck';
+      $('tempnote').textContent = `frozen: ${D.raw['a-temp-1'].data.value} then ${D.raw['a-temp-2'].data.value}`;
+    } else if (m === 'path A: clear') {
+      req('A', 'PUT', HVAC + '/sensor_stuck', '{"data":{"stuck":false}}');
+      packet('A', 3, false, anim);
+      $('stuck').textContent = 'false'; $('stuck').className = '';
+    } else if (n === 'status after clear') {
+      req('A', 'GET', HVAC + '/sensor_fault_status', null, '200 · ' + e.observed);
+      packet('A', 3, false, anim); setStatus(e.observed); setDebounce(0, false);
+    } else if (m === 'path B: clear ECU fault memory' || m === 'path B: clear') {
+      req('B', 'DELETE', SIMDTC, null, null, true);
+      packet('B', 3, true, anim);
+    } else if (n === 'active faults before injection') {
+      req('B', 'GET', FAULTS, null, '200 · no active DTC');
+      packet('B', 3, false, anim); showRaw('b-faults-before'); faultTable('b-faults-before');
+    } else if (m.startsWith('path B: inject DTC')) {
+      const dm = m.match(/0x(\w+) status 0x(\w+)/);
+      req('B', 'PUT', SIMDTC, `{"id":"${dm[1]}","statusMask":"${dm[2]}","emissionsRelated":false}`, null, true);
+      packet('B', 3, true, anim);
+    } else if (e.path === 'B' && n === 'injection accepted') {
+      const dm = (EV.find((x) => x.msg.startsWith('path B: inject DTC')) || {}).msg.match(/0x(\w+) status 0x(\w+)/);
+      req('B', 'PUT', SIMDTC, `{"id":"${dm[1]}","statusMask":"${dm[2]}","emissionsRelated":false}`, e.observed, true);
+    } else if (n === 'CDA reports the DTC over SOVD') {
+      req('B', 'GET', FAULTS, null, '200 · ' + e.observed);
+      packet('B', 3, false, anim); showRaw('b-faults-after'); faultTable('b-faults-after');
+    } else if (n === 'active faults after clear') {
+      req('B', 'GET', FAULTS, null, '200 · no active DTC');
+      packet('B', 3, false, anim); showRaw('b-faults-cleared'); faultTable('b-faults-cleared');
+    }
+    if (e.verdict) markAssert(e, anim);
+  }
+
+  // --- playback clock ------------------------------------------------------
+  let mode = 'paced', sched = [], clock = 0, idx = 0, playing = false, lastFrame = 0;
+  const MIN_GAP = 900;
+  const pace = () => (mode === 'paced' ? MIN_GAP : 400);
+  function buildSchedule() {
+    sched = EV.map((e) => e.t * 1000);
+    if (mode === 'paced') {
+      for (let k = 1; k < sched.length; k++) {
+        const gap = (EV[k].t - EV[k - 1].t) * 1000;
+        sched[k] = sched[k - 1] + Math.max(gap, MIN_GAP);
+      }
+    }
+    $('modehint').textContent = mode === 'paced'
+      ? `Short gaps stretched to ${MIN_GAP / 1000} s so each step is visible · ${(sched[sched.length - 1] / 1000).toFixed(1)} s total`
+      : `Exactly as recorded · ${lastT.toFixed(1)} s total; path B's four calls take under 0.1 s`;
+  }
+  // map playback time -> real T+ (piecewise linear between events)
+  function realT(c) {
+    if (c <= sched[0]) return c / 1000;
+    for (let k = 1; k < sched.length; k++) {
+      if (c < sched[k]) {
+        const f = (c - sched[k - 1]) / (sched[k] - sched[k - 1]);
+        return EV[k - 1].t + f * (EV[k].t - EV[k - 1].t);
+      }
+    }
+    return lastT;
+  }
+  function render() {
+    const rt = realT(clock);
+    $('clock').textContent = rt.toFixed(3);
+    const pct = Math.min(rt / lastT, 1) * 100;
+    $('fill').style.width = pct + '%';
+    $('head').style.left = pct + '%';
+    $('scrub').setAttribute('aria-valuenow', rt.toFixed(1));
+    if (S.status === 'prefailed' && tPrefailed != null && rt >= tPrefailed && rt < tFailed) {
+      setDebounce(rt - tPrefailed, false);
+      const n = Math.floor((rt - tPrefailed) / 0.25);
+      if (n !== S.polls) { S.polls = n; $('polls').textContent = `Tester polls the status every 0.25 s until it reads failed · poll ${n + 1}: prefailed`; }
+    }
+  }
+  function frame(now) {
+    if (!playing) return;
+    clock += now - lastFrame; lastFrame = now;
+    while (idx < EV.length && clock >= sched[idx]) { apply(EV[idx], true); idx++; }
+    render();
+    if (idx >= EV.length) { setPlaying(false); return; }
+    requestAnimationFrame(frame);
+  }
+  function setPlaying(p) {
+    playing = p;
+    $('play').textContent = p ? 'Pause' : (idx >= EV.length ? 'Replay' : 'Play');
+    if (p) { lastFrame = performance.now(); requestAnimationFrame(frame); }
+  }
+  function seekIndex(target) {
+    // rebuild the scene up to (not including) event `target`, without animation
+    resetScene(); idx = 0;
+    while (idx < target) { apply(EV[idx], false); idx++; }
+    clock = target > 0 ? sched[target - 1] : 0;
+    render();
+  }
+
+  $('play').onclick = () => {
+    if (playing) return setPlaying(false);
+    if (idx >= EV.length) seekIndex(0);
+    setPlaying(true);
+  };
+  $('step').onclick = () => {
+    setPlaying(false);
+    if (idx >= EV.length) seekIndex(0);
+    clock = sched[idx]; apply(EV[idx], true); idx++; render();
+    $('play').textContent = idx >= EV.length ? 'Replay' : 'Play';
+  };
+  $('restart').onclick = () => { seekIndex(0); setPlaying(true); };
+  function setMode(m) {
+    mode = m;
+    $('mode-paced').setAttribute('aria-pressed', m === 'paced');
+    $('mode-real').setAttribute('aria-pressed', m === 'real');
+    const was = playing, at = idx;
+    buildSchedule(); seekIndex(at);
+    if (was) setPlaying(true);
+  }
+  $('mode-paced').onclick = () => setMode('paced');
+  $('mode-real').onclick = () => setMode('real');
+  function seekTo(rt) {
+    const was = playing; setPlaying(false);
+    seekIndex(EV.filter((e) => e.t <= rt).length);
+    if (was) setPlaying(true); else $('play').textContent = idx >= EV.length ? 'Replay' : 'Play';
+  }
+  $('scrub').addEventListener('click', (ev) => {
+    const r = $('scrub').getBoundingClientRect();
+    seekTo((ev.clientX - r.left) / r.width * lastT);
+  });
+  $('scrub').addEventListener('keydown', (ev) => {
+    if (ev.key === 'ArrowRight') { ev.preventDefault(); $('step').click(); }
+    if (ev.key === 'ArrowLeft') { ev.preventDefault(); setPlaying(false); seekIndex(Math.max(0, idx - 1)); $('play').textContent = 'Play'; }
+  });
+
+  buildSchedule();
+  resetScene();
+  if (reduced) { seekIndex(EV.length); $('play').textContent = 'Replay'; }
+  else { render(); setTimeout(() => setPlaying(true), 600); }
+})();
+</script>

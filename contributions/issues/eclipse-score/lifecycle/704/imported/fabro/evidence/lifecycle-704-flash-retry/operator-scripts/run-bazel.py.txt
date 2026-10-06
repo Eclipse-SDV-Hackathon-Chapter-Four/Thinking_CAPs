@@ -1,0 +1,27 @@
+from pathlib import Path
+import os, subprocess, sys, json, time, signal
+from score_sw_fabric.storage import validate_run_root, build_environment
+ROOT=Path(__file__).parent
+validate_run_root(ROOT)
+env=dict(os.environ, **build_environment(ROOT))
+label=sys.argv[1]
+log=ROOT / "logs" / (label + ".log")
+log.parent.mkdir(exist_ok=True)
+args=[str(ROOT / "tools/bazelisk"), "--output_user_root=" + str(ROOT / "cache/bazel-user"), *sys.argv[2:]]
+started=time.time()
+with log.open("w") as output:
+    process=subprocess.Popen(args,cwd=ROOT / "lifecycle",env=env,stdout=output,stderr=subprocess.STDOUT,start_new_session=True)
+    try:
+        while process.poll() is None:
+            validate_run_root(ROOT)
+            time.sleep(2)
+    except BaseException:
+        os.killpg(process.pid,signal.SIGTERM)
+        process.wait()
+        raise
+validate_run_root(ROOT)
+result={"argv":args,"exit_code":process.returncode,"seconds":time.time()-started,"log":str(log)}
+(ROOT / "logs" / (label + ".json")).write_text(json.dumps(result,indent=2)+"\n")
+print(json.dumps(result))
+print(log.read_text()[-6000:])
+sys.exit(process.returncode)

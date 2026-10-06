@@ -1,0 +1,105 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/launch_manager/src/lm_control:lm_control_impl_UT
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[==========] Running 36 tests from 2 test suites.
+[----------] Global test environment set-up.
+[----------] 34 tests from LmControlUT
+[ RUN      ] LmControlUT.InvalidSpecifierIsRejectedByInit
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/04 02:45:16.1916720 1329823040 000 ECU1 NONE lola log warn verbose 3 Shortname does not adhere to shortname naming requirements. 
+2026/10/04 02:45:16.1916721 1329823046 000 ECU1 NONE LM log error verbose 6 LmControl: Invalid instance specifier Error:  Error  Meta model short name does not adhere to naming requirements.  occurred 
+[       OK ] LmControlUT.InvalidSpecifierIsRejectedByInit (7 ms)
+[ RUN      ] LmControlUT.StartFindServiceFailureIsReportedByInit
+2026/10/04 02:45:16.1916721 1329823051 000 ECU1 NONE LM log error verbose 4 LmControl: StartFindService failed with error Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.StartFindServiceFailureIsReportedByInit (0 ms)
+[ RUN      ] LmControlUT.StdExceptionDuringSetupIsReportedAsGeneralError
+2026/10/04 02:45:16.1916722 1329823053 000 ECU1 NONE LM log error verbose 2 LmControl: init failed with exception: std::bad_alloc 
+[       OK ] LmControlUT.StdExceptionDuringSetupIsReportedAsGeneralError (0 ms)
+[ RUN      ] LmControlUT.NonStdExceptionDuringSetupIsReportedAsGeneralError
+2026/10/04 02:45:16.1916722 1329823054 000 ECU1 NONE LM log error verbose 1 LmControl: init failed with an unknown exception 
+[       OK ] LmControlUT.NonStdExceptionDuringSetupIsReportedAsGeneralError (0 ms)
+[ RUN      ] LmControlUT.InitStartsBackgroundDiscovery
+[       OK ] LmControlUT.InitStartsBackgroundDiscovery (0 ms)
+[ RUN      ] LmControlUT.MethodsFailWhileNotYetConnected
+[       OK ] LmControlUT.MethodsFailWhileNotYetConnected (0 ms)
+[ RUN      ] LmControlUT.DiscoveryCreatesProxySubscribesAndSetsHandler
+[       OK ] LmControlUT.DiscoveryCreatesProxySubscribesAndSetsHandler (0 ms)
+[ RUN      ] LmControlUT.EmptyHandlesAreIgnored
+[       OK ] LmControlUT.EmptyHandlesAreIgnored (0 ms)
+[ RUN      ] LmControlUT.SecondDiscoveryCallbackIsIgnored
+[       OK ] LmControlUT.SecondDiscoveryCallbackIsIgnored (0 ms)
+[ RUN      ] LmControlUT.SynchronousDiscoveryDuringConstructionStopsFindingOnce
+[       OK ] LmControlUT.SynchronousDiscoveryDuringConstructionStopsFindingOnce (0 ms)
+[ RUN      ] LmControlUT.DiscoveryCallbackAfterDestructionIsANoOp
+[       OK ] LmControlUT.DiscoveryCallbackAfterDestructionIsANoOp (0 ms)
+[ RUN      ] LmControlUT.SubscribeFailureLeavesInstanceDisconnected
+2026/10/04 02:45:16.1916722 1329823060 000 ECU1 NONE LM log error verbose 4 LmControl: activation_result.Subscribe failed with error: Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.SubscribeFailureLeavesInstanceDisconnected (0 ms)
+[ RUN      ] LmControlUT.SetReceiveHandlerFailureLeavesInstanceDisconnected
+2026/10/04 02:45:16.1916722 1329823061 000 ECU1 NONE LM log error verbose 4 LmControl: activation_result.SetReceiveHandler failed with error: Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.SetReceiveHandlerFailureLeavesInstanceDisconnected (0 ms)
+[ RUN      ] LmControlUT.ProxyCreateFailureLeavesInstanceDisconnected
+2026/10/04 02:45:16.1916722 1329823062 000 ECU1 NONE LM log error verbose 4 LmControl: Proxy::Create failed with error: Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.ProxyCreateFailureLeavesInstanceDisconnected (0 ms)
+[ RUN      ] LmControlUT.StopFindServiceFailureOnDestructionIsTolerated
+2026/10/04 02:45:16.1916723 1329823063 000 ECU1 NONE LM log error verbose 4 LmControl: StopFindService failed with error: Error  An invalid argument was passed  occurred 
+[       OK ] LmControlUT.StopFindServiceFailureOnDestructionIsTolerated (0 ms)
+[ RUN      ] LmControlUT.ActivateForwardsNameAndQueuedModeByDefault
+[       OK ] LmControlUT.ActivateForwardsNameAndQueuedModeByDefault (0 ms)
+[ RUN      ] LmControlUT.ActivateForcedMapsToForcedMode
+[       OK ] LmControlUT.ActivateForcedMapsToForcedMode (0 ms)
+[ RUN      ] LmControlUT.ActivateRejectionSurfacesRejectionReason
+[       OK ] LmControlUT.ActivateRejectionSurfacesRejectionReason (0 ms)
+[ RUN      ] LmControlUT.ActivateTransportFailureReturnsCommunicationError
+2026/10/04 02:45:16.1916723 1329823068 000 ECU1 NONE LM log error verbose 4 LmControl: activate_run_target: proxy method call failed with error: Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.ActivateTransportFailureReturnsCommunicationError (0 ms)
+[ RUN      ] LmControlUT.GetActiveRunTargetReturnsName
+[       OK ] LmControlUT.GetActiveRunTargetReturnsName (0 ms)
+[ RUN      ] LmControlUT.GetActiveRunTargetNotAvailableReturnsActivationInProgress
+[       OK ] LmControlUT.GetActiveRunTargetNotAvailableReturnsActivationInProgress (0 ms)
+[ RUN      ] LmControlUT.GetActiveRunTargetTransportFailureReturnsCommunicationError
+2026/10/04 02:45:16.1916723 1329823071 000 ECU1 NONE LM log error verbose 4 LmControl: get_active_run_target: proxy method call failed with error: Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.GetActiveRunTargetTransportFailureReturnsCommunicationError (0 ms)
+[ RUN      ] LmControlUT.RegisterEmptyCallbackRejected
+[       OK ] LmControlUT.RegisterEmptyCallbackRejected (0 ms)
+[ RUN      ] LmControlUT.ActivationResultInvokesRegisteredCallback
+[       OK ] LmControlUT.ActivationResultInvokesRegisteredCallback (0 ms)
+[ RUN      ] LmControlUT.InitialActivationSourceIsForwardedToCallback
+[       OK ] LmControlUT.InitialActivationSourceIsForwardedToCallback (0 ms)
+[ RUN      ] LmControlUT.ActivationResultBacklogExceedingSubscriptionIsDrainedInSeveralCalls
+[       OK ] LmControlUT.ActivationResultBacklogExceedingSubscriptionIsDrainedInSeveralCalls (0 ms)
+[ RUN      ] LmControlUT.ActivationResultDrainStopsOnEmptyBatch
+2026/10/04 02:45:16.1916724 1329823075 000 ECU1 NONE LM log warn verbose 1 LmControl: activation_result: no callback registered — samples dropped 
+[       OK ] LmControlUT.ActivationResultDrainStopsOnEmptyBatch (0 ms)
+[ RUN      ] LmControlUT.ActivationResultWithoutCallbackIsDroppedSafely
+2026/10/04 02:45:16.1916724 1329823076 000 ECU1 NONE LM log warn verbose 1 LmControl: activation_result: no callback registered — samples dropped 
+[       OK ] LmControlUT.ActivationResultWithoutCallbackIsDroppedSafely (0 ms)
+[ RUN      ] LmControlUT.ThrowingActivationCallbackIsContainedAndDrainContinues
+2026/10/04 02:45:16.1916724 1329823078 000 ECU1 NONE LM log error verbose 3 LmControl: activation callback threw: callback failure - sample dropped 
+[       OK ] LmControlUT.ThrowingActivationCallbackIsContainedAndDrainContinues (0 ms)
+[ RUN      ] LmControlUT.ActivationCallbackThrowingNonStdExceptionIsContained
+2026/10/04 02:45:16.1916724 1329823079 000 ECU1 NONE LM log error verbose 1 LmControl: activation callback threw an unknown exception - sample dropped 
+[       OK ] LmControlUT.ActivationCallbackThrowingNonStdExceptionIsContained (0 ms)
+[ RUN      ] LmControlUT.ActivationResultGetNewSamplesFailureIsTolerated
+2026/10/04 02:45:16.1916724 1329823080 000 ECU1 NONE LM log warn verbose 1 LmControl: activation_result: no callback registered — samples dropped 
+2026/10/04 02:45:16.1916724 1329823080 000 ECU1 NONE LM log error verbose 4 LmControl: GetNewSamples failed with error: Error  A communication error occurred  occurred 
+[       OK ] LmControlUT.ActivationResultGetNewSamplesFailureIsTolerated (0 ms)
+[ RUN      ] LmControlUT.LatestRegisteredCallbackWins
+[       OK ] LmControlUT.LatestRegisteredCallbackWins (0 ms)
+[ RUN      ] LmControlUT.DestructorStopsDiscoveryWhenNeverConnected
+[       OK ] LmControlUT.DestructorStopsDiscoveryWhenNeverConnected (0 ms)
+[ RUN      ] LmControlUT.DestructorUnsubscribesWhenConnected
+[       OK ] LmControlUT.DestructorUnsubscribesWhenConnected (0 ms)
+[----------] 34 tests from LmControlUT (10 ms total)
+
+[----------] 2 tests from RunTargetActivationSourceUT
+[ RUN      ] RunTargetActivationSourceUT.StreamInsertionRendersEachSourceAsItsName
+[       OK ] RunTargetActivationSourceUT.StreamInsertionRendersEachSourceAsItsName (0 ms)
+[ RUN      ] RunTargetActivationSourceUT.StreamInsertionRendersUnknownSourceAsNumericValue
+[       OK ] RunTargetActivationSourceUT.StreamInsertionRendersUnknownSourceAsNumericValue (0 ms)
+[----------] 2 tests from RunTargetActivationSourceUT (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 36 tests from 2 test suites ran. (10 ms total)
+[  PASSED  ] 36 tests.

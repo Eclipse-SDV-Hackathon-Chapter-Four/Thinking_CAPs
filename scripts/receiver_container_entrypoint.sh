@@ -1,0 +1,1 @@
+../OpenSOVD/scripts/receiver_container_entrypoint.sh

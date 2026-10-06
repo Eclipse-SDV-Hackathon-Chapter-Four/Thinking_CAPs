@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Receiver truth — Eclipse SDV hackathon pitch</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1721;--panel:#192936;--ink:#e9f2f7;--muted:#b6c9d7;--cyan:#64ddd9;--amber:#ffd17a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,sans-serif}a{color:var(--cyan)}a:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:4px}
+main{max-width:1440px;margin:auto;padding:36px 48px 20px}.slide{min-height:690px;display:flex;flex-direction:column;gap:20px}.slide[hidden]{display:none}h1,h2,h3,p{margin:0}h1{font-size:clamp(36px,5.2vw,70px);line-height:1.08;max-width:1150px}h2{font-size:clamp(30px,4vw,50px);line-height:1.15}h3{font-size:25px}.eyebrow{color:var(--amber);font-weight:700;letter-spacing:.07em;text-transform:uppercase;font-size:14px}.lead{font-size:clamp(21px,2.3vw,30px);max-width:1080px}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}.card{padding:24px;background:var(--panel);border-radius:14px}.card p{margin-top:12px}.metric{color:var(--cyan);font-size:48px;font-weight:700;line-height:1.2}.chips{display:flex;flex-wrap:wrap;gap:12px}.chip{border:1px solid #526675;padding:7px 12px;border-radius:8px}.links{margin-top:auto;display:flex;gap:22px;flex-wrap:wrap;font-size:16px}.flow{display:flex;align-items:stretch;gap:10px}.node{background:var(--panel);border:1px solid #486273;border-radius:10px;padding:20px;flex:1}.arrow{align-self:center;font-size:26px;color:var(--cyan)}.lane{border-left:4px solid var(--cyan);padding:12px 20px;background:var(--panel);border-radius:8px}.lane p{margin-top:6px}.steps{counter-reset:step;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.step{padding:18px;background:var(--panel);border-radius:12px}.step::before{counter-increment:step;content:counter(step);display:block;color:var(--cyan);font-size:32px;font-weight:700}.step p{margin-top:8px}.small{font-size:16px}ul{padding-left:24px;margin:0}li+li{margin-top:10px}footer{max-width:1440px;margin:auto;padding:16px 48px 28px;border-top:1px solid #354a59;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted)}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}button{font:inherit;background:#243c4e;color:var(--ink);border:1px solid #708694;border-radius:7px;padding:8px 13px;cursor:pointer}button:disabled{opacity:.45;cursor:default}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media(max-width:700px){main{padding:22px 20px 16px}.slide{min-height:unset;gap:18px}.grid,.steps{grid-template-columns:1fr}.flow{flex-direction:column}.arrow{transform:rotate(90deg)}.node{padding:15px}.card{padding:19px}footer{padding:18px 20px}body{font-size:17px}.metric{font-size:38px}.links{margin-top:18px}}
+@media print{@page{size:A4 landscape;margin:12mm}body{background:white;color:#142635;font-size:13px}main{padding:0}.slide,.slide[hidden]{display:flex!important;break-after:page;min-height:170mm;gap:12px}.slide:last-child{break-after:auto}h1{font-size:42px}h2{font-size:34px}h3{font-size:20px}.lead{font-size:20px}.card,.node,.lane,.step{background:#edf3f6;border:1px solid #b4c4ce;padding:15px}.muted{color:#394e5e}.eyebrow{color:#644409}.metric,.arrow,.step::before,a{color:#006f73}.metric{font-size:37px}.small,.links{font-size:12px}footer{display:none}.flow{flex-direction:row}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<main>
+<section id="slide-1" class="slide" data-seconds="60" aria-label="Slide 1 of 7">
+<p class="eyebrow">Eclipse SDV hackathon · prepared 4 October 2026</p>
+<h1>Diagnose what the receiver actually consumed.</h1>
+<p class="lead">A service can be reachable while vehicle inputs are stale. Make that difference observable, then prove failure and recovery with a repeatable campaign.</p>
+<div class="grid"><div class="card"><h3>For operators</h3><p>Locate lost receiver observations, retain fault history and inspect the evidence behind the result.</p></div><div class="card"><h3>For contributors</h3><p>Reuse a real receiver-to-OpenSOVD example and a narrow native storage fix with reproducible tests.</p></div></div>
+<p class="muted">Actual native components and simulated vehicle physics. Deterministic assertions decide acceptance.</p>
+<div class="links"><a href="../handover.md">Implementation handover</a><a href="../claim-evidence.md">Claim and evidence map</a></div>
+</section>
+<section id="slide-2" class="slide" data-seconds="75" hidden aria-label="Slide 2 of 7">
+<p class="eyebrow">Preserve the existing vehicle function</p><h2>Control keeps its path. Diagnosis observes it.</h2>
+<div class="flow" aria-label="Vehicle input path"><div class="node"><strong>CARLA + existing VCU</strong><p class="small muted">Physical actor and existing vehicle topics</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Existing Zenoh / SOME-IP bridge</strong><p class="small muted">Publisher-side peer</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>openDuT-managed GRE</strong><p class="small muted">Actual two-peer local test connection</p></div><span class="arrow" aria-hidden="true">→</span><div class="node"><strong>Native S-CORE receiver</strong><p class="small muted">Gateway, daemon and Cruise Control</p></div></div>
+<div class="lane"><strong>Control return ← same bridge / managed connection ← native Cruise Control</strong><p>Existing VCU normalization applies the returned throttle to the physical actor.</p></div>
+<div class="lane"><strong>Receiver observation → separate OpenSOVD process</strong><p>Freshness, actual state and source identity; native reporter / fault manager / persistent storage. Fault history uses labelled App data.</p></div>
+<p class="muted">Bridge source and control algorithm preserved. Local GRE is verified; distributed VPN and native test executor are not claimed.</p>
+<div class="links"><a href="../../patches/receiver-diagnostics/s-core-observation.patch">Receiver observation patch</a><a href="../architecture/Cruise_Control.drawio">Detailed original architecture</a></div>
+</section>
+<section id="slide-3" class="slide" data-seconds="150" hidden aria-label="Slide 3 of 7">
+<p class="eyebrow">Show live execution, or explicitly select the saved recording</p><h2>Disturb. Diagnose. Recover.</h2>
+<div class="steps"><div class="step"><h3>Observe</h3><p>Actual motion, accepted receiver speed, source/session identity and returned native control.</p></div><div class="step"><h3>Interrupt</h3><p>Stop the owned managed link. Accepted-data age increases; the communication fault becomes active.</p></div><div class="step"><h3>Restore</h3><p>Fresh data returns; held recovery clears the active fault while preserving history.</p></div></div>
+<div class="chips"><span class="chip">300 ms age threshold</span><span class="chip">100 ms debounce</span><span class="chip">150 ms held recovery</span></div>
+<p>Stall diagnosis while control return continues; restart diagnosis / fault manager and inspect retained history.</p>
+<p class="small muted">The harness supplies pedal, engagement and waypoint steering. Native Cruise Control and the existing VCU supply throttle. Recovery is not a claim of automatic engagement.</p>
+<div class="links"><a href="../../evidence/f009-recorded-replay-final/index.html" target="_blank" rel="noopener">Open recorded physical replay — historical, not live</a><a href="../reproduction.md">Run the documented live campaign</a></div>
+</section>
+<section id="slide-4" class="slide" data-seconds="90" hidden aria-label="Slide 4 of 7">
+<p class="eyebrow">A bounded upstream contribution</p><h2>Acknowledgement should match the selected persistence policy.</h2>
+<div class="grid"><div class="card"><h3>Before</h3><p>Cache mutation can be visible to a manager restart in the same process while a new OS process sees no stored record.</p><p class="muted">The separate-process regression fails against the original constructor.</p></div><div class="card"><h3>Prepared fix</h3><p>Opt-in write-through flushes before acknowledging mutations and propagates backend errors.</p><p class="muted">Default construction keeps its existing policy. One upstream file changes.</p></div></div>
+<p>Actual native IPC reporting, query and process-restart evidence accompanies the patch.</p>
+<p class="small muted">A failed flush can leave the in-memory mutation intact. Process-restart persistence is verified; hardware or power-loss durability is not guaranteed.</p>
+<div class="links"><a href="../../contributions/fault-storage-write-through/README.md">Patch, original failure and native validation</a><a href="../../contributions/fault-storage-write-through/PR-description.md">Maintainer-facing PR draft</a></div>
+</section>
+<section id="slide-5" class="slide" data-seconds="90" hidden aria-label="Slide 5 of 7">
+<p class="eyebrow">Separate code, tests, integration and reproduction</p><h2>Show the evidence at its actual level.</h2>
+<div class="grid"><div class="card"><p class="metric">42 / 46</p><h3>Core / physical assertions passed</h3><p>Fixture inputs in the core run; actual CARLA motion in the physical run. Ten conditional or deferred checks are skipped in each.</p></div><div class="card"><p class="metric">67</p><h3>Native / VCU / actor matches</h3><p>Positive native request, matching VCU scaling and subsequent actuator throttle, with zero operator pedal.</p></div></div>
+<p>Fresh source clones and native build directories passed controller unit tests, diagnostic tests / Clippy and both campaigns. Owned teardown and original baseline comparisons pass.</p>
+<p class="small muted">Self-run shares host, immutable images and LLVM. Human reproduction remains pending. No E2E sample identifier or actuator-latency guarantee is claimed.</p>
+<div class="links"><a href="../../evidence/f009-reproduction-current/verification.json">Fresh-build verification</a><a href="../../evidence/f009-reproduction-physical/results.json">Physical verdicts</a><a href="../../evidence/f009-preservation-recheck/verification.json">Preservation recheck</a></div>
+</section>
+<section id="slide-6" class="slide" data-seconds="45" hidden aria-label="Slide 6 of 7">
+<p class="eyebrow">Continuation scope · not current capabilities</p><h2>Make the integration easier to operate and extend.</h2>
+<div class="grid"><div class="card"><h3>Web dashboard — specified</h3><p>OpenSOVD Diagnosis and Test Manager on the openDuT-managed bench: status, fault history, campaign control, cleanup and evidence.</p><p class="muted">Live UI implementation is pending. The saved replay is available now.</p></div><div class="card"><h3>ThreadX + AutoSD — proposed</h3><p>An actual ThreadX sensor / watchdog target and an AutoSD VM deployment environment, with interruption / recovery evidence.</p><p class="muted">Neither runtime integration nor its potential technology bonus is claimed as achieved.</p></div></div>
+<p class="muted">AAOS/FOTA remains deferred until the user's real asset arrives. No update success is simulated.</p>
+<div class="links"><a href="../../specs/010-diagnosis-test-dashboard/spec.md">Dashboard specification</a><a href="../optional-runtime-integration.md">Bounded runtime proposal</a></div>
+</section>
+<section id="slide-7" class="slide" data-seconds="60" hidden aria-label="Slide 7 of 7">
+<p class="eyebrow">Community handover</p><h2>A reusable integration and a reviewable fix.</h2>
+<ul><li>Actual receiver diagnosis with source identity, unknown / stale states and fault history.</li><li>Repeatable campaigns on a real openDuT-managed connection, with honest verdicts and scoped cleanup.</li><li>A narrow fault-storage patch, failing regression, native checks and continuation packet.</li><li>Pinned setup and recorded fallback for the next contributor.</li></ul>
+<p class="lead">Next acceptance: another contributor runs the documented campaign and records the result.</p>
+<p class="small muted">Prepared 4 October 2026. Event-start revision / delta must be recorded later. No maintainer approval, public PR, merge, event eligibility or production safety claim.</p>
+<div class="links"><a href="../reproduction.md">Reproduce</a><a href="../reproduction-signoff.json">Pending human signoff</a><a href="../prepared-work.md">Prepared-work inventory</a></div>
+</section>
+</main>
+<footer>
+<span>Prepared 4 October 2026 · AAOS/FOTA deferred · target 9:30</span>
+<div class="controls"><button id="previous" type="button">Previous</button><span id="position" aria-live="polite">1 / 7</span><button id="next" type="button">Next</button><button id="timer" type="button">Start clock</button><span id="elapsed" aria-live="off">0:00</span><button id="print" type="button">Print</button></div>
+<span class="sr-only" id="announcement" aria-live="polite"></span>
+</footer>
+<script>
+'use strict';
+const slides=Array.from(document.querySelectorAll('.slide'));let index=0,started=null;
+function show(n){index=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.hidden=i!==index);document.getElementById('position').textContent=`${index+1} / ${slides.length}`;document.getElementById('previous').disabled=index===0;document.getElementById('next').disabled=index===slides.length-1;document.getElementById('announcement').textContent=slides[index].querySelector('h1,h2').textContent;history.replaceState(null,'',`#slide-${index+1}`);}
+document.getElementById('previous').addEventListener('click',()=>show(index-1));document.getElementById('next').addEventListener('click',()=>show(index+1));
+document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT','BUTTON','A'].includes(e.target.tagName))return;const n=e.key==='ArrowRight'||e.key==='PageDown'?index+1:e.key==='ArrowLeft'||e.key==='PageUp'?index-1:e.key==='Home'?0:e.key==='End'?slides.length-1:null;if(n!==null){e.preventDefault();show(n);}});
+document.getElementById('timer').addEventListener('click',()=>{started=performance.now();document.getElementById('timer').textContent='Reset clock';});
+setInterval(()=>{if(started===null)return;const seconds=Math.floor((performance.now()-started)/1000);document.getElementById('elapsed').textContent=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;},250);
+document.getElementById('print').addEventListener('click',()=>window.print());const requested=Number(location.hash.replace('#slide-',''));show(Number.isInteger(requested)&&requested>=1&&requested<=slides.length?requested-1:0);
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "scope": "appropriate selected tests, syntax, whitespace, links and packet bytes; native full rebuild recorded separately",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "output": "test_empty_checks_do_not_pass (test_baseline_audit.AuditTests.test_empty_checks_do_not_pass) ... ok\ntest_failed_dominates_blocked (test_baseline_audit.AuditTests.test_failed_dominates_blocked) ... ok\ntest_incomplete_checks_never_pass (test_baseline_audit.AuditTests.test_incomplete_checks_never_pass) ... ok\ntest_missing_checkout_is_explicit (test_baseline_audit.AuditTests.test_missing_checkout_is_explicit) ... ok\ntest_blocked_and_skipped_do_not_count_as_pass (test_campaign.VerdictTests.test_blocked_and_skipped_do_not_count_as_pass) ... ok\ntest_carla_readiness_blocked_does_not_pass_selected_campaign (test_campaign.VerdictTests.test_carla_readiness_blocked_does_not_pass_selected_campaign) ... ok\ntest_cleanup_failure_cannot_be_expected_injection_success (test_campaign.VerdictTests.test_cleanup_failure_cannot_be_expected_injection_success) ... ok\ntest_exit_zero_does_not_hide_failed_check (test_campaign.VerdictTests.test_exit_zero_does_not_hide_failed_check) ... ok\ntest_failed_precedence_over_blocked (test_campaign.VerdictTests.test_failed_precedence_over_blocked) ... ok\ntest_missing_assertion_is_failed_not_skipped (test_campaign.VerdictTests.test_missing_assertion_is_failed_not_skipped) ... ok\ntest_nonzero_child_cannot_pass_with_passed_checks (test_campaign.VerdictTests.test_nonzero_child_cannot_pass_with_passed_checks) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.001s\n\nOK\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/verify_contributions.py",
+        "--json"
+      ],
+      "exit_code": 0,
+      "output": "{\n  \"status\": \"verified\",\n  \"scope\": \"retained artifact integrity; native tests not rerun; engineering acceptance not evaluated\",\n  \"issues\": [\n    {\n      \"issue\": \"eclipse-score/inc_someip_gateway#84\",\n      \"local_status\": \"scoped_fix_verified\",\n      \"captured_files\": 41,\n      \"portable_entries\": 1046,\n      \"candidate_sources\": 269,\n      \"changed_files\": 6\n    },\n    {\n      \"issue\": \"eclipse-score/lifecycle#704\",\n      \"local_status\": \"implemented_locally\",\n      \"captured_files\": 80,\n      \"original_files\": 77\n    },\n    {\n      \"issue\": \"eclipse-score/inc_diagnostics#16\",\n      \"local_status\": \"evidence_missing\",\n      \"captured_files\": 3\n    }\n  ]\n}\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "py_compile",
+        "scripts/reproduce_core.py",
+        "scripts/owned_carla.py"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "id": "handover-relative-links",
+      "status": "passed",
+      "missing": []
+    },
+    {
+      "id": "packet-patch-byte-equality",
+      "status": "passed",
+      "sha256": "77cea7f7193b9fe2e32f2decca0f88118f1fd61f5b61a8f86e596925a222438e"
+    },
+    {
+      "id": "staged-whitespace",
+      "status": "passed",
+      "note": "Exported unified patch context is preserved byte-for-byte with the same attributes used by original patch evidence."
+    },
+    {
+      "id": "staged-credential-pattern-check",
+      "status": "passed",
+      "findings": []
+    }
+  ]
+}

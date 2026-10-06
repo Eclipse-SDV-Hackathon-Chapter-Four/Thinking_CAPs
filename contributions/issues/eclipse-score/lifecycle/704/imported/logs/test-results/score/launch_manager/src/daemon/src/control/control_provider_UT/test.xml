@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="3" failures="0" disabled="0" errors="0" time="0.023" timestamp="2026-10-04T00:34:11.973" name="AllTests">
+  <testsuite name="ControlProviderUT" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0.023" timestamp="2026-10-04T00:34:11.973">
+    <testcase name="StaticAssertionsCompiled" file="score/launch_manager/src/daemon/src/control/control_provider_UT.cpp" line="83" status="run" result="completed" time="0." timestamp="2026-10-04T00:34:11.973" classname="ControlProviderUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="explorative-testing"/>
+        <property name="Description" value="ControlProvider is neither movable nor copyable, so the address captured by its registered callbacks can never change."/>
+      </properties>
+    </testcase>
+    <testcase name="CallbacksDispatchAfterOwnershipTransfer" file="score/launch_manager/src/daemon/src/control/control_provider_UT.cpp" line="95" status="run" result="completed" time="0.02" timestamp="2026-10-04T00:34:11.974" classname="ControlProviderUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="explorative-testing"/>
+        <property name="Description" value="After the std::unique_ptr returned by Create() is moved to a different owner, the registered callbacks still dispatch through the same, still-alive ControlProvider."/>
+      </properties>
+    </testcase>
+    <testcase name="DestructionReleasesService" file="score/launch_manager/src/daemon/src/control/control_provider_UT.cpp" line="119" status="run" result="completed" time="0.002" timestamp="2026-10-04T00:34:11.994" classname="ControlProviderUT">
+      <properties>
+        <property name="TestType" value="interface-test"/>
+        <property name="DerivationTechnique" value="explorative-testing"/>
+        <property name="Description" value="Destroying the ControlProvider returned by Create() releases the offered service, so a later Create() for the same instance succeeds again."/>
+      </properties>
+    </testcase>
+  </testsuite>
+</testsuites>

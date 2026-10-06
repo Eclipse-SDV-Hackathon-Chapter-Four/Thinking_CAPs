@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "seed": 42,
+  "scenarios": [
+    {
+      "id": "T01",
+      "name": "Nominal actual receiver",
+      "precondition": "deployed openDuT, native fault profile",
+      "expectation": "actual receiver fresh; native DFM healthy; controller return observed",
+      "checks": [
+        "receiver-through-opendut",
+        "actual-controller-artifact",
+        "native-dfm-nominal",
+        "engagement-preserved",
+        "control-return-through-opendut"
+      ]
+    },
+    {
+      "id": "T02",
+      "name": "Startup",
+      "precondition": "no collector observation yet",
+      "expectation": "unknown, never healthy by default",
+      "checks": [
+        "startup-unknown",
+        "fault-startup-not-healthy"
+      ]
+    },
+    {
+      "id": "T03",
+      "name": "Managed stream loss",
+      "precondition": "fresh established receiver and measured cadence",
+      "expectation": "stale accepted data with reachable diagnostics, attributed native stored Failed",
+      "checks": [
+        "baseline-timing-measured",
+        "no-bypass-management-reachable",
+        "native-report-stored-query",
+        "declared-detector-timing",
+        "actual-fault-attribution"
+      ]
+    },
+    {
+      "id": "T04",
+      "name": "Held recovery",
+      "precondition": "native stored fault and restored tunnel",
+      "expectation": "fresh consumed state and Passed with retained history/controller engagement",
+      "checks": [
+        "tunnel-recovery-consumed",
+        "native-recovery-retains-history",
+        "actual-engagement-separate-from-recovery"
+      ]
+    },
+    {
+      "id": "T05",
+      "name": "Diagnostic stall",
+      "precondition": "independent controller/diagnostic processes",
+      "expectation": "HTTP unavailable while real controller returns continue; fresh after resume",
+      "checks": [
+        "diagnostic-stall-control-continues",
+        "diagnostic-stall-recovery"
+      ]
+    },
+    {
+      "id": "T06",
+      "name": "Collector disconnected",
+      "precondition": "publisher continues",
+      "expectation": "source assessment unknown; retained history",
+      "checks": [
+        "collector-loss-is-unknown"
+      ]
+    },
+    {
+      "id": "T11",
+      "name": "Native history process restart",
+      "precondition": "stored active fault, write-through policy",
+      "expectation": "new OS process reloads counter1/environment; clean IPC shutdown",
+      "checks": [
+        "native-ipc-sigint-graceful",
+        "real-process-history-reload",
+        "native-ipc-sigterm-graceful"
+      ]
+    }
+  ],
+  "conditional_skipped": {
+    "T08": "AAOS/FOTA deferred",
+    "T09": "AAOS/FOTA deferred",
+    "T10": "AAOS/FOTA deferred",
+    "T12": "independent-person signoff pending F008",
+    "T13": "native /faults upstream owner work conditional",
+    "T14": "gateway E2E conditional",
+    "T15": "sequence/E2E profile unavailable",
+    "T16": "functional plausibility conditional",
+    "T17": "native updates deferred",
+    "T18": "native VIPER unavailable in selected artifacts"
+  }
+}

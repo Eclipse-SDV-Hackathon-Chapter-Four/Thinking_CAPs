@@ -1,0 +1,71 @@
+........................................................................ [ 74%]
+.F.......................                                                [100%]
+=================================== FAILURES ===================================
+_ test_actual_http_boundary_sends_only_reserved_flash_and_never_records_credentials _
+
+tmp_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-jayvclk9/fabric-test-tmp/test_actual_http_boundary_send0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75b8eb18b980>
+
+    def test_actual_http_boundary_sends_only_reserved_flash_and_never_records_credentials(
+        tmp_path: Path, monkeypatch
+    ) -> None:
+        import io
+        import threading
+        import urllib.error
+        import urllib.request
+    
+        import score_sw_fabric.optimization.provider_boundary as boundary
+    
+        path, pin, _ = instruction(tmp_path)
+        calls = []
+    
+        class Response(io.BytesIO):
+            status = 200
+            headers = {"Content-Type": "application/json"}
+    
+        class Opener:
+            def open(self, value, timeout):
+                calls.append(value)
+                assert json.loads((path.parent / "meter.json").read_bytes())["requests"] == 1
+                return Response(
+                    json.dumps(
+                        {
+                            "usage": {
+                                "prompt_tokens": 30,
+                                "completion_tokens": 20,
+                                "prompt_cache_hit_tokens": 0,
+                                "prompt_cache_miss_tokens": 30,
+                            }
+                        }
+                    ).encode()
+                )
+    
+        monkeypatch.setattr(boundary, "build_opener", lambda *args: Opener())
+>       server = boundary.boundary_server(
+            boundary.RequestMeter(path, pin, path.parent / "meter.json"), 0, "n" * 32, tmp_path
+        )
+
+tests/contract/test_optimization_activation.py:350: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/score_sw_fabric/optimization/provider_boundary.py:310: in boundary_server
+    validate_run_root(artifact_root)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-jayvclk9/fabric-test-tmp/test_actual_http_boundary_send0')
+account_home = None
+
+    def validate_run_root(root: Path, *, account_home: Path | None = None) -> None:
+        """Reject detached or substituted managed volumes; never relocate existing work."""
+        root = root.absolute()
+        if not root.is_dir() or any(p.is_symlink() for p in (root, *root.parents)):
+            raise ValueError("Expected a disposable workspace without symbolic ancestors")
+        record = root / "storage-selection.json"
+        if not record.exists():
+            if not root.is_relative_to(Path(tempfile.gettempdir()).resolve()):
+>               raise ValueError("External workspace lacks storage selection provenance")
+E               ValueError: External workspace lacks storage selection provenance
+
+src/score_sw_fabric/storage.py:330: ValueError
+=========================== short test summary info ============================
+FAILED tests/contract/test_optimization_activation.py::test_actual_http_boundary_sends_only_reserved_flash_and_never_records_credentials
+1 failed, 96 passed in 3.37s

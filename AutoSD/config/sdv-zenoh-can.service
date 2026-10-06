@@ -1,0 +1,16 @@
+[Unit]
+Description=Zenoh2CAN lighting gateway
+Requires=sdv-can.service sdv-image.service
+Wants=network-online.target
+After=sdv-can.service sdv-image.service network-online.target
+Before=sdv-threadx.service
+
+[Service]
+ExecStart=/usr/bin/podman run --rm --name sdv-zenoh-can --network host -v /var/lib/sdv-lighting/bridge.json:/config/bridge.json:ro,z sdv-autosd-lighting:1.0 python3 /opt/bridge/bridge.py /config/bridge.json
+ExecStop=/usr/bin/podman stop --time 5 sdv-zenoh-can
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

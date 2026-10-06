@@ -1,0 +1,21 @@
+[T+0.003s] run 20260922T134533Z start
+[T+0.022s] path A: reset
+[T+3.047s] PASS  [A] gateway serves diag_api resources: expected=cabin_temp,sensor_fault_status,sensor_stuck observed=cabin_temp,sensor_fault_status,sensor_stuck
+[T+3.054s] PASS  [A] no demo.* ids left: expected=0 observed=0
+[T+3.065s] PASS  [A] fault status before injection: expected=passed observed=passed
+[T+3.069s] path A: inject stuck sensor over SOVD
+[T+3.078s] PASS  [A] injection accepted: expected=204 observed=204
+[T+3.089s] PASS  [A] status right after injection: expected=prefailed observed=prefailed
+[T+8.319s] PASS  [A] status after debounce: expected=failed observed=failed
+[T+8.323s] path A: debounce qualified after 5.21s
+[T+9.343s] PASS  [A] stuck reading is frozen: expected=21.3 observed=21.3
+[T+9.347s] path A: clear
+[T+11.422s] PASS  [A] status after clear: expected=passed observed=passed
+[T+11.430s] path B: clear ECU fault memory
+[T+11.450s] PASS  [B] active faults before injection: expected= observed=
+[T+11.453s] path B: inject DTC 0x01E240 status 0x2F into the simulator
+[T+11.479s] PASS  [B] injection accepted: expected=201 observed=201
+[T+11.489s] PASS  [B] CDA reports the DTC over SOVD: expected=01E240/2F observed=01E240/2F
+[T+11.492s] path B: clear
+[T+11.506s] PASS  [B] active faults after clear: expected= observed=
+[T+11.511s] run 20260922T134533Z done: 12/12 passed

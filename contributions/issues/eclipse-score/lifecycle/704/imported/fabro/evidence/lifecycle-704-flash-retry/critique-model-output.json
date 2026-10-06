@@ -1,0 +1,44 @@
+{
+  "kind": "agent_result",
+  "native_ids": [
+    "feat_arc_sta__lifecycle__cfg_params_static"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "path": "config/mw_com_config.bzl",
+      "reason": "The single JSON-emitting rule replaces three previously distinct checked-in configuration documents (provider_test, client_test, integration) but the emitted documents are only proven parsed-equal for the three specific profile/path pairs measured. Any other consumer that previously referenced a distinct file path (e.g. a copy/reference of a removed JSON outside the four touched files) would now fail config resolution; no repo-wide reference sweep for the three deleted paths is evidenced, only that the changed BUILD files point at generated outputs."
+    },
+    {
+      "severity": "medium",
+      "path": "config/mw_com_config.bzl",
+      "reason": "The rendered JSON root is built as a plain dict from _SERVICE_TYPES/_SERVICE_INSTANCES/_GLOBAL. The client_test profile carries 'permission-checks': 'strict' and 'allowedProvider' {B:[3020]} while integration's second instance omits them; correctness depends entirely on these hand-maintained literal tables matching the original documents. Any drift in ordering-sensitive consumers (JSON arrays keyed by name) or in the omitted fields is not covered by parsed-equality alone if consumers read raw bytes; AC18 narrows to parsed equality, so this is a residual, not verified-false, concern."
+    },
+    {
+      "severity": "medium",
+      "path": "score/launch_manager/src/lm_control/BUILD",
+      "reason": "The ilm_control_UT data/args now use the generated rootpath src/details/test_lmcontrol_mw_com_config.json via a genrule output rather than an exports_files source. The measured pass shows the target resolves in this build, but generated-file data dependencies can change runfiles layout packaging; the packaged-configuration evidence only covers the tests/switch_run_target tar member, not the ilm_control_UT runfiles payload."
+    },
+    {
+      "severity": "low",
+      "path": "tests/utils/environments/BUILD",
+      "reason": "mw_com_config_gen is exported with public-ish visibility limited to two subpackage globs while exports_files for ecu_logging_config.json was narrowed to //tests/utils/environments:__subpackages__. Mixed narrowing/broadening of visibility in the same file could restrict previously valid consumers of mw_com_config.json outside those subpackages; no visibility consumer enumeration is evidenced."
+    },
+    {
+      "severity": "low",
+      "path": "config/mw_com_config.bzl",
+      "reason": "Generated artifact digests are recorded (generated_sha256 per path) and three deleted sources are reported, but the original source digests of the deleted JSON files are not retained in the supplied evidence, so at-rest byte-level provenance of the removed files cannot be independently reconstructed from this contract."
+    }
+  ],
+  "human_review": "pending",
+  "unresolved_assumptions": [
+    "native impact/export closure pending",
+    "QNX unmeasured",
+    "legacy transport lost two earlier raw envelopes; only the fresh run's retention behavior is evidenced",
+    "native_export_impact_closure explicitly not_evaluated and QNX_execution not_measured in the checks payload"
+  ],
+  "evidence_refs": [
+    "native-check-summary"
+  ],
+  "proposed_next_action": "human engineering review or correction"
+}
