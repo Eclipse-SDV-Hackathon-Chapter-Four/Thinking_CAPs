@@ -317,6 +317,28 @@ def build_steps(
         "startup_delay_sec": 1.0,
     })
 
+    # OpenSOVD vECU - opensovd-gateway (inc_diagnostics PR #40, component
+    # `cruise`, :7690), the SOVD Adapter Console (:8080, watches the vehicle
+    # speed on Zenoh next to the gateway) and the classic path (upstream CDA
+    # :20002 + ECU simulator :8181), from demo/OpenSOVD (console sources in
+    # demo/SOVD_Adapter_Console).  ctl.sh up builds (cached; the first build
+    # compiles the gateway and the CDA), starts everything and opens the
+    # console in the browser.  Override: OPENSOVD_VECU_DIR (OPENSOVD_DIR is
+    # taken: the S-CORE compose mounts its fault profile from it).
+    opensovd_dir = os.path.expandvars(os.environ.get("OPENSOVD_VECU_DIR", "$AUTOVERSE_ROOT/demo/OpenSOVD"))
+    if os.path.isfile(os.path.join(opensovd_dir, "ctl.sh")):
+        steps.append({
+            "name": "OpenSOVD vECU: gateway + SOVD Adapter Console + CDA",
+            "containers": ["opensovd-gateway", "sovd-adapter-console"]
+                          + ([] if os.environ.get("OPENSOVD_CDA") == "0"
+                             else ["testcontainer-cda-1", "testcontainer-ecu-sim-1"]),
+            "cwd": opensovd_dir,
+            "cmd": ["./ctl.sh", "up"],      # compose up -d --build + opens the console
+            "stp": ["./ctl.sh", "stop"],
+            "kill_patterns": [],
+            "startup_delay_sec": 1.0,
+        })
+
     # Common modules always used
     steps.append({
         "name": "Vehicle Manual Control module",
