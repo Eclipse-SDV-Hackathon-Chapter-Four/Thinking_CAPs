@@ -4,7 +4,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /src
 COPY CMakeLists.txt ./
 COPY src ./src
-COPY tests/test_protocol.c ./tests/test_protocol.c
+COPY tests/test_protocol.c tests/test_uds.c ./tests/
+# the build also runs the portable SLCAN codec tests of the AZ3166 port (CMakeLists.txt)
+COPY az3166/src/slcan.c az3166/src/slcan.h ./az3166/src/
+COPY az3166/tests/test_slcan.c az3166/tests/test_slcan_edge.c ./az3166/tests/
 RUN cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
     && cmake --build build -j 4 && ctest --test-dir build --output-on-failure
 

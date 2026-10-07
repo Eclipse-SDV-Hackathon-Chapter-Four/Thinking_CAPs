@@ -52,3 +52,38 @@ transmission, avoiding a loop and competing control of the lamps.
 Outputs use textual `true`/`false`, matching the existing CARLA subscribers.
 The aggregate input `vcu/control/status` accepts the bridge's named-signal JSON
 object. Aggregate output `vehicle/lights/frame` contains both named light values.
+
+## Diagnostics (UDS on CAN)
+
+Since version 1.1.0 the controller has a UDS server (ISO 14229-1 subset) on ISO-TP
+(ISO 15765-2, normal 11-bit addressing, classic CAN, DLC 8, padding `0xCC`), so the
+OpenBSW zonal diagnostic gateway can route to it as node `0x1020`
+(`OpenBSW/gateway/config/routing.yaml` on branch `feature/openbsw-diag-gateway`). It uses only the diagnostic identifiers:
+
+| Frame | CAN ID | Direction |
+| --- | --- | --- |
+| Physical request | `0x7E1` | gateway → controller |
+| Functional request (single frame) | `0x7DF` | gateway → controller |
+| Response | `0x7E9` | controller → gateway |
+
+| Service | Supported |
+| --- | --- |
+| `10` DiagnosticSessionControl | `01` default, `03` extended; response P2 50 ms, P2\* 5000 ms |
+| `3E` TesterPresent | `00`, suppress positive response (`80`) |
+| `22` ReadDataByIdentifier | `F195` software version (`THREADX-LIGHTS <version>`), `F18C` serial number, `4C01` lighting state (byte 0 bit 0 reverse, bit 1 brake; byte 1 input stale) |
+| `19` ReadDTCInformation | `02` by status mask, `0A` supported DTCs; availability mask `0x7F` |
+| `14` ClearDiagnosticInformation | group `FFFFFF` or `C29300` |
+
+DTC `U0293` (`0xC29300`, lost communication with the vehicle control unit) is tested by the
+optional input timeout (`--timeout-ms`): it fails when the timeout turns the lights off and
+passes when a valid status frame arrives again. Without the timeout the test is not
+completed (status `0x50`). Other services get `7F <SID> 11`; functionally addressed
+requests never get NRC `11`, `12` or `31`. Segmented responses wait for the tester's flow
+control and respect its block size and STmin (rounded up to 1 ms below 1 ms); requests up
+to 64 bytes are accepted segmented (larger ones get flow control overflow). N_Bs and N_Cr
+are 1000 ms. Diagnostic send errors are counted in the heartbeat (`uds_send_failed`) and
+never stop the lighting function.
+
+The UDS server (`src/uds_ecu.c`) does not depend on ThreadX or SocketCAN; the control
+thread passes it the diagnostic frames from the same bounded queue as the status frames.
+The AZ3166 port does not include it yet.

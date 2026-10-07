@@ -12,6 +12,10 @@ CARLA lights    ← Zenoh2CAN ← SocketCAN 0x1F4 ← brake/reverse decisions
 
 The [CAN contract](docs/can-lighting-contract.md) specifies standard eight-byte
 frames, bit positions, startup/shutdown behavior and the optional input timeout.
+Since version 1.1.0 the controller also answers UDS diagnostic requests on CAN
+`0x7E1`/`0x7E9` (identification, lighting state, DTC `U0293` for a lost VCU status),
+so the OpenBSW zonal diagnostic gateway (branch `feature/openbsw-diag-gateway`) can reach it as node
+`0x1020`; see the contract's *Diagnostics* section.
 The implementation uses two ThreadX threads, a bounded ThreadX queue, a timer and
 event flags. It is Linux simulation; embedded deployment and hardware timing
 are outside this implementation. The [AutoSD deployment](../AutoSD/README.md)

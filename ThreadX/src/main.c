@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 #include "tx_api.h"
 #include "lights_protocol.h"
+#include "uds_ecu.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <net/if.h>
@@ -28,7 +29,8 @@ static unsigned char receive_stack[4096], control_stack[4096];
 static int can_fd = -1;
 static unsigned timeout_ms;
 static volatile sig_atomic_t stopping;
-static unsigned long received, rejected, dropped, log_dropped;
+static unsigned long received, rejected, dropped, log_dropped, diag_send_failed;
+static struct uds_ecu uds;
 static const char *interface_name;
 
 /* Host I/O never waits for a CAN peer or a log reader inside a ThreadX thread. */
@@ -67,6 +69,13 @@ static void send_lights(const struct can_frame *output)
     }
 }
 
+/* Diagnostic responses: a failed write is counted; it never stops the lighting function. */
+static void send_diagnostic(const struct can_frame *frame, void *context)
+{
+    (void)context;
+    if (write(can_fd, frame, sizeof(*frame)) != sizeof(*frame)) ++diag_send_failed;
+}
+
 static void heartbeat(ULONG argument)
 {
     (void)argument;
@@ -86,7 +95,9 @@ static void receive_entry(ULONG argument)
                 perror("CAN receive"); exit(1);
             }
             struct can_frame output;
-            if (!lights_decode(&message.frame, &output)) { ++rejected; continue; }
+            if (!lights_decode(&message.frame, &output) && !uds_accepts(&message.frame)) {
+                ++rejected; continue;
+            }
             UINT result = tx_queue_send(&receive_queue, message.words, TX_NO_WAIT);
             if (result == TX_QUEUE_FULL) ++dropped;
             else require_tx(result, "receive queue send");
@@ -106,16 +117,23 @@ static void control_entry(ULONG argument)
            "\"interface\":\"%s\",\"timeout_ms\":%u}\n",
            ZONAL_VERSION, THREADX_REVISION, interface_name, timeout_ms);
     uint64_t last_valid = 0;
-    bool stale = false;
+    bool stale = false, stale_reported = false;
     while (!stopping) {
         union { ULONG words[FRAME_WORDS]; struct can_frame frame; } message = {0};
         UINT result = tx_queue_receive(&receive_queue, message.words, 1);
-        if (result == TX_SUCCESS) {
+        if (result == TX_SUCCESS && uds_accepts(&message.frame)) {
+            uds_frame(&uds, &message.frame, (uint32_t)now_ms());
+        } else if (result == TX_SUCCESS) {
             if (lights_decode(&message.frame, &output)) {
                 last_valid = now_ms();
                 stale = false;
                 ++received;
                 send_lights(&output);
+                if (stale_reported) {
+                    stale_reported = false;
+                    uds_report_vcu_lost(&uds, false);
+                }
+                uds_set_lights(&uds, output.data[0], false);
                 record("{\"event\":\"lights\",\"sequence\":%lu,\"reverse\":%s,"
                        "\"brake\":%s,\"stale\":false,\"can_id\":500}\n", received,
                        output.data[0] & 1U ? "true" : "false",
@@ -126,13 +144,19 @@ static void control_entry(ULONG argument)
             stale = true;
             lights_off(&output);
             send_lights(&output);
+            stale_reported = true;
+            uds_report_vcu_lost(&uds, true);
+            uds_set_lights(&uds, 0U, true);
             record("{\"event\":\"input_timeout\",\"stale\":true,\"reverse\":false,\"brake\":false}\n");
         }
+        uds_tick(&uds, (uint32_t)now_ms());
         ULONG flags;
         if (tx_event_flags_get(&events, HEARTBEAT_FLAG, TX_OR_CLEAR, &flags, TX_NO_WAIT) == TX_SUCCESS)
             record("{\"event\":\"heartbeat\",\"tick\":%lu,\"received\":%lu,"
-                   "\"rejected\":%lu,\"queue_dropped\":%lu,\"log_dropped\":%lu,\"stale\":%s}\n",
-                   tx_time_get(), received, rejected, dropped, log_dropped, stale ? "true" : "false");
+                   "\"rejected\":%lu,\"queue_dropped\":%lu,\"log_dropped\":%lu,\"stale\":%s,"
+                   "\"uds_requests\":%lu,\"uds_responses\":%lu,\"uds_send_failed\":%lu}\n",
+                   tx_time_get(), received, rejected, dropped, log_dropped, stale ? "true" : "false",
+                   uds.requests, uds.responses, diag_send_failed);
     }
     lights_off(&output);
     send_lights(&output);
@@ -144,6 +168,7 @@ static void control_entry(ULONG argument)
 void tx_application_define(void *first_unused_memory)
 {
     (void)first_unused_memory;
+    uds_init(&uds, "THREADX-LIGHTS " ZONAL_VERSION, "TXZL-SIM-0001", send_diagnostic, NULL);
     require_tx(tx_queue_create(&receive_queue, "CAN status", FRAME_WORDS,
         queue_storage, sizeof(queue_storage)), "queue create");
     require_tx(tx_event_flags_create(&events, "controller events"), "events create");
@@ -163,9 +188,13 @@ static int open_can(const char *name)
     if (!index) { perror("CAN interface"); return -1; }
     int fd = socket(PF_CAN, SOCK_RAW | SOCK_NONBLOCK | SOCK_CLOEXEC, CAN_RAW);
     if (fd < 0) { perror("SocketCAN socket"); return -1; }
-    const struct can_filter filter = {VCU_STATUS_ID, CAN_SFF_MASK | CAN_EFF_FLAG | CAN_RTR_FLAG};
+    /* lighting status and the diagnostic request identifiers (physical, functional) */
+    const struct can_filter filters[] = {
+        {VCU_STATUS_ID, CAN_SFF_MASK | CAN_EFF_FLAG | CAN_RTR_FLAG},
+        {DIAG_REQUEST_ID, CAN_SFF_MASK | CAN_EFF_FLAG | CAN_RTR_FLAG},
+        {DIAG_FUNCTIONAL_ID, CAN_SFF_MASK | CAN_EFF_FLAG | CAN_RTR_FLAG}};
     const struct sockaddr_can address = {.can_family = AF_CAN, .can_ifindex = (int)index};
-    if (setsockopt(fd, SOL_CAN_RAW, CAN_RAW_FILTER, &filter, sizeof(filter)) != 0 ||
+    if (setsockopt(fd, SOL_CAN_RAW, CAN_RAW_FILTER, filters, sizeof(filters)) != 0 ||
         bind(fd, (const struct sockaddr *)&address, sizeof(address)) != 0) {
         perror("SocketCAN filter/bind"); close(fd); return -1;
     }
