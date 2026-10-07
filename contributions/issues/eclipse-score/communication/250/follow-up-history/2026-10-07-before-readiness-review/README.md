@@ -52,7 +52,7 @@ Elsewhere, recreate the branch from the bundle:
 ## Open items
 
 - Async discovery is one-shot and returns the latest stored snapshot; native suppresses the initial empty notification, so an async request with no offers stays pending until an offer arrives.
-- Scope is typed same-interface Any, not system-wide discovery; the issue author’s follow-up asks for all services; the maintainer confirms native Any support — scope agreement remains pending.
+- Scope is typed same-interface Any, not system-wide discovery; the issue thread (maintainer + #1261 author) expects 'all services on system' — align with #1261.
 - Find-service callback reclamation (baseline-wide), API/ABI disposition, native trace, qualification and acceptance pending.
 
 ## Notes
@@ -75,16 +75,3 @@ Elsewhere, recreate the branch from the bundle:
 
 Agents drafted the code (DeepSeek V4 Flash via Fabro, with Codex/Claude corrections where noted);
 deterministic tools measured it. No GitHub comment, push, PR or issue change was made.
-
-## Readiness follow-up — 2026-10-07
-
-All 2,883 measured source hashes match the unchanged proposal. Its 68 Linux passes and two ignored doctests are carried evidence. Typed Any remains a partial response to the issue author's system-wide expectation, and its new `Result<_, ()>` warning is unresolved.
-
-See the [shared readiness review](../rust-api-queue/readiness-review-20261007/README.md) for
-corrective/full candidate patches, exact verification, native trace, expected checks
-and pending human/IP decisions. Original patches and bundles above are historical
-measured subjects and do not contain the new corrections. Historical run budgets
-are preserved; this follow-up responds to the new user request. Fresh results for
-changed subjects are recorded separately from the original Result section.
-
-Final review artifacts: [merge requirements](../rust-api-queue/readiness-review-20261007/MERGE-ARTIFACTS.md), [current PR draft](../rust-api-queue/readiness-review-20261007/pr-drafts/250.md) and [source-bound verification](../rust-api-queue/readiness-review-20261007/verification.json).

@@ -34,16 +34,5 @@ cases pass, 2 doctests ignored:
 ## Notes for reviewers
 
 - Async discovery is one-shot and returns the latest stored snapshot; native suppresses the initial empty notification, so an async request with no offers stays pending until an offer arrives.
-- Scope is typed same-interface Any, not system-wide discovery; the issue author’s follow-up asks for all services; the maintainer confirms native Any support — scope agreement remains pending.
+- Scope is typed same-interface Any, not system-wide discovery; the issue thread (maintainer + #1261 author) expects 'all services on system' — align with #1261.
 - Find-service callback reclamation (baseline-wide), API/ABI disposition, native trace, qualification and acceptance pending.
-
-## Readiness follow-up — 2026-10-07
-
-All 2,883 measured source hashes match the unchanged proposal. Its 68 Linux passes and two ignored doctests are carried evidence. Typed Any remains a partial response to the issue author's system-wide expectation, and its new `Result<_, ()>` warning is unresolved.
-
-The earlier validation above binds the original proposal. Supplemental warning
-corrections and fresh measurements are supplied in the local readiness packet;
-use its final candidate/source hashes for review. Scope/API/ABI, full applicable CI,
-qualification and contributor ECA/IP acceptance remain open.
-
-Final review artifacts: [merge requirements](../rust-api-queue/readiness-review-20261007/MERGE-ARTIFACTS.md), [current PR draft](../rust-api-queue/readiness-review-20261007/pr-drafts/250.md) and [source-bound verification](../rust-api-queue/readiness-review-20261007/verification.json).
