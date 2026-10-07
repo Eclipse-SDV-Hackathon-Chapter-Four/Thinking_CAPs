@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThinkingCAPs Bench Dashboard</title>
+<style>
+:root {
+  --bg: #080d1a;
+  --bg-grid: rgba(120, 150, 220, 0.045);
+  --surface: #0f1729;
+  --surface-2: #151f36;
+  --surface-3: #1b2744;
+  --border: #23314f;
+  --border-strong: #31436b;
+  --text: #e8edf7;
+  --text-2: #aab5cf;
+  --muted: #7684a3;
+  --brand: #4f8cff;
+  --brand-2: #22d3ee;
+  --ok: #22c55e;
+  --ok-bg: rgba(34, 197, 94, 0.12);
+  --ng: #f05252;
+  --ng-bg: rgba(240, 82, 82, 0.12);
+  --warn: #f5a524;
+  --stock: #f59e0b;
+  --fix: #22d3ee;
+  --term-bg: #060a14;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --mono: ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+:root[data-theme="light"] {
+  --bg: #f3f6fb;
+  --bg-grid: rgba(40, 70, 140, 0.05);
+  --surface: #ffffff;
+  --surface-2: #f5f7fc;
+  --surface-3: #eaf0fa;
+  --border: #dbe3f0;
+  --border-strong: #c3cfe4;
+  --text: #0f1a2e;
+  --text-2: #3c4a66;
+  --muted: #6b7894;
+  --brand: #2563eb;
+  --brand-2: #0891b2;
+  --ok: #15803d;
+  --ok-bg: rgba(21, 128, 61, 0.1);
+  --ng: #c81e1e;
+  --ng-bg: rgba(200, 30, 30, 0.08);
+  --warn: #b45309;
+  --stock: #b45309;
+  --fix: #0e7490;
+  --term-bg: #0d1424;
+  --shadow: 0 8px 24px rgba(20, 40, 80, 0.08);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--bg);
+  color: var(--text);
+  font: 14px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+}
+.app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 14px;
+  padding: 14px 20px 16px;
+  max-width: 1920px;
+  margin: 0 auto;
+}
+
+/* ---------- header ---------- */
+header {
+  display: flex; align-items: center; gap: 18px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brand svg { flex: none; }
+.brand-name { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.brand-name b { color: var(--brand); font-weight: 800; }
+.brand-sub { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: nowrap; }
+.divider { width: 1px; align-self: stretch; background: var(--border); }
+.title { min-width: 0; flex: 1; }
+.title h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title p { margin: 2px 0 0; font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.title code { font-family: var(--mono); font-size: 12px; color: var(--brand-2); }
+.controls { display: flex; align-items: center; gap: 10px; flex: none; }
+.pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 11px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  border: 1px solid var(--border-strong); color: var(--text-2); background: var(--surface-2);
+}
+.pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.pill.live { color: var(--ng); border-color: color-mix(in srgb, var(--ng) 50%, transparent); background: var(--ng-bg); }
+.pill.live .dot { background: var(--ng); animation: blink 1.1s infinite; }
+.pill.replay { color: var(--brand); border-color: color-mix(in srgb, var(--brand) 50%, transparent); }
+.pill.replay .dot { background: var(--brand); animation: blink 1.6s infinite; }
+.pill.recorded .dot { background: var(--ok); }
+button {
+  font: 600 13px var(--sans); color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border-strong);
+  padding: 7px 13px; border-radius: 9px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+button:hover { border-color: var(--brand); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+button.icon { padding: 7px 9px; }
+.clock { font: 600 15px var(--mono); color: var(--text-2); min-width: 54px; text-align: right; }
+
+/* ---------- story strip ---------- */
+.story {
+  display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: stretch; gap: 10px;
+}
+.story > div:not(.arrow) {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 8px 14px;
+}
+.story .k { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.story .v { font-size: 13.5px; color: var(--text); margin-top: 3px; }
+.story .v code { font-family: var(--mono); font-size: 12.5px; padding: 1px 5px; border-radius: 5px; background: var(--surface-3); }
+.story .arrow { display: grid; place-items: center; color: var(--muted); font-size: 18px; }
+
+/* ---------- main ---------- */
+main { display: grid; grid-template-columns: minmax(0, 43fr) minmax(0, 57fr); gap: 14px; min-height: 0; }
+.col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-height: 0; }
+.col.left { grid-template-rows: auto auto minmax(130px, 1fr); }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: var(--shadow); min-height: 0; display: flex; flex-direction: column;
+}
+.card-h {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+}
+.card-h h2 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); }
+.card-h .meta { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-b { padding: 12px 16px; min-height: 0; }
+
+/* topology */
+.topo svg { width: 100%; height: auto; display: block; max-height: 27vh; }
+.topo .card-b { padding: 6px 16px; }
+.topo .node rect.box { fill: var(--surface-2); stroke: var(--border-strong); stroke-width: 1.2; transition: all .35s; }
+.topo .node text { fill: var(--text); font: 600 13px var(--sans); }
+.topo .node text.sub { fill: var(--muted); font: 500 10.5px var(--sans); }
+.topo .node.on rect.box { stroke: var(--brand); stroke-width: 2; fill: color-mix(in srgb, var(--brand) 14%, var(--surface-2)); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--brand) 55%, transparent)); }
+.topo .peer rect.frame { fill: color-mix(in srgb, var(--surface-3) 55%, transparent); stroke: var(--border-strong); stroke-dasharray: 5 4; }
+.topo .peer text.ptitle { fill: var(--text-2); font: 700 11px var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+.topo .peer text.edgar { fill: var(--muted); font: 600 10px var(--mono); }
+.topo .link { fill: none; stroke: var(--border-strong); stroke-width: 1.6; transition: stroke .3s; }
+.topo .link.on { stroke: var(--brand); stroke-width: 2.2; stroke-dasharray: 7 6; animation: flow .7s linear infinite; }
+.topo .linklabel { fill: var(--muted); font: 500 10px var(--sans); }
+.topo .tunnel-pipe { fill: none; stroke: var(--border); stroke-width: 16; stroke-linecap: round; transition: stroke .4s; }
+.topo .tunnel-core { fill: none; stroke: var(--border-strong); stroke-width: 2; stroke-dasharray: 3 5; }
+.topo.tunnel-up .tunnel-pipe { stroke: color-mix(in srgb, var(--ok) 35%, transparent); }
+.topo.tunnel-up .tunnel-core { stroke: var(--ok); animation: flow 1s linear infinite; }
+.topo .tunnel-label { fill: var(--muted); font: 700 10.5px var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+.topo.tunnel-up .tunnel-label { fill: var(--ok); }
+.topo .packet { opacity: 0; }
+.topo.testing .packet { opacity: 1; }
+.topo .cda-chip rect.box { transition: all .35s; }
+.topo .cda-chip.stock rect.box { stroke: var(--stock); }
+.topo .cda-chip.fix rect.box { stroke: var(--fix); }
+.topo .cda-chip.stock text.sub { fill: var(--stock); }
+.topo .cda-chip.fix text.sub { fill: var(--fix); }
+
+/* lanes */
+.lanes { display: grid; gap: 9px; }
+.lane { display: grid; grid-template-columns: 132px 1fr 64px; align-items: center; gap: 12px; }
+.lane .name { font-weight: 700; font-size: 13px; }
+.lane .name small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); }
+.lane.stock .name { color: var(--stock); }
+.lane.fix .name { color: var(--fix); }
+.steps { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.steps i {
+  height: 26px; border-radius: 6px; background: var(--surface-3); border: 1px solid var(--border);
+  font: 700 10.5px var(--mono); font-style: normal; color: var(--muted);
+  display: grid; place-items: center; transition: all .3s;
+}
+.steps i.done { background: color-mix(in srgb, var(--brand) 22%, var(--surface-3)); border-color: color-mix(in srgb, var(--brand) 40%, transparent); color: var(--text-2); }
+.steps i.now { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 30%, transparent); animation: pulse 1.2s ease-in-out infinite; }
+.lane .verdict { text-align: right; }
+.now-line {
+  margin-top: 4px; padding: 9px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; font-size: 13.5px; min-height: 40px;
+}
+.now-line .tag { font: 700 10.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); flex: none; }
+.now-line.err { border-color: var(--ng); background: var(--ng-bg); }
+.steps-legend { display: grid; grid-template-columns: 132px 1fr 64px; gap: 12px; }
+.steps-legend .steps i { height: auto; background: none; border: 0; font: 600 9.5px var(--sans); color: var(--muted); text-align: center; line-height: 1.15; padding: 0 1px; }
+
+/* terminal */
+.term {
+  flex: 1; min-height: 90px; margin: 0; padding: 10px 14px; overflow: hidden;
+  background: var(--term-bg); color: #b9c6e3; border-radius: 0 0 14px 14px;
+  font: 12px/1.55 var(--mono); display: flex; flex-direction: column; justify-content: flex-end;
+}
+.term div { flex: none; white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+.term .s { color: #fff; font-weight: 700; }
+.term .c { color: #67e8f9; }
+.term .ok { color: #4ade80; }
+.term .ng { color: #f87171; }
+.term .x { color: #93a4c9; }
+
+/* results */
+.results { display: flex; flex-direction: column; }
+.matrix { flex: 1; display: grid; grid-template-columns: 200px 1fr 1fr; grid-template-rows: auto repeat(5, minmax(0, 1fr)); min-height: 0; }
+.matrix > div { padding: 10px 14px; border-bottom: 1px solid var(--border); min-width: 0; min-height: 0; }
+.matrix .hd { padding-top: 10px; padding-bottom: 10px; display: flex; flex-direction: column; justify-content: center; background: var(--surface-2); }
+.matrix .hd.stock { border-top: 3px solid var(--stock); }
+.matrix .hd.fix { border-top: 3px solid var(--fix); }
+.matrix .hd b { font-size: 15px; }
+.matrix .hd.stock b { color: var(--stock); }
+.matrix .hd.fix b { color: var(--fix); }
+.matrix .hd span { font-size: 11.5px; color: var(--muted); font-family: var(--mono); }
+.matrix .case { border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
+.matrix .case .id { font: 800 12px var(--mono); color: var(--brand); }
+.matrix .case .nm { font-weight: 700; font-size: 14px; margin-top: 1px; }
+.matrix .case .ds { font-size: 11.5px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+.matrix .cell { display: flex; flex-direction: column; justify-content: center; gap: 5px; transition: background .4s; }
+.matrix .cell + .cell, .matrix .hd + .hd { border-left: 1px solid var(--border); }
+.matrix .cell.OK { background: linear-gradient(90deg, var(--ok-bg), transparent 70%); }
+.matrix .cell.NG { background: linear-gradient(90deg, var(--ng-bg), transparent 70%); }
+.matrix .cell.reveal { animation: reveal .5s ease-out; }
+.cell .top { display: flex; align-items: center; gap: 9px; }
+.badge {
+  flex: none; font: 800 12px var(--mono); letter-spacing: .04em; padding: 3px 8px; border-radius: 6px;
+  border: 1px solid; min-width: 38px; text-align: center;
+}
+.badge.OK { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 55%, transparent); background: var(--ok-bg); }
+.badge.NG { color: var(--ng); border-color: color-mix(in srgb, var(--ng) 55%, transparent); background: var(--ng-bg); }
+.badge.wait { color: var(--muted); border-color: var(--border-strong); }
+.badge.run { color: var(--brand); border-color: var(--brand); animation: pulse 1.1s infinite; }
+.cell .hl { font-weight: 700; font-size: 13.5px; }
+.cell .msg {
+  font: 11.5px/1.45 var(--mono); color: var(--text-2);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
+}
+.cell .msg mark { background: none; font-weight: 700; padding: 0; }
+.cell .msg mark.bad { color: var(--ng); }
+.cell .msg mark.good { color: var(--ok); }
+.cell.idle .hl { color: var(--muted); font-weight: 500; }
+
+/* KPIs */
+.kpis { display: grid; grid-template-columns: 1.15fr 1fr 1.15fr 1.3fr; gap: 14px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 12px 16px; box-shadow: var(--shadow); min-width: 0; }
+.kpi .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.kpi .row { display: flex; align-items: baseline; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+.kpi .big { font: 800 26px/1 var(--sans); letter-spacing: -0.02em; }
+.kpi .arr { color: var(--muted); font-size: 18px; }
+.kpi .note { font-size: 12px; color: var(--muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi .note code { font-family: var(--mono); color: var(--text-2); }
+.c-ok { color: var(--ok); } .c-ng { color: var(--ng); } .c-mut { color: var(--muted); }
+.c-stock { color: var(--stock); } .c-fix { color: var(--fix); }
+
+footer.hint { position: fixed; right: 18px; bottom: 4px; font-size: 10.5px; color: var(--muted); opacity: .7; }
+kbd { font: 600 10px var(--mono); border: 1px solid var(--border-strong); border-radius: 4px; padding: 0 4px; }
+
+
+/* WebDAV button + drawer */
+button.dav {
+  position: relative; padding: 7px 14px 7px 11px; border: 1px solid transparent; color: var(--text);
+  background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box,
+              linear-gradient(120deg, var(--brand), var(--brand-2)) border-box;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-2) 40%, transparent); transition: box-shadow .25s, transform .15s;
+}
+button.dav:hover { box-shadow: 0 0 18px -2px color-mix(in srgb, var(--brand-2) 55%, transparent); transform: translateY(-1px); }
+button.dav svg { color: var(--brand-2); }
+button.dav .count {
+  font: 700 10.5px var(--mono); padding: 1px 6px; border-radius: 999px; color: #fff;
+  background: linear-gradient(120deg, var(--brand), var(--brand-2));
+}
+button.mini { padding: 4px 10px; font-size: 11.5px; border-radius: 7px; }
+button.mini svg { color: var(--brand-2); }
+.scrim { position: fixed; inset: 0; background: rgba(3, 6, 15, .55); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 20; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(640px, 100vw); z-index: 21;
+  background: var(--surface); border-left: 1px solid var(--border-strong); box-shadow: -20px 0 50px rgba(0,0,0,.4);
+  transform: translateX(102%); transition: transform .3s cubic-bezier(.2,.8,.2,1);
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto;
+}
+.drawer.open { transform: none; }
+.dr-h { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--border);
+  background: linear-gradient(120deg, color-mix(in srgb, var(--brand) 16%, transparent), transparent 60%); }
+.dr-h .ic { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; color: #fff; flex: none;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); }
+.dr-h h3 { margin: 0; font-size: 16px; }
+.dr-h .path { font: 11.5px var(--mono); color: var(--muted); margin-top: 2px; word-break: break-all; }
+.dr-h .sp { flex: 1; min-width: 0; }
+.dr-tools { display: flex; align-items: center; gap: 8px; padding: 10px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 9px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 5px 11px; font-size: 12px; background: transparent; color: var(--text-2); }
+.seg button.on { background: var(--brand); color: #fff; }
+.dr-stats { margin-left: auto; font-size: 12px; color: var(--muted); }
+.dr-stats b { font-family: var(--mono); }
+.dr-list { overflow-y: auto; padding: 12px 18px; display: grid; gap: 10px; align-content: start; }
+.dav-item { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); padding: 11px 13px; transition: border-color .2s; }
+.dav-item:hover { border-color: var(--border-strong); }
+.dav-item.current { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset; }
+.dav-item .r1 { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.vchip { font: 700 11px var(--sans); padding: 2px 8px; border-radius: 999px; border: 1px solid; }
+.vchip.stock { color: var(--stock); border-color: color-mix(in srgb, var(--stock) 50%, transparent); }
+.vchip.fix { color: var(--fix); border-color: color-mix(in srgb, var(--fix) 50%, transparent); }
+.vchip.unk { color: var(--muted); border-color: var(--border-strong); }
+.dav-item time { font: 600 12.5px var(--mono); color: var(--text); }
+.dav-item .tag { font: 700 10px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--brand); }
+.dav-item .r1 .badge { margin-left: auto; }
+.dav-item .r2 { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.cases { display: inline-flex; gap: 3px; }
+.cases i { font: 700 9.5px var(--mono); font-style: normal; width: 24px; height: 18px; border-radius: 4px; display: grid; place-items: center; border: 1px solid var(--border-strong); color: var(--muted); }
+.cases i.OK { color: var(--ok); background: var(--ok-bg); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.cases i.NG { color: var(--ng); background: var(--ng-bg); border-color: color-mix(in srgb, var(--ng) 45%, transparent); }
+.dav-item .fname { font: 11px var(--mono); color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dav-item .acts { display: flex; gap: 6px; }
+.dav-item a.mini, .dr-f a { text-decoration: none; }
+a.mini { font: 600 11.5px var(--sans); color: var(--text); border: 1px solid var(--border-strong); border-radius: 7px; padding: 4px 10px; background: var(--surface); }
+a.mini:hover { border-color: var(--brand); }
+.dav-det { margin-top: 10px; border-top: 1px dashed var(--border-strong); padding-top: 10px; display: grid; gap: 7px; }
+.dav-det .cl { display: grid; grid-template-columns: 30px 40px minmax(0,1fr); gap: 8px; align-items: start; font-size: 12px; }
+.dav-det .cl .id { font: 800 11.5px var(--mono); color: var(--brand); padding-top: 2px; }
+.dav-det .cl .m { font: 11.5px/1.45 var(--mono); color: var(--text-2); word-break: break-word; }
+.dav-det .cl .m mark { background: none; font-weight: 700; }
+.dav-det .cl .m mark.bad { color: var(--ng); } .dav-det .cl .m mark.good { color: var(--ok); }
+.dav-det pre { margin: 0; padding: 9px 11px; border-radius: 8px; background: var(--term-bg); color: #b9c6e3; font: 11px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; max-height: 160px; overflow: auto; }
+.dav-det[hidden] { display: none; }
+.dav-det .files { font: 11px var(--mono); color: var(--muted); }
+.dr-sec { padding: 12px 18px; border-top: 1px solid var(--border); }
+.dr-sec .k { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.mdds { display: flex; gap: 8px; flex-wrap: wrap; }
+.mdds a { display: inline-flex; gap: 8px; align-items: baseline; font: 600 12px var(--mono); color: var(--text); text-decoration: none; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface-2); }
+.mdds a span { color: var(--muted); font-weight: 500; font-size: 11px; }
+.mdds a:hover { border-color: var(--brand); }
+.dr-f { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 11.5px; color: var(--muted); }
+.dr-f a { color: var(--brand-2); font-weight: 600; }
+.dr-empty { color: var(--muted); padding: 30px 0; text-align: center; }
+.skel { height: 74px; border-radius: 12px; background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2)); background-size: 200% 100%; animation: skel 1.2s linear infinite; }
+@keyframes skel { to { background-position: -200% 0; } }
+
+@keyframes flow { to { stroke-dashoffset: -26; } }
+@keyframes blink { 50% { opacity: .25; } }
+@keyframes pulse { 50% { opacity: .65; } }
+@keyframes reveal { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (max-width: 1250px) {
+  .app { height: auto; }
+  main { grid-template-columns: minmax(0, 1fr); }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .story { grid-template-columns: 1fr; } .story .arrow { display: none; }
+  .matrix { grid-template-rows: none; }
+  .title p { white-space: normal; }
+}
+@media (max-width: 700px) {
+  .app { padding: 10px 16px; }
+  header { flex-wrap: wrap; }
+  .title { flex-basis: 100%; }
+  .controls { flex-wrap: wrap; }
+  .story .v code { white-space: normal; word-break: break-word; }
+  .divider { display: none; }
+  .title h1 { white-space: normal; }
+  .matrix { grid-template-columns: minmax(0, 1fr); }
+  .matrix .hd:first-child { display: none; }
+  .matrix .cell + .cell, .matrix .hd + .hd { border-left: 0; }
+  .kpis { grid-template-columns: minmax(0, 1fr); }
+  .lane { grid-template-columns: 84px minmax(0, 1fr) 48px; gap: 8px; }
+  .steps-legend, footer.hint { display: none; }
+  .card-h .meta { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4f8cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+        <rect width="42" height="42" rx="11" fill="url(#lg)"/>
+        <path d="M8 18 L21 11 L34 18 L21 25 Z" fill="#fff"/>
+        <path d="M13 21 V27 C13 29.5 17 31.5 21 31.5 C25 31.5 29 29.5 29 27 V21 L21 25 Z" fill="#fff" opacity=".85"/>
+        <path d="M33 18.5 V25" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="33" cy="26.2" r="1.7" fill="#fff"/>
+      </svg>
+      <div>
+        <div class="brand-name">Thinking<b>CAPs</b></div>
+        <div class="brand-sub">Eclipse SDV Hackathon 2026 · Friedrichshafen</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="title">
+      <h1>Diagnostics that say <em>why</em>: CDA #543, proven on an openDuT test bench</h1>
+      <p>Eclipse OpenSOVD Classic Diagnostic Adapter · <code>cda-main/src/mdd.rs</code> returns <code>Result</code> instead of <code>Option</code> · same tests, same MDD files, one binary swapped</p>
+    </div>
+    <div class="controls">
+      <span id="mode" class="pill"><span class="dot"></span><span id="modeText">Idle</span></span>
+      <button id="btnDav" class="dav" title="Result ZIPs on openDuT WebDAV (W)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>WebDAV results<span class="count" id="davCount">·</span></button>
+      <button id="btnReplay" title="Replay a recorded bench run (R)">⟲ Replay</button>
+      <button id="btnLive" class="primary" title="Run run-both.sh on the bench now">▶ Run live</button>
+      <button id="btnTheme" class="icon" title="Light / dark (T)">◐</button>
+      <button id="btnFull" class="icon" title="Full screen (F)">⛶</button>
+      <div class="clock" id="clock">--:--</div>
+    </div>
+  </header>
+
+  <section class="story" aria-label="The story">
+    <div><div class="k">The problem</div><div class="v">A bad diagnostic database (MDD) only produced <code>Failed to load ECU … from MDD</code>, whatever the cause.</div></div>
+    <div class="arrow">→</div>
+    <div><div class="k">Our fix</div><div class="v">Every failure step returns a typed error: missing payload, broken database, unreadable storage.</div></div>
+    <div class="arrow">→</div>
+    <div><div class="k">The proof</div><div class="v">The CDA runs on an openDuT peer and talks DoIP to the FLXC1000 vECU through the openDuT tunnel.</div></div>
+  </section>
+
+  <main>
+    <div class="col left">
+      <section class="card topo" id="topo">
+        <div class="card-h"><h2>openDuT test bench</h2><span class="meta">CARL · CLEO · EDGAR 0.10.2 · NetBird</span></div>
+        <div class="card-b">
+          <svg viewBox="0 0 640 352" role="img" aria-label="Bench: laptop, CARL, WebDAV, tester peer with CDA, vehicle peer with FLXC1000 vECU, openDuT tunnel">
+            <!-- links (under the nodes) -->
+            <path id="l-res" class="link" d="M545 34 C545 4, 95 4, 95 34"/>
+            <text class="linklabel" x="320" y="14" text-anchor="middle">result ZIP → laptop</text>
+            <path id="l-cleo" class="link" d="M170 62 H245"/>
+            <text class="linklabel" x="207" y="56" text-anchor="middle">CLEO</text>
+            <path id="l-img" class="link" d="M70 90 V162"/>
+            <text class="linklabel" x="76" y="130">image</text>
+            <path id="l-ct" class="link" d="M290 90 C290 125, 215 125, 215 162"/>
+            <path id="l-cv" class="link" d="M350 90 C350 125, 425 125, 425 162"/>
+            <path id="l-mdd" class="link" d="M160 162 C160 120, 545 135, 545 90"/>
+            <text class="linklabel" x="520" y="130" text-anchor="end">MDDs · results</text>
+
+            <g id="n-laptop" class="node"><rect class="box" x="20" y="34" width="150" height="56" rx="10"/><text x="34" y="58">Presenter laptop</text><text class="sub" x="34" y="76">run-both.sh · Docker</text></g>
+            <g id="n-carl" class="node"><rect class="box" x="245" y="34" width="150" height="56" rx="10"/><text x="259" y="58">CARL</text><text class="sub" x="259" y="76">openDuT control plane</text></g>
+            <g id="n-webdav" class="node"><rect class="box" x="470" y="34" width="150" height="56" rx="10"/><text x="484" y="58">WebDAV</text><text class="sub" x="484" y="76">MDD files · test results</text></g>
+
+            <g class="peer"><rect class="frame" x="20" y="162" width="230" height="178" rx="12"/><text class="ptitle" x="34" y="183">Peer · sdv-tester</text><text class="edgar" x="236" y="183" text-anchor="end">EDGAR</text></g>
+            <g id="n-exec" class="node"><rect class="box" x="34" y="196" width="202" height="56" rx="9"/><text x="48" y="220">Test executor</text><text class="sub" x="48" y="238">cda543-check · T1–T5</text></g>
+            <g id="n-cda" class="node cda-chip"><rect class="box" x="34" y="266" width="202" height="60" rx="9"/><text x="48" y="291">Classic Diagnostic Adapter</text><text class="sub" id="cdaSub" x="48" y="310">waiting</text></g>
+
+            <g class="peer"><rect class="frame" x="390" y="162" width="230" height="178" rx="12"/><text class="ptitle" x="404" y="183">Peer · sdv-vehicle</text><text class="edgar" x="606" y="183" text-anchor="end">EDGAR</text></g>
+            <g id="n-ecu" class="node"><rect class="box" x="404" y="196" width="202" height="130" rx="9"/>
+              <text x="418" y="222">FLXC1000 vECU</text><text class="sub" x="418" y="240">ECU simulator · DoIP</text><text class="sub" x="418" y="256">10.42.0.10 on dut0</text>
+              <g transform="translate(418 270)">
+                <rect x="0" y="0" width="174" height="42" rx="7" fill="none" stroke="var(--border-strong)"/>
+                <text class="sub" x="10" y="17">DTC memory</text><text class="sub" id="dtc" x="10" y="33" style="font-family:var(--mono)">—</text>
+              </g>
+            </g>
+
+            <path class="tunnel-pipe" d="M250 296 H390"/>
+            <path id="tunnelPath" class="tunnel-core" d="M250 296 H390"/>
+            <text class="tunnel-label" x="320" y="276" text-anchor="middle">openDuT tunnel</text>
+            <text class="linklabel" x="320" y="324" text-anchor="middle">WireGuard + GRE · DoIP</text>
+            <circle class="packet" cx="0" cy="0" r="4.5" fill="var(--fix)"><animateMotion dur="1.3s" repeatCount="indefinite" path="M250 296 H390"/></circle>
+            <circle class="packet" r="4.5" fill="var(--ok)"><animateMotion dur="1.3s" repeatCount="indefinite" path="M390 296 H250"/></circle>
+          </svg>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Run progress</h2><span class="meta" id="runMeta">—</span></div>
+        <div class="card-b lanes">
+          <div class="steps-legend"><span></span><div class="steps">
+            <i>build image</i><i>load on peer</i><i>upload MDDs</i><i>start vECU</i><i>register</i><i>deploy</i><i>run tests</i><i>verdicts</i><i>clean up</i>
+          </div><span></span></div>
+          <div class="lane stock"><div class="name">Before the fix<small>upstream CDA</small></div><div class="steps" id="steps-stock"></div><div class="verdict" id="lv-stock"></div></div>
+          <div class="lane fix"><div class="name">After the fix<small>ThinkingCAPs</small></div><div class="steps" id="steps-fix"></div><div class="verdict" id="lv-fix"></div></div>
+          <div class="now-line" id="nowLine"><span class="tag">Now</span><span id="nowText">—</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Bench console</h2><span class="meta" id="termMeta">run-both.sh</span></div>
+        <div class="term" id="term"></div>
+      </section>
+    </div>
+
+    <section class="card results">
+      <div class="card-h"><h2>What the CDA reports: before vs after</h2><span style="display:flex;gap:10px;align-items:center;min-width:0"><span class="meta" id="resMeta">—</span><button class="mini" id="btnDav2" title="Show these results on WebDAV"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>on WebDAV</button></span></div>
+      <div class="matrix" id="matrix"></div>
+    </section>
+  </main>
+
+  <section class="kpis">
+    <div class="kpi"><div class="k">Bench verdict</div>
+      <div class="row"><span class="big" id="k-stock">—</span><span class="arr">→</span><span class="big" id="k-fix">—</span></div>
+      <div class="note">before → after, same 5 scenarios via openDuT</div></div>
+    <div class="kpi"><div class="k">Errors that name the cause</div>
+      <div class="row"><span class="big" id="k-pre-stock">—</span><span class="arr">→</span><span class="big" id="k-pre-fix">—</span></div>
+      <div class="note">failure scenarios T2–T5</div></div>
+    <div class="kpi"><div class="k">Unit tests (L1, run on the peer)</div>
+      <div class="row"><span class="big" id="k-l1-before">—</span><span class="arr">→</span><span class="big c-ok" id="k-l1-after">—</span></div>
+      <div class="note" id="k-l1-note">passed · failed: 0 → 0</div></div>
+    <div class="kpi"><div class="k">The change</div>
+      <div class="row"><span class="big">1 file</span><span class="c-mut">4 new tests</span></div>
+      <div class="note"><code>eclipse-opensovd/classic-diagnostic-adapter</code> #543</div></div>
+  </section>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Results on openDuT WebDAV">
+  <div class="dr-h">
+    <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div>
+    <div class="sp"><h3>Results on openDuT WebDAV</h3><div class="path" id="davPath">https://nginx-webdav.opendut.local/cda-543/results/</div></div>
+    <button class="icon" id="davRefresh" title="Refresh">↻</button>
+    <button class="icon" id="davClose" title="Close (Esc)">✕</button>
+  </div>
+  <div class="dr-tools">
+    <div class="seg" id="davSeg"><button data-f="all" class="on">All</button><button data-f="stock">Before the fix</button><button data-f="fix">After the fix</button></div>
+    <div class="dr-stats" id="davStats"></div>
+  </div>
+  <div class="dr-list" id="davList"></div>
+  <div class="dr-sec">
+    <div class="k">MDD test files on WebDAV · /cda-543/mdd/</div>
+    <div class="mdds" id="davMdd"></div>
+    <div class="dr-f"><span>The test executor uploads one ZIP per run from the tester peer.</span><a href="/webdav/cda-543/results/" target="_blank" rel="noopener">Open raw WebDAV folder ↗</a></div>
+  </div>
+</aside>
+<footer class="hint"><kbd>W</kbd> WebDAV · <kbd>R</kbd> replay · <kbd>F</kbd> full screen · <kbd>T</kbd> theme</footer>
+
+<script>
+"use strict";
+const CASES = [
+  { id: "T1", nm: "Valid MDD", ds: "Read, inject and clear a DTC on the vECU over the openDuT DoIP tunnel" },
+  { id: "T2", nm: "MDD without payload", ds: "Database file has no diagnostic description" },
+  { id: "T3", nm: "Damaged database", ds: "Payload present but corrupt" },
+  { id: "T4", nm: "Storage unreadable", ds: "CDA cannot list its MDD storage" },
+  { id: "T5", nm: "Strict start", ds: "ignore_invalid_mdd = false: must refuse and say why" },
+];
+const VARIANTS = ["stock", "fix"];
+const VLABEL = { stock: "Before the fix", fix: "After the fix" };
+const STEP_TITLE = ["Bench check", "Build the test image", "Load it onto the tester peer", "Upload MDD files to WebDAV",
+  "Start the FLXC1000 vECU", "Register executor + cluster in CARL", "Deploy the cluster", "Run T1–T5 on the bench",
+  "Fetch the verdicts", "Clean up"];
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------- state ----------
+let S;
+function freshVariant() { return { status: "pending", step: -1, verdicts: null, revealed: 0, exit: null }; }
+function reset() {
+  S = { variants: { stock: freshVariant(), fix: freshVariant() }, cur: null, step: null, title: "", finished: false,
+        error: null, started: false, order: VARIANTS.slice(), console: [], label: "", zips: {} };
+}
+reset();
+let mode = "idle";          // idle | live | replay | recorded
+let liveSeen = 0, liveRunning = false, timers = [];
+let L1 = null;
+
+function apply(e, animate) {
+  const V = e.v ? S.variants[e.v] : null;
+  switch (e.type) {
+    case "run_start": { const lbl = S.label; reset(); S.label = lbl; } S.started = true; S.order = (e.variants || "stock fix").split(" ").filter(Boolean); break;
+    case "variant_start": S.cur = e.v; V.status = "running"; V.step = 0; break;
+    case "step":
+      S.step = e.n; S.title = e.title || STEP_TITLE[e.n] || "";
+      if (V) { V.step = e.n; V.status = "running"; S.cur = e.v; } else S.cur = null;
+      break;
+    case "verdicts":
+      V.verdicts = e.verdicts; V.exit = e.exit;
+      if (animate) {
+        V.revealed = 0;
+        e.verdicts.forEach((_, i) => timers.push(setTimeout(() => { V.revealed = i + 1; render(); }, 380 * (i + 1))));
+      } else V.revealed = e.verdicts.length;
+      break;
+    case "variant_done": V.status = "done"; V.step = 10; if (S.cur === e.v) S.cur = null; break;
+    case "error": S.error = e.msg; if (V) V.status = "error"; S.finished = true; break;
+    case "run_done": S.finished = true; S.cur = null; break;
+    case "result_zip": S.zips[e.v] = e.zip; break;
+    case "log": break;
+  }
+}
+
+// ---------- rendering ----------
+function cleanMsg(found) {
+  let s = String(found || "");
+  s = s.replace(/; flxc1000 answers \d+$/, "");
+  s = s.split(" | then: ").map((p) => p.replace(/^\d\d:\d\d:\d\d\.\d+\s+\w+\s+in\s+\S+\s+msg:\s*/, "")).join("  ⟶  ");
+  s = s.replace(/^Skipping invalid MDD file path=\S+ error=/, "");
+  s = s.replace(/^exit (\d+): Error: Error: Data error `?/, "Refused to start (exit $1): ").replace(/`$/, "");
+  s = s.replace(/\/work\/T\d\/odx\//g, "").replace(/\.? error=/g, ": ");
+  return s;
+}
+function markMsg(s) {
+  let h = esc(s);
+  h = h.replace(/Failed to load ECU FLXC1000 from MDD/g, '<mark class="bad">$&</mark>');
+  h = h.replace(/count=0/g, '<mark class="bad">$&</mark>');
+  for (const g of ["No diagnostic description payload", "Failed to create database", "Cannot access MDD storage", "Type `i32` at position \\d+ is unaligned"])
+    h = h.replace(new RegExp(g.replace(/`/g, "`"), "g"), '<mark class="good">$&</mark>');
+  return h;
+}
+function t1Msg(found) {
+  const m = /before='([^']*)' inject=(\S+) after='([^']*)' cleared='([^']*)'/.exec(found || "");
+  if (!m) return esc(found);
+  return `DTCs before: ${esc(m[1] || "none")} · inject → HTTP ${esc(m[2])} · read → <mark class="good">${esc(m[3] || "none")}</mark> · after clear: ${esc(m[4] || "none")}`;
+}
+function headline(c, r) {
+  if (c === "T1") return r === "OK" ? "DTC read · inject · clear over DoIP" : "Bench path failed";
+  if (r === "OK") return "Names the exact cause";
+  if (c === "T4") return "Error hidden: storage looks empty";
+  return "Generic error: cause lost";
+}
+function cellHTML(v, idx) {
+  const V = S.variants[v];
+  const r = V.verdicts && idx < V.revealed ? V.verdicts.find((x) => x.case === CASES[idx].id) : null;
+  if (r) {
+    const msg = CASES[idx].id === "T1" ? t1Msg(r.found) : markMsg(cleanMsg(r.found));
+    return { cls: r.result, html: `<div class="top"><span class="badge ${r.result}">${r.result}</span><span class="hl">${esc(headline(r.case, r.result))}</span></div><div class="msg" title="${esc(r.found)}">${msg}</div>` };
+  }
+  const testing = V.status === "running" && V.step >= 7 && V.step <= 8;
+  if (testing) return { cls: "idle", html: `<div class="top"><span class="badge run">···</span><span class="hl">testing on the bench</span></div>` };
+  const txt = V.status === "error" ? "no result" : V.status === "running" ? "preparing the bench" : (S.order.includes(v) ? "waiting" : "not in this run");
+  return { cls: "idle", html: `<div class="top"><span class="badge wait">—</span><span class="hl">${txt}</span></div>` };
+}
+let lastCells = {};
+function renderMatrix(reveal) {
+  const m = $("matrix");
+  if (!m.dataset.built) {
+    let h = `<div class="hd"><b>Scenario</b><span>tests on the bench</span></div>
+      <div class="hd stock"><b>Before the fix</b><span>upstream CDA 58f0c90</span></div>
+      <div class="hd fix"><b>After the fix</b><span>58f0c90 + ThinkingCAPs #543</span></div>`;
+    CASES.forEach((c, i) => {
+      h += `<div class="case"><span class="id">${c.id}</span><span class="nm">${esc(c.nm)}</span><span class="ds">${esc(c.ds)}</span></div>
+            <div class="cell" id="c-stock-${i}"></div><div class="cell" id="c-fix-${i}"></div>`;
+    });
+    m.innerHTML = h; m.dataset.built = "1";
+  }
+  for (const v of VARIANTS) CASES.forEach((_, i) => {
+    const el = $(`c-${v}-${i}`), { cls, html } = cellHTML(v, i), key = cls + html;
+    if (lastCells[el.id] === key) return;
+    const wasIdle = !lastCells[el.id] || lastCells[el.id].startsWith("idle");
+    lastCells[el.id] = key;
+    el.className = `cell ${cls}` + (cls !== "idle" && wasIdle && reveal ? " reveal" : "");
+    el.innerHTML = html;
+  });
+}
+function renderLanes() {
+  for (const v of VARIANTS) {
+    const V = S.variants[v], el = $(`steps-${v}`);
+    let h = "";
+    for (let n = 1; n <= 9; n++) {
+      const st = V.step > n || V.status === "done" ? "done" : V.step === n && V.status === "running" ? "now" : "";
+      h += `<i class="${st}">${n}</i>`;
+    }
+    el.innerHTML = h;
+    $(`lv-${v}`).innerHTML = verdictTag(v);
+  }
+  const nl = $("nowLine");
+  nl.classList.toggle("err", !!S.error);
+  let txt;
+  if (S.error) txt = `<b class="c-ng">Stopped:</b> ${esc(S.error)}`;
+  else if (S.cur) txt = `<b class="c-${S.cur}">${VLABEL[S.cur]}</b> · Step ${S.step}: ${esc(S.title)}`;
+  else if (S.step === 0 && !S.finished && S.started) txt = `Step 0: ${esc(S.title)}`;
+  else if (S.finished || (S.variants.stock.verdicts && S.variants.fix.verdicts))
+    txt = `Finished · before <b class="${cls(overall("stock"))}">${overall("stock") || "—"}</b> · after <b class="${cls(overall("fix"))}">${overall("fix") || "—"}</b>`;
+  else txt = mode === "idle" ? "Ready. Press <b>Run live</b> or <b>Replay</b>." : "Starting…";
+  $("nowText").innerHTML = txt;
+}
+function overall(v) {
+  const V = S.variants[v];
+  if (!V.verdicts || V.revealed < V.verdicts.length) return null;
+  return V.verdicts.every((r) => r.result === "OK") ? "PASS" : "FAIL";
+}
+const cls = (o) => (o === "PASS" ? "c-ok" : o === "FAIL" ? "c-ng" : "c-mut");
+function verdictTag(v) { const o = overall(v); return o ? `<span class="badge ${o === "PASS" ? "OK" : "NG"}">${o}</span>` : ""; }
+function renderTopo() {
+  const on = new Set(), V = S.cur ? S.variants[S.cur] : null, n = S.step;
+  const map = {
+    0: ["n-carl", "l-ct", "l-cv"], 1: ["n-laptop", "n-cda"], 2: ["l-img", "n-exec"], 3: ["l-mdd", "n-webdav"],
+    4: ["n-ecu"], 5: ["l-cleo", "n-carl"], 6: ["n-carl", "l-ct", "l-cv"], 7: ["n-exec", "n-cda", "n-ecu"],
+    8: ["l-res", "n-webdav", "n-laptop"], 9: ["n-carl"],
+  };
+  if (!S.finished && n != null && (V || n === 0)) (map[n] || []).forEach((id) => on.add(id));
+  document.querySelectorAll("#topo .node, #topo .link").forEach((el) => el.classList.toggle("on", on.has(el.id)));
+  const up = !!V && V.step >= 6 && V.step <= 8 && !S.finished;
+  const topo = $("topo");
+  topo.classList.toggle("tunnel-up", up);
+  topo.classList.toggle("testing", !!V && V.step === 7 && !S.finished);
+  const chip = $("n-cda"), shown = S.cur || (S.variants.fix.verdicts ? "fix" : S.variants.stock.verdicts ? "stock" : null);
+  chip.classList.remove("stock", "fix");
+  if (shown) chip.classList.add(shown);
+  $("cdaSub").textContent = shown === "stock" ? "stock build · upstream 58f0c90" : shown === "fix" ? "fixed build · ThinkingCAPs #543" : "waiting";
+  const t1 = (S.variants[shown || "stock"].verdicts || []).find((r) => r.case === "T1");
+  const m = t1 && /after='([^']*)'/.exec(t1.found);
+  $("dtc").textContent = V && V.step === 7 ? "inject → read → clear …" : m ? `read: ${m[1] || "none"} → cleared` : "—";
+}
+function renderKpis() {
+  for (const v of VARIANTS) {
+    const o = overall(v), el = $(`k-${v}`);
+    el.textContent = o || "—"; el.className = "big " + cls(o);
+    const V = S.variants[v], p = $(`k-pre-${v}`);
+    if (V.verdicts && V.revealed >= V.verdicts.length) {
+      const n = V.verdicts.filter((r) => r.case !== "T1" && r.result === "OK").length;
+      p.textContent = `${n} / 4`; p.className = "big " + (n === 4 ? "c-ok" : n === 0 ? "c-ng" : "c-mut");
+    } else { p.textContent = "—"; p.className = "big c-mut"; }
+  }
+  if (L1 && L1.before && L1.after) {
+    $("k-l1-before").textContent = L1.before.passed.toLocaleString("en");
+    $("k-l1-after").textContent = L1.after.passed.toLocaleString("en");
+    $("k-l1-note").innerHTML = `passed · failed ${L1.before.failed} → ${L1.after.failed} · ${L1.after.binaries} test binaries`;
+  }
+}
+function renderTerm() {
+  const lines = S.console.slice(-16);
+  $("term").innerHTML = lines.map((l) => {
+    let c = "x";
+    if (/^▶/.test(l)) c = "s"; else if (/^\$ /.test(l)) c = "c";
+    else if (/\b(PASS|OK)\b/.test(l) && !/\bNG\b|FAIL/.test(l)) c = "ok"; else if (/\b(NG|FAIL)\b|not reachable|error/i.test(l)) c = "ng";
+    return `<div class="${c}">${esc(l)}</div>`;
+  }).join("");
+}
+function renderMode() {
+  const p = $("mode");
+  p.className = "pill " + mode;
+  $("modeText").textContent = { idle: "Idle", live: liveRunning ? "Live on bench" : "Last live run", replay: "Replay", recorded: "Recorded run" }[mode];
+  $("btnLive").disabled = liveRunning;
+  $("runMeta").textContent = S.label || "—";
+  $("resMeta").textContent = mode === "live" ? "results arrive from the bench" : S.label || "—";
+  $("termMeta").textContent = mode === "live" ? "run-both.sh (live)" : mode === "replay" ? "replay · bench logs" : "run-both.sh";
+}
+function render(reveal = true) { renderMode(); renderTopo(); renderLanes(); renderMatrix(reveal); renderKpis(); renderTerm(); }
+
+// ---------- live ----------
+function stopReplay() { timers.forEach(clearTimeout); timers = []; }
+async function poll() {
+  try {
+    const r = await fetch(`/api/live?since=${liveSeen}`, { cache: "no-store" });
+    const d = await r.json();
+    const fresh = d.reset || d.total < liveSeen;
+    const newRun = d.events.some((e) => e.type === "run_start");
+    if (d.running && mode !== "live") { stopReplay(); mode = "live"; liveSeen = 0; reset(); return poll(); }
+    liveRunning = d.running;
+    if (mode === "live") {
+      if (fresh) { liveSeen = 0; reset(); return poll(); }
+      const animate = liveSeen > 0 || d.running;
+      for (const e of d.events) apply(e, animate);
+      liveSeen = d.total;
+      if (d.console.length) S.console = d.console;
+      S.label = d.running ? "live · run-both.sh" : "last live run";
+      render(animate);
+    } else if (newRun) liveSeen = 0;
+    if (mode !== "live") renderMode();
+  } catch (_) { /* server restarting */ }
+}
+
+// ---------- replay ----------
+async function replay(id, instant) {
+  stopReplay();
+  const runs = await (await fetch("/api/runs")).json();
+  if (!runs.length) { reset(); mode = "idle"; S.console = ["no recorded run with both variants in runs/manual-*"]; render(); return; }
+  id = id || runs[0];
+  const data = await (await fetch(`/api/run/${id}`)).json();
+  mode = instant ? "recorded" : "replay";
+  reset();
+  S.label = `${id.replace("manual-", "recorded ").replace(/(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)Z/, "$1-$2-$3 $4:$5 UTC")}`;
+  const ev = [];
+  let t = 0;
+  const at = (dt, e) => { t += dt; ev.push([t, e]); };
+  at(0, { type: "run_start", variants: "stock fix" });
+  at(400, { type: "step", v: "", n: 0, title: STEP_TITLE[0], log: "▶ Step 0: bench check · both peers Connected" });
+  for (const v of VARIANTS) {
+    const d = data[v];
+    if (!d) continue;
+    at(900, { type: "variant_start", v, log: `════════ ${v} CDA (${VLABEL[v].toLowerCase()}) ════════` });
+    for (let n = 1; n <= 6; n++) at(n === 1 ? 500 : 1000, { type: "step", v, n, title: STEP_TITLE[n], log: `▶ Step ${n}: ${STEP_TITLE[n]}` });
+    at(1300, { type: "step", v, n: 7, title: STEP_TITLE[7], log: "▶ Step 7: wait for the result ZIP on WebDAV" });
+    for (const line of d.log.split("\n").filter(Boolean)) at(700, { type: "log", log: `[executor] ${line}` });
+    at(700, { type: "step", v, n: 8, title: STEP_TITLE[8], log: "▶ Step 8: fetch it and read the verdicts" });
+    at(200, { type: "verdicts", v, verdicts: d.verdicts, exit: d.exit });
+    at(2600, { type: "step", v, n: 9, title: STEP_TITLE[9], log: "▶ Step 9: clean up (undeploy, remove the executor)" });
+    at(800, { type: "variant_done", v });
+  }
+  at(400, { type: "run_done", log: "════════ Result ════════" });
+  const play = (e) => { apply(e, !instant); if (e.log) S.console.push(e.log); if (!instant) render(); };
+  if (instant) { ev.forEach(([, e]) => play(e)); S.console.push(`recorded run ${id}: press Replay to watch it, or Run live`); render(false); return; }
+  render();
+  ev.forEach(([ms, e]) => timers.push(setTimeout(() => play(e), ms)));
+}
+
+// ---------- controls ----------
+$("btnReplay").onclick = () => { if (!liveRunning) replay(null, false); };
+$("btnLive").onclick = async () => {
+  if (!confirm("Start run-both.sh on the openDuT bench now? (stock, then fix: about 2 minutes)")) return;
+  stopReplay();
+  const r = await fetch("/api/start", { method: "POST" });
+  if (r.status === 409) alert("A run is already going on.");
+  mode = "live"; liveSeen = 0; reset(); S.console = ["starting run-both.sh …"]; liveRunning = true; render();
+};
+function toggleTheme() {
+  const root = document.documentElement, next = root.dataset.theme === "light" ? "dark" : "light";
+  root.dataset.theme = next;
+  try { localStorage.setItem("tc-theme", next); } catch (_) {}
+}
+$("btnTheme").onclick = toggleTheme;
+$("btnFull").onclick = () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen());
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.metaKey || e.ctrlKey) return;
+  if (e.key === "r" || e.key === "R") $("btnReplay").click();
+  if (e.key === "f" || e.key === "F") $("btnFull").click();
+  if (e.key === "t" || e.key === "T") toggleTheme();
+});
+try { const th = localStorage.getItem("tc-theme"); if (th) document.documentElement.dataset.theme = th; } catch (_) {}
+const tick = () => { $("clock").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); };
+tick(); setInterval(tick, 1000);
+
+
+// ---------- WebDAV drawer ----------
+let dav = null, davFilter = "all", davOpenItem = null;
+const fmtSize = (n) => (n >= 1024 ? (n / 1024).toFixed(1) + " KB" : n + " B");
+const fmtTime = (t) => new Date(t * 1000).toLocaleString([], { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+function davOverall(r) {
+  if (!r.cases.length) return null;
+  return r.cases.every((c) => c.result === "OK") ? "PASS" : "FAIL";
+}
+async function loadDav() {
+  $("davList").innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
+  try {
+    const r = await fetch("/api/webdav", { cache: "no-store" });
+    dav = await r.json();
+    if (!r.ok) throw new Error(dav.error || r.status);
+  } catch (e) {
+    dav = null;
+    $("davList").innerHTML = `<div class="dr-empty">WebDAV not reachable<br><small>${esc(e.message)}</small></div>`;
+    $("davCount").textContent = "!";
+    return;
+  }
+  $("davPath").textContent = dav.base + dav.results_dir;
+  $("davCount").textContent = dav.results.length;
+  $("davMdd").innerHTML = dav.mdd.map((f) =>
+    `<a href="/webdav${dav.mdd_dir}${encodeURIComponent(f.name)}" download>⤓ ${esc(f.name)}<span>${fmtSize(f.size)}</span></a>`).join("") || '<span class="c-mut">none</span>';
+  renderDav();
+}
+function renderDav() {
+  if (!dav) return;
+  const current = new Set(Object.values(S.zips || {}));
+  const rows = dav.results.filter((r) => davFilter === "all" || r.variant === davFilter);
+  const pass = rows.filter((r) => davOverall(r) === "PASS").length, fail = rows.filter((r) => davOverall(r) === "FAIL").length;
+  $("davStats").innerHTML = `<b>${rows.length}</b> ZIPs · <b class="c-ok">${pass}</b> pass · <b class="c-ng">${fail}</b> fail · <b>${rows.length - pass - fail}</b> no result`;
+  $("davList").innerHTML = rows.map((r) => {
+    const o = davOverall(r);
+    const vc = r.variant === "stock" ? `<span class="vchip stock">Before the fix</span>` : r.variant === "fix" ? `<span class="vchip fix">After the fix</span>` : `<span class="vchip unk">unknown</span>`;
+    const badge = o ? `<span class="badge ${o === "PASS" ? "OK" : "NG"}">${o}</span>` : `<span class="badge wait" title="${esc(r.last)}">NO RESULT</span>`;
+    const cases = ["T1", "T2", "T3", "T4", "T5"].map((id) => { const c = r.cases.find((x) => x.case === id); return `<i class="${c ? c.result : ""}">${id}</i>`; }).join("");
+    const href = `/webdav${dav.results_dir}${encodeURIComponent(r.name)}`;
+    return `<div class="dav-item${current.has(r.name) ? " current" : ""}" data-name="${esc(r.name)}">
+      <div class="r1">${vc}<time>${fmtTime(r.modified)}</time>${current.has(r.name) ? '<span class="tag">this run</span>' : ""}${badge}</div>
+      <div class="r2"><span class="cases">${cases}</span><span class="fname" title="${esc(r.name)}">${esc(r.name)} · ${fmtSize(r.size)}</span>
+        <span class="acts"><button class="mini" data-act="det">${davOpenItem === r.name ? "Hide" : "Details"}</button><a class="mini" href="${href}" download>⤓ ZIP</a></span></div>
+      <div class="dav-det" ${davOpenItem === r.name ? "" : "hidden"}></div>
+    </div>`;
+  }).join("") || '<div class="dr-empty">No result ZIPs for this filter.</div>';
+  if (davOpenItem) loadDetails(davOpenItem);
+}
+async function loadDetails(name) {
+  const box = document.querySelector(`.dav-item[data-name="${CSS.escape(name)}"] .dav-det`);
+  if (!box) return;
+  box.hidden = false;
+  box.innerHTML = '<div class="skel" style="height:40px"></div>';
+  try {
+    const d = await (await fetch(`/api/webdav/zip/${encodeURIComponent(name)}`)).json();
+    if (d.error) throw new Error(d.error);
+    const cl = d.verdicts.map((v) => `<div class="cl"><span class="id">${esc(v.case)}</span><span class="badge ${esc(v.result)}">${esc(v.result)}</span>
+      <span class="m">${v.case === "T1" ? t1Msg(v.found) : markMsg(cleanMsg(v.found))}</span></div>`).join("");
+    box.innerHTML = (cl || '<div class="c-mut">No verdicts in this ZIP.</div>') +
+      `<pre>${esc(d.log.trim())}</pre><div class="files">ZIP contents: ${d.files.map(esc).join(" · ")}</div>`;
+  } catch (e) { box.innerHTML = `<div class="c-ng">${esc(e.message)}</div>`; }
+}
+function openDav(open) {
+  $("drawer").classList.toggle("open", open); $("scrim").classList.toggle("open", open);
+  $("drawer").setAttribute("aria-hidden", String(!open));
+  if (open) loadDav();
+}
+$("btnDav").onclick = () => openDav(true);
+$("btnDav2").onclick = () => openDav(true);
+$("davClose").onclick = () => openDav(false);
+$("scrim").onclick = () => openDav(false);
+$("davRefresh").onclick = () => loadDav();
+$("davSeg").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  davFilter = b.dataset.f; document.querySelectorAll("#davSeg button").forEach((x) => x.classList.toggle("on", x === b)); renderDav();
+};
+$("davList").onclick = (e) => {
+  const b = e.target.closest('button[data-act="det"]'); if (!b) return;
+  const name = b.closest(".dav-item").dataset.name;
+  davOpenItem = davOpenItem === name ? null : name; renderDav();
+};
+document.addEventListener("keydown", (e) => {
+  if (e.metaKey || e.ctrlKey) return;
+  if (e.key === "Escape") openDav(false);
+  if (e.key === "w" || e.key === "W") openDav(!$("drawer").classList.contains("open"));
+});
+fetch("/api/webdav").then((r) => r.json()).then((d) => { if (d.results) $("davCount").textContent = d.results.length; }).catch(() => {});
+
+// ---------- start ----------
+(async () => {
+  render();
+  try { L1 = await (await fetch("/api/l1")).json(); } catch (_) {}
+  let d = null;
+  try { d = await (await fetch("/api/live?since=0")).json(); } catch (_) {}
+  const lastLiveComplete = d && VARIANTS.every((v) => d.events.some((e) => e.type === "verdicts" && e.v === v));
+  if (d && (d.running || lastLiveComplete)) {
+    mode = "live"; liveRunning = d.running;
+    d.events.forEach((e) => apply(e, false)); liveSeen = d.total; S.console = d.console;
+    S.label = d.running ? "live · run-both.sh" : "last live run"; render(false);
+  } else {
+    await replay(null, true);
+  }
+  setInterval(poll, 1000);
+})();
+</script>
+</body>
+</html>
