@@ -1,0 +1,34 @@
+# *******************************************************************************
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("//:docs.bzl", "docs")
+
+package(default_visibility = ["//visibility:public"])
+exports_files(["pyproject.toml"])
+
+docs(
+    data = [
+        "@score_process//:needs_json",
+    ],
+    scan_code = [
+        "//scripts_bazel:sources",
+        "//src:all_sources",
+    ],
+    source_dir = "docs",
+)
+
+filegroup(
+    name = "native_pins",
+    srcs = ["//src:requirements.txt"],
+    visibility = ["//visibility:public"],
+)

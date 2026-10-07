@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="12" time="8.971" timestamp="2026-10-07T14:39:53.731293+00:00" hostname="master"><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_native_corpus[search-30-base_harness]" file="score_harness/tests/assurance_lane_a_test.py" line="31" time="0.466"><failure message="RuntimeError: gate infrastructure failed (2)">candidate = 'base_harness', split = 'search', count = 30
+tmp_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tmp/pytest-of-jefferson/pytest-8/test_native_corpus_search_30_b0')
+
+    @pytest.mark.parametrize("candidate", ["base_harness", "pinned_context_harness"])
+    @pytest.mark.parametrize("split,count", [("search", 30), ("heldout", 10)])
+    def test_native_corpus(candidate: str, split: str, count: int, tmp_path: Path) -&gt; None:
+&gt;       summary = evaluate(
+            ROOT / f"score_harness/harness/{candidate}.py",
+            CORPUS,
+            tmp_path,
+            1,
+            split,
+            external_checks=False,
+        )
+
+score_harness/tests/assurance_lane_a_test.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+score_harness/evaluate.py:221: in evaluate
+    before_gate = gate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+metrics = {'generated_by': 'score_harness.coverage/native_metrics', 'metrics_by_type': {'tool_req': {'include_not_implemented': ...tered_test_types': [], 'linked_to_requirements': 1, 'linked_to_requirements_pct': 100.0, ...}}}, 'schema_version': '1'}
+path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tm...f-jefferson/pytest-8/test_native_corpus_search_30_b0/iteration_001/base_harness/traces/search_001/before_metrics.json')
+script = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-native/scripts_bazel/traceability_gate.py')
+args = ['--need-type', 'tool_req', '--min-req-with-code', '100', '--min-req-with-test', '100', ...]
+
+    def gate(
+        metrics: dict[str, Any], path: Path, script: Path, args: list[str]
+    ) -&gt; dict[str, Any]:
+        schema = json.loads(
+            script.with_name("traceability_metrics_schema.json").read_text()
+        )
+        Draft202012Validator(schema).validate(metrics)
+        dump(path, metrics)
+        process = subprocess.run(
+            [sys.executable, str(script), "--metrics-json", str(path), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        # Raw output is collector evidence, separated from proposer trace fields.
+        path.with_suffix(".stdout.log").write_text(process.stdout)
+        path.with_suffix(".stderr.log").write_text(process.stderr)
+        if process.returncode not in (0, 1):
+&gt;           raise RuntimeError(f"gate infrastructure failed ({process.returncode})")
+E           RuntimeError: gate infrastructure failed (2)
+
+score_harness/evaluate.py:82: RuntimeError</failure></testcase><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_native_corpus[search-30-pinned_context_harness]" file="score_harness/tests/assurance_lane_a_test.py" line="31" time="0.386"><failure message="RuntimeError: gate infrastructure failed (2)">candidate = 'pinned_context_harness', split = 'search', count = 30
+tmp_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tmp/pytest-of-jefferson/pytest-8/test_native_corpus_search_30_p0')
+
+    @pytest.mark.parametrize("candidate", ["base_harness", "pinned_context_harness"])
+    @pytest.mark.parametrize("split,count", [("search", 30), ("heldout", 10)])
+    def test_native_corpus(candidate: str, split: str, count: int, tmp_path: Path) -&gt; None:
+&gt;       summary = evaluate(
+            ROOT / f"score_harness/harness/{candidate}.py",
+            CORPUS,
+            tmp_path,
+            1,
+            split,
+            external_checks=False,
+        )
+
+score_harness/tests/assurance_lane_a_test.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+score_harness/evaluate.py:221: in evaluate
+    before_gate = gate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+metrics = {'generated_by': 'score_harness.coverage/native_metrics', 'metrics_by_type': {'tool_req': {'include_not_implemented': ...tered_test_types': [], 'linked_to_requirements': 1, 'linked_to_requirements_pct': 100.0, ...}}}, 'schema_version': '1'}
+path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tm...n/pytest-8/test_native_corpus_search_30_p0/iteration_001/pinned_context_harness/traces/search_001/before_metrics.json')
+script = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-native/scripts_bazel/traceability_gate.py')
+args = ['--need-type', 'tool_req', '--min-req-with-code', '100', '--min-req-with-test', '100', ...]
+
+    def gate(
+        metrics: dict[str, Any], path: Path, script: Path, args: list[str]
+    ) -&gt; dict[str, Any]:
+        schema = json.loads(
+            script.with_name("traceability_metrics_schema.json").read_text()
+        )
+        Draft202012Validator(schema).validate(metrics)
+        dump(path, metrics)
+        process = subprocess.run(
+            [sys.executable, str(script), "--metrics-json", str(path), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        # Raw output is collector evidence, separated from proposer trace fields.
+        path.with_suffix(".stdout.log").write_text(process.stdout)
+        path.with_suffix(".stderr.log").write_text(process.stderr)
+        if process.returncode not in (0, 1):
+&gt;           raise RuntimeError(f"gate infrastructure failed ({process.returncode})")
+E           RuntimeError: gate infrastructure failed (2)
+
+score_harness/evaluate.py:82: RuntimeError</failure></testcase><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_native_corpus[heldout-10-base_harness]" file="score_harness/tests/assurance_lane_a_test.py" line="31" time="0.410"><failure message="RuntimeError: gate infrastructure failed (2)">candidate = 'base_harness', split = 'heldout', count = 10
+tmp_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tmp/pytest-of-jefferson/pytest-8/test_native_corpus_heldout_10_0')
+
+    @pytest.mark.parametrize("candidate", ["base_harness", "pinned_context_harness"])
+    @pytest.mark.parametrize("split,count", [("search", 30), ("heldout", 10)])
+    def test_native_corpus(candidate: str, split: str, count: int, tmp_path: Path) -&gt; None:
+&gt;       summary = evaluate(
+            ROOT / f"score_harness/harness/{candidate}.py",
+            CORPUS,
+            tmp_path,
+            1,
+            split,
+            external_checks=False,
+        )
+
+score_harness/tests/assurance_lane_a_test.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+score_harness/evaluate.py:221: in evaluate
+    before_gate = gate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+metrics = {'generated_by': 'score_harness.coverage/native_metrics', 'metrics_by_type': {'tool_req': {'include_not_implemented': ...tered_test_types': [], 'linked_to_requirements': 1, 'linked_to_requirements_pct': 100.0, ...}}}, 'schema_version': '1'}
+path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tm...-jefferson/pytest-8/test_native_corpus_heldout_10_0/iteration_001/base_harness/traces/heldout_001/before_metrics.json')
+script = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-native/scripts_bazel/traceability_gate.py')
+args = ['--need-type', 'tool_req', '--min-req-with-code', '100', '--min-req-with-test', '100', ...]
+
+    def gate(
+        metrics: dict[str, Any], path: Path, script: Path, args: list[str]
+    ) -&gt; dict[str, Any]:
+        schema = json.loads(
+            script.with_name("traceability_metrics_schema.json").read_text()
+        )
+        Draft202012Validator(schema).validate(metrics)
+        dump(path, metrics)
+        process = subprocess.run(
+            [sys.executable, str(script), "--metrics-json", str(path), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        # Raw output is collector evidence, separated from proposer trace fields.
+        path.with_suffix(".stdout.log").write_text(process.stdout)
+        path.with_suffix(".stderr.log").write_text(process.stderr)
+        if process.returncode not in (0, 1):
+&gt;           raise RuntimeError(f"gate infrastructure failed ({process.returncode})")
+E           RuntimeError: gate infrastructure failed (2)
+
+score_harness/evaluate.py:82: RuntimeError</failure></testcase><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_native_corpus[heldout-10-pinned_context_harness]" file="score_harness/tests/assurance_lane_a_test.py" line="31" time="0.603"><failure message="RuntimeError: gate infrastructure failed (2)">candidate = 'pinned_context_harness', split = 'heldout', count = 10
+tmp_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tmp/pytest-of-jefferson/pytest-8/test_native_corpus_heldout_10_1')
+
+    @pytest.mark.parametrize("candidate", ["base_harness", "pinned_context_harness"])
+    @pytest.mark.parametrize("split,count", [("search", 30), ("heldout", 10)])
+    def test_native_corpus(candidate: str, split: str, count: int, tmp_path: Path) -&gt; None:
+&gt;       summary = evaluate(
+            ROOT / f"score_harness/harness/{candidate}.py",
+            CORPUS,
+            tmp_path,
+            1,
+            split,
+            external_checks=False,
+        )
+
+score_harness/tests/assurance_lane_a_test.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+score_harness/evaluate.py:221: in evaluate
+    before_gate = gate(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+metrics = {'generated_by': 'score_harness.coverage/native_metrics', 'metrics_by_type': {'tool_req': {'include_not_implemented': ...tered_test_types': [], 'linked_to_requirements': 1, 'linked_to_requirements_pct': 100.0, ...}}}, 'schema_version': '1'}
+path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tm.../pytest-8/test_native_corpus_heldout_10_1/iteration_001/pinned_context_harness/traces/heldout_001/before_metrics.json')
+script = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-native/scripts_bazel/traceability_gate.py')
+args = ['--need-type', 'tool_req', '--min-req-with-code', '100', '--min-req-with-test', '100', ...]
+
+    def gate(
+        metrics: dict[str, Any], path: Path, script: Path, args: list[str]
+    ) -&gt; dict[str, Any]:
+        schema = json.loads(
+            script.with_name("traceability_metrics_schema.json").read_text()
+        )
+        Draft202012Validator(schema).validate(metrics)
+        dump(path, metrics)
+        process = subprocess.run(
+            [sys.executable, str(script), "--metrics-json", str(path), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        # Raw output is collector evidence, separated from proposer trace fields.
+        path.with_suffix(".stdout.log").write_text(process.stdout)
+        path.with_suffix(".stderr.log").write_text(process.stderr)
+        if process.returncode not in (0, 1):
+&gt;           raise RuntimeError(f"gate infrastructure failed ({process.returncode})")
+E           RuntimeError: gate infrastructure failed (2)
+
+score_harness/evaluate.py:82: RuntimeError</failure></testcase><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_disjoint_corpus" file="score_harness/tests/assurance_lane_a_test.py" line="78" time="0.015" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_reject_corpus_escape[../escape.json]" file="score_harness/tests/assurance_lane_a_test.py" line="98" time="0.000" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_reject_corpus_escape[/etc/passwd]" file="score_harness/tests/assurance_lane_a_test.py" line="98" time="0.000" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_reject_corpus_escape[]" file="score_harness/tests/assurance_lane_a_test.py" line="98" time="0.000" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_reject_corpus_escape[https://example.org/file]" file="score_harness/tests/assurance_lane_a_test.py" line="98" time="0.001" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_reject_symlink_artifact" file="score_harness/tests/assurance_lane_a_test.py" line="106" time="0.001" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_invalid_needs_and_rule" file="score_harness/tests/assurance_lane_a_test.py" line="114" time="0.001" /><testcase classname="score_harness.tests.assurance_lane_a_test" name="test_rule_selection_and_new_broken_link" file="score_harness/tests/assurance_lane_a_test.py" line="123" time="0.001" /></testsuite></testsuites>

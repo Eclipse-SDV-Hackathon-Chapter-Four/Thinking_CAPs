@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="3" time="8.916" timestamp="2026-10-07T14:45:09.884894+00:00" hostname="master"><testcase classname="score_harness.tests.validate_candidate_test" name="test_validate_harness_baseline" file="score_harness/tests/validate_candidate_test.py" line="30" time="6.027"><failure message="AssertionError: {'candidate': 'base_harness', 'failures': [{'failure_type': 'type_error', 'fix': 'Resolve basedpyright diagnostics before evaluation', 'message': '0 errors, 0 warnings, 0 notesvenv .venv_docs subdirectory not found in venv path /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main.'}], 'status': 'failed', 'task_id': 'task_002_threshold_fail'}&#10;assert 'failed' == 'ok'&#10;  &#10;  - ok&#10;  + failed">def test_validate_harness_baseline():
+        """Test that baseline harness passes validation."""
+    
+        harness_path = _MY_PATH.parent / "harness" / "base_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+&gt;       assert result.get("status") == "ok", result
+E       AssertionError: {'candidate': 'base_harness', 'failures': [{'failure_type': 'type_error', 'fix': 'Resolve basedpyright diagnostics before evaluation', 'message': '0 errors, 0 warnings, 0 notesvenv .venv_docs subdirectory not found in venv path /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main.'}], 'status': 'failed', 'task_id': 'task_002_threshold_fail'}
+E       assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:43: AssertionError</failure></testcase><testcase classname="score_harness.tests.validate_candidate_test" name="test_validate_harness_rule_retrieval" file="score_harness/tests/validate_candidate_test.py" line="47" time="2.717"><failure message="AssertionError: {'candidate': 'rule_retrieval_harness', 'failures': [{'failure_type': 'type_error', 'fix': 'Resolve basedpyright diagnostics before evaluation', 'message': '0 errors, 0 warnings, 0 notesvenv .venv_docs subdirectory not found in venv path /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main.'}], 'status': 'failed', 'task_id': 'task_002_threshold_fail'}&#10;assert 'failed' == 'ok'&#10;  &#10;  - ok&#10;  + failed">def test_validate_harness_rule_retrieval():
+        """Test that rule_retrieval harness passes validation."""
+        harness_path = _MY_PATH.parent / "harness" / "rule_retrieval_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+&gt;       assert result.get("status") == "ok", result
+E       AssertionError: {'candidate': 'rule_retrieval_harness', 'failures': [{'failure_type': 'type_error', 'fix': 'Resolve basedpyright diagnostics before evaluation', 'message': '0 errors, 0 warnings, 0 notesvenv .venv_docs subdirectory not found in venv path /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main.'}], 'status': 'failed', 'task_id': 'task_002_threshold_fail'}
+E       assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:59: AssertionError</failure></testcase><testcase classname="score_harness.tests.validate_candidate_test" name="test_task_spec_schema" file="score_harness/tests/validate_candidate_test.py" line="63" time="0.001" /></testsuite></testsuites>

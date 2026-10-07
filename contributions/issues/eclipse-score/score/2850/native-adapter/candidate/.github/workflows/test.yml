@@ -1,0 +1,91 @@
+# *******************************************************************************
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+name: Run Bazel Tests
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_call:
+jobs:
+  code:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛡️ Harden Runner
+        if: github.repository_owner == 'eclipse-score'
+        uses: step-security/harden-runner@v2.18.0
+        with:
+          egress-policy: audit
+      - name: Checkout repository (Handle all events)
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: ${{ github.head_ref || github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+
+      - name: Setup Bazel with shared caching
+        uses: bazel-contrib/setup-bazel@0.18.0
+        with:
+          disk-cache: true
+          repository-cache: true
+          bazelisk-cache: true
+          cache-save: ${{ github.event_name == 'push' }}
+      - name: Install native candidate validation tools
+        run: |
+          python3 -m venv "$RUNNER_TEMP/lane-a-tools"
+          "$RUNNER_TEMP/lane-a-tools/bin/python" -m pip install basedpyright==1.39.0 ruff==0.15.9
+          echo "$RUNNER_TEMP/lane-a-tools/bin" >> "$GITHUB_PATH"
+      - name: Run test targets
+        run: |
+          bazel run --lockfile_mode=error //:ide_support
+          bazel test --lockfile_mode=error --test_env=PATH //...
+
+      - name: Validate the legacy rule candidate with native tools
+        run: bazel run --lockfile_mode=error //score_harness:validate_candidate -- --candidate score_harness/harness/rule_retrieval_harness.py --task-spec score_harness/spec/task_002_threshold_fail.json
+
+      - name: Evaluate native fixture and build-backed seeds
+        run: |
+          bazel run --lockfile_mode=error //:docs_check
+          for candidate in base_harness pinned_context_harness; do
+            bazel run --lockfile_mode=error //score_harness:outer_loop -- --candidate "score_harness/harness/$candidate.py" --tasks score_harness/spec --output-dir "$RUNNER_TEMP/assurance-runs/seeds" --iteration 1
+          done
+
+      - name: Evaluate public assurance scenarios without a model
+        run: |
+          for candidate in base_harness pinned_context_harness; do
+            bazel run --lockfile_mode=error //score_harness:evaluate -- --candidate "score_harness/harness/$candidate.py" --output-dir "$RUNNER_TEMP/assurance-runs" --split search --iteration 1
+            bazel run --lockfile_mode=error //score_harness:evaluate -- --candidate "score_harness/harness/$candidate.py" --output-dir "$RUNNER_TEMP/assurance-runs" --split heldout --iteration 2
+          done
+          bazel run --lockfile_mode=error //score_harness:query_runs -- --runs-dir "$RUNNER_TEMP/assurance-runs" --failed-tasks --diff-candidates base_harness pinned_context_harness
+
+      - name: Upload assurance traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: assurance-runs
+          path: ${{ runner.temp }}/assurance-runs
+          if-no-files-found: error
+
+      - name: Prepare bundled consumer report
+        if: always()
+        # Creating tests-report directory
+        # Follow Symlinks via '-L' to copy correctly
+        # Copy everything inside the 'test-reports' folder
+        run: |
+          mkdir -p tests-report
+          rsync -amL --include='*/' --include='test.xml' --include='test.log' --exclude='*' bazel-testlogs/ tests-report/
+
+      - name: Upload bundled consumer report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-report
+          path: tests-report

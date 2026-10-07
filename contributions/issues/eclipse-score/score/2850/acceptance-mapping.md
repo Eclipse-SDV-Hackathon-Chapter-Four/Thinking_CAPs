@@ -1,25 +1,15 @@
 # Acceptance mapping
 
-Native criterion source:
-[original #2850 body](evidence/upstream/issue-2850-original.md).
-Local IDs below are the chatbot's existing product requirements, not S-CORE requirement IDs.
-No native requirement/design IDs were assigned to this proposal.
+The full MVP implementation and exact criterion/check mapping are in
+[native-adapter/review-packet.md](native-adapter/review-packet.md).
+The prior chatbot-only mapping is preserved in
+[native-adapter/evidence/history/prior-acceptance-mapping.md](native-adapter/evidence/history/prior-acceptance-mapping.md).
 
-| #2850 obligation | Existing chatbot artifact / local IDs | Evidence | Remaining work |
-| --- | --- | --- | --- |
-| Query documentation by filename and artifact ID | Source provenance, exact-ID lookup; SRC-002, RET-003 | F002/F004 verification, source archive, historical exact-ID report | Add task-scoped rule/task catalog indexing and source authorization |
-| Context retrieval before agent execution | Retrieval interfaces and evidence packing; RET-001, ANS-001 | F004/F005 records and ADR-007 | Implement the prescribed AssuranceHarness interface and stable context serialization |
-| Read only authorized task input and rule references | Safe normalization and containment; SEC-006, SRC-003 | F002 tests/verification | Corpus-wide search is broader than input_path; enforce task-specific allowlist before retrieval |
-| No HTTP, DNS or external services in candidate | Local-only product baseline; LOC-001, LOC-005 | Constitution and historical blocked-egress report | Candidate must make no Ollama/HTTP calls, including loopback; use prebuilt authorized lexical/export data |
-| Same inputs yield same context; stdlib/repo-local modules only | Lexical retrieval can supply candidates; ADR-004 | Current source and search tests | Chat generation is nondeterministic; NumPy/docutils are external dependencies. Design a stdlib-only consumption boundary; do not claim present conformance |
-| CR-001 through CR-005 catalog and checks | Need relationships and snapshot diff | F004/F007 verification | Implement native consistency rules, typed impacts and evidence invalidation; chat comparison is not a gate |
-| At least 20 public change scenarios | Chatbot has development/held-out answer suites | eval files in source archive and historical suite reports | Q&A cases are not gate scenarios; build native task corpus with known gate verdicts and impacted IDs |
-| Outer loop, trace files, evolution summary | Snapshot/source manifests provide provenance patterns | F003/ADR-006 | Implement native distillation and trace schema; no current outer loop |
-| Baseline candidate evaluated with navigable traces | Search/lookup CLI and API exist | Source, F004 docs | Evaluate adapter with native lightweight validation and trace queries |
-| Lane A coverage, gate, schema and CI | Chatbot CI tests, lint, types, licenses, traceability | Current logs and copied CI configuration | Run traceability_coverage.py and traceability_gate.py in the agreed target repository; validate schema and run native CI |
-| Short guidance with indexed domain docs | AGENTS.md points to CLAUDE.md, traceability and ADRs | Readable project export | Adapt guidance to native domain; current CLAUDE.md does not establish target conformance |
-| Phase 2 security comment | Untrusted ingestion, citation validation, recovery, read-only model | F002/F005/F008 records | Threat-specific native tests, validation evidence verification, capability/path enforcement and assurance rollback remain open |
+Native artifacts cover the deterministic adapter, CR-001–005, checkable blocks,
+30 public search / 10 held-out scenarios, native fixture/build seeds, full traces,
+baseline evaluation, index-first queries, guidance and model-free Lane A CI.
+Technical verification is local; integration of the unmerged native draft, project-wide
+typing debt and authorized engineering/contributor acceptance remain pending.
+The upstream Phase 2 security comment is explicitly post-MVP.
 
-Measured chatbot test success supports reuse evaluation only. It does not make any
-native gate, safety argument, tool qualification or engineering acceptance claim.
-
+[The integration choice](integration-20261007/decision.md) is resolved locally: the adapter is selected as a stacked follow-up to #628, with initial PR base `harness`. Upstream adoption, #628/main conflict resolution and final-revision checks remain pending.
