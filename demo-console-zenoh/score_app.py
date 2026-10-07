@@ -1,141 +1,249 @@
 # Eclipse SDV Hackathon 2026 (Chapter Four) · Demo Console v2 (Zenoh input)
 # Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
-# Created: 2026-10-06 · Latest version: 2026-10-07
-# Goal: Cruise diag stand-in for the S-CORE side: Zenoh input, monitors and a SOVD-style API on :7690.
-"""Cruise diag stand-in: the S-CORE side of the demo until the real chain runs.
+# Created: 2026-10-06 · Latest version: 2026-10-07 (v2.1: faithful stand-in of the opensovd-gateway of PR #40)
+# Goal: Stand-in of the Rust opensovd-gateway (feature/16-sovd-adapter-dataprovider): same URLs, JSON, debounce and env variables.
+"""Stand-in of the opensovd-gateway binary of PR #40 (inc_diagnostics, branch
+feature/16-sovd-adapter-dataprovider, head d388985), for laptops where the Rust build is
+not available. It is a contract double, not a different design:
 
-    virtual vehicle --Zenoh--> [ VehicleLink -> CruiseDiag ] --SOVD-style HTTP :7690--> console
+  * the same HTTP surface as opensovd-core (pin 29e806f) mounted at SOVD_BASE:
+      GET  /sovd/version-info
+      GET  /sovd/v1/components                        -> [cruise]
+      GET  /sovd/v1/components/cruise                 -> capabilities
+      GET  /sovd/v1/components/cruise/data            -> the four data items (sovd_adapter #16)
+      GET  /sovd/v1/components/cruise/data/{id}       -> {"id": id, "data": {...}}
+      PUT  /sovd/v1/components/cruise/data/{id}       -> body {"data": {...}}, 204
+      GET  /sovd/v1/components/cruise/data-categories, data-groups
+  * the same four resources as score/opensovd-gateway/src/cruise.rs, with the same JSON
+    bodies, the same simulated sensor (100 ± 5 km/h) and the same time-based debounce
+    (Passed -> PreFailed -> Failed -> PrePassed), driven by the same environment variables
+    CRUISE_DEBOUNCE_FAILED_MS, CRUISE_DEBOUNCE_PASSED_MS and SCORE_GATEWAY_ADDRESS;
+  * the same error answers, including the one the review flagged as CR-04 (every
+    resource error is reported as HTTP 500 "An internal error occurred").
 
-It plays the part of cruise diag + the SOVD gateway with #16/#156 (a stand-in, not a
-fake: the speed and the faults come from the real vehicle data). When the real gateway
-runs, point the console's SOVD_URL at it and stop this process.
+When the Rust binary runs, point the console's SOVD_URL at it and do not start this.
 
-    python score_app.py                 # Zenoh as configured in config.py
-    python score_app.py --no-zenoh      # no subscription (tests feed the link directly)
-
-SOVD-style API (under /sovd):
-  GET    /version-info
-  GET    /v1/components
-  GET    /v1/components/{cruise-control|cruise-diag}
-  GET    /v1/components/{entity}/data                 list of data items
-  GET    /v1/components/cruise-control/data/vehicle_speed
-  GET    /v1/components/cruise-control/data/debounce
-  GET    /v1/components/cruise-diag/data/link_status
-  GET    /v1/components/{entity}/faults               #156 model
-  DELETE /v1/components/{entity}/faults               clear (test reset)
+    python score_app.py                 # http://127.0.0.1:7690/sovd
+    SCORE_GATEWAY_ADDRESS=0.0.0.0:7690 CRUISE_DEBOUNCE_FAILED_MS=1500 python score_app.py
 """
 import argparse
 import json
+import math
 import os
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlsplit
 
 import config
-import discover
-from cruise_diag import CruiseDiag
-from vehicle_link import VehicleLink
+
+SOVD_VERSION = "1.1.0"
+STAGES = ("passed", "prefailed", "failed", "prepassed")
+CRUISE_STATES = ("standby", "active", "unavailable")
 
 
-def settings_from_config():
-    return {"f1_threshold": config.F1_THRESHOLD, "speed_min": config.SPEED_MIN_KMH, "speed_max": config.SPEED_MAX_KMH,
-            "link_timeout_s": config.LINK_TIMEOUT_MS / 1000.0, "f1_code": config.F1_CODE, "f2_code": config.F2_CODE,
-            "entity": config.SOVD_ENTITY, "diag_entity": config.SOVD_DIAG_ENTITY}
+# ---------------------------------------------------------------- cruise.rs, ported line by line
+class TimeBased:
+    """score::mw::diag::dtc::Debounce::TimeBased: a monitor result must hold continuously
+    for the given duration before the qualified status changes."""
+
+    def __init__(self, failed_s, passed_s):
+        self.failed_s, self.passed_s = float(failed_s), float(passed_s)
 
 
-class ScoreApp:
-    """Owns the link, the diagnostics, the monitor cycle and the stats writer."""
+class Monitor:
+    def __init__(self, debounce, now):
+        self.debounce = debounce
+        self.qualified_failed = False
+        self.raw_failed = False
+        self.raw_since = now
 
-    def __init__(self, link=None, stats_file=None, clock=time.monotonic, wall=time.time):
-        self.link = link or VehicleLink(config.SPEED_KEY, config.speed_factor(), config.ZENOH_CONNECT, clock, wall)
-        self.diag = CruiseDiag(self.link, settings_from_config(), clock, wall)
-        self.stats_file = stats_file if stats_file is not None else config.STATS_FILE
-        self.requests = 0
-        self._req_lock = threading.Lock()
-        self._stop = threading.Event()
-        self._thread = None
+    def report(self, failed, now):
+        self.settle(now)
+        if failed != self.raw_failed:
+            self.raw_failed = failed
+            self.raw_since = now
 
-    def count_request(self):
-        with self._req_lock:
-            self.requests += 1
-
-    def start(self, tick_s=None):
-        tick_s = tick_s or config.DIAG_TICK_S
-
-        def cycle():
-            last_stats = 0.0
-            while not self._stop.wait(tick_s):
-                self.diag.tick()
-                now = time.time()
-                if now - last_stats >= 1.0:
-                    last_stats = now
-                    self.write_stats(now)
-        self._thread = threading.Thread(target=cycle, name="cruise-diag-cycle", daemon=True)
-        self._thread.start()
-
-    def follow_vehicle(self, host, every_s=5.0, find=discover.find):
-        """While no speed sample arrives, scout `host` again and reconnect when none of our
-        endpoints is announced any more (a restarted vehicle listens on new random ports)."""
-        def loop():
-            while not self._stop.wait(every_s):
-                if self.link.status(config.LINK_TIMEOUT_MS / 1000.0)["state"] == "live":
-                    continue
-                endpoints = find(host)
-                if endpoints and not set(endpoints) & set(self.link.endpoints):
-                    print(f"vehicle {host} now on {','.join(endpoints)} - reconnecting", flush=True)
-                    self.link.reconnect(endpoints)
-        threading.Thread(target=loop, name="vehicle-finder", daemon=True).start()
-
-    def stop(self):
-        self._stop.set()
-        self.link.stop()
-
-    def write_stats(self, now):
-        if not self.stats_file:
+    def settle(self, now):
+        if self.raw_failed == self.qualified_failed:
             return
-        try:
-            tmp = self.stats_file + ".tmp"
-            with open(tmp, "w", encoding="utf-8") as f:
-                json.dump({"ts": now, "source": "cruise diag stand-in (Zenoh)",
-                           "counters": {"vehicle_samples": self.link.samples, "sovd_requests": self.requests}}, f)
-            os.replace(tmp, self.stats_file)
-        except OSError:
-            pass
+        needed = self.debounce.failed_s if self.raw_failed else self.debounce.passed_s
+        # Rust compares exact Durations; float seconds need a tolerance (0.3 - 0.1 < 0.2 in binary).
+        if now - self.raw_since >= needed - 1e-6:
+            self.qualified_failed = self.raw_failed
+
+    def stage(self, now):
+        self.settle(now)
+        return {(False, False): "passed", (False, True): "prefailed",
+                (True, True): "failed", (True, False): "prepassed"}[(self.qualified_failed, self.raw_failed)]
 
 
-def handler_for(app):
-    entities = {config.SOVD_ENTITY: "Cruise control (surrogate for the vehicle)",
-                config.SOVD_DIAG_ENTITY: "Cruise diag (vehicle computer)"}
-    data_items = {config.SOVD_ENTITY: {config.SOVD_ITEM_SPEED: app.diag.speed_view,
-                                       config.SOVD_ITEM_DEBOUNCE: app.diag.debounce_view},
-                  config.SOVD_DIAG_ENTITY: {config.SOVD_ITEM_LINK: app.diag.link_view}}
-    v1 = "/sovd/v1/"
+class Sensor:
+    """Simulated speed drifts around 100 km/h; a stuck sensor repeats one value."""
+
+    def __init__(self, debounce, now):
+        self.started = now
+        self.stuck_at = None
+        self.monitor = Monitor(debounce, now)
+        self.state = "active"
+        self.set_speed_kmh = 100.0
+
+    def speed_kmh(self, now):
+        if self.stuck_at is not None:
+            return self.stuck_at
+        t = now - self.started
+        return round((100.0 + 5.0 * math.sin(t / 3.0)) * 10.0) / 10.0
+
+    def refresh(self, now):
+        """Report the fault condition, settle the debounce, derive cruise_state (called on every access)."""
+        self.monitor.report(self.stuck_at is not None, now)
+        stage = self.monitor.stage(now)
+        if stage == "failed":
+            self.state = "unavailable"
+        elif stage == "passed" and self.state == "unavailable":
+            self.state = "standby"
+
+
+class DataNotFound(Exception):
+    pass
+
+
+class DataReadOnly(Exception):
+    pass
+
+
+class DataInternal(Exception):
+    pass
+
+
+class CruiseGateway:
+    """The component `cruise` exactly as CruiseDiag::register() builds it: four DataResources
+    behind one mutex, served through the DataProvider adapter."""
+
+    COMPONENT_ID, COMPONENT_NAME = "cruise", "Cruise Control"
+
+    def __init__(self, debounce=None, clock=time.monotonic):
+        self.clock = clock
+        self.sensor = Sensor(debounce or TimeBased(config.CRUISE_DEBOUNCE_FAILED_MS / 1000.0,
+                                                    config.CRUISE_DEBOUNCE_PASSED_MS / 1000.0), clock())
+        self.lock = threading.Lock()
+        s = config.sovd_items()
+        # registration order, name, category, read_only — as in cruise.rs
+        self.items = [
+            {"id": s["speed"], "name": "Vehicle speed", "category": "currentData", "read_only": True},
+            {"id": s["state"], "name": "Cruise control state", "category": "currentData", "read_only": True},
+            {"id": s["fault"], "name": "Vehicle speed sensor fault status", "category": "currentData", "read_only": True},
+            {"id": s["switch"], "name": "Fault injection: vehicle speed sensor stuck", "category": "storedData", "read_only": False},
+        ]
+        self.groups = ["cruise"]
+        self._readers = {s["speed"]: self._read_speed, s["state"]: self._read_state,
+                         s["fault"]: self._read_fault, s["switch"]: self._read_switch}
+        self._writers = {s["switch"]: self._write_switch}
+
+    def _with(self, fn):
+        with self.lock:
+            now = self.clock()
+            self.sensor.refresh(now)
+            return fn(self.sensor, now)
+
+    # resources (JSON bodies as in cruise.rs)
+    def _read_speed(self):
+        return self._with(lambda s, now: {"value": s.speed_kmh(now), "unit": "km/h"})
+
+    def _read_state(self):
+        return self._with(lambda s, now: {"state": s.state, "set_speed": s.set_speed_kmh})
+
+    def _read_fault(self):
+        def view(s, now):
+            stage = s.monitor.stage(now)
+            return {"fault": "VehicleSpeedSensorStuck", "status": stage,
+                    "test_failed": s.monitor.raw_failed, "confirmed": stage == "failed"}
+        return self._with(view)
+
+    def _read_switch(self):
+        return self._with(lambda s, now: {"stuck": s.stuck_at is not None})
+
+    def _write_switch(self, value):
+        stuck = value.get("stuck") if isinstance(value, dict) else None
+        if not isinstance(stuck, bool):
+            # cruise.rs answers GenericError IncompleteRequest; sovd_adapter maps every resource
+            # error to DataError::Internal, which the server reports as HTTP 500 (review CR-04).
+            raise DataInternal('expected a JSON body {"stuck": true|false}')
+
+        def apply(s, now):
+            s.stuck_at = s.speed_kmh(now) if stuck else None
+            s.monitor.report(stuck, now)
+        self._with(apply)
+
+    # DataProvider surface (sovd_adapter/provider.rs)
+    def metadata(self, item):
+        return {"id": item["id"], "name": item["name"], "category": item["category"], "groups": list(self.groups)}
+
+    def list(self, categories=None, groups=None, tags=None):
+        out = []
+        for it in self.items:
+            if groups:                      # groups win over categories (routes/data.rs data_filter)
+                if not set(groups) & set(self.groups):
+                    continue
+            elif categories and it["category"] not in categories:
+                continue
+            if tags:                        # the cruise items carry no tags
+                continue
+            out.append(self.metadata(it))
+        return out
+
+    def read(self, item_id):
+        reader = self._readers.get(item_id)
+        if reader is None:
+            raise DataNotFound(item_id)
+        return reader()
+
+    def write(self, item_id, value):
+        item = next((i for i in self.items if i["id"] == item_id), None)
+        if item is None:
+            raise DataNotFound(item_id)
+        if item["read_only"]:
+            raise DataReadOnly()
+        self._writers[item_id](value)
+
+
+# ---------------------------------------------------------------- opensovd-core server routes (pin 29e806f)
+def handler_for(gateway, base=None):
+    base = base if base is not None else config.SOVD_BASE
+    v1 = base + "/v1"
+
+    def error_json(code, message, vendor_code=None):
+        out = {"error_code": code}
+        if vendor_code:
+            out["vendor_code"] = vendor_code
+        out["message"] = message
+        return out
 
     class H(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
-        server_version = "CruiseDiagStandIn/" + config.VERSION
+        server_version = "opensovd-gateway-standin/" + config.VERSION
 
         def log_message(self, *args):
             pass
 
-        def reply(self, obj, status=200):
-            body = b"" if obj is None else json.dumps(obj).encode()
+        def send(self, status, body=None, content_type="application/json"):
+            data = b"" if body is None else (body if isinstance(body, bytes) else json.dumps(body).encode())
             self.send_response(status)
-            if body:
-                self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
+            if data:
+                self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(data)))
             self.end_headers()
-            if body:
-                self.wfile.write(body)
+            if data:
+                self.wfile.write(data)
 
-        def error(self, status, code, message):
-            self.reply({"error_code": code, "message": message}, status)
+        def text(self, status, message):          # axum rejections are text/plain
+            self.send(status, message.encode(), "text/plain; charset=utf-8")
+
+        def base_uri(self):
+            return f"http://{self.headers.get('Host', 'localhost')}{base}"
 
         def do_GET(self):
             self.route("GET")
-
-        def do_DELETE(self):
-            self.route("DELETE")
 
         def do_PUT(self):
             self.route("PUT")
@@ -143,44 +251,109 @@ def handler_for(app):
         def do_POST(self):
             self.route("POST")
 
+        def do_DELETE(self):
+            self.route("DELETE")
+
         def route(self, method):
-            app.count_request()
-            path = self.path.split("?")[0].rstrip("/")
-            base = f"http://{self.headers.get('Host', 'localhost')}/sovd/v1"
-            if path == "/sovd/version-info":
-                return self.reply({"sovd_info": [{"version": "1.1.0", "base_uri": base, "vendor_info": {
-                    "name": "cruise diag stand-in (Zenoh)", "version": config.VERSION}}]})
-            if path == "/sovd/v1/components":
-                return self.reply({"items": [{"id": e.split("/")[-1], "name": n, "href": f"{base}/{e}"}
-                                             for e, n in entities.items()]})
-            if not path.startswith(v1):
-                return self.error(404, "resource-not-found", path)
-            rest = path[len(v1):]
-            entity = next((e for e in entities if rest == e or rest.startswith(e + "/")), None)
-            if entity is None:
-                return self.error(404, "resource-not-found", f"unknown entity in {path}")
-            sub = rest[len(entity):].strip("/")
-            if sub == "":
-                return self.reply({"id": entity.split("/")[-1], "name": entities[entity],
-                                   "data": f"{base}/{entity}/data", "faults": f"{base}/{entity}/faults"})
-            if sub == "data" and method == "GET":
-                return self.reply({"items": [{"id": k, "href": f"{base}/{entity}/data/{k}"} for k in data_items[entity]]})
-            if sub.startswith("data/"):
-                item = sub[len("data/"):]
-                view = data_items[entity].get(item)
-                if view is None:
-                    return self.error(404, "resource-not-found", f"no data item {item}")
+            url = urlsplit(self.path)
+            path, query = url.path.rstrip("/") or "/", parse_qs(url.query)
+            if path == base + "/version-info":
                 if method != "GET":
-                    return self.error(405, "method-not-allowed", "read-only data item")
-                return self.reply({"id": item, "data": view()})
-            if sub == "faults":
-                if method == "GET":
-                    return self.reply({"items": app.diag.faults_view(entity)})
-                if method == "DELETE":
-                    app.diag.clear_faults(entity)
-                    return self.reply(None, 204)
-                return self.error(405, "method-not-allowed", "faults: GET or DELETE")
-            self.error(404, "resource-not-found", path)
+                    return self.send(405)
+                # vendor_info as the Rust binary answers it (opensovd-server default, checked with curl on d388985)
+                out = {"sovd_info": [{"version": SOVD_VERSION, "base_uri": self.base_uri() + "/v1",
+                                      "vendor_info": {"version": "0.1.1", "name": "OpenSOVD"}}]}
+                if query.get("include-schema", [""])[0] == "true":
+                    out["schema"] = {"$schema": "https://json-schema.org/draft/2020-12/schema", "title": "VersionInfo", "type": "object"}
+                return self.send(200, out)
+            if not path.startswith(v1 + "/"):
+                return self.send(404)
+            parts = path[len(v1) + 1:].split("/")
+            if parts == ["apps"] or parts == ["areas"]:          # the server has these collections; the gateway fills none
+                return self.send(200, {"items": []}) if method == "GET" else self.send(405)
+            if parts[0] != "components":
+                return self.send(404)
+            vb = self.base_uri() + "/v1"
+            if len(parts) == 1:
+                if method != "GET":
+                    return self.send(405)
+                return self.send(200, {"items": [{"id": gateway.COMPONENT_ID, "name": gateway.COMPONENT_NAME,
+                                                  "href": f"{vb}/components/{gateway.COMPONENT_ID}"}]})
+            cid = parts[1]
+            if cid != gateway.COMPONENT_ID:
+                return self.send(404, error_json("vendor-specific", f"Entity not found: {cid}", "entity-not-found"))
+            sub = parts[2:]
+            if not sub:
+                if method != "GET":
+                    return self.send(405)
+                return self.send(200, {"id": cid, "name": gateway.COMPONENT_NAME,
+                                       "hosts": f"{vb}/components/{cid}/hosts", "data": f"{vb}/components/{cid}/data"})
+            if sub == ["data-categories"]:
+                if method != "GET":
+                    return self.send(405)
+                seen = []
+                for it in gateway.items:
+                    if it["category"] not in seen:
+                        seen.append(it["category"])
+                return self.send(200, {"items": [{"item": c} for c in seen]})
+            if sub == ["data-groups"]:
+                if method != "GET":
+                    return self.send(405)
+                cat = query.get("category", [None])[0]
+                items = [{"id": g, "category": it["category"]} for it in gateway.items for g in gateway.groups
+                         if cat is None or it["category"] == cat]
+                uniq, out = set(), []
+                for g in items:
+                    if g["id"] not in uniq:
+                        uniq.add(g["id"])
+                        out.append(g)
+                return self.send(200, {"items": out})
+            if sub == ["data"]:
+                if method != "GET":
+                    return self.send(405)
+                split = lambda k: [x for v in query.get(k, []) for x in v.split(",") if x]  # noqa: E731
+                out = {"items": gateway.list(split("categories"), split("groups"), split("tags"))}
+                if query.get("include-schema", [""])[0] == "true":
+                    out["schema"] = {"$schema": "https://json-schema.org/draft/2020-12/schema", "title": "DataList", "type": "object"}
+                return self.send(200, out)
+            if len(sub) == 2 and sub[0] == "data":
+                item_id = sub[1]
+                try:
+                    if method == "GET":
+                        return self.send(200, {"id": item_id, "data": gateway.read(item_id)})
+                    if method == "PUT":
+                        body = self.write_body()
+                        if body is None:
+                            return            # rejection already sent
+                        gateway.write(item_id, body)
+                        return self.send(204)
+                    return self.send(405)
+                except DataNotFound as e:
+                    return self.send(404, error_json("error-response", f"not found: {e}"))
+                except DataReadOnly:
+                    return self.send(400, error_json("error-response", "read only"))
+                except DataInternal:
+                    return self.send(500, error_json("error-response", "An internal error occurred"))
+            self.send(404)
+
+        def write_body(self):
+            """axum Json<WriteRequest>: 415 without a JSON content type, 400 for invalid JSON,
+            422 when the body is not a WriteRequest. Returns the `data` member."""
+            ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            n = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(n) if n else b""
+            if ctype != "application/json":
+                self.text(415, "Expected request with `Content-Type: application/json`")
+                return None
+            try:
+                body = json.loads(raw.decode("utf-8"))
+            except (ValueError, UnicodeDecodeError) as e:
+                self.text(400, f"Failed to parse the request body as JSON: {e}")
+                return None
+            if not isinstance(body, dict) or "data" not in body:
+                self.text(422, "Failed to deserialize the JSON body into the target type: missing field `data`")
+                return None
+            return body["data"]
     return H
 
 
@@ -189,48 +362,33 @@ class Server(ThreadingHTTPServer):
     allow_reuse_address = os.name != "nt"   # no silent double bind on Windows
 
 
-def serve(app, host, port):
-    srv = Server((host, port), handler_for(app))
+def serve(gateway, host, port, base=None):
+    srv = Server((host, port), handler_for(gateway, base))
     threading.Thread(target=srv.serve_forever, name="sovd-standin-http", daemon=True).start()
     return srv
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Cruise diag stand-in (Zenoh input, SOVD-style API)")
-    ap.add_argument("--port", type=int, default=config.STANDIN_PORT)
-    ap.add_argument("--no-zenoh", action="store_true", help="do not subscribe (for tests and offline use)")
+    ap = argparse.ArgumentParser(description="Stand-in of the opensovd-gateway binary (PR #40 contract)")
+    ap.add_argument("--address", default=config.SCORE_GATEWAY_ADDRESS, help="host:port, like SCORE_GATEWAY_ADDRESS")
     a = ap.parse_args()
-    app = ScoreApp()
-    connect, found = config.ZENOH_CONNECT, ""
-    if not a.no_zenoh:
-        if config.VEHICLE_HOST and not connect:
-            connect = discover.find(config.VEHICLE_HOST)
-            found = (f" (found on {config.VEHICLE_HOST} by scouting)" if connect
-                     else f" (no Zenoh node answers on {config.VEHICLE_HOST} yet - scouting again every 5 s)")
-            connect = connect or [f"tcp/{config.VEHICLE_HOST}:7447"]
-        app.link.start(config.ZENOH_MODE, connect, config.ZENOH_LISTEN, config.ZENOH_MULTICAST_SCOUTING)
-        if config.VEHICLE_HOST:
-            app.follow_vehicle(config.VEHICLE_HOST)
-    app.start()
+    host, _, port = a.address.rpartition(":")
+    host, port = host or "127.0.0.1", int(port or "7690")
+    gateway = CruiseGateway()
     try:
-        serve(app, config.STANDIN_HOST, a.port)
+        serve(gateway, host, port)
     except OSError as e:
-        print(f"cannot listen on port {a.port}: {e.strerror or e}. Another program uses it "
-              f"(see: ss -ltnp 'sport = :{a.port}'). Stop it or set STANDIN_PORT.", flush=True)
-        app.stop()
+        print(f"cannot listen on {host}:{port}: {e.strerror or e}. Another program uses it "
+              f"(see: ss -ltnp 'sport = :{port}'). Stop it or set SCORE_GATEWAY_ADDRESS.", flush=True)
         raise SystemExit(1)
-    if app.link.error:
-        state = f"NO VEHICLE INPUT - {app.link.error}"
-    else:
-        state = f"subscribed to '{config.SPEED_KEY}' via {config.ZENOH_MODE} {','.join(app.link.endpoints)}{found}"
-    print(f"cruise diag stand-in v{config.VERSION} on :{a.port} - {state}", flush=True)
+    print(f"opensovd-gateway stand-in v{config.VERSION} on http://{host}:{port}{config.SOVD_BASE} - component "
+          f"'{gateway.COMPONENT_ID}', debounce failed {config.CRUISE_DEBOUNCE_FAILED_MS} ms / passed "
+          f"{config.CRUISE_DEBOUNCE_PASSED_MS} ms (PR #40 contract, head d388985)", flush=True)
     try:
         while True:
             time.sleep(3600)
     except KeyboardInterrupt:
         pass
-    finally:
-        app.stop()
 
 
 if __name__ == "__main__":

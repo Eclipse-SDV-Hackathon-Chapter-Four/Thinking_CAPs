@@ -1,10 +1,18 @@
 # Eclipse SDV Hackathon 2026 (Chapter Four) · Demo Console v2 (Zenoh input)
 # Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
-# Created: 2026-10-06 · Latest version: 2026-10-07
-# Goal: Clients for the SOVD side, the CDA and the ECU simulator, plus the traffic log, Docker status, stats file and DTC status decoder.
-"""Clients for the three backends, the traffic log, Docker status, the stats file and
-the DTC status decoder. Shared by server.py, auto_dtc.py and runner.py so they all talk
-to the backends the same way (and every call lands in the traffic log).
+# Created: 2026-10-06 · Latest version: 2026-10-07 (v2.1: SOVD client for the PR #40 contract)
+# Goal: Clients for the SOVD gateway (PR #40 contract), the CDA and the ECU simulator, plus the traffic log, Docker status and DTC status decoder.
+"""Clients for the three backends, the traffic log, Docker status and the DTC status
+decoder. Shared by server.py, faults.py, auto_dtc.py and runner.py so they all talk to
+the backends the same way (and every call lands in the traffic log).
+
+SOVD side (opensovd-gateway of PR #40, opensovd-core routes at pin 29e806f):
+    GET  {base}/version-info                                  -> {"sovd_info": [...]}
+    GET  {base}/v1/components                                 -> {"items": [{"id","name","href"}]}
+    GET  {base}/v1/components/{component}/data                -> {"items": [{"id","name","category","groups"?}]}
+    GET  {base}/v1/components/{component}/data/{id}           -> {"id", "data": {...}}
+    PUT  {base}/v1/components/{component}/data/{id}  {"data"} -> 204
+    errors: {"error_code": "error-response", "message": ...} with 404 / 400 / 500
 """
 import json
 import subprocess
@@ -98,6 +106,7 @@ class TrafficLog:
         self.entries = deque(maxlen=size)
         self.seq = 0
         self.lock = threading.Lock()
+        self.counts = {}
 
     def add(self, **entry):
         with self.lock:
@@ -105,6 +114,7 @@ class TrafficLog:
             entry["seq"] = self.seq
             entry["t"] = time.time()
             self.entries.append(entry)
+            self.counts[entry.get("backend")] = self.counts.get(entry.get("backend"), 0) + 1
 
     def since(self, seq, limit=200):
         with self.lock:
@@ -129,6 +139,18 @@ class Response:
             return json.loads(self.body.decode("utf-8") or "null")
         except (ValueError, UnicodeDecodeError):
             return None
+
+    def problem(self):
+        """One line for logs and views: transport error, SOVD error body or HTTP status."""
+        if self.error:
+            return self.error
+        if self.ok:
+            return None
+        j = self.json()
+        if isinstance(j, dict) and j.get("message"):
+            return f"HTTP {self.status} {j.get('error_code', '')}: {j['message']}".replace("  ", " ")
+        text = self.body[:120].decode("utf-8", "replace").strip()
+        return f"HTTP {self.status}" + (f": {text}" if text else "")
 
 
 class Backend:
@@ -212,7 +234,7 @@ class CdaBackend(Backend):
 # ---------------------------------------------------------------- facade
 
 class Backends:
-    """One object with everything the server, the automation and the runner need."""
+    """One object with everything the server, the fault model, the automation and the runner need."""
 
     def __init__(self, log=None):
         self.log = log or TrafficLog()
@@ -221,13 +243,15 @@ class Backends:
         self.sim = Backend("sim", config.SIM_URL, self.log)
         self._docker = (0.0, None)
         self._health = (0.0, None)
-        self._stats_prev = None  # (ts, counters, rates)
         self._lock = threading.Lock()
 
     # paths
-    def sovd_path(self, entity=None, item=None):
-        p = f"{config.SOVD_BASE}/v1/{entity or config.SOVD_ENTITY}"
-        return p + (f"/data/{item}" if item else "")
+    def sovd_component_path(self, component=None):
+        return f"{config.SOVD_BASE}/v1/components/{component or config.SOVD_COMPONENT}"
+
+    def sovd_data_path(self, item=None, component=None):
+        p = self.sovd_component_path(component) + "/data"
+        return p + (f"/{item}" if item else "")
 
     def cda_faults_path(self):
         return f"{config.CDA_BASE}/components/{config.CDA_ECU}/faults"
@@ -235,17 +259,29 @@ class Backends:
     def sim_dtc_path(self, code=None):
         return f"/{config.SIM_ECU}/dtc/{config.SIM_FAULT_MEMORY}" + (f"/{code}" if code else "")
 
-    # S-CORE side (SOVD)
-    def sovd_read(self, item, entity=None, origin=None):
-        r, j = self.sovd.get_json(self.sovd_path(entity, item), origin)
-        return r, (j or {}).get("data") if isinstance(j, dict) else None
+    # SOVD gateway (PR #40 contract)
+    def sovd_version(self, origin=None):
+        """(response, {"version", "base_uri", "vendor_info"} of the first sovd_info entry or None)."""
+        r, j = self.sovd.get_json(config.SOVD_BASE + "/version-info", origin)
+        info = (j or {}).get("sovd_info") if isinstance(j, dict) else None
+        return r, (info[0] if isinstance(info, list) and info and isinstance(info[0], dict) else None)
 
-    def sovd_faults(self, entity=None, origin=None):
-        r, j = self.sovd.get_json(self.sovd_path(entity) + "/faults", origin)
-        return r, (j or {}).get("items", []) if isinstance(j, dict) else []
+    def sovd_components(self, origin=None):
+        r, j = self.sovd.get_json(f"{config.SOVD_BASE}/v1/components", origin)
+        return r, ((j or {}).get("items") or []) if isinstance(j, dict) else []
 
-    def sovd_clear_faults(self, entity=None, origin=None):
-        return self.sovd.request("DELETE", self.sovd_path(entity) + "/faults", origin=origin)
+    def sovd_data_list(self, component=None, origin=None):
+        r, j = self.sovd.get_json(self.sovd_data_path(None, component), origin)
+        return r, ((j or {}).get("items") or []) if isinstance(j, dict) else []
+
+    def sovd_read(self, item, component=None, origin=None):
+        """(response, the `data` member of the ReadResponse, or None)."""
+        r, j = self.sovd.get_json(self.sovd_data_path(item, component), origin)
+        return r, (j.get("data") if isinstance(j, dict) else None)
+
+    def sovd_write(self, item, value, component=None, origin=None):
+        """PUT {"data": value}; the gateway answers 204 on success."""
+        return self.sovd.request("PUT", self.sovd_data_path(item, component), {"data": value}, origin=origin)
 
     # classic path
     def cda_faults(self, origin=None):
@@ -274,6 +310,11 @@ class Backends:
         def ping(name, backend, path):
             r = backend.request("GET", path)
             result[name] = {"up": r.ok, "status": r.status, "ms": r.ms, "error": r.error}
+            if name == "sovd" and r.ok:
+                j = r.json() or {}
+                info = (j.get("sovd_info") or [{}])[0] if isinstance(j, dict) else {}
+                result[name]["sovd_version"] = info.get("version") if isinstance(info, dict) else None
+                result[name]["base_uri"] = info.get("base_uri") if isinstance(info, dict) else None
 
         jobs = [("sovd", self.sovd, config.SOVD_BASE + "/version-info"),
                 ("cda", self.cda, config.CDA_BASE + "/components"),
@@ -314,28 +355,4 @@ class Backends:
         out["expected_running"] = {name: any(name in r for r in running) for name in config.DOCKER_CONTAINERS}
         with self._lock:
             self._docker = (time.time(), out)
-        return out
-
-    # stats file: counters -> rates
-    def stats(self):
-        out = {"file": config.STATS_FILE, "ok": False, "age_s": None, "counters": {}, "rates": {}, "error": None}
-        try:
-            with open(config.STATS_FILE, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            ts = float(data.get("ts") or 0)
-            counters = {k: v for k, v in (data.get("counters") or {}).items() if isinstance(v, (int, float))}
-            out.update(ok=True, ts=ts, age_s=round(time.time() - ts, 1) if ts else None, counters=counters)
-            with self._lock:
-                prev = self._stats_prev
-                if prev and ts > prev[0]:
-                    dt = ts - prev[0]
-                    out["rates"] = {k: round((v - prev[1].get(k, v)) / dt, 1) for k, v in counters.items()}
-                elif prev:
-                    out["rates"] = prev[2]
-                if not prev or ts > prev[0]:
-                    self._stats_prev = (ts, counters, out["rates"])
-        except FileNotFoundError:
-            out["error"] = "file not found"
-        except Exception as e:
-            out["error"] = f"{type(e).__name__}: {e}"[:200]
         return out
