@@ -600,6 +600,16 @@ cd Thinking_CAPs/demo/X-Verse
 vcs import . < autoverse.repos
 ```
 
+To bring a newer state of this branch into Thinking_CAPs, run its sync script from the Thinking_CAPs root, review the commit and push it as usual:
+
+```bash
+scripts/sync-xverse.sh --check   # in sync (0), behind (1) or edited directly (2)
+scripts/sync-xverse.sh           # replace demo/X-Verse with this branch, as one commit
+cd demo/X-Verse && vcs import . < autoverse.repos && vcs pull   # then update the components
+```
+
+The script updates only the copy of this repository (committed in Thinking_CAPs); the components stay separate checkouts brought in by `vcs import`. It refuses to overwrite direct edits of `demo/X-Verse` unless `--force` is given, and `--repo ~/autoverse` syncs from a local checkout instead of GitHub.
+
 [autoverse.repos](autoverse.repos) is the source of truth for component branches and tags. The CARLA bridge, SOME/IP bridge, S-CORE, Zenoh VCU, OTA vECU and Cuttlefish use the hackathon branch; other components use the versions listed in the manifest. Access to the The-Xverse repositories over SSH is required.
 
 For an existing workspace, check local changes in the component repositories before updating them. Import any newly added repositories and pull the nested repositories:
