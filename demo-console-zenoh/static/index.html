@@ -1,0 +1,175 @@
+<!--
+  Eclipse SDV Hackathon 2026 (Chapter Four) · Demo Console v2 (Zenoh input)
+  Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
+  Created: 2026-10-06 · Latest version: 2026-10-07
+  Goal: Page structure of the Demo Console.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo Console v2 · Cruise control diagnostics</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="brand-kicker">SDV Hackathon · Chapter Four · v2 Zenoh</span>
+    <h1>Cruise control diagnostics</h1>
+  </div>
+  <div class="pills" id="health">
+    <span class="pill unknown" id="pill-vehicle" title="Zenoh link to the virtual vehicle"><i></i>Vehicle <small>Zenoh</small><b>—</b></span>
+    <span class="pill unknown" data-svc="sovd"><i></i>SOVD side <small>:7690</small><b>—</b></span>
+    <span class="pill unknown" data-svc="cda"><i></i>CDA <small>:20002</small><b>—</b></span>
+    <span class="pill unknown" data-svc="sim"><i></i>ECU simulator <small>:8181</small><b>—</b></span>
+    <span class="pill unknown" id="docker"><i></i>Docker <b>—</b></span>
+  </div>
+  <div class="top-right">
+    <button id="btn-reset" class="btn" title="Clear the S-CORE faults and the ECU memory before a dry run (C)">Reset faults</button>
+    <button id="btn-run" class="btn primary" title="Run the 13 checks (R)">Run 13 checks</button>
+    <span id="clock" class="clock">--:--:--</span>
+  </div>
+</header>
+
+<main class="grid">
+  <!-- ------------------------------------------------ S-CORE path -->
+  <section class="panel path score" id="panel-score">
+    <h2><span class="tag">S-CORE path</span> Cruise control over SOVD</h2>
+
+    <div class="speed-block">
+      <div class="speed" id="speed">—</div>
+      <div class="speed-meta">
+        <span class="unit" id="speed-unit">km/h</span>
+        <span class="age" id="speed-age">no data</span>
+        <span class="src" id="speed-src">via SOVD</span>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Vehicle link <span class="muted" id="link-key">Zenoh</span> <span class="chip" id="link-state">—</span></h3>
+      <div class="kv">
+        <span>rate</span><b id="link-rate">—</b>
+        <span>last sample</span><b id="link-age">—</b>
+        <span>raw value</span><b id="link-raw">—</b>
+        <span>samples</span><b id="link-count">—</b>
+        <span>endpoint</span><b id="link-ep" class="wide">—</b>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>F1 plausibility <span class="muted" id="deb-count">— / —</span></h3>
+      <div class="states" id="deb-states">
+        <span data-state="PASSED">PASSED</span>
+        <span data-state="PREFAILED">PREFAILED</span>
+        <span data-state="FAILED">FAILED</span>
+        <span data-state="PREPASSED">PREPASSED</span>
+      </div>
+      <div class="bar"><div id="deb-bar"></div></div>
+      <div class="reason" id="deb-reason"></div>
+    </div>
+
+    <div class="block grow">
+      <h3>Faults via SOVD <span class="muted" id="score-fault-meta"></span></h3>
+      <div class="faults" id="score-faults"><div class="empty">no data</div></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ topology -->
+  <section class="panel" id="panel-topo">
+    <h2>Architecture <span class="muted" id="topo-meta">links coloured by health · dashes move while data flows</span></h2>
+    <svg id="topo" viewBox="0 0 680 330" role="img" aria-label="Demo chain">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0L10 5L0 10z" fill="context-stroke"/>
+        </marker>
+      </defs>
+      <path id="l-zenoh" class="link idle" d="M180 69 H240" marker-end="url(#arrow)"/>
+      <path id="l-sovd" class="link idle" d="M420 69 H455 V160 H480" marker-end="url(#arrow)"/>
+      <path id="l-cda" class="link idle" d="M420 251 H570 V189" marker-end="url(#arrow)"/>
+      <path id="l-doip" class="link idle" d="M180 251 H240" marker-end="url(#arrow)"/>
+      <path id="l-auto" class="link ctl" d="M610 189 V305 H100 V280" marker-end="url(#arrow)"/>
+      <text class="rate" id="r-zenoh" x="210" y="58" text-anchor="middle">—</text>
+      <text class="rate" id="r-sovd" x="448" y="120" text-anchor="end">—</text>
+      <text class="lbl" id="lbl-auto" x="355" y="318" text-anchor="middle">automatic DTC · simulator control API · test only</text>
+      <text class="lbl" x="210" y="270" text-anchor="middle">UDS / DoIP</text>
+      <text class="lbl" x="210" y="112" text-anchor="middle">Zenoh</text>
+      <text class="lbl" x="330" y="26" text-anchor="middle">S-CORE path</text>
+      <text class="lbl" x="330" y="210" text-anchor="middle">Classic ECU path</text>
+
+      <g id="n-vehicle" class="node"><rect x="20" y="40" width="160" height="58" rx="8"/>
+        <text x="100" y="64" class="name">Virtual vehicle</text><text x="100" y="84" class="sub" id="n-vehicle-sub">velocity_status</text></g>
+      <g id="n-score" class="node"><rect x="240" y="40" width="180" height="58" rx="8"/>
+        <text x="330" y="64" class="name">Cruise diag</text><text x="330" y="84" class="sub">SOVD :7690 · F1 / F2</text></g>
+      <g id="n-console" class="node self"><rect x="480" y="131" width="180" height="58" rx="8"/>
+        <text x="570" y="155" class="name">Demo Console</text><text x="570" y="175" class="sub">:8080 · this page</text></g>
+      <g id="n-cda" class="node"><rect x="240" y="222" width="180" height="58" rx="8"/>
+        <text x="330" y="246" class="name">CDA</text><text x="330" y="266" class="sub">:20002 · <tspan id="d-cda">Docker ?</tspan></text></g>
+      <g id="n-sim" class="node"><rect x="20" y="222" width="160" height="58" rx="8"/>
+        <text x="100" y="246" class="name">ECU simulator</text><text x="100" y="266" class="sub">:8181 · <tspan id="d-sim">Docker ?</tspan></text></g>
+    </svg>
+    <div class="legend">
+      <span><i class="sw up"></i>up, data flowing</span>
+      <span><i class="sw hold"></i>up, no new data</span>
+      <span><i class="sw down"></i>down / lost</span>
+      <span><i class="sw idle"></i>unknown</span>
+      <span class="right" id="stats-meta">stats.json: —</span>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ classic path -->
+  <section class="panel path classic" id="panel-classic">
+    <h2><span class="tag">Classic ECU path</span> Simulated ECU over CDA</h2>
+
+    <div class="block">
+      <h3>Automatic DTC <span class="muted" id="auto-meta">—</span></h3>
+      <div class="auto-rows" id="auto-rows"><div class="empty">no data</div></div>
+      <div class="auto-last" id="auto-last"></div>
+    </div>
+
+    <div class="block grow">
+      <h3>Fault memory via CDA <span class="muted" id="cda-fault-meta"></span></h3>
+      <div class="faults" id="cda-faults"><div class="empty">no data</div></div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ runner -->
+  <section class="panel" id="panel-runner">
+    <h2>Verification <span class="muted" id="run-meta">13 checks · not run yet</span></h2>
+    <div class="checks" id="checks"></div>
+    <div class="check-detail" id="check-detail">Press <b>Run 13 checks</b> before every dry run.</div>
+  </section>
+
+  <!-- ------------------------------------------------ signal workflow -->
+  <section class="panel" id="panel-flow">
+    <h2>Signal workflow <span class="muted" id="flow-meta">signal → speed → monitor → fault → ECU DTC</span>
+      <label class="pause" title="Alarm tone when a DTC starts failing in the ECU fault memory (browsers allow sound only after one click on the page)"><input type="checkbox" id="flow-sound" checked> sound <span id="sound-state" class="sound-state">—</span></label></h2>
+    <div class="steps" id="steps">
+      <div class="step" id="st-signal" title="Zenoh link to the virtual vehicle"><b>1 · Signal</b><span>—</span></div><i class="step-arrow">→</i>
+      <div class="step" id="st-speed" title="Vehicle speed as served over SOVD"><b>2 · Speed</b><span>—</span></div><i class="step-arrow">→</i>
+      <div class="step" id="st-monitor" title="F1 plausibility debounce and F2 link supervision"><b>3 · Monitor</b><span>—</span></div><i class="step-arrow">→</i>
+      <div class="step" id="st-fault" title="S-CORE faults via SOVD"><b>4 · Fault</b><span>—</span></div><i class="step-arrow">→</i>
+      <div class="step" id="st-dtc" title="DTCs in the ECU fault memory, read via the CDA · click to acknowledge"><b>5 · ECU DTC</b><span>—</span><em class="count" id="dtc-count" hidden>0</em></div>
+    </div>
+    <div class="flow-body">
+      <div class="events" id="events"><div class="empty">waiting for the first data…</div></div>
+      <div class="scope-wrap">
+        <canvas id="scope"></canvas>
+        <div class="scope-foot"><span><b>signal</b> samples/s, green = link live, red = lost</span><span><b>speed</b> km/h as served over SOVD</span><span class="right">sweep · one screen = 40 s · the trace stays, only the cursor moves</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ traffic log -->
+  <section class="panel" id="panel-log">
+    <h2>Traffic log <span class="muted" id="log-meta">last 50 calls · token redacted · origin page / auto / reset</span>
+      <label class="pause"><input type="checkbox" id="log-pause"> pause</label></h2>
+    <div class="log" id="log"></div>
+  </section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+<footer class="foot">keys: <b>C</b> reset faults · <b>R</b> run checks · <b>A</b> acknowledge DTCs · scenarios: <b>python runner.py --scenario all</b></footer>
+<script src="/static/app.js"></script>
+</body>
+</html>
