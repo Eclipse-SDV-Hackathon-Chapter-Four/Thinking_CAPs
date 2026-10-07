@@ -1,0 +1,13 @@
+# Communication issue #1167 contribution
+
+The [acceptance and copyright disposition proposal](acceptance-review/README.md) is prepared. The [human decision record](submission/HUMAN-DISPOSITION.md) remains pending. Agent recommendation: retain the scoped integration tests and separate checker utility patch; track the 204 inherited copyright findings as separate repair scope while preserving the failed check and six platform/configuration exclusions.
+
+The final native run passed build, formatting, focused integration/schema tests (2/2) and all 503 executed suite tests; six skipped. Copyright failed with 204 baseline-identical findings and zero additions. On 2026-10-07, a fresh [portable evidence recheck](acceptance-review/evidence-verification.json) verified source, archive, patches, controls, logs and native products. These are carried native results for the unchanged measured subject. No new tests were executed. The [per-file copyright inventory](acceptance-review/copyright-findings.csv) makes separate remediation reviewable.
+
+The integration test covers repeated OfferService, StopOfferService, StartFindService, Subscribe and Unsubscribe. Technical review corrected service-state comparisons and discovery callback coverage, and the harness now requires application exit 0. See [technical review](final-review/TECHNICAL-REVIEW.md), [measured source](final-review/verification-run/candidate/), [test-only patch](submission/issue-1167-tests.patch), [utility patch](submission/copyright-checker-paths.patch), [combined patch](submission/communication-1167.patch), [submission packet](submission/README.md) and [current status](CURRENT-STATUS.md).
+
+Measured baseline: `e3d126c2d7569345cf5f790310702eb00cd86b06`; source vector SHA-256: `ddccd8f68c44de2b6de920c42c8999189cc3d1845268d9ce6e8dbad3da860e98`; native run: `01M4878Q65ENC6PJ5AEJ6NMWB3`. QNX runtime was not executed. Newer-main applicability was checked during earlier preparation; native results remain bound to the measured baseline.
+
+Earlier official ECA lookup confirmed user-declared Eclipse account `jnascimento6p0`; future native commit-author eligibility remains separate. The original hackathon branch push is recorded in [receipt](local-commit/push-result.json), commit `f8df1d6258d956142ee69d97e38ce1dd239525dd`. Native communication PR publication and maintainer acceptance remain outstanding.
+
+Historical packets, original license notices, storage bindings, exhausted supervisor and original paid-call authority are preserved. No further paid call or supervisor retry occurred. Read [handoff](RESUME-HANDOFF.md) before resuming native work; earlier top-level records are preserved in `acceptance-review/before-preparation/`.
