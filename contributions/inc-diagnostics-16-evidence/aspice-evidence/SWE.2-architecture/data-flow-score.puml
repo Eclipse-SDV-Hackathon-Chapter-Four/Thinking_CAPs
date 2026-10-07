@@ -1,0 +1,95 @@
+@startuml
+title S-CORE to OpenSOVD Data Flow - Read Operation
+
+skinparam participant {
+    BackgroundColor<<score>> #E8F5E9
+    BackgroundColor<<opensovd>> #E3F2FD
+    BackgroundColor<<adapter>> #FFF3E0
+}
+
+actor "REST Client\n(Dashboard)" as Client
+box "OpenSOVD" #E3F2FD
+    participant "opensovd-server" as Server <<opensovd>>
+    participant "opensovd-core\n(DataProvider trait)" as Core <<opensovd>>
+end box
+
+box "sovd_adapter (Bridge)" #FFF3E0
+    participant "SovdDataProvider" as Provider <<adapter>>
+    participant "DataResourceRegistry" as Registry <<adapter>>
+    participant "convert" as Conv <<adapter>>
+    participant "handle" as Handle <<adapter>>
+end box
+
+box "S-CORE (diag_api)" #E8F5E9
+    participant "CruiseDiag" as Cruise <<score>>
+    participant "DataResource\n(VehicleSpeed)" as Resource <<score>>
+    participant "Sensor\n(Shared State)" as Sensor <<score>>
+end box
+
+== Initialization (Application Startup) ==
+
+Cruise -> Cruise : new(debounce_config)
+Cruise -> Sensor : Arc<Mutex<Sensor>>
+Cruise -> Resource : VehicleSpeed(self.clone())
+Cruise -> Registry : register(metadata, resource)
+Registry -> Registry : Store in IndexMap
+Provider -> Registry : new(registry)
+Server -> Provider : set_data_provider(provider)
+
+== Runtime: Read vehicle_speed ==
+
+Client -> Server : GET /sovd/v1/components/cruise/data/vehicle_speed
+Server -> Core : DataProvider::read("vehicle_speed", false)
+Core -> Provider : read("vehicle_speed", include_schema=false)
+
+Provider -> Registry : get("vehicle_speed")
+Registry --> Provider : Entry { metadata, format, resource }
+
+Provider -> Provider : Check read-only (allow)
+
+group Mutex Lock Scope
+    Provider -> Resource : read(args)
+    note right of Resource
+        Lock acquired here
+        Returns handle immediately
+        Lock released before await
+    end note
+    Resource -> Sensor : lock().current_speed()
+    Sensor --> Resource : 99.8 km/h
+    Resource --> Provider : ReadValueHandle::Ready(payload)
+end
+
+alt ReadValueHandle::Ready
+    Provider -> Handle : resolve_read(Ready(result))
+    Handle --> Provider : ReadValueReply { payload }
+else ReadValueHandle::Pending(Future)
+    Provider -> Handle : resolve_read(Pending(future))
+    Handle -> Handle : future.await
+    Handle --> Provider : ReadValueReply { payload }
+end
+
+Provider -> Conv : reply_value(payload, format)
+note right of Conv
+    diag_api::serde_json::Value
+    → serde_json::Value
+    (string roundtrip for version compat)
+end note
+Conv --> Provider : (Value, Option<Schema>)
+
+Provider --> Core : DataReply::Data { data, schema }
+Core --> Server : DataReply
+Server --> Client : 200 OK\n{ "value": 99.8, "unit": "km/h" }
+
+== Error Flow: Write to Read-Only ==
+
+Client -> Server : PUT /sovd/v1/components/cruise/data/vehicle_speed
+Server -> Core : DataProvider::write("vehicle_speed", value)
+Core -> Provider : write("vehicle_speed", value)
+Provider -> Registry : get("vehicle_speed")
+Registry --> Provider : Entry { metadata: { read_only: true }, ... }
+Provider -> Provider : Check read-only (reject!)
+Provider --> Core : DataReply::Error(ReadOnly)
+Core --> Server : DataReply::Error
+Server --> Client : 403 Forbidden
+
+@enduml
