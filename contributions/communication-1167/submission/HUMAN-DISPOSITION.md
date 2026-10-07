@@ -1,13 +1,37 @@
-# Pending authorized contributor decision
+# Human disposition — accepted for measured scope
 
-This is an uncompleted decision record, not an agent approval. Reviewed subject: staged Git tree `1d790b6182be2fed1794bb287f8f9a868bde685f`, source vector SHA-256 `ddccd8f68c44de2b6de920c42c8999189cc3d1845268d9ce6e8dbad3da860e98`. Technical recommendation and measured evidence are complete in `../final-review/TECHNICAL-REVIEW.md` and `../final-review/final-binding-verification.json`.
+Prepared 2026-10-07. Jefferson Nascimento, Software Engineer, explicitly agreed to the prepared rationale and four proposed dispositions in the session response “I agree, lets create the PR”. The measured-scope decision is recorded in [human-decision.json](../acceptance-review/human-decision.json). Upstream maintainer and release authority are not asserted. [Concrete proposal and evidence](../acceptance-review/README.md) are complete; the general request to address the remaining items is not a personal engineering acceptance.
 
-- [ ] Authorized person records their identity, role, decision and authenticated origin for this subject.
-- [ ] Person records the disposition of the scoped tests, separate checker utility repair, inherited 204 copyright failures and 6 platform skips.
-- [ ] Contributor confirms the intended commit author identity/email and applicable sign-off; commit-level eligibility remains unvalidated.
+Subject: native baseline `e3d126c2d7569345cf5f790310702eb00cd86b06`, staged tree `1d790b6182be2fed1794bb287f8f9a868bde685f`, source vector SHA-256 `ddccd8f68c44de2b6de920c42c8999189cc3d1845268d9ce6e8dbad3da860e98`. Evidence: run `01M4878Q65ENC6PJ5AEJ6NMWB3` and [fresh portable evidence recheck](../acceptance-review/evidence-verification.json). No new native run occurred.
 
-Deterministic account evidence: official ECA username lookup succeeded for user-declared Eclipse account `jnascimento6p0`; see `eca-lookup-declared-account.json`. This evidence does not complete the human engineering decision items above.
+| Subject | Agent recommendation | Authorized human disposition |
+| --- | --- | --- |
+| Five-API integration test | Accept scoped Ubuntu coverage, including distinct discovery-operation handles and mandatory application exit 0. | Accepted as proposed for measured scope |
+| Checker-path utility | Retain its separate patch for independent review; measured source includes this correction. | Accepted as proposed for measured scope |
+| Copyright | Retain failed exit 1 and classify all 204 baseline-identical findings as inherited; track header repair separately. No waiver. | Accepted as proposed for measured scope |
+| Six skipped targets | Accept explicitly limited measured Ubuntu scope; QNX and excluded configuration verification remain outstanding. | Accepted as proposed for measured scope |
 
-Decision: pending. Reviewer/contributor role: not asserted. Date/origin: pending. No Signed-off-by declaration or agreement signature has been supplied by the agent.
+- [x] Reviewer supplied name and professional role: Jefferson Nascimento, Software Engineer. No upstream maintainer or release authority is asserted.
+- [x] Jefferson accepted all four proposed dispositions and the accompanying rationale.
+- [x] Decision recorded 2026-10-07T14:01:17.880220+00:00; origin: explicit user session response “I agree, lets create the PR”. This is a session-origin record, not a cryptographic signature.
 
-Repository rule: “Agents draft; deterministic tools measure; authorized humans accept engineering decisions.” Source: `/home/jefferson/s-core_sw_fabric/AGENTS.md`. Contribution rule: `upstream-CONTRIBUTING.md` requires signing the ECA before contribution. Current account evidence: `eca-lookup-declared-account.json`; original `eca-lookup.json` is preserved historical evidence.
+Reviewer name: Jefferson Nascimento. Professional role: Software Engineer. Identity/role origin: explicit user session response on 2026-10-07, “my name is Jefferson Nascimento, Software Engineer, help me with the rationale for the decision”. Decision recorded at: 2026-10-07T14:01:17.880220+00:00. Origin: explicit user agreement in this session. Overall decision: accepted for the bound measured scope and ready for upstream review.
+
+## Accepted rationale for the reviewer
+
+The agent drafted this rationale; Jefferson subsequently adopted the four dispositions through his explicit session agreement. The earlier draft is preserved in `../acceptance-review/before-human-acceptance/`.
+
+1. **Integration test — accept for the measured scope.** The contribution provides one dedicated test for all five requested APIs. It checks observable service state before and after repeated operations and verifies recovery. Distinct discovery-operation handles agree with the native contract; comparing service identity and cardinality is the supported state-invariance check. Requiring application exit 0 closes the identified false-positive. Build, formatting, focused integration/schema tests and all 503 executed suite tests passed on the bound source. This supports technical readiness for upstream review on that baseline; it does not establish every internal resource invariant or validate changed upstream source.
+2. **Checker-path utility — retain for independent review.** The correction changes only the two root BUILD inputs from label-like strings to filesystem paths, allowing the checker to scan. Its small, separately exported patch lets reviewers assess it independently of the test behavior. The measured source includes the utility correction, so splitting or changing the eventual submitted subject requires appropriate verification of that subject.
+3. **Copyright — classify as inherited and track separate repair.** The baseline with the same checker-path correction and the contribution produce identical complete normalized messages: 204 findings, zero added or removed. The new tests add no finding. This supports attribution to the inherited baseline and keeping header repair outside the idempotency-test scope. Preserve exit 1, the per-file inventory and the unresolved repair obligation; do not describe the check as passed or claim a waiver or legal compliance. Upstream maintainers determine whether they permit contribution progress with this unresolved check.
+4. **Skipped targets — accept only the documented Ubuntu scope.** The six exclusions have recorded platform/configuration declarations, and the result explicitly counts them as skipped. Accepting this scope is defensible because the reported evidence is bounded and reproducible. It supplies no QNX runtime result; broader platform qualification remains outstanding.
+
+### Prepared decision text adopted by session agreement
+
+> I, Jefferson Nascimento, Software Engineer, accept the scoped Communication #1167 contribution as technically ready for upstream review on the bound measured baseline. My rationale is the dedicated coverage of the five requested APIs, correction of the harness false-positive, and the passing build, formatting, focused tests and 503 executed suite tests. I support retaining the checker-path correction as a separately reviewable utility patch. I classify the 204 unchanged copyright findings as inherited failures to be tracked and repaired separately, with the failed check preserved. I accept the explicitly documented Ubuntu scope with six skipped targets and keep broader platform verification outstanding. This decision applies to the source subject recorded above; upstream maintainer acceptance and disposition of the failed copyright check remain outstanding.
+
+The prepared text above records the scope of the proposal Jefferson accepted; it is not presented as a verbatim user quotation. His actual response was “I agree, lets create the PR”. Native PR creation is separately authorized by that response. Maintainer acceptance, copyright remediation, merge and release remain outstanding.
+
+The official ECA username lookup for user-declared account `jnascimento6p0` succeeded; see [account evidence](eca-lookup-declared-account.json). The actual published native commit uses Jefferson Nascimento and the existing configured Git email; the [official strict commit ECA validation](publication/eca-validation-result.json) passed for both author and committer. Native [PR #1335](https://github.com/eclipse-score/communication/pull/1335) is open with [publication evidence](publication/README.md). No Signed-off-by trailer or agreement signature was added. Maintainer acceptance and copyright remediation remain outstanding.
+
+Authority: [S-CORE workflow skill](/home/jefferson/.codex/skills/score-rust-workflow/SKILL.md) states “An agent may recommend; deterministic tools measure; authorized humans decide offline.” [Fabric AGENTS.md](/home/jefferson/s-core_sw_fabric/AGENTS.md) states “Agents draft; deterministic tools measure; authorized humans accept engineering decisions.” The previous pending record is preserved in `../acceptance-review/before-preparation/submission/HUMAN-DISPOSITION.md`.

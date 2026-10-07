@@ -1,0 +1,12 @@
+# Prepared submission for communication #1167
+
+The exact previously measured source is staged on local branch `test/1167-api-idempotency-reviewed` in the externally bound disposable workspace recorded in `preparation-result.json`. No commit, sign-off or remote publication has occurred. `source.tar.gz` independently exports all 2,885 verified files; combined/test-only/utility patches and the source hash vector are here. `PR-TITLE.txt` and `PR-BODY.md` are ready for the eventual pull request.
+
+User-declared Eclipse account: `jnascimento6p0`; authenticated GitHub account: `jnsagai`. Official ECA lookup for `jnascimento6p0` returns HTTP 200, confirming signed ECA status for that Eclipse username. Exact response and interpretation are in `eca-lookup-declared-account.json`. Earlier HTTP 404 for `jnsagai` did not establish missing GitHub linkage; that inference is corrected. Account linkage and eligibility of a future commit author are not determined by these username lookups. No agreement signature or human decision was supplied by the agent. The uncompleted subject-bound engineering decision record is `HUMAN-DISPOSITION.md`.
+
+The patch applies cleanly to current upstream `9fa5a2f6cc78dd3f756df3ec3ea9466d38ee7dfd`, which is 10 commits ahead of the measured baseline. Its changes include LoLa skeleton/event-control code. This checks patch applicability only; the 503-pass/6-skip result remains bound to the measured baseline and is not relabeled as a current-main result. `upstream-comparison.json` preserves changed-path evidence. Current contribution guide matches the measured baseline guide; exact binding is in `contribution-guide-binding.json`.
+
+Native run `01M4878Q65ENC6PJ5AEJ6NMWB3` and the completed technical review are preserved under `../final-review/`. No new Fabro run, paid call or supervisor retry was used for submission preparation. Credentials remain internal. Dashboard: http://172.18.17.0:8787 (`fabro_dashboard`).
+
+
+Latest decision preparation (2026-10-07): [proposal](../acceptance-review/README.md), [portable evidence recheck](../acceptance-review/evidence-verification.json) and [204-file finding inventory](../acceptance-review/copyright-findings.csv) are complete. The pending human record now gives concrete dispositions and an explicit response format. Original submission measurements remain unchanged. The no-publication statement above concerns native communication submission; the separate historical hackathon push is recorded in `../local-commit/push-result.json`.

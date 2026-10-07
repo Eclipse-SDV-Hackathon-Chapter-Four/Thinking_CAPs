@@ -1,0 +1,13 @@
+# Communication #1167 — disposition ready, human decision pending
+
+The [concrete decision proposal](acceptance-review/README.md) and [human decision record](submission/HUMAN-DISPOSITION.md) are ready. Agent recommendation: retain the five-API integration test and separately reviewable checker-path utility, classify the 204 unchanged copyright findings as inherited failures with separate header repair, and retain six explicit platform/configuration exclusions. No human acceptance or copyright waiver is recorded.
+
+Fresh portable evidence validation on 2026-10-07 verified all 2,885 measured source files, the submission archive and patches, eight frozen controls, five native command records/log pairs and 45 products. Carried run `01M4878Q65ENC6PJ5AEJ6NMWB3` passed build, formatting, focused tests (2/2) and all 503 executed suite tests; six skipped. Copyright remains exit 1: 96 missing, 93 wrong-format, 14 preceded, one duplicate; zero additions or removals against the baseline with its checker-path overlay. [Per-file repair inventory](acceptance-review/copyright-findings.csv) and [verification record](acceptance-review/evidence-verification.json) are saved. No native rerun, paid call or supervisor retry occurred.
+
+Current issue activity was retrieved 2026-10-07: upstream #1167 remains open, has no comments, and still requests the same five APIs. The prepared applicability check against newer main is historical; no measured result is claimed for current upstream production source. Formal decision remains bound to baseline `e3d126c2d7569345cf5f790310702eb00cd86b06` and source vector `ddccd8f68c44de2b6de920c42c8999189cc3d1845268d9ce6e8dbad3da860e98`.
+
+Signed ECA status for user-declared Eclipse account `jnascimento6p0` was confirmed in the earlier official lookup. Future native commit-author eligibility is unvalidated. The original hackathon branch push to `The-Xverse/eclipse_sdv_hackathon_2026`, commit `f8df1d6258d956142ee69d97e38ce1dd239525dd`, remains recorded in `local-commit/push-result.json`; it is not a native communication PR. No new commit, push, PR, sign-off, merge or release occurred during disposition preparation.
+
+Original and historical source, logs, products, budgets, exhausted supervisor and storage bindings are preserved. Earlier status records are in `acceptance-review/before-preparation/`. Current storage/dashboard availability was not remeasured because this work uses portable internal evidence only. Before future native execution, validate the saved storage binding.
+
+Next action: authorized reviewer supplies identity, role and an explicit decision on the four prepared dispositions. The agent can then record the actual decision without asserting upstream acceptance.

@@ -1,0 +1,209 @@
+{
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "clippy",
+          "informationUri": "https://rust-lang.github.io/rust-clippy/",
+          "rules": [
+            {
+              "id": "clippy::result_unit_err",
+              "fullDescription": {
+                "text": "use a custom `Error` type instead\nfor further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_unit_err\n`#[warn(clippy::result_unit_err)]` on by default\n"
+              },
+              "helpUri": "https://rust-lang.github.io/rust-clippy/master/index.html#result_unit_err"
+            },
+            {
+              "id": "dead_code",
+              "fullDescription": {
+                "text": "`#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n"
+              }
+            },
+            {
+              "id": "clippy::missing_transmute_annotations",
+              "fullDescription": {
+                "text": "for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_transmute_annotations\n`#[warn(clippy::missing_transmute_annotations)]` on by default\n"
+              },
+              "helpUri": "https://rust-lang.github.io/rust-clippy/master/index.html#missing_transmute_annotations"
+            },
+            {
+              "id": "clippy::clone_on_copy",
+              "fullDescription": {
+                "text": "for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#clone_on_copy\n`#[warn(clippy::clone_on_copy)]` on by default\n"
+              },
+              "helpUri": "https://rust-lang.github.io/rust-clippy/master/index.html#clone_on_copy"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "clippy::result_unit_err",
+          "ruleIndex": 0,
+          "message": {
+            "text": "this returns a `Result<_, ()>`"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs"
+                },
+                "region": {
+                  "startLine": 259,
+                  "startColumn": 5,
+                  "endLine": 259,
+                  "endColumn": 97,
+                  "byteOffset": 12738,
+                  "byteLength": 92
+                }
+              }
+            }
+          ],
+          "relatedLocations": []
+        },
+        {
+          "ruleId": "dead_code",
+          "ruleIndex": 1,
+          "message": {
+            "text": "struct `SomeIpSampleAllocateePtrBinding` is never constructed"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/plumbing/rust/sample_allocatee_ptr.rs"
+                },
+                "region": {
+                  "startLine": 64,
+                  "startColumn": 8,
+                  "endLine": 64,
+                  "endColumn": 39,
+                  "byteOffset": 2061,
+                  "byteLength": 31
+                }
+              }
+            }
+          ],
+          "relatedLocations": []
+        },
+        {
+          "ruleId": "dead_code",
+          "ruleIndex": 1,
+          "message": {
+            "text": "union `SomeIpSampleAllocateePtrVariant` is never used"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/plumbing/rust/sample_allocatee_ptr.rs"
+                },
+                "region": {
+                  "startLine": 71,
+                  "startColumn": 7,
+                  "endLine": 71,
+                  "endColumn": 38,
+                  "byteOffset": 2239,
+                  "byteLength": 31
+                }
+              }
+            }
+          ],
+          "relatedLocations": []
+        },
+        {
+          "ruleId": "clippy::missing_transmute_annotations",
+          "ruleIndex": 2,
+          "message": {
+            "text": "transmute used without annotations"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "startLine": 950,
+                  "startColumn": 68,
+                  "endLine": 950,
+                  "endColumn": 77,
+                  "byteOffset": 40206,
+                  "byteLength": 9
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "startLine": 950,
+                  "startColumn": 68,
+                  "endLine": 950,
+                  "endColumn": 77,
+                  "byteOffset": 40206,
+                  "byteLength": 9
+                }
+              },
+              "message": {
+                "text": "consider adding missing annotations \"transmute::<std::boxed::Box<dyn std::ops::FnMut(bridge_ffi_rs::HandleContainer, bridge_ffi_rs::NativeFindServiceHandle) + std::marker::Send>, bridge_ffi_rs::FatPtr>\""
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "clippy::clone_on_copy",
+          "ruleIndex": 3,
+          "message": {
+            "text": "using `clone` on type `TypeOperationsManager` which implements the `Copy` trait"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "startLine": 1164,
+                  "startColumn": 31,
+                  "endLine": 1164,
+                  "endColumn": 47,
+                  "byteOffset": 50106,
+                  "byteLength": 16
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "startLine": 1164,
+                  "startColumn": 31,
+                  "endLine": 1164,
+                  "endColumn": 47,
+                  "byteOffset": 50106,
+                  "byteLength": 16
+                }
+              },
+              "message": {
+                "text": "try dereferencing it \"*type_ops\""
+              }
+            }
+          ]
+        }
+      ],
+      "columnKind": "utf16CodeUnits"
+    }
+  ]
+}
