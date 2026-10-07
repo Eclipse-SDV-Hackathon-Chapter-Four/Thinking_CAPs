@@ -600,7 +600,9 @@ cd Thinking_CAPs/demo/X-Verse
 vcs import . < autoverse.repos
 ```
 
-To bring a newer state of this branch into Thinking_CAPs, run its sync script from the Thinking_CAPs root, review the commit and push it as usual:
+**Why a sync script.** Thinking_CAPs holds a committed *copy* of this repository, not a reference to it. A git submodule would only point at this repository, which is private: anyone without X-Verse access, such as hackathon reviewers, would see an empty folder, and the PRE-WORK history in Thinking_CAPs relies on the X-Verse content being inside it. A copy keeps the content readable for everyone, but it does not follow this branch by itself: every X-Verse change lands here first, and the copy falls behind until it is refreshed. `scripts/sync-xverse.sh` in Thinking_CAPs refreshes it in one reviewed commit, and keeps the rule that X-Verse is changed only here: `--check` detects direct edits of `demo/X-Verse`, and a sync never overwrites them silently. Each sync commit lists the commits it brought in and records the source commit in an `X-Verse-Source:` trailer. Team members who only run the simulation do not need it; they use `vcs import` and `vcs pull` for the components.
+
+To bring a newer state of this branch into Thinking_CAPs, run the sync script from the Thinking_CAPs root, review the commit and push it as usual:
 
 ```bash
 scripts/sync-xverse.sh --check   # in sync (0), behind (1) or edited directly (2)
