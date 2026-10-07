@@ -14,3 +14,4 @@ Use new evidence output directories. Build assets and credentials stay outside G
 The old component script names in this directory are compatibility symlinks.
 
 - `run_dashboard.py`: local OpenSOVD diagnosis and openDuT-managed project campaign UI; [setup](../docs/dashboard.md).
+- `sync-xverse.sh`: sync `demo/X-Verse` with The-Xverse/autoverse `dev/sdv-hackathon-2026` in one commit; `--check` reports in sync, behind, or edited directly. `demo/X-Verse` is never edited here.
