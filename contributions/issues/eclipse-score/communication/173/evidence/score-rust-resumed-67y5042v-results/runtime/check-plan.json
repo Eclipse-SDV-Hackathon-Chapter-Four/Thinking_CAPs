@@ -1,0 +1,43 @@
+{
+  "checks": [
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "reason": "Run actual concept and generated macro unit cases at unchanged baseline; fresh downstream compatibility evidence.",
+      "config": "linux_x64",
+      "native_obligation": "Communication CI.md and actual BUILD rules; compatibility checks are use-case evidence, not qualification or human acceptance."
+    },
+    {
+      "kind": "doctest",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "config": "linux_x64_gcc_15",
+      "reason": "Explicit manual native doctest target; GCC variant addresses documented LLVM native-link limitation without changing BUILD or toolchain pins.",
+      "native_obligation": "Communication CI.md and actual BUILD rules; compatibility checks are use-case evidence, not qualification or human acceptance."
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ],
+      "reason": "Real Linux LoLa producer/consumer integration through generated Rust APIs.",
+      "config": "linux_x64",
+      "native_obligation": "Communication CI.md and actual BUILD rules; compatibility checks are use-case evidence, not qualification or human acceptance."
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com"
+      ],
+      "reason": "Native pinned Clippy aspect for concept and public downstream facade.",
+      "config": "linux_x64",
+      "native_obligation": "Communication CI.md and actual BUILD rules; compatibility checks are use-case evidence, not qualification or human acceptance."
+    }
+  ]
+}

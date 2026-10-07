@@ -1,0 +1,15 @@
+{
+  "url": "https://github.com/eclipse-score/communication/issues/1261",
+  "issue_number": 1261,
+  "state": "open",
+  "captured_on": "2026-10-07",
+  "updated_at": "2026-10-03T09:27:17Z",
+  "title": "Improvement: Provide an async stream of newly available services",
+  "labels": [
+    "rust-api"
+  ],
+  "assignees": [],
+  "body": "### What\n\nThe Rust API currently discovers services through` find_service::<I>()` which creates a discovery handle scoped to an interface and a `FindServiceSpecifier` Its async query returns an initial result, it does not continuously report services offered afterward.\n\nAdd an asynchronous stream that reports newly available services across the system, rather than only additional instances matching one service instance specifier. Since services may belong to different interfaces, stream items should provide interface-independent service descriptors, including enough information to identify each service.\n\n**Acceptance criteria:**\n\nThe stream reports newly available services system-wide, not only later instances for one specifier.\nEach item identifies its service and interface.\nThe API documents initial results, errors, and stream lifetime/termination.\nExisting interface-scoped discovery APIs remain available.\n\nReference - https://github.com/eclipse-score/communication/issues/9\n\n### How\n\n_No response_\n\n### Estimates for realization\n\n_No response_\n\n### Category\n\n- [ ] Affects Detailed Design\n\n### Requirements / Architecture\n\n- [x] Requirements / Architecture are not affected by this change?",
+  "comments": [],
+  "source": "gh issue view (read-only), 2026-10-07"
+}

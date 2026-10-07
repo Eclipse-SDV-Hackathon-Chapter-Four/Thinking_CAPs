@@ -1,0 +1,66 @@
+{
+  "checks": [
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Issue250 actual positive Rust Any regression; applicability pending independent review",
+      "reason": "actual positive Any behavior: exact ServiceNotFound propagation for an unmapped interface and for concrete-instance-id (ConcreteSelectorInterface) and malformed (MalformedSelectorInterface) selectors; the sync wildcard returns two offered BigDataInterface instances (one absent from the consumer configuration) and excludes an actually-offered ComplexStructInterface instance; Specific stays compatible; no fabricated Any specifier; a no-offer phase (test_com_api_any_no_offer) asserts the documented native Ok(empty) for a never-offered service type; and the async one-shot wildcard snapshot returns exactly two typed results and still builds a consumer that receives real samples after completion/drop",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Issue250 actual positive Rust Any regression; applicability pending independent review",
+      "reason": "in-crate unit tests for the unmapped-interface Any error path and for the owning stop guard (never-polled drop and polled-pending cancellation). The dedicated Any regression consumer binary //score/mw/com/test/basic_rust_api/consumer_any_apis:bigdata-consumer-any is built as its dependency.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/impl:runtime_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ]
+    },
+    {
+      "config": "linux_x64_gcc_15",
+      "kind": "doctest",
+      "native_obligation": "Actual manual BUILD test; QNX excluded, no qualification inferred.",
+      "reason": "Concept accessor/generated APIs changed; explicit manual doctests after actual changed subjects, known native GCC configuration.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "lint",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ]
+    }
+  ]
+}

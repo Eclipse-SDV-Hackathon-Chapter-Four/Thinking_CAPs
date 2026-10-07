@@ -1,0 +1,152 @@
+{
+  "admission": "resolve newly implemented labels and applicable native check capabilities first",
+  "checks": [
+    {
+      "config": "linux_x64",
+      "execution_status": "not executed",
+      "kind": "build",
+      "target_status": "proposed, absent from bound source",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis"
+      ]
+    },
+    {
+      "cache": "explicitly disabled",
+      "config": "linux_x64",
+      "execution_status": "not executed",
+      "expected_cases": [
+        "test_subscription_state_notifications",
+        "test_subscription_state_handler_replacement",
+        "test_subscription_state_handler_unset",
+        "test_subscription_state_handler_false_then_drop",
+        "test_subscription_state_handler_drop_active"
+      ],
+      "kind": "test",
+      "target_status": "proposed, absent from bound source",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test:test_subscription_state_apis"
+      ]
+    },
+    {
+      "aspect_execution": "must be measured, no library-only substitution",
+      "config": "clippy",
+      "execution_status": "not executed",
+      "kind": "lint",
+      "target_status": "proposed, absent from bound source",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "execution_status": "not executed in planning activity",
+      "future_execution_rule": "rerun if source/dependency/control subjects change; otherwise explicit verified carried evidence",
+      "kind": "build",
+      "native_obligation": "Native verification matrix 'Rust library/API' requires the native build of the changed library; rule kind is rust_library in score/mw/com/rust/score_com_concept/BUILD. | rust_library in score/mw/com/rust/BUILD; public visibility; downstream compilation obligation for a public API change. | testonly rust_library in score/mw/com/rust/BUILD; included in the native build/test set for the mock runtime. | rust_library in com-api-runtime-lola/BUILD; native build obligation for the Rust library/API change surface. | rust_library in com-api-runtime-mock/BUILD; trait-implementor compile obligation. | rust_library in com-api-ffi-lola/BUILD; FFI boundary compile obligation (unsafe/FFI change surface). | rust_library in com-api-ffi-lola/BUILD; FFI callback ABI obligation. | rust_library in com-api-ffi-lola/BUILD; mock surface completeness for trait changes. | cc_library in com-api-ffi-lola/BUILD with COMPILER_WARNING_FEATURES; C++ FFI wrapper build obligation. | rust_binary in basic_rust_api/consumer_sync_apis/BUILD; native verification matrix requires representative downstream compilation. | rust_binary in basic_rust_api/consumer_async_apis/BUILD; downstream compilation obligation.",
+      "target_status": "existing, prior measured labels",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_mock",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "current_callback_unit_names": [
+        "test_get_subscription_state_maps_raw_values",
+        "test_handler_observed_mapped_state_and_mutated_capture",
+        "test_handler_false_return_signals_cancellation",
+        "test_set_handler_failure_drops_captured_resource",
+        "test_set_and_unset_disposes_captured_resource_exactly_once",
+        "test_drop_unregisters_before_unsubscribe_and_disposes_once"
+      ],
+      "execution_status": "not executed in planning activity",
+      "future_execution_rule": "rerun if source/dependency/control subjects change; otherwise explicit verified carried evidence",
+      "kind": "test",
+      "native_obligation": "Existing rust_test target (already depends on bridge_ffi_mock + mockall); Rust library/API + concurrency/lifetime obligations from references/native-verification.md and references/issue-types.md. | rust_test in score_com_concept/BUILD; regression obligation for the abstraction layer. | rust_unit_test (unit_testing.bzl) in score_com_concept/BUILD; Linux forwarding target. | cc_unit_test in bindings/lola/BUILD; C++ middleware contract obligations O2/O3/O5/O6. | cc_unit_test in bindings/lola/BUILD; state transition obligation O1/O2. | cc_unit_test in bindings/lola/BUILD; enum-value ABI obligation. | cc_unit_test in bindings/lola/BUILD; explicitly recorded as supplementary, not proof of race absence. | cc_unit_test in bindings/lola/BUILD; ProxyEventBase contract obligation from proxy_event_base.h. | integration_test (quality/integration_testing) in basic_rust_api/consumer_sync_apis/integration_test/BUILD; communication-behavior integration obligation. | integration_test (quality/integration_testing) in basic_rust_api/consumer_async_apis/integration_test/BUILD; communication-behavior integration obligation.",
+      "new_binary_regression_rule": "execute the two existing sync/async Linux integration labels alongside the new five-case target",
+      "target_status": "existing, prior measured labels",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_methods_test",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_events_test",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_states_test",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_stress_test",
+        "//score/mw/com/impl/bindings/lola:proxy_event_subscription_test",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ]
+    },
+    {
+      "carried_measurement": "previous explicit native execution: 17 pass, two ignored; no current rerun or Markdown-example coverage",
+      "config": "linux_x64",
+      "execution_status": "not executed in planning activity",
+      "future_execution_rule": "rerun if source/dependency/control subjects change; otherwise explicit verified carried evidence",
+      "kind": "doctest",
+      "native_obligation": "rust_doc_test in com-api-runtime-lola/BUILD; native verification matrix docs obligation. | rust_doc_test in score_com_concept/BUILD with tags=['manual']; per references/native-verification.md, manual/excluded checks must be enumerated and their exclusion tracked.",
+      "target_status": "existing, prior measured labels",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ]
+    },
+    {
+      "config": "clippy",
+      "execution_status": "not executed in planning activity",
+      "future_execution_rule": "rerun if source/dependency/control subjects change; otherwise explicit verified carried evidence",
+      "kind": "lint",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc declares the clippy aspect for the Linux configuration; Rust coding guideline doc__rust_coding_guidelines applies. Exact aspect invocation is a command-stage concern outside agent authority.",
+      "target_status": "existing, prior measured labels",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ]
+    },
+    {
+      "config": "clang-tidy",
+      "execution_status": "not executed in planning activity",
+      "future_execution_rule": "rerun if source/dependency/control subjects change; otherwise explicit verified carried evidence",
+      "kind": "lint",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc declares the clang-tidy aspect; COMPILER_WARNING_FEATURES on the target must remain.",
+      "target_status": "existing, prior measured labels",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "execution_status": "not executed in planning activity",
+      "future_execution_rule": "rerun if source/dependency/control subjects change; otherwise explicit verified carried evidence",
+      "kind": "query",
+      "limitation": "explicit-label query only; reverse-dependency and implementor completeness remain unmeasured",
+      "native_obligation": "References/native-verification.md requires discovering aliases/generated/downstream targets from rules/query results. Exact query command is a command-stage concern outside agent authority. | Trait-compatibility obligation; unresolved target set remains open until the query result is provided by the native measurement stage.",
+      "target_status": "existing, prior measured labels",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ]
+    }
+  ],
+  "status": "planning only, not admitted for execution",
+  "unresolved": [
+    "test-code Clippy applicability",
+    "native Python/format checks",
+    "full downstream denominator",
+    "mock-runtime test target",
+    "Markdown examples",
+    "qualification and human acceptance"
+  ]
+}

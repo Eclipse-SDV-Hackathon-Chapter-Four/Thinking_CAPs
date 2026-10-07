@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+        "//score/mw/com/impl:runtime_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "config": "linux_x64",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance."
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ],
+      "config": "linux_x64",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance."
+    },
+    {
+      "kind": "doctest",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "config": "linux_x64_gcc_15",
+      "reason": "Concept accessor/generated APIs changed; explicit manual doctests after actual changed subjects, known native GCC configuration.",
+      "native_obligation": "Actual manual BUILD test; QNX excluded, no qualification inferred."
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ],
+      "config": "linux_x64",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance."
+    }
+  ]
+}

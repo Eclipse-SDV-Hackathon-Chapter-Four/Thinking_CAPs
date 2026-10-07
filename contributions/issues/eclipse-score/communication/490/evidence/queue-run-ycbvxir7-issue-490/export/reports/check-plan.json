@@ -1,0 +1,106 @@
+{
+  "schema_version": "score-rust-issue-queue/check-plan/v1",
+  "issue": 490,
+  "baseline": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+  "platform": "linux_x64",
+  "notes": [
+    "Targets are BUILD-derived from score/mw/com/rust/BUILD, score/mw/com/rust/score_com_concept/BUILD, score/mw/com/impl/rust/com-api/com-api-runtime-mock/BUILD and score/mw/com/impl/rust/com-api/com-api-runtime-lola/BUILD at the baseline.",
+    "Checks reference BUILD targets. The mock `rust_test`/`rust_doc_test` targets were absent at the baseline BUILD and were added by the implementation stage (see implementation.md); they are now runnable, so \"proposed\" markers were removed. Baseline targets are unchanged.",
+    "No shell commands are recorded here by design. Execution is owned by the command stage.",
+    "No QNX configuration or execution is in scope.",
+    "No native results were available when authored; .rust-queue/reports/native-check-summary.json was absent."
+  ],
+  "checks": [
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock",
+        "//score/mw/com/rust:score_com_mock"
+      ],
+      "reason": "Resolve the declared mock-runtime target graph and confirm the mock library and its test-only re-export map to the real deps (score_com_concept, futures) before building.",
+      "native_obligation": "Derive real labels/deps from the BUILD graph rather than assuming names (native verification: discover aliases and generated targets from rules/query results).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "Compile the completed mock runtime against the unchanged score_com_concept Runtime/Publisher/Subscriber/Subscription contracts.",
+      "native_obligation": "Rust library/API row: native build. Toolchain is Ferrocene linux_x64 per .bazelrc (linux_x64_gcc_15); no toolchain or feature changes proposed.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust:score_com_mock"
+      ],
+      "reason": "Confirm the test-only re-export crate still compiles and exposes MockRuntimeImpl / MockRuntimeBuilderImpl together with the public score_com surface.",
+      "native_obligation": "Rust library/API row: downstream compilation of the public re-export target.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust:score_com"
+      ],
+      "reason": "Regression guard that the default Lola-backed public API surface is unchanged by the mock work (runtime-independent semantics preserved).",
+      "native_obligation": "Rust library/API row: preserve observable behavior; no source change to score_com or com-api-runtime-lola.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock-tests"
+      ],
+      "reason": "Exercise offer -> discover -> subscribe -> publish -> receive and direct injection through the public mock traits, replacing the stale non-compiling test module.",
+      "native_obligation": "Communication behavior: runtime mock/unit tests. Linux-only via target_compatible_with = [\"@platforms//os:linux\"], mirroring com-api-runtime-lola-tests. Absent at baseline, so currently no carried evidence.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test"
+      ],
+      "reason": "Confirm the unchanged abstraction-layer tests still pass alongside the mock addition.",
+      "native_obligation": "Rust library/API row: native unit tests for the shared trait contracts. Existing target; Linux-only constraint already declared in BUILD.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "Regression guard that the production runtime and its FFI-mock-backed tests are unaffected.",
+      "native_obligation": "Communication behavior: affected producer/consumer integration; Rust library/API row. Existing Linux-only target.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock-doc-tests"
+      ],
+      "reason": "Build rustdoc/doctests for the mock crate so its public API documentation is compiled; the crate has no doctest examples, so this is a compilation/doc-surface check.",
+      "native_obligation": "Rust library/API row: rustdoc/examples. Mirrors com-api-runtime-lola-doc-tests. Absent at baseline.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "reason": "Existing rust_doc_test for the abstraction layer that defines the contracts the mock implements; carried as documentation coverage for the shared API.",
+      "native_obligation": "Rust library/API row: docs/metamodel checks. NOTE: target is tagged 'manual' in BUILD because rules_rust rust_doc_test suppresses CC native link flags; it is not part of a default wildcard run and must be enumerated explicitly.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "Apply the repository's pinned Rust lint policy to the changed mock crate.",
+      "native_obligation": "Static-analysis policy: clippy via @score_rust_policies//clippy:linters.bzl%clippy_strict under quality/static_analysis/static_analysis.bazelrc (config 'clippy'); do not substitute a generic lint set or suppress lints. Lint/CI policy is preserved by the change.",
+      "config": "linux_x64"
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "clippy",
+          "informationUri": "https://rust-lang.github.io/rust-clippy/",
+          "rules": [
+            {
+              "id": "clippy::missing_transmute_annotations",
+              "fullDescription": {
+                "text": "for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_transmute_annotations\n`#[warn(clippy::missing_transmute_annotations)]` on by default\n"
+              },
+              "helpUri": "https://rust-lang.github.io/rust-clippy/master/index.html#missing_transmute_annotations"
+            },
+            {
+              "id": "clippy::clone_on_copy",
+              "fullDescription": {
+                "text": "for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#clone_on_copy\n`#[warn(clippy::clone_on_copy)]` on by default\n"
+              },
+              "helpUri": "https://rust-lang.github.io/rust-clippy/master/index.html#clone_on_copy"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "clippy::missing_transmute_annotations",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "transmute used without annotations"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "byteOffset": 44168,
+                  "byteLength": 9,
+                  "startLine": 1027,
+                  "startColumn": 68,
+                  "endLine": 1027,
+                  "endColumn": 77
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "byteOffset": 44168,
+                  "byteLength": 9,
+                  "startLine": 1027,
+                  "startColumn": 68,
+                  "endLine": 1027,
+                  "endColumn": 77
+                }
+              },
+              "message": {
+                "text": "consider adding missing annotations \"transmute::<std::boxed::Box<dyn std::ops::FnMut(bridge_ffi_rs::HandleContainer, bridge_ffi_rs::NativeFindServiceHandle) + std::marker::Send>, bridge_ffi_rs::FatPtr>\""
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "clippy::clone_on_copy",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "using `clone` on type `TypeOperationsManager` which implements the `Copy` trait"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "byteOffset": 54068,
+                  "byteLength": 16,
+                  "startLine": 1241,
+                  "startColumn": 31,
+                  "endLine": 1241,
+                  "endColumn": 47
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs"
+                },
+                "region": {
+                  "byteOffset": 54068,
+                  "byteLength": 16,
+                  "startLine": 1241,
+                  "startColumn": 31,
+                  "endLine": 1241,
+                  "endColumn": 47
+                }
+              },
+              "message": {
+                "text": "try dereferencing it \"*type_ops\""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

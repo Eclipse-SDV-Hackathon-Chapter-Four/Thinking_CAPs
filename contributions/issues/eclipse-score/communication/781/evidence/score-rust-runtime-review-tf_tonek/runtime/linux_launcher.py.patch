@@ -1,0 +1,49 @@
+--- previous/linux_launcher.py
++++ review/linux_launcher.py
+@@ -72,7 +72,7 @@
+         for index, check in enumerate(plan['checks']):
+             validate_run_root(ROOT)
+             kind = check['kind']
+-            assert kind in ['query', 'test', 'build', 'docs', 'lint']
++            assert kind in ['query', 'test', 'doctest', 'build', 'docs', 'lint']
+             targets = check['targets']
+             assert targets and all(isinstance(t, str) and re.fullmatch(r'//[A-Za-z0-9_/.-]+(?::[A-Za-z0-9_.*+-]+)?', t) for t in targets)
+             assert all('qnx' not in t.lower() for t in targets), 'QNX execution excluded'
+@@ -80,16 +80,17 @@
+             assert config in ['linux_x64', 'linux_x64_gcc_15', 'clippy'], 'Unsupported native Linux configuration'
+             if kind == 'lint':
+                 config = 'clippy'
++            # Native .bazelrc already imports the pinned static-analysis config.
++            operation = 'query' if kind == 'query' else 'test' if kind in ['test', 'doctest'] else 'build'
+             command = [tools['bazel']['path'], '--batch',
+-                       '--output_user_root=' + str(ROOT / 'bazel-output'),
+-                       '--bazelrc=' + str(workspace / 'quality/static_analysis/static_analysis.bazelrc')]
+-            command += ['query' if kind == 'query' else 'test' if kind == 'test' else 'build',
++                       '--output_user_root=' + str(ROOT / 'bazel-output')]
++            command += [operation,
+                         '--repository_cache=' + str(ROOT / 'repository-cache'), '--color=no', '--curses=no']
+             if kind == 'query':
+                 command += ['--output=label_kind', 'set(' + ' '.join(targets) + ')']
+             else:
+                 command += ['--config=' + config, '--jobs=2']
+-                if kind == 'test':
++                if kind in ['test', 'doctest']:
+                     command += ['--local_test_jobs=1', '--test_output=errors', '--cache_test_results=no',
+                                 '--build_event_json_file=' + str(output / f'check-{index}-events.jsonl')]
+                 command += targets
+@@ -117,13 +118,13 @@
+             with log.open('rb') as stream:
+                 stream.seek(max(0, log.stat().st_size - 4000))
+                 tail = stream.read().decode(errors='replace')
+-            row = {'kind': kind, 'targets': targets, 'config': config, 'command': exact,
++            row = {'kind': kind, 'operation': operation, 'targets': targets, 'config': config, 'command': exact,
+                    'environment': env, 'exit_code': process.returncode, 'timed_out': timed_out,
+                    'elapsed_seconds': round(time.monotonic() - started, 3),
+                    'log': str(log), 'log_sha256': digest(log), 'bounded_tail': tail,
+                    'reason': check.get('reason'), 'native_obligation': check.get('native_obligation'),
+                    'test_records': []}
+-            if kind == 'test':
++            if kind in ['test', 'doctest']:
+                 for xml in (workspace / 'bazel-testlogs').rglob('test.xml'):
+                     parsed = ET.parse(xml)
+                     destination = output / 'native-testlogs' / xml.relative_to(workspace / 'bazel-testlogs')

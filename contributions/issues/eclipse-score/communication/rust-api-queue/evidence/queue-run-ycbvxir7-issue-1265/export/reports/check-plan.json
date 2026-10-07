@@ -1,0 +1,113 @@
+{
+  "checks": [
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ],
+      "reason": "Resolve the dependency graph of the crate that host-expands the four pastey paste! blocks, to confirm the @score_communication_crate_index//:pastey proc-macro dependency declared in score_com_concept/BUILD and the absence of the archived paste crate from the selected COM macro surface.",
+      "native_obligation": "unknown (no published communication requirement ID binds this dependency query; the upstream concatenation obligation is PasteyComReq.REQ_COMP_PASTEY_001@1)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ],
+      "reason": "Build the abstraction crate whose interface_macros.rs expands pastey at host compile time; verifies the pinned macro dependency resolves and the generated Interface/Consumer/Producer/OfferedProducer type names compile on Linux.",
+      "native_obligation": "PasteyComReq.REQ_COMP_PASTEY_001@1 (score-crates; COM consumer-side binding is not a separately published communication requirement ID)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust:score_com"
+      ],
+      "reason": "Build the public Rust COM API re-export crate (score_com.rs) that forwards score_com_concept::pastey and the generated interface macros to downstream users.",
+      "native_obligation": "unknown (no published communication requirement ID for this re-export/BUILD artifact in the workspace)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_macros:score-com-macros"
+      ],
+      "reason": "Build the derive-macro crate used by interface data types; confirms the COM code-generation surface still compiles with the pinned syn/quote dependencies at this baseline.",
+      "native_obligation": "unknown (no published communication requirement ID for this macro crate)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_cpp_bridge:register_interface"
+      ],
+      "reason": "Build the C++ registration library that generated Rust/C++ bridge code links against, covering the generated-code consumer that sits downstream of the macro expansion.",
+      "native_obligation": "unknown (no published communication requirement ID for this generated-code registration target)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test"
+      ],
+      "reason": "Run the Linux-only rust_test for the abstraction crate; exercises the generated interface types and their trait relationships produced through the pastey macros.",
+      "native_obligation": "PasteyComReq.REQ_COMP_PASTEY_001@1 (score-crates; consumer-side generated-API compatibility)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "reason": "Run the rust_unit_test over interface_macros.rs; its validation_tests assert the generated Interface/Consumer/Producer/OfferedProducer names and INTERFACE_ID values produced from the pastey concatenations.",
+      "native_obligation": "PasteyComReq.REQ_COMP_PASTEY_001@1 (score-crates; consumer-side generated-API compatibility)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "reason": "Run the rust_doc_test doctests for the interface macros (positive default/custom/legacy-comma forms plus compile_fail rejection of Method/Field); explicitly named because the target carries the native 'manual' tag and a documented rust_doc_test/LLD linking limitation.",
+      "native_obligation": "unknown (no published communication requirement ID for the macro doctest contract; negative-case causality is an open R5 gap)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/rust/score_com_macros:score-com-macros-tests"
+      ],
+      "reason": "Run the Linux-only rust_doc_test for the derive-macro crate to keep the COM data-type macro documentation examples compiling at this baseline.",
+      "native_obligation": "unknown (no published communication requirement ID for the derive-macro doctests)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync"
+      ],
+      "reason": "Run the synchronous BigData/mixed-primitives/complex-struct consumer integration test; real downstream generated-API use through the score_com re-exports (historical case names test_bigdata_exchange, test_mixed_primitives_exchange, test_complex_struct_exchange).",
+      "native_obligation": "PasteyComReq.REQ_COMP_PASTEY_001@1 (score-crates; consumer-side generated-API compatibility)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ],
+      "reason": "Run the asynchronous BigData consumer integration test covering streaming, cancellation and non-cancelling receive; real downstream generated-API use through the score_com re-exports (historical case names test_bigdata_async_stream, test_bigdata_async_with_cancellation, test_bigdata_async_without_cancellation).",
+      "native_obligation": "PasteyComReq.REQ_COMP_PASTEY_001@1 (score-crates; consumer-side generated-API compatibility)",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com"
+      ],
+      "reason": "Apply the native clippy_strict aspect (@score_rust_policies//clippy) to the COM abstraction and re-export crates only; the external pastey dependency rule keeps --cap-lints=allow/noclippy, so this does not lint the dependency.",
+      "native_obligation": "doc__rust_coding_guidelines (native document, version 1, status valid; project applicability resolves separately) via score_rust_policies 0.0.5 clippy_strict",
+      "config": "linux_x64"
+    }
+  ]
+}

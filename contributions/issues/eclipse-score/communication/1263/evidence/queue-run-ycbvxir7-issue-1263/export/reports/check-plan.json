@@ -1,0 +1,146 @@
+{
+  "checks": [
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept"],
+      "reason": "Abstraction-layer crate declares the public futures-dependent async contract: `use futures::stream::Stream` (concept.rs:57) and `Subscription::to_stream -> impl Stream` (concept.rs:931). Must compile to bind the public API surface under assessment.",
+      "native_obligation": "Rust library/API change surface requires native build (score-rust-workflow native-verification reference: 'Rust library/API -> Native build, unit tests, downstream compilation, rustdoc/examples and applicable lint/format checks').",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"],
+      "reason": "Production runtime uses `futures::stream::Stream` and `futures::task::{AtomicWaker, Context, Poll}` for receive-stream and discovery wake-up (consumer.rs:40-41,487,676-826,925,993,1016). Direct production use site.",
+      "native_obligation": "Production runtime uses the crate in API/runtime behavior; native build of the LoLa runtime library is required to keep the dependency resolvable and the wake/cancellation code compiling.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"],
+      "reason": "Mock/test-only runtime uses `futures::stream::{self, Stream}` and `stream::empty()` (runtime.rs:34,337-339) and `futures::executor::block_on` in its test module (runtime.rs:529). Separates mock/test use from production use.",
+      "native_obligation": "Mock/test-only use must remain buildable but is not production runtime evidence; build confirms the separation asserted in the assessment.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock"
+      ],
+      "reason": "Public aggregate re-export crate (`score_com`) and its test-only companion (`score_com_mock`, testonly=True) expose the async surface to downstream applications and tests.",
+      "native_obligation": "Downstream/API re-export compilation; confirms the public `to_stream`/`receive` contract is reachable through the shipped crate names.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/example/com-api-example:com-api-example-lib",
+        "//score/mw/com/example/com-api-example:com-api-example"
+      ],
+      "reason": "In-tree downstream consumers of the public API: consumer.rs uses `futures::channel::oneshot` and `futures::{FutureExt, StreamExt}` and calls `to_stream`/`receive`/`cancellable_receive` (consumer.rs:15-16,107,135-152,147-157).",
+      "native_obligation": "Representative downstream compilation of the public async API and its `futures`-typed items (StreamExt over the API-provided `impl Stream`).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api:bigdata_com_api_gen_rs",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer",
+        "//score/mw/com/test/basic_rust_api/producer_app:bigdata-producer"
+      ],
+      "reason": "System-composition-test binaries: the async consumer uses `futures::channel::oneshot`, `futures::{FutureExt, StreamExt}` and `futures::executor::block_on` (consumer_app.rs:31-32,182) across receive/stream modes; the producer uses only the shared-memory publish path.",
+      "native_obligation": "Downstream binary compilation for the async receive/stream call sites and the non-futures producer baseline used by the package/integration tests.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-test"],
+      "reason": "Unit test of the abstraction crate that owns the public `Subscription` trait and `SampleContainer`; Linux-only per target_compatible_with (BUILD:38-39).",
+      "native_obligation": "Rust library/API unit tests on the affected crate (native-verification reference), Linux configuration only.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"],
+      "reason": "Interface-macro unit tests for generated Consumer/Producer/Subscription types used with the async API (BUILD:58-62); exercises generated downstream types.",
+      "native_obligation": "Generated-API/downstream unit tests plus the `link_std_cpp_lib` feature required for the C++-linked crate.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"],
+      "reason": "Runtime tests for the LoLa consumer implementation containing the `Stream`/`AtomicWaker` wake path (consumer.rs test module, BUILD:36-46); Linux-only per target_compatible_with.",
+      "native_obligation": "Communication behavior runtime tests for the production runtime's async receive/streaming code, Linux configuration only.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/example/com-api-example:com-api-example-tokio-integration-test"],
+      "reason": "Integration test driving the public async API on a multi-threaded tokio runtime, including `stream_processor_fn` using `stream.next()` (tests_using_tokio_runtime.rs:155-174). Demonstrates no executor is imposed by the API.",
+      "native_obligation": "Affected producer/consumer integration path; Linux-only and sanitizer-incompatible per BUILD:64-67 (sanitizer limitation preserved).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"],
+      "reason": "End-to-end SCT exercising async discovery, cancellable receive and stream receive consumer modes via the packaged async consumer app.",
+      "native_obligation": "Communication behavior integration test for the async APIs under assessment (native-verification reference: 'Communication behavior -> ... affected producer/consumer and IPC integration tests').",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync"],
+      "reason": "SCT baseline for synchronous receive; confirms the async changes/assessment do not regress the non-async consumer path.",
+      "native_obligation": "Regression/baseline integration coverage for the non-async receive path alongside the async path.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests"],
+      "reason": "Rustdoc tests for the runtime crate; the `unsubscribe` doc example documents the sample-lifetime borrow contract (consumer.rs:587-601); Linux-only per BUILD:48-52.",
+      "native_obligation": "rustdoc/examples check for the affected Rust library (native-verification reference). Documented examples marked `ignore`/compile_fail limitations must be preserved.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"],
+      "reason": "rust_doc_test target for the abstraction crate that owns the public `to_stream` documentation; explicitly tagged `manual` with a documented rules_rust native-linking limitation (BUILD:46-56).",
+      "native_obligation": "Documentation check exists but is manual/limited; preserved as an applicable-but-excluded check, not as passing evidence.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "CI.md 'Linting for Rust (x86-64 linux)' applies the repository Clippy profile; `.bazelrc`/static_analysis.bazelrc bind `--config=clippy` to the `score_rust_policies//clippy:linters.bzl%clippy_strict` aspect. These are the crates that import `futures`.",
+      "native_obligation": "Preserve native lint policy without suppressing lints for the dependency assessment; policy module `score_rust_policies` version 0.0.5 (dev dependency, applicability pending).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock",
+        "//score/mw/com/example/com-api-example:com-api-example-lib"
+      ],
+      "reason": "Public/downstream crates consuming the async surface; the clippy_strict aspect applies across Rust targets touched by the dependency assessment.",
+      "native_obligation": "Lint policy coverage of the re-export and example crates; no lint suppression introduced.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "Resolve the transitive dependency graph of the crates declaring `@score_communication_crate_index//:futures` (BUILD deps at concept:30, lola:32, mock:22) to obtain the exact resolved futures crate version, enabled/effective features and checksums.",
+      "native_obligation": "unknown at baseline: the crate index is the external module `score_crates` 0.0.11 (`bazel_dep` name score_crates, repo_name score_communication_crate_index, MODULE.bazel:41) and is not vendored; version/features/checksums/license must be sourced from that index before any retain/reduce decision is qualified.",
+      "config": "linux_x64"
+    }
+  ]
+}

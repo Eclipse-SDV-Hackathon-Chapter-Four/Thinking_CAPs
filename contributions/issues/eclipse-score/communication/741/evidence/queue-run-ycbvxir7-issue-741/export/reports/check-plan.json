@@ -1,0 +1,66 @@
+{
+  "checks": [
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/doc/tutorial/com-api-example:all",
+        "//score/mw/com/doc/tutorial/com-api-example/com-api-gen:all"
+      ],
+      "reason": "Confirm the relocated package graph resolves at the tutorial path and every moved BUILD target is discoverable; the old label //score/mw/com/example/com-api-example:all must no longer resolve after the move.",
+      "native_obligation": "Bazel package/target discovery; labels are BUILD-derived from the moved score/mw/com/doc/tutorial/com-api-example/BUILD and .../com-api-gen/BUILD (rust_library com-api-example-lib, rust_binary com-api-example, rust_test com-api-example-tokio-integration-test, rust_library com-api-gen, cc_library vehicle_gen_cpp).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/doc/tutorial/com-api-example:com-api-example",
+        "//score/mw/com/doc/tutorial/com-api-example:com-api-example-lib",
+        "//score/mw/com/doc/tutorial/com-api-example/com-api-gen:com-api-gen",
+        "//score/mw/com/doc/tutorial/com-api-example/com-api-gen:vehicle_gen_cpp"
+      ],
+      "reason": "Build the relocated Rust binary, Rust library and the Rust/C++ generated-interface targets after their package labels and MW_LOG_CONFIG_FILE path are updated, to prove the move did not break compilation on Linux.",
+      "native_obligation": "score/mw/com/example/com-api-example/BUILD uses @rules_rust (rust_binary/rust_library) with features=[link_std_cpp_lib] and a cc_library (vehicle_gen_cpp) via @rules_cc; the native Linux build config is .bazelrc common:linux_x64 -> linux_x64_gcc_15 (Ferrocene Rust toolchain).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/doc/tutorial/com-api-example:com-api-example-tokio-integration-test"
+      ],
+      "reason": "Preserve the existing Tokio-runtime integration coverage for the moved example and confirm the relocated Rust target still executes on Linux.",
+      "native_obligation": "BUILD rust_test com-api-example-tokio-integration-test sets target_compatible_with=@platforms//os:linux plus a sanitizer-incompatible select; BUILD comments cite issue #794 (tokio multi-thread sanitizer findings) and issue #1278 (QNX socket2 build failure). The test is Linux-only and excluded under --config=asan_ubsan_lsan and tsan; QNX is out of scope for this task.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/doc/tutorial:tutorial_rst",
+        "//docs/sphinx:sphinx_doc"
+      ],
+      "reason": "Verify the tutorial docs library and the full Sphinx build remain valid after the example is relocated into the tutorial tree; the doc build fails on warnings (-W), so a broken reference would be caught.",
+      "native_obligation": "docs/sphinx/BUILD sphinx_module(name=sphinx_doc, extra_opts=['-W'], exec_compatible_with=linux, docs_library_deps includes //score/mw/com/doc/tutorial:tutorial_rst). The moved USAGE.md is NOT registered in any sphinx_docs_library on the baseline; inclusion of the sample in rendered docs is an open documentation-design decision.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/doc/tutorial/com-api-example:com-api-example",
+        "//score/mw/com/doc/tutorial/com-api-example:com-api-example-lib",
+        "//score/mw/com/doc/tutorial/com-api-example:com-api-example-tokio-integration-test",
+        "//score/mw/com/doc/tutorial/com-api-example/com-api-gen:com-api-gen"
+      ],
+      "reason": "Apply the repository's native Rust Clippy policy to the relocated Rust sources so the move does not introduce or hide lint findings.",
+      "native_obligation": ".github/workflows/_linter.yml runs clippy via aspect lint over //... with --config=clippy, backed by quality/static_analysis/static_analysis.bazelrc; no lint suppression is proposed by this change.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//:format_test"
+      ],
+      "reason": "Confirm workspace formatting policy (rustfmt/buildifier) still passes for the relocated Rust and BUILD files.",
+      "native_obligation": "Root BUILD format_test(name=format_test) with rust=//tools/lint:rustfmt_with_config and target_compatible_with=@platforms//os:linux; the formatter is part of the native lint profile and its configuration is not changed by this move.",
+      "config": "linux_x64"
+    }
+  ]
+}

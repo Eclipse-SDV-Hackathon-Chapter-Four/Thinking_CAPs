@@ -1,0 +1,140 @@
+{
+  "checks": [
+    {
+      "kind": "query",
+      "targets": ["//score/mw/com/rust:score_com"],
+      "reason": "Enumerate reverse dependencies and the public re-export set of the abstraction/runtime crates that will gain Method traits, so affected Rust consumers are identified before implementation (baseline 381d43dec900ab6a9076f3f30e7bfbdee019e26e).",
+      "native_obligation": "Issue #782 label rust-api; native-verification.md requires discovering public re-exports and downstream users before implementation. Exact Method consumer set unknown (design PR #818 open).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept"],
+      "reason": "Compile the abstraction crate after adding the designed Method trait/type-state layer and the interface! Method arm that currently emits compile_error!.",
+      "native_obligation": "Feature/API obligation from native-verification.md (Rust library/API: native build). Trait signature semantics sourced only from the open design PR #818 - unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs"],
+      "reason": "Compile the FFIBridge trait crate when Method call/handler FFI methods are added alongside the existing event/proxy/skeleton methods.",
+      "native_obligation": "Unsafe/FFI obligation: bind representation/ABI, allocation owner, callbacks, errors and panic/unwind boundary. Actual Rust Method ABI signature is unknown (design PR #818 open).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"],
+      "reason": "Compile the Lola FFI declaration crate with new Method extern \"C\" bindings and callback trampolines that abort on unwind, mirroring mw_com_impl_call_dyn_ref_fnmut_*.",
+      "native_obligation": "Unsafe/FFI obligation (layout/ABI/lifetimes/ownership/threading/error boundaries). Concrete C++ method FFI contract is not defined for Rust at baseline - unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"],
+      "reason": "Compile the C++ registry bridge that resolves interface/member names; Method registration entries must be added consistent with the existing event entries.",
+      "native_obligation": "FFI/C++ integration obligation from issue #782 'implement the required FFI APIs'; requires C++ Method backend (score/mw/com/impl/methods/*) which exists, but the Rust-facing registration shape is unknown (design PR #818 open).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"],
+      "reason": "Compile the LoLa runtime crate after adding method.rs implementing the designed Method traits with the same Arc/Drop lifecycle pattern as producer.rs/consumer.rs.",
+      "native_obligation": "Issue #782 acceptance criterion 1 and 2 (implement LoLa Runtime per designed traits, aligned with the Event backend). Semantics sourced from open PR #818 - unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/rust:score_com"],
+      "reason": "Compile the public API crate to confirm the new Method types/traits are re-exported without breaking existing Event exports.",
+      "native_obligation": "Feature/API compatibility obligation (public re-exports) from native-verification.md; exact Method re-export names unknown until design lands.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"],
+      "reason": "Run existing runtime unit tests with the mock FFI bridge and add Method-specific cases (call success/error, teardown/drop, ownership) once the design exists.",
+      "native_obligation": "Native unit-test obligation for the runtime layer; BUILD marks this target Linux-only. Method regression obligations unknown (design PR #818 open).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-test"],
+      "reason": "Run trait/macro compile tests including the Method invocation path that replaces the current compile_error! rejection.",
+      "native_obligation": "Macro/API obligation: supported positive invocation and preservation of rejection for unsupported syntax; obligations sourced from native dependency-and-macros.md. Method contract unknown until #818.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"],
+      "reason": "Run the interface macro unit tests to confirm Event behavior is preserved and Method arms behave as designed.",
+      "native_obligation": "Preserve observable behavior for existing macro users while adding Method support (feature/API obligation); Method expectations unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/example/com-api-example:com-api-example-tokio-integration-test"],
+      "reason": "Downstream compilation/behavior check of the example against the new Method API; BUILD marks it Linux-only and sanitizer-incompatible due to issue #794.",
+      "native_obligation": "Downstream compilation and representative usage obligation; requires Method example coverage that does not yet exist - unknown scope.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync"],
+      "reason": "Existing integration test for the sync consumer/producer path; extend with Method call coverage to validate Rust/C++ interoperability end to end.",
+      "native_obligation": "Communication behavior obligation: affected producer/consumer and IPC integration tests. Method E2E/interop specifics unknown (no Rust Method test resources at baseline).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"],
+      "reason": "Existing integration test for the async consumer path; relevant to the unresolved sync-vs-async bridge decision for Methods.",
+      "native_obligation": "Concurrency/asynchronous obligation from issue #782 comments and native-verification.md; Method async dispatch decision (issue #767 guidance) remains unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/example/com-api-example/com-api-gen:com-api-gen"],
+      "reason": "Compile the generated Rust/C++ interface glue so codegen compatibility for new Method members is exercised through a supported consumer.",
+      "native_obligation": "Generated-API compatibility obligation from dependency-and-macros.md; codegen support for Method members is part of the open design (#818).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/test/basic_rust_api:bigdata_com_api_gen_rs"],
+      "reason": "Compile another downstream generated interface crate to confirm the new Method API does not break existing generation paths.",
+      "native_obligation": "Representative downstream compilation obligation; Method addition coverage unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests"],
+      "reason": "Run rustdoc tests for the runtime crate after adding Method documentation/examples.",
+      "native_obligation": "Rustdoc/examples obligation from native-verification.md; Method doc examples do not exist at baseline - unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"],
+      "reason": "Documentation-test target for macro usage; BUILD tags it manual due to a rules_rust native-linking limitation, so it is enumerated explicitly rather than assumed green.",
+      "native_obligation": "Enumerate manual/excluded checks explicitly (native-verification.md). Method macro doc examples unknown until #818.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/rust/score_com_macros:score-com-macros-tests"],
+      "reason": "Documentation-test target for the derive macro crate; confirm CommData/Reloc docs remain valid if Method types add derives.",
+      "native_obligation": "Rustdoc obligation; Linux-only per BUILD. Method-specific derive requirements unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"
+      ],
+      "reason": "Apply the native clippy_strict aspect to the crates that will change, preserving the existing lint policy rather than a generic lint list.",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc build:clippy uses @score_rust_policies//clippy:linters.bzl%clippy_strict; native-verification.md requires using the pinned Rust policy settings. Method-specific lint exceptions unknown.",
+      "config": "linux_x64"
+    }
+  ]
+}

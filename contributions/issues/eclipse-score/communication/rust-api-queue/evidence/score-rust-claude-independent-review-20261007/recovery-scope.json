@@ -1,0 +1,47 @@
+{
+ "decision_dependent": {
+  "D1": "discovery universe vs system-wide",
+  "D2": "buffering/error contract (R5); recommend level-triggered coalescing",
+  "D3": "native find-service callback reclamation (baseline-wide, separate track)",
+  "D4": "IRuntime/FFIBridge ABI; recommend append at vtable end + disposition",
+  "D5": "AddConfiguration concurrency/cache invalidation",
+  "D6": "running-phase allocation policy"
+ },
+ "execution_authority": "none; requires explicit new #1261 allowance naming editor/model and budget",
+ "human_acceptance": "pending_offline",
+ "issue": 1261,
+ "measured_blockers": [
+  "M1 runtime.cpp:355 missing MergeAdditionalConfiguration signature (diff-splice)",
+  "M2 regression plan at source path; driver.py:29 reads .rust-queue/reports/regression-plan.json",
+  "M3 implementation report absent from report path",
+  "M4 0/5 tests executed, 3/4 groups unexecuted, 0 SARIF"
+ ],
+ "native_trace_ids": "not established",
+ "smallest_complete_scope": "R1-R7 with R5=coalescing, D4 append, D5 resolved; D3 documented and tracked separately; measure once against bound subject",
+ "source_corrections": {
+  "max": 3,
+  "remaining": 0,
+  "status": "STOP",
+  "used": 3
+ },
+ "static_concerns": [
+  "S1 unbounded VecDeque; module doc boundedness claim inaccurate",
+  "S2 HashSet-order unit assertion lines 327-328",
+  "S3 weak integration (>= counts, sleeps, process::exit)",
+  "S4 configured-only universe",
+  "S5 Rust app import/type-inference hypotheses (unmeasured)",
+  "N1 callback leak inherited from baseline registry_bridge_macro.h:189; candidate amplifies via strong Arc per watch",
+  "N2 IRuntime virtual inserted mid-vtable",
+  "N3 configuration_ read under discovery mutex vs unsynchronized AddConfiguration merge; cache never invalidated",
+  "N4 complete/empty snapshot callback semantics assumed, unproven",
+  "N5 no runtime Err items; stream ends only on Drop"
+ ],
+ "straightforward_repairs": [
+  "R1 restore signature",
+  "R2 report-path plan/report",
+  "R3 unordered unit assertion",
+  "R4 Weak callback capture",
+  "R6 doc corrections",
+  "R7 discriminating phased integration"
+ ]
+}

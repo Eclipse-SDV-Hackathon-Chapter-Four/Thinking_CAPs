@@ -1,0 +1,3 @@
+# Final1261correction preparation
+
+Byte-identical source carried from sealed failedproposal, no Codex targetsource edits. SameFlashprovider/binary/model/outputcap; freshinitialconversation nowcontains all Codexreviewfacts, NO runtimefollowup/steering. This removes the observed invalid-history replay trigger; codecunpatched, no tokenlimit cause or guaranteedtransportrepair claimed. Priorfailedsource attempt remains counted2/3; one finalstage charges3/3, no further1261sourcework. Actual backend+dedicated integration required; NotSupported/oneSpecific/oneinterface nevercompletion. No passing tests carried.

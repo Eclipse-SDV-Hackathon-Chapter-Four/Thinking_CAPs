@@ -1,0 +1,1215 @@
+{
+  "acceptance": "pending_offline",
+  "changed_files": [
+    "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h",
+    "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs",
+    "score/mw/com/rust/score_com_concept/concept.rs",
+    "score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs",
+    "score/mw/com/test/basic_rust_api/producer_app/producer_app.rs"
+  ],
+  "checks": [
+    {
+      "bounded_tail": "\nIn file included from ./score/mw/com/impl/instance_identifier.h:16,\n                 from ./score/mw/com/impl/handle_type.h:18,\n                 from ./score/mw/com/impl/proxy_base.h:18,\n                 from ./score/mw/com/impl/generic_proxy_event.h:18,\n                 from ./score/mw/com/impl/generic_proxy.h:18,\n                 from ./score/mw/com/types.h:24,\n                 from ./score/mw/com/mocking/i_runtime.h:17,\n                 from ./score/mw/com/runtime.h:24,\n                 from score/mw/com/runtime.cpp:13:\n./score/mw/com/impl/com_error.h: In member function 'virtual std::string_view score::mw::com::impl::ComErrorDomain::MessageFor(const score::result::ErrorCode&) const':\n./score/mw/com/impl/com_error.h:186:65: warning: 'score::mw::com::impl::ComErrc::kServiceInstanceAlreadyOffered' is deprecated: Value has never been used. Calls to OfferService shall be idempotent. [-Wdeprecated-declarations]\n  186 |             case static_cast<score::result::ErrorCode>(ComErrc::kServiceInstanceAlreadyOffered):\n      |                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n./score/mw/com/impl/com_error.h:57:5: note: declared here\n   57 |     kServiceInstanceAlreadyOffered\n      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nscore/mw/com/runtime.cpp: In function 'void score::mw::com::runtime::InitializeRuntime(int32_t, const char**)':\nscore/mw/com/runtime.cpp:58:47: warning: 'virtual void score::mw::com::runtime::IRuntime::InitializeRuntime(int32_t, score::cpp::span<const char*>)' is deprecated: Please use InitializeRuntime(cpp::span<safecpp::zstring_view> command_line_arguments) for guaranteed NULL terminated arguments [-Wdeprecated-declarations]\n   58 |         runtime_mock_holder->InitializeRuntime(argc, argv_span);\n      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\n./score/mw/com/mocking/i_runtime.h:38:18: note: declared here\n   38 |     virtual void InitializeRuntime(const std::int32_t argc, score::cpp::span<const char*> argv) = 0;\n      |                  ^~~~~~~~~~~~~~~~~\nscore/mw/com/runtime.cpp:62:64: warning: 'score::mw::com::runtime::RuntimeConfiguration::RuntimeConfiguration(int32_t, const char**)' is deprecated: Please use RuntimeConfiguration(cpp::span<safecpp::zstring_view> command_line_arguments) for guaranteed NULL terminated arguments [-Wdeprecated-declarations]\n   62 |     const RuntimeConfiguration runtime_configuration{argc, argv};\n      |                                                                ^\nIn file included from ./score/mw/com/mocking/i_runtime.h:16:\n./score/mw/com/runtime_configuration.h:56:5: note: declared here\n   56 |     RuntimeConfiguration(const std::int32_t argc, const char* argv[]);\n      |     ^~~~~~~~~~~~~~~~~~~~\n[1,441 / 1,447] Compiling Rust bin bigdata-producer (1 file); 1s linux-sandbox ... (2 actions running)\n[1,445 / 1,447] OCI Image //score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:_image_test_com_api_any; 1s linux-sandbox\n[1,447 / 1,448] Testing //score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any; 0s linux-sandbox\n[1,447 / 1,448] Testing //score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any; 10s linux-sandbox\nINFO: Found 1 test target...\nTarget //score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any up-to-date:\n  bazel-bin/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/test_com_api_any\nINFO: Elapsed time: 273.035s, Critical Path: 59.75s\nINFO: 1448 processes: 239 internal, 1209 linux-sandbox.\nINFO: Build completed successfully, 1448 total actions\nINFO: \n//score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any PASSED in 10.9s\n\nExecuted 1 out of 1 test: 1 test passes.\nThere were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.\nINFO: Build Event Protocol files produced successfully.\n",
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "--tmpfs",
+        "/home/jefferson",
+        "--tmpfs",
+        "/tmp",
+        "--tmpfs",
+        "/var/tmp",
+        "--dir",
+        "/tmp/build-home",
+        "--proc",
+        "/proc",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--ro-bind",
+        "/home/jefferson/.local/state/s-core/dk/a889317f9103_state/runtime/docker.sock",
+        "/run/docker.sock",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/ld-linux-x86-64.so.2",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libanl.so.1",
+        "/usr/lib/x86_64-linux-gnu/libanl.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libdl.so.2",
+        "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libgcc_s.so.1",
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libm.so.6",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_dns.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_files.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libpthread.so.0",
+        "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libresolv.so.2",
+        "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/librt.so.1",
+        "/usr/lib/x86_64-linux-gnu/librt.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libstdc++.so.6.0.33",
+        "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libutil.so.1",
+        "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+        "--chdir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/workspaces/250",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tools/bazel",
+        "--batch",
+        "--output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/bazel-output",
+        "test",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/repository-cache",
+        "--color=no",
+        "--curses=no",
+        "--config=linux_x64",
+        "--jobs=2",
+        "--local_test_jobs=1",
+        "--test_output=errors",
+        "--cache_test_results=no",
+        "--build_event_json_file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-0-events.jsonl",
+        "//score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any"
+      ],
+      "config": "linux_x64",
+      "elapsed_seconds": 274.099,
+      "environment": {
+        "BAZELISK_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazelisk",
+        "CARGO_TARGET_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cargo-target",
+        "DOCKER_HOST": "unix:///run/docker.sock",
+        "HOME": "/tmp/build-home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+        "PRE_COMMIT_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/pre-commit",
+        "TEST_TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazel",
+        "TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/tool-tmp",
+        "UV_CACHE_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/uv",
+        "XDG_CACHE_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache"
+      },
+      "exit_code": 0,
+      "kind": "test",
+      "log": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-0.log",
+      "log_sha256": "ecc4c2345214c66da84606b10087bed28a9df622f998d5c1b64ce8eb1fecb45b",
+      "native_obligation": "Issue250 actual positive Rust Any regression; applicability pending independent review",
+      "operation": "test",
+      "reason": "actual positive Any behavior: exact ServiceNotFound propagation for an unmapped interface and for concrete-instance-id (ConcreteSelectorInterface) and malformed (MalformedSelectorInterface) selectors; the sync wildcard returns two offered BigDataInterface instances (one absent from the consumer configuration) and excludes an actually-offered ComplexStructInterface instance; Specific stays compatible; no fabricated Any specifier; a no-offer phase (test_com_api_any_no_offer) asserts the documented native Ok(empty) for a never-offered service type; and the async one-shot wildcard snapshot returns exactly two typed results and still builds a consumer that receives real samples after completion/drop",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any"
+      ],
+      "test_records": [
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/test_com_api_any/test.xml",
+          "sha256": "6ceba1094728bec69b48dfa0929293d2d2f2db48862cc8a7bfb05f31d012ac12",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "2",
+              "time": "10.104",
+              "timestamp": "2026-10-06T22:01:11.874090+00:00"
+            }
+          ],
+          "test_log_sha256": "b3b2b812bdeed65b5f50cfbd9f49cc524fd404a6656ed56bf179780336f2fbc6"
+        }
+      ],
+      "timed_out": false
+    },
+    {
+      "bounded_tail": "$TEST_TMPDIR defined, some defaults will be overridden\nOpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.\nWARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.\nComputing main repo mapping: \nWARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.\nComputing main repo mapping: \nComputing main repo mapping: \nLoading: \nLoading: 5 packages loaded\nAnalyzing: target //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests (6 packages loaded, 0 targets configured)\nAnalyzing: target //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests (6 packages loaded, 0 targets configured)\n\nAnalyzing: target //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests (159 packages loaded, 3160 targets configured)\n\nAnalyzing: target //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests (369 packages loaded, 14933 targets configured)\n\nINFO: Analyzed target //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests (373 packages loaded, 15138 targets configured).\n[150 / 1,272] checking cached actions\n[1,125 / 1,272] [Prepa] Creating symlink external/rules_rust++crate+crate_index__mockall_derive-0.14.0/_bs- [for tool]\n[1,268 / 1,272] Compiling Rust proc-macro mockall_derive v0.14.0 (9 files) [for tool]; 1s linux-sandbox\n[1,269 / 1,272] [Prepa] Compiling Rust rlib mockall v0.14.0 (3 files)\n[1,271 / 1,272] [Prepa] Compiling Rust bin com-api-runtime-lola-tests (4 files)\n[1,271 / 1,272] Compiling Rust bin com-api-runtime-lola-tests (4 files); 1s linux-sandbox\nINFO: Found 1 test target...\nTarget //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests up-to-date:\n  bazel-bin/score/mw/com/impl/rust/com-api/com-api-runtime-lola/test-54569430/com-api-runtime-lola-tests\nINFO: Elapsed time: 17.368s, Critical Path: 8.18s\nINFO: 70 processes: 1217 action cache hit, 41 internal, 29 linux-sandbox.\nINFO: Build completed successfully, 70 total actions\nINFO: \n//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests PASSED in 0.0s\n\nExecuted 1 out of 1 test: 1 test passes.\nThere were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.\nINFO: Build Event Protocol files produced successfully.\n",
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "--tmpfs",
+        "/home/jefferson",
+        "--tmpfs",
+        "/tmp",
+        "--tmpfs",
+        "/var/tmp",
+        "--dir",
+        "/tmp/build-home",
+        "--proc",
+        "/proc",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--ro-bind",
+        "/home/jefferson/.local/state/s-core/dk/a889317f9103_state/runtime/docker.sock",
+        "/run/docker.sock",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/ld-linux-x86-64.so.2",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libanl.so.1",
+        "/usr/lib/x86_64-linux-gnu/libanl.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libdl.so.2",
+        "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libgcc_s.so.1",
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libm.so.6",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_dns.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_files.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libpthread.so.0",
+        "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libresolv.so.2",
+        "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/librt.so.1",
+        "/usr/lib/x86_64-linux-gnu/librt.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libstdc++.so.6.0.33",
+        "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libutil.so.1",
+        "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+        "--chdir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/workspaces/250",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tools/bazel",
+        "--batch",
+        "--output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/bazel-output",
+        "test",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/repository-cache",
+        "--color=no",
+        "--curses=no",
+        "--config=linux_x64",
+        "--jobs=2",
+        "--local_test_jobs=1",
+        "--test_output=errors",
+        "--cache_test_results=no",
+        "--build_event_json_file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-1-events.jsonl",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "config": "linux_x64",
+      "elapsed_seconds": 18.546,
+      "environment": {
+        "BAZELISK_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazelisk",
+        "CARGO_TARGET_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cargo-target",
+        "DOCKER_HOST": "unix:///run/docker.sock",
+        "HOME": "/tmp/build-home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+        "PRE_COMMIT_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/pre-commit",
+        "TEST_TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazel",
+        "TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/tool-tmp",
+        "UV_CACHE_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/uv",
+        "XDG_CACHE_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache"
+      },
+      "exit_code": 0,
+      "kind": "test",
+      "log": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-1.log",
+      "log_sha256": "39505125992a497e0381706b693b7720d2c53969389e22e83c45599284e3db28",
+      "native_obligation": "Issue250 actual positive Rust Any regression; applicability pending independent review",
+      "operation": "test",
+      "reason": "in-crate unit tests for the unmapped-interface Any error path and for the owning stop guard (never-polled drop and polled-pending cancellation). The dedicated Any regression consumer binary //score/mw/com/test/basic_rust_api/consumer_any_apis:bigdata-consumer-any is built as its dependency.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "test_records": [
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/test_com_api_any/test.xml",
+          "sha256": "6ceba1094728bec69b48dfa0929293d2d2f2db48862cc8a7bfb05f31d012ac12",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "2",
+              "time": "10.104",
+              "timestamp": "2026-10-06T22:01:11.874090+00:00"
+            }
+          ],
+          "test_log_sha256": "b3b2b812bdeed65b5f50cfbd9f49cc524fd404a6656ed56bf179780336f2fbc6"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola-tests/test.xml",
+          "sha256": "9dc8fa2c8fb7e3a808c05b398b61dc15da8e76987deda8cfc7372882265c313a",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/test-54569430/com-api-runtime-lola-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "be8f7d743fa3af426b3dd8222acdbfbd05bfa8a61a5a0610d9d8dd1fa8c19afd"
+        }
+      ],
+      "timed_out": false
+    },
+    {
+      "bounded_tail": "nstanceAlreadyOffered\n      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n[1,854 / 1,878] 2 / 3 tests; Compiling score/mw/com/impl/runtime_mock.cpp; 0s linux-sandbox ... (2 actions, 1 running)\nINFO: From Compiling score/mw/com/impl/runtime_mock.cpp:\nIn file included from ./score/mw/com/impl/instance_identifier.h:16,\n                 from ./score/mw/com/impl/handle_type.h:18,\n                 from ./score/mw/com/impl/enriched_instance_identifier.h:17,\n                 from ./score/mw/com/impl/i_service_discovery_client.h:16,\n                 from ./score/mw/com/impl/i_binding_runtime.h:17,\n                 from ./score/mw/com/impl/runtime_mock.h:16,\n                 from score/mw/com/impl/runtime_mock.cpp:14:\n./score/mw/com/impl/com_error.h: In member function 'virtual std::string_view score::mw::com::impl::ComErrorDomain::MessageFor(const score::result::ErrorCode&) const':\n./score/mw/com/impl/com_error.h:186:65: warning: 'score::mw::com::impl::ComErrc::kServiceInstanceAlreadyOffered' is deprecated: Value has never been used. Calls to OfferService shall be idempotent. [-Wdeprecated-declarations]\n  186 |             case static_cast<score::result::ErrorCode>(ComErrc::kServiceInstanceAlreadyOffered):\n      |                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n./score/mw/com/impl/com_error.h:57:5: note: declared here\n   57 |     kServiceInstanceAlreadyOffered\n      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n[1,858 / 1,878] 2 / 3 tests; Compiling googletest/src/gtest.cc; 0s linux-sandbox ... (2 actions, 1 running)\n[1,859 / 1,878] 2 / 3 tests; Compiling googletest/src/gtest.cc; 1s linux-sandbox ... (2 actions running)\n[1,863 / 1,878] 2 / 3 tests; Compiling googletest/src/gtest-typed-test.cc; 0s linux-sandbox ... (2 actions, 1 running)\n[1,867 / 1,878] 2 / 3 tests; Compiling googletest/src/gtest-printers.cc; 0s linux-sandbox ... (2 actions, 1 running)\n[1,873 / 1,878] 2 / 3 tests; Compiling score/mw/com/impl/runtime_test.cpp; 1s linux-sandbox ... (2 actions running)\n[1,876 / 1,878] 2 / 3 tests; Compiling score/mw/com/impl/runtime_test.cpp; 3s linux-sandbox\nINFO: From Compiling score/mw/com/impl/runtime_test.cpp:\nIn file included from ./score/mw/com/impl/configuration/service_instance_deployment.h:17,\n                 from ./score/mw/com/impl/configuration/configuration.h:18,\n                 from ./score/mw/com/impl/runtime.h:18,\n                 from score/mw/com/impl/runtime_test.cpp:13:\n./score/mw/com/impl/com_error.h: In member function 'virtual std::string_view score::mw::com::impl::ComErrorDomain::MessageFor(const score::result::ErrorCode&) const':\n./score/mw/com/impl/com_error.h:186:65: warning: 'score::mw::com::impl::ComErrc::kServiceInstanceAlreadyOffered' is deprecated: Value has never been used. Calls to OfferService shall be idempotent. [-Wdeprecated-declarations]\n  186 |             case static_cast<score::result::ErrorCode>(ComErrc::kServiceInstanceAlreadyOffered):\n      |                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n./score/mw/com/impl/com_error.h:57:5: note: declared here\n   57 |     kServiceInstanceAlreadyOffered\n      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n[1,877 / 1,878] 2 / 3 tests; [Prepa] Linking score/mw/com/impl/runtime_test_linux\nINFO: Found 3 test targets...\nINFO: Elapsed time: 31.305s, Critical Path: 5.06s\nINFO: 677 processes: 1216 action cache hit, 359 internal, 318 linux-sandbox.\nINFO: Build completed successfully, 677 total actions\nINFO: \n//score/mw/com/impl:runtime_test                                         PASSED in 0.2s\n//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests PASSED in 0.0s\n//score/mw/com/rust/score_com_concept:score_com_concept-test             PASSED in 0.0s\n\nExecuted 3 out of 3 tests: 3 tests pass.\nThere were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.\nINFO: Build Event Protocol files produced successfully.\n",
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "--tmpfs",
+        "/home/jefferson",
+        "--tmpfs",
+        "/tmp",
+        "--tmpfs",
+        "/var/tmp",
+        "--dir",
+        "/tmp/build-home",
+        "--proc",
+        "/proc",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--ro-bind",
+        "/home/jefferson/.local/state/s-core/dk/a889317f9103_state/runtime/docker.sock",
+        "/run/docker.sock",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/ld-linux-x86-64.so.2",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libanl.so.1",
+        "/usr/lib/x86_64-linux-gnu/libanl.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libdl.so.2",
+        "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libgcc_s.so.1",
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libm.so.6",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_dns.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_files.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libpthread.so.0",
+        "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libresolv.so.2",
+        "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/librt.so.1",
+        "/usr/lib/x86_64-linux-gnu/librt.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libstdc++.so.6.0.33",
+        "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libutil.so.1",
+        "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+        "--chdir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/workspaces/250",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tools/bazel",
+        "--batch",
+        "--output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/bazel-output",
+        "test",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/repository-cache",
+        "--color=no",
+        "--curses=no",
+        "--config=linux_x64",
+        "--jobs=2",
+        "--local_test_jobs=1",
+        "--test_output=errors",
+        "--cache_test_results=no",
+        "--build_event_json_file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-2-events.jsonl",
+        "//score/mw/com/impl:runtime_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "config": "linux_x64",
+      "elapsed_seconds": 32.296,
+      "environment": {
+        "BAZELISK_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazelisk",
+        "CARGO_TARGET_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cargo-target",
+        "DOCKER_HOST": "unix:///run/docker.sock",
+        "HOME": "/tmp/build-home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+        "PRE_COMMIT_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/pre-commit",
+        "TEST_TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazel",
+        "TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/tool-tmp",
+        "UV_CACHE_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/uv",
+        "XDG_CACHE_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache"
+      },
+      "exit_code": 0,
+      "kind": "test",
+      "log": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-2.log",
+      "log_sha256": "45e10fcab843604b966d23faa245579f1bb33f26d4d2419b8da937f0cdd9026d",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "operation": "test",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/impl:runtime_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "test_records": [
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/test_com_api_any/test.xml",
+          "sha256": "6ceba1094728bec69b48dfa0929293d2d2f2db48862cc8a7bfb05f31d012ac12",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "2",
+              "time": "10.104",
+              "timestamp": "2026-10-06T22:01:11.874090+00:00"
+            }
+          ],
+          "test_log_sha256": "b3b2b812bdeed65b5f50cfbd9f49cc524fd404a6656ed56bf179780336f2fbc6"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-test/test.xml",
+          "sha256": "dd2fb02169cca752513fc91ac67d067d66da6260de8c50e714d090bbb9c43f3d",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/test-2032988166/score_com_concept-test",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "49d0955e36b23cb2f03885e2ba26f775ec2c48c1cdbf2607afcb97fb81fec221"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-macros-unit-tests/test.xml",
+          "sha256": "2bf58a1aa420072ff8bc198b44d14d28d182fca97c143f159539a8f394c4b9c0",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/score_com_concept-macros-unit-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "09d8d45ec3bfaf46ef3fa4c623d62000a4df8ffe7c248872220e4f9e7e27dc27"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/runtime_test/test.xml",
+          "sha256": "572e86168303a7a2f69e685994f54a9c94da6d0394f83d6299e869758ee1ffda",
+          "suites": [
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeTest",
+              "skipped": "0",
+              "tests": "1",
+              "time": "0.",
+              "timestamp": "2026-10-06T22:02:12.975"
+            },
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeFixture",
+              "skipped": "0",
+              "tests": "4",
+              "time": "0.001",
+              "timestamp": "2026-10-06T22:02:12.975"
+            },
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeTracingConfigTest",
+              "skipped": "0",
+              "tests": "12",
+              "time": "0.061",
+              "timestamp": "2026-10-06T22:02:12.977"
+            }
+          ],
+          "test_log_sha256": "1435bfad02c35ee2b47fd7f89085dbb8367a7b08cd70942feae827e6a08abec7"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola-tests/test.xml",
+          "sha256": "9dc8fa2c8fb7e3a808c05b398b61dc15da8e76987deda8cfc7372882265c313a",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/test-54569430/com-api-runtime-lola-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "be8f7d743fa3af426b3dd8222acdbfbd05bfa8a61a5a0610d9d8dd1fa8c19afd"
+        }
+      ],
+      "timed_out": false
+    },
+    {
+      "bounded_tail": "fered):\n      |                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n./score/mw/com/impl/com_error.h:57:5: note: declared here\n   57 |     kServiceInstanceAlreadyOffered\n      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n[1,625 / 1,634] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 1s linux-sandbox ... (2 actions running)\nINFO: From Compiling score/mw/com/test/find_any_semantics/test_datatype.cpp:\nIn file included from ./score/mw/com/impl/instance_identifier.h:16,\n                 from ./score/mw/com/impl/handle_type.h:18,\n                 from ./score/mw/com/impl/proxy_base.h:18,\n                 from ./score/mw/com/impl/generic_proxy_event.h:18,\n                 from ./score/mw/com/impl/generic_proxy.h:18,\n                 from ./score/mw/com/types.h:24,\n                 from ./score/mw/com/test/find_any_semantics/test_datatype.h:17,\n                 from score/mw/com/test/find_any_semantics/test_datatype.cpp:14:\n./score/mw/com/impl/com_error.h: In member function 'virtual std::string_view score::mw::com::impl::ComErrorDomain::MessageFor(const score::result::ErrorCode&) const':\n./score/mw/com/impl/com_error.h:186:65: warning: 'score::mw::com::impl::ComErrc::kServiceInstanceAlreadyOffered' is deprecated: Value has never been used. Calls to OfferService shall be idempotent. [-Wdeprecated-declarations]\n  186 |             case static_cast<score::result::ErrorCode>(ComErrc::kServiceInstanceAlreadyOffered):\n      |                                                                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n./score/mw/com/impl/com_error.h:57:5: note: declared here\n   57 |     kServiceInstanceAlreadyOffered\n      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n[1,626 / 1,634] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 2s linux-sandbox ... (2 actions, 1 running)\n[1,629 / 1,634] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 3s linux-sandbox ... (2 actions, 1 running)\n[1,631 / 1,634] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 5s linux-sandbox ... (2 actions running)\n[1,632 / 1,634] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 6s linux-sandbox ... (2 actions, 1 running)\n[1,633 / 1,635] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 8s linux-sandbox ... (2 actions, 1 running)\n[1,633 / 1,635] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 18s linux-sandbox ... (2 actions, 1 running)\n[1,633 / 1,635] 1 / 3 tests; Testing //score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync; 28s linux-sandbox ... (2 actions running)\n[1,634 / 1,635] 2 / 3 tests; Testing //score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics; 1s linux-sandbox\n[1,634 / 1,635] 3 / 3 tests; Testing //score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics; 5s linux-sandbox\nINFO: Found 3 test targets...\nINFO: Elapsed time: 74.000s, Critical Path: 33.55s\nINFO: 276 processes: 1375 action cache hit, 109 internal, 167 linux-sandbox.\nINFO: Build completed successfully, 276 total actions\nINFO: \n//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async PASSED in 23.3s\n//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync PASSED in 28.4s\n//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics PASSED in 5.5s\n\nExecuted 3 out of 3 tests: 3 tests pass.\nThere were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.\nINFO: Build Event Protocol files produced successfully.\n",
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "--tmpfs",
+        "/home/jefferson",
+        "--tmpfs",
+        "/tmp",
+        "--tmpfs",
+        "/var/tmp",
+        "--dir",
+        "/tmp/build-home",
+        "--proc",
+        "/proc",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--ro-bind",
+        "/home/jefferson/.local/state/s-core/dk/a889317f9103_state/runtime/docker.sock",
+        "/run/docker.sock",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/ld-linux-x86-64.so.2",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libanl.so.1",
+        "/usr/lib/x86_64-linux-gnu/libanl.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libdl.so.2",
+        "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libgcc_s.so.1",
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libm.so.6",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_dns.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_files.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libpthread.so.0",
+        "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libresolv.so.2",
+        "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/librt.so.1",
+        "/usr/lib/x86_64-linux-gnu/librt.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libstdc++.so.6.0.33",
+        "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libutil.so.1",
+        "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+        "--chdir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/workspaces/250",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tools/bazel",
+        "--batch",
+        "--output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/bazel-output",
+        "test",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/repository-cache",
+        "--color=no",
+        "--curses=no",
+        "--config=linux_x64",
+        "--jobs=2",
+        "--local_test_jobs=1",
+        "--test_output=errors",
+        "--cache_test_results=no",
+        "--build_event_json_file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-3-events.jsonl",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ],
+      "config": "linux_x64",
+      "elapsed_seconds": 75.052,
+      "environment": {
+        "BAZELISK_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazelisk",
+        "CARGO_TARGET_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cargo-target",
+        "DOCKER_HOST": "unix:///run/docker.sock",
+        "HOME": "/tmp/build-home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+        "PRE_COMMIT_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/pre-commit",
+        "TEST_TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazel",
+        "TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/tool-tmp",
+        "UV_CACHE_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/uv",
+        "XDG_CACHE_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache"
+      },
+      "exit_code": 0,
+      "kind": "test",
+      "log": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-3.log",
+      "log_sha256": "10f69ee15189da448f2fe344e07ed7c613162d8e3e702d1bc7bfa20c40e6ca74",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "operation": "test",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ],
+      "test_records": [
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/find_any_semantics/integration_test/test_find_any_semantics/test.xml",
+          "sha256": "b2cf2e7ae3e723a968986064e3829e5f925097fbbe087a59924e782503674c53",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "1",
+              "time": "4.727",
+              "timestamp": "2026-10-06T22:03:23.252215+00:00"
+            }
+          ],
+          "test_log_sha256": "ec3803aaa77378b36f8d87b0e102a6ccafec852d4c0f58840022c3851e51dfcf"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test/test_com_api_sync/test.xml",
+          "sha256": "71152a1e55ec23fd3fea3569307b618856b28e2704f4147cd11f9622a5ef0fe8",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "3",
+              "time": "27.590",
+              "timestamp": "2026-10-06T22:02:54.862546+00:00"
+            }
+          ],
+          "test_log_sha256": "10c644f933718021e1f07de8a718ddc5b286a30c9a72b78c97d01d87e74deee3"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/test_com_api_any/test.xml",
+          "sha256": "6ceba1094728bec69b48dfa0929293d2d2f2db48862cc8a7bfb05f31d012ac12",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "2",
+              "time": "10.104",
+              "timestamp": "2026-10-06T22:01:11.874090+00:00"
+            }
+          ],
+          "test_log_sha256": "b3b2b812bdeed65b5f50cfbd9f49cc524fd404a6656ed56bf179780336f2fbc6"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/test_com_api_async/test.xml",
+          "sha256": "f6ece955c40f3ed28e645c4c2d9aae067a2544f9997c05507ca654dbb94a93b1",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "3",
+              "time": "22.500",
+              "timestamp": "2026-10-06T22:02:31.539213+00:00"
+            }
+          ],
+          "test_log_sha256": "48de789385fe52f6c47e84060113c78000e1e7b2a8a6519f7741fc9c56c06718"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-test/test.xml",
+          "sha256": "dd2fb02169cca752513fc91ac67d067d66da6260de8c50e714d090bbb9c43f3d",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/test-2032988166/score_com_concept-test",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "49d0955e36b23cb2f03885e2ba26f775ec2c48c1cdbf2607afcb97fb81fec221"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-macros-unit-tests/test.xml",
+          "sha256": "2bf58a1aa420072ff8bc198b44d14d28d182fca97c143f159539a8f394c4b9c0",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/score_com_concept-macros-unit-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "09d8d45ec3bfaf46ef3fa4c623d62000a4df8ffe7c248872220e4f9e7e27dc27"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/runtime_test/test.xml",
+          "sha256": "572e86168303a7a2f69e685994f54a9c94da6d0394f83d6299e869758ee1ffda",
+          "suites": [
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeTest",
+              "skipped": "0",
+              "tests": "1",
+              "time": "0.",
+              "timestamp": "2026-10-06T22:02:12.975"
+            },
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeFixture",
+              "skipped": "0",
+              "tests": "4",
+              "time": "0.001",
+              "timestamp": "2026-10-06T22:02:12.975"
+            },
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeTracingConfigTest",
+              "skipped": "0",
+              "tests": "12",
+              "time": "0.061",
+              "timestamp": "2026-10-06T22:02:12.977"
+            }
+          ],
+          "test_log_sha256": "1435bfad02c35ee2b47fd7f89085dbb8367a7b08cd70942feae827e6a08abec7"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola-tests/test.xml",
+          "sha256": "9dc8fa2c8fb7e3a808c05b398b61dc15da8e76987deda8cfc7372882265c313a",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/test-54569430/com-api-runtime-lola-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "be8f7d743fa3af426b3dd8222acdbfbd05bfa8a61a5a0610d9d8dd1fa8c19afd"
+        }
+      ],
+      "timed_out": false
+    },
+    {
+      "bounded_tail": "$TEST_TMPDIR defined, some defaults will be overridden\nOpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.\nWARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.\nComputing main repo mapping: \nWARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.\nComputing main repo mapping: \nComputing main repo mapping: \nComputing main repo mapping: \nLoading: \nLoading: 5 packages loaded\nAnalyzing: target //score/mw/com/rust/score_com_concept:score_com_concept-macros-tests (6 packages loaded, 0 targets configured)\nAnalyzing: target //score/mw/com/rust/score_com_concept:score_com_concept-macros-tests (6 packages loaded, 0 targets configured)\n\nAnalyzing: target //score/mw/com/rust/score_com_concept:score_com_concept-macros-tests (157 packages loaded, 889 targets configured)\n\nAnalyzing: target //score/mw/com/rust/score_com_concept:score_com_concept-macros-tests (361 packages loaded, 14602 targets configured)\n\nINFO: Analyzed target //score/mw/com/rust/score_com_concept:score_com_concept-macros-tests (365 packages loaded, 14937 targets configured).\n[90 / 299] checking cached actions\n[297 / 299] Compiling Rust bin rustdoc_test_writer (1 file) [for tool]; 0s linux-sandbox\nINFO: Found 1 test target...\nTarget //score/mw/com/rust/score_com_concept:score_com_concept-macros-tests up-to-date:\n  bazel-bin/score/mw/com/rust/score_com_concept/score_com_concept-macros-tests.rustdoc_test.sh\n[300 / 300] 1 / 1 tests; no actions running\nINFO: Elapsed time: 10.280s, Critical Path: 1.54s\nINFO: 11 processes: 303 action cache hit, 6 internal, 5 linux-sandbox.\nINFO: Build completed successfully, 11 total actions\nINFO: \n//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests     PASSED in 0.3s\n\nExecuted 1 out of 1 test: 1 test passes.\nThere were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.\nINFO: Build Event Protocol files produced successfully.\n",
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "--tmpfs",
+        "/home/jefferson",
+        "--tmpfs",
+        "/tmp",
+        "--tmpfs",
+        "/var/tmp",
+        "--dir",
+        "/tmp/build-home",
+        "--proc",
+        "/proc",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--ro-bind",
+        "/home/jefferson/.local/state/s-core/dk/a889317f9103_state/runtime/docker.sock",
+        "/run/docker.sock",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/ld-linux-x86-64.so.2",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libanl.so.1",
+        "/usr/lib/x86_64-linux-gnu/libanl.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libdl.so.2",
+        "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libgcc_s.so.1",
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libm.so.6",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_dns.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_files.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libpthread.so.0",
+        "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libresolv.so.2",
+        "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/librt.so.1",
+        "/usr/lib/x86_64-linux-gnu/librt.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libstdc++.so.6.0.33",
+        "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libutil.so.1",
+        "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+        "--chdir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/workspaces/250",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tools/bazel",
+        "--batch",
+        "--output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/bazel-output",
+        "test",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/repository-cache",
+        "--color=no",
+        "--curses=no",
+        "--config=linux_x64_gcc_15",
+        "--jobs=2",
+        "--local_test_jobs=1",
+        "--test_output=errors",
+        "--cache_test_results=no",
+        "--build_event_json_file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-4-events.jsonl",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "config": "linux_x64_gcc_15",
+      "elapsed_seconds": 11.326,
+      "environment": {
+        "BAZELISK_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazelisk",
+        "CARGO_TARGET_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cargo-target",
+        "DOCKER_HOST": "unix:///run/docker.sock",
+        "HOME": "/tmp/build-home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+        "PRE_COMMIT_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/pre-commit",
+        "TEST_TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazel",
+        "TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/tool-tmp",
+        "UV_CACHE_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/uv",
+        "XDG_CACHE_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache"
+      },
+      "exit_code": 0,
+      "kind": "doctest",
+      "log": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-4.log",
+      "log_sha256": "3b8ecc39b228576ed2f2833a9ae8c647c527d6054789073623989dfbaea23bec",
+      "native_obligation": "Actual manual BUILD test; QNX excluded, no qualification inferred.",
+      "operation": "test",
+      "reason": "Concept accessor/generated APIs changed; explicit manual doctests after actual changed subjects, known native GCC configuration.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "test_records": [
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/find_any_semantics/integration_test/test_find_any_semantics/test.xml",
+          "sha256": "b2cf2e7ae3e723a968986064e3829e5f925097fbbe087a59924e782503674c53",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "1",
+              "time": "4.727",
+              "timestamp": "2026-10-06T22:03:23.252215+00:00"
+            }
+          ],
+          "test_log_sha256": "ec3803aaa77378b36f8d87b0e102a6ccafec852d4c0f58840022c3851e51dfcf"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test/test_com_api_sync/test.xml",
+          "sha256": "71152a1e55ec23fd3fea3569307b618856b28e2704f4147cd11f9622a5ef0fe8",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "3",
+              "time": "27.590",
+              "timestamp": "2026-10-06T22:02:54.862546+00:00"
+            }
+          ],
+          "test_log_sha256": "10c644f933718021e1f07de8a718ddc5b286a30c9a72b78c97d01d87e74deee3"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/test_com_api_any/test.xml",
+          "sha256": "6ceba1094728bec69b48dfa0929293d2d2f2db48862cc8a7bfb05f31d012ac12",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "2",
+              "time": "10.104",
+              "timestamp": "2026-10-06T22:01:11.874090+00:00"
+            }
+          ],
+          "test_log_sha256": "b3b2b812bdeed65b5f50cfbd9f49cc524fd404a6656ed56bf179780336f2fbc6"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/test_com_api_async/test.xml",
+          "sha256": "f6ece955c40f3ed28e645c4c2d9aae067a2544f9997c05507ca654dbb94a93b1",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "hostname": "master",
+              "name": "ITF",
+              "skipped": "0",
+              "tests": "3",
+              "time": "22.500",
+              "timestamp": "2026-10-06T22:02:31.539213+00:00"
+            }
+          ],
+          "test_log_sha256": "48de789385fe52f6c47e84060113c78000e1e7b2a8a6519f7741fc9c56c06718"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-test/test.xml",
+          "sha256": "dd2fb02169cca752513fc91ac67d067d66da6260de8c50e714d090bbb9c43f3d",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/test-2032988166/score_com_concept-test",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "49d0955e36b23cb2f03885e2ba26f775ec2c48c1cdbf2607afcb97fb81fec221"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-macros-unit-tests/test.xml",
+          "sha256": "2bf58a1aa420072ff8bc198b44d14d28d182fca97c143f159539a8f394c4b9c0",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/score_com_concept-macros-unit-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "09d8d45ec3bfaf46ef3fa4c623d62000a4df8ffe7c248872220e4f9e7e27dc27"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/rust/score_com_concept/score_com_concept-macros-tests/test.xml",
+          "sha256": "c9b358e0296a0054992df7a77715e52d154bd616600fe4572553e1f9480fa4db",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/rust/score_com_concept/score_com_concept-macros-tests.rustdoc_test.sh",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "d3a0643eb7ee7d8e5e531e312be0393515fa498ca275dcb491306f18807d2caf"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/runtime_test/test.xml",
+          "sha256": "572e86168303a7a2f69e685994f54a9c94da6d0394f83d6299e869758ee1ffda",
+          "suites": [
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeTest",
+              "skipped": "0",
+              "tests": "1",
+              "time": "0.",
+              "timestamp": "2026-10-06T22:02:12.975"
+            },
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeFixture",
+              "skipped": "0",
+              "tests": "4",
+              "time": "0.001",
+              "timestamp": "2026-10-06T22:02:12.975"
+            },
+            {
+              "disabled": "0",
+              "errors": "0",
+              "failures": "0",
+              "name": "RuntimeTracingConfigTest",
+              "skipped": "0",
+              "tests": "12",
+              "time": "0.061",
+              "timestamp": "2026-10-06T22:02:12.977"
+            }
+          ],
+          "test_log_sha256": "1435bfad02c35ee2b47fd7f89085dbb8367a7b08cd70942feae827e6a08abec7"
+        },
+        {
+          "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/native-testlogs/score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola-tests/test.xml",
+          "sha256": "9dc8fa2c8fb7e3a808c05b398b61dc15da8e76987deda8cfc7372882265c313a",
+          "suites": [
+            {
+              "errors": "0",
+              "failures": "0",
+              "name": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/test-54569430/com-api-runtime-lola-tests",
+              "tests": "1"
+            }
+          ],
+          "test_log_sha256": "be8f7d743fa3af426b3dd8222acdbfbd05bfa8a61a5a0610d9d8dd1fa8c19afd"
+        }
+      ],
+      "timed_out": false
+    },
+    {
+      "bounded_tail": "_specifier: InstanceSpecifier) -> Result<HandleContainer, ()>;\n    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    |\n    = help: use a custom `Error` type instead\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_unit_err\n    = note: `#[warn(clippy::result_unit_err)]` on by default\n\nwarning: this returns a `Result<_, ()>`\n   --> score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs:270:5\n    |\n270 |     fn find_service_any(&self, interface_id: &str) -> Result<HandleContainer, ()>;\n    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    |\n    = help: use a custom `Error` type instead\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_unit_err\n\nwarning: 2 warnings emitted\nINFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_rs.AspectRulesLintClippy.report:\nSuccessfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_rs.AspectRulesLintClippy.report\nINFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.AspectRulesLintClippy.out:\n\nINFO: From Action score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola.AspectRulesLintClippy.report:\nSuccessfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola.AspectRulesLintClippy.report\nINFO: From Action score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola.AspectRulesLintClippy.out:\nwarning: transmute used without annotations\n   --> score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs:989:68\n    |\n989 |         let callable = unsafe { FindServiceCallable::new(std::mem::transmute(dyn_callback)) };\n    |                                                                    ^^^^^^^^^ help: consider adding missing annotations: `transmute::<std::boxed::Box<dyn std::ops::FnMut(bridge_ffi_rs::HandleContainer, bridge_ffi_rs::NativeFindServiceHandle) + std::marker::Send>, bridge_ffi_rs::FatPtr>`\n    |\n    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_transmute_annotations\n    = note: `#[warn(clippy::missing_transmute_annotations)]` on by default\n\nwarning: using `clone` on type `TypeOperationsManager` which implements the `Copy` trait\n    --> score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs:1234:31\n     |\n1234 |                     type_ops: type_ops.clone(),\n     |                               ^^^^^^^^^^^^^^^^ help: try dereferencing it: `*type_ops`\n     |\n     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#clone_on_copy\n     = note: `#[warn(clippy::clone_on_copy)]` on by default\n\nwarning: 2 warnings emitted\nINFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.AspectRulesLintClippy.report:\nSuccessfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.AspectRulesLintClippy.report\nINFO: From Action score/mw/com/rust/score_com.AspectRulesLintClippy.report:\nSuccessfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/rust/score_com.AspectRulesLintClippy.report\nINFO: From Action score/mw/com/rust/score_com.AspectRulesLintClippy.out:\n\nINFO: From Action score/mw/com/rust/score_com_concept/score_com_concept.AspectRulesLintClippy.out:\n\nINFO: From Action score/mw/com/rust/score_com_concept/score_com_concept.AspectRulesLintClippy.report:\nSuccessfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/rust/score_com_concept/score_com_concept.AspectRulesLintClippy.report\nINFO: Found 5 targets...\nINFO: Elapsed time: 11.535s, Critical Path: 0.50s\nINFO: 27 processes: 303 action cache hit, 10 internal, 15 linux-sandbox, 2 local.\nINFO: Build completed successfully, 27 total actions\n",
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or",
+        "--tmpfs",
+        "/home/jefferson",
+        "--tmpfs",
+        "/tmp",
+        "--tmpfs",
+        "/var/tmp",
+        "--dir",
+        "/tmp/build-home",
+        "--proc",
+        "/proc",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--ro-bind",
+        "/home/jefferson/.local/state/s-core/dk/a889317f9103_state/runtime/docker.sock",
+        "/run/docker.sock",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/ld-linux-x86-64.so.2",
+        "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libanl.so.1",
+        "/usr/lib/x86_64-linux-gnu/libanl.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libc.so.6",
+        "/usr/lib/x86_64-linux-gnu/libc.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libdl.so.2",
+        "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libgcc_s.so.1",
+        "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libm.so.6",
+        "/usr/lib/x86_64-linux-gnu/libm.so.6",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_dns.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libnss_files.so.2",
+        "/usr/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libpthread.so.0",
+        "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libresolv.so.2",
+        "/usr/lib/x86_64-linux-gnu/libresolv.so.2",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/librt.so.1",
+        "/usr/lib/x86_64-linux-gnu/librt.so.1",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libstdc++.so.6.0.33",
+        "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30",
+        "--ro-bind",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-libs/libutil.so.1",
+        "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+        "--chdir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/workspaces/250",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tools/bazel",
+        "--batch",
+        "--output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/bazel-output",
+        "build",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/repository-cache",
+        "--color=no",
+        "--curses=no",
+        "--config=clippy",
+        "--jobs=2",
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ],
+      "config": "clippy",
+      "elapsed_seconds": 12.859,
+      "environment": {
+        "BAZELISK_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazelisk",
+        "CARGO_TARGET_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cargo-target",
+        "DOCKER_HOST": "unix:///run/docker.sock",
+        "HOME": "/tmp/build-home",
+        "LANG": "C.UTF-8",
+        "LC_ALL": "C.UTF-8",
+        "PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
+        "PRE_COMMIT_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/pre-commit",
+        "TEST_TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/bazel",
+        "TMPDIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/tool-tmp",
+        "UV_CACHE_DIR": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache/uv",
+        "XDG_CACHE_HOME": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/cache"
+      },
+      "exit_code": 0,
+      "kind": "lint",
+      "log": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-250-final-fcuqf3or/execution/check-5.log",
+      "log_sha256": "e5b7e8a61652b01171e3a54d605bb0c56bd3084da2ad0dd387caf4a873f6aea5",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "operation": "build",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ],
+      "test_records": [],
+      "timed_out": false
+    }
+  ],
+  "exit_code": 0,
+  "infrastructure_error": null,
+  "note": "Dedicated positive regression is required; preserved raw output is authoritative, XML wrappers differ from Rust child cases.",
+  "passed": true,
+  "planned_checks": [
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Issue250 actual positive Rust Any regression; applicability pending independent review",
+      "reason": "actual positive Any behavior: exact ServiceNotFound propagation for an unmapped interface and for concrete-instance-id (ConcreteSelectorInterface) and malformed (MalformedSelectorInterface) selectors; the sync wildcard returns two offered BigDataInterface instances (one absent from the consumer configuration) and excludes an actually-offered ComplexStructInterface instance; Specific stays compatible; no fabricated Any specifier; a no-offer phase (test_com_api_any_no_offer) asserts the documented native Ok(empty) for a never-offered service type; and the async one-shot wildcard snapshot returns exactly two typed results and still builds a consumer that receives real samples after completion/drop",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test:test_com_api_any"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Issue250 actual positive Rust Any regression; applicability pending independent review",
+      "reason": "in-crate unit tests for the unmapped-interface Any error path and for the owning stop guard (never-polled drop and polled-pending cancellation). The dedicated Any regression consumer binary //score/mw/com/test/basic_rust_api/consumer_any_apis:bigdata-consumer-any is built as its dependency.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/impl:runtime_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ]
+    },
+    {
+      "config": "linux_x64_gcc_15",
+      "kind": "doctest",
+      "native_obligation": "Actual manual BUILD test; QNX excluded, no qualification inferred.",
+      "reason": "Concept accessor/generated APIs changed; explicit manual doctests after actual changed subjects, known native GCC configuration.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "lint",
+      "native_obligation": "Native BUILD/CI and issue250; no QNX, no fabricated acceptance.",
+      "reason": "Changed discovery implementation compatibility; dedicated positive Any regression required separately.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ]
+    }
+  ],
+  "positive_regression_gap": null,
+  "required_regression_plan_present": true,
+  "source_corrections_max": 3,
+  "source_corrections_used": 3,
+  "source_subject_vector_sha256": "03e8f54bd3455c73c126a9c80e16890c2e45ae68c22e8df1a9db08c11ea646e8"
+}

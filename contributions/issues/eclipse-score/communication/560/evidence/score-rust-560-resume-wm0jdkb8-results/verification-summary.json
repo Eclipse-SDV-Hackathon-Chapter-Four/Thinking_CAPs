@@ -1,0 +1,121 @@
+{
+  "acceptance": "pending offline",
+  "checks": [
+    {
+      "attempt": "check-2",
+      "commands": [
+        {
+          "config": "linux_x64",
+          "exit_code": 0,
+          "kind": "build",
+          "operation": "build",
+          "targets": [
+            "//score/mw/com/rust/score_com_concept:score_com_concept",
+            "//score/mw/com/rust:score_com",
+            "//score/mw/com/rust:score_com_mock",
+            "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+            "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock",
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_mock",
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp",
+            "//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer",
+            "//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async"
+          ],
+          "timed_out": false
+        },
+        {
+          "config": "linux_x64",
+          "exit_code": 0,
+          "kind": "test",
+          "operation": "test",
+          "targets": [
+            "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+            "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+            "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests",
+            "//score/mw/com/impl/bindings/lola:subscription_state_machine_methods_test",
+            "//score/mw/com/impl/bindings/lola:subscription_state_machine_events_test",
+            "//score/mw/com/impl/bindings/lola:subscription_state_machine_states_test",
+            "//score/mw/com/impl/bindings/lola:subscription_state_machine_stress_test",
+            "//score/mw/com/impl/bindings/lola:proxy_event_subscription_test",
+            "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+            "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+          ],
+          "timed_out": false
+        },
+        {
+          "config": "linux_x64",
+          "exit_code": 0,
+          "kind": "doctest",
+          "operation": "test",
+          "targets": [
+            "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests",
+            "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+          ],
+          "timed_out": false
+        },
+        {
+          "config": "clippy",
+          "exit_code": 0,
+          "kind": "lint",
+          "operation": "build",
+          "targets": [
+            "//score/mw/com/rust/score_com_concept:score_com_concept",
+            "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+            "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+          ],
+          "timed_out": false
+        },
+        {
+          "config": "clang-tidy",
+          "exit_code": 0,
+          "kind": "lint",
+          "operation": "build",
+          "targets": [
+            "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"
+          ],
+          "timed_out": false
+        },
+        {
+          "config": "linux_x64",
+          "exit_code": 0,
+          "kind": "query",
+          "operation": "query",
+          "targets": [
+            "//score/mw/com/rust:score_com",
+            "//score/mw/com/rust/score_com_concept:score_com_concept"
+          ],
+          "timed_out": false
+        }
+      ],
+      "infrastructure_error": null,
+      "passed": true
+    }
+  ],
+  "correction_budget": {
+    "attempts": [
+      {
+        "attempt": 1,
+        "historical_run_id": "01M48T96VAH4K085F0Z1QHRNMS",
+        "status": "failed provider request; counted"
+      },
+      {
+        "attempt": 2,
+        "reservation": "counts even if agent or transport fails",
+        "reserved_at": "2026-10-06T16:55:44.042765+00:00"
+      }
+    ],
+    "issue": 560,
+    "max": 3,
+    "remaining": 1,
+    "used": 2
+  },
+  "issue": 560,
+  "native_status": "succeeded",
+  "other_issue_budgets": "Unchanged; never reset exhausted attempts",
+  "run_id": "01M4927N232FTNWEFCRTJQG7PE",
+  "supervisor_present": true,
+  "test_evidence": "Command-specific BEP determines actual executions; copied XML may include prior commands"
+}
