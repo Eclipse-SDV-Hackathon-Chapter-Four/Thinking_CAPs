@@ -275,7 +275,7 @@ imported from there.
    (self-signed certificates: accept the warning).
 
 4. **Install the cluster app over the air** (one time). In the EOL console, upload
-   `aaos_digital_cluster/cuttlefish_emulator/apk/digital-cluster-app-debug.apk` with a
+   `vecu/aaos_cuttlefish/apk/digital-cluster-app-debug.apk` with a
    version and **Push update** to `PC-CUTTLEFISH-01`; the campaign shows
    `downloading → installing → success`. Open the cluster app from Android's app menu.
 
