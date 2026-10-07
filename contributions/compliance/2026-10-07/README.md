@@ -10,6 +10,14 @@ passes, and native S-CORE PR #3307's ECA status passes for `jnsagai@gmail.com`.
 This agreement does not cover another contributor. Jefferson confirmed
 **Anthropic Claude Opus 5.5** assistance for CDA #601 and diagnostics #40.
 
+Puru's Eclipse username is **puru1991**, confirmed by Jefferson. The official
+lookup returns **403**, documented as an existing user with no signed ECA on file.
+See [the captured lookup](eca-puru1991.json) and
+[Eclipse API definitions](https://webdev.eclipse.org/docs/api/git-eca-rest-api/).
+Puru must sign the ECA, associate `erupuripurushotham1@gmail.com` with the account
+used for native commit eligibility, and obtain passing author/committer checks.
+Both PRs still fail their actual ECA checks; diagnostics DCO remains pending.
+
 The [original audit](../../audits/2026-10-07-eclipse-compliance.html) is historical.
 This packet records subsequent corrections and
 [dispositions for all thirteen findings](finding-dispositions.json).

@@ -31,8 +31,9 @@ Native PR #40 also requires the actual author’s DCO sign-offs, project IP revi
 
 | Requirement | Status | Evidence |
 |-------------|--------|----------|
-| Eclipse account / ECA | FAILING UPSTREAM CHECK | Author/committer account not found for erupuri; obtain a passing actual PR check |
-| Eclipse account / ECA | FAILING UPSTREAM CHECK | Author/committer account not found for erupuri; obtain a passing actual PR check |
+| Eclipse account | EXISTS | puru1991 confirmed by Jefferson; official lookup identifies existing account |
+| ECA | NOT SIGNED ON FILE | Official lookup HTTP 403; Puru must sign ECA |
+| Native PR eligibility | FAILING | Author/committer email/account association and actual PR checks remain unresolved |
 | Issue Claimed | DONE | Comment posted on #16 |
 | Fork Created | DONE | EP1991/inc_diagnostics |
 | Code Style Compliance | DONE | ASCII only, SPDX headers |
