@@ -34,7 +34,7 @@ This script is for setting up the XVerse environment and repos after cloning the
 - Optionally runs 'just' commands to setup Logitech G920 steering wheel.
 - Optionally sets up cuttlefish emulator.
 - Optionally prepares the ThreadX AZ3166 lighting ECU (Thinking_CAPs).
-- Links ~/autoverse to this checkout when it lives elsewhere.
+- Works from any checkout location (~/autoverse is not required).
 - Sets up each necessary sub-repo, and warns about existing component
   checkouts that are not on the branch/tag in autoverse.repos.
 
@@ -93,18 +93,6 @@ if ! grep -Fxq "$LINE_TO_ADD" ~/.bashrc; then
     echo "$LINE_TO_ADD" >> ~/.bashrc
 fi
 
-
-## run_autoverse.py and the component scripts expect the checkout at
-## ~/autoverse. When it lives elsewhere (e.g. Thinking_CAPs/demo/X-Verse),
-## link it there instead of moving it.
-if [[ "$AUTOVERSE_DIR" != "$HOME/autoverse" ]]; then
-    if [[ ! -e "$HOME/autoverse" ]]; then
-        ln -s "$AUTOVERSE_DIR" "$HOME/autoverse"
-        echo "Linked ~/autoverse -> $AUTOVERSE_DIR"
-    elif [[ "$(readlink -f "$HOME/autoverse")" != "$AUTOVERSE_DIR" ]]; then
-        echo -e "\033[1;33m~/autoverse already exists and is another checkout; run_autoverse.py will use that one.\033[0m"
-    fi
-fi
 
 ## MISSING INSTALL DOCKER WITH AN ENTIRE SEPARATE SCRIPT MAYBE?
 
@@ -198,5 +186,5 @@ Next steps:
   before starting S-CORE, e.g.  export OPENSOVD_DIR=\$HOME/OpenSOVD
 - Zenoh router: run_autoverse.py starts one in Docker (eclipse/zenoh:1.3.4)
   when nothing answers on tcp/127.0.0.1:7447.
-- Start everything:  python3 run_autoverse.py --enable-camera-display --vcu-zenoh
+- Start everything:  python3 $AUTOVERSE_DIR/run_autoverse.py --enable-camera-display --vcu-zenoh
 EOF

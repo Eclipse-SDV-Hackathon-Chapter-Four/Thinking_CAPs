@@ -7,10 +7,10 @@ Supervisor for Autoverse tasks with:
 
 Steps
 -----
-1) cd $HOME/autoverse                                  && just serve-nvidia
-2) cd $HOME/autoverse/vecu/vcu_zenoh/src               && python3 main.py
-3) cd $HOME/autoverse/vecu/simulink/pid_controller     && python3 main.py
-4) cd $HOME/autoverse/bridges/carla/examples           && python3 automate.py
+1) cd $AUTOVERSE_ROOT                                  && just serve-nvidia
+2) cd $AUTOVERSE_ROOT/vecu/vcu_zenoh/src               && python3 main.py
+3) cd $AUTOVERSE_ROOT/vecu/simulink/pid_controller     && python3 main.py
+4) cd $AUTOVERSE_ROOT/bridges/carla/examples           && python3 automate.py
 
 Behavior
 --------
@@ -66,6 +66,11 @@ from typing import Dict, List, Optional, Tuple, Set
 import psutil
 
 # -------- Configuration -------------------------------------------------------
+
+# The checkout this launcher lives in, wherever that is (e.g. ~/autoverse or
+# Thinking_CAPs/demo/X-Verse). Step paths are relative to it; the steps also
+# inherit it, so their control scripts can find sibling components.
+os.environ.setdefault("AUTOVERSE_ROOT", str(Path(__file__).resolve().parent))
 
 PYTHON = sys.executable or "python3"
 PYTHON_BIN_DIR: Optional[Path] = None
@@ -186,7 +191,7 @@ def build_steps(
     if not carla_mock and not external_carla_server:
         steps.append({
             "name": "CARLA Server (NVIDIA option)",
-            "cwd": "$HOME/autoverse",
+            "cwd": "$AUTOVERSE_ROOT",
             "cmd": ["just", "server-nvidia", "Epic", str(carla_port)],
             "kill_patterns": ["just server-nvidia"],
             "startup_delay_sec": 2.0,
@@ -223,7 +228,7 @@ def build_steps(
     if only_zenoh_modules:
         steps.append({
             "name": "VCU Module Python",
-            "cwd": "$HOME/autoverse/vecu/vcu_zenoh/src",
+            "cwd": "$AUTOVERSE_ROOT/vecu/vcu_zenoh/src",
             "cmd": [PYTHON, "main.py"],
             "kill_patterns": [
                 "vecu/vcu_zenoh/src/main.py",
@@ -234,7 +239,7 @@ def build_steps(
 
         steps.append({
             "name": "ADAS Module Python Zenoh",
-            "cwd": "$HOME/autoverse/vecu/simulink/pid_controller",
+            "cwd": "$AUTOVERSE_ROOT/vecu/simulink/pid_controller",
             "cmd": [PYTHON, "main.py"],
             "kill_patterns": [
                 "vecu/simulink/pid_controller/main.py",
@@ -248,7 +253,7 @@ def build_steps(
         if vcu_zenoh:
             steps.append({
                 "name": "VCU Module Python",
-                "cwd": "$HOME/autoverse/vecu/vcu_zenoh/src",
+                "cwd": "$AUTOVERSE_ROOT/vecu/vcu_zenoh/src",
                 "cmd": [PYTHON, "main.py"],
                 "kill_patterns": [
                     "vecu/vcu_zenoh/src/main.py",
@@ -260,7 +265,7 @@ def build_steps(
         # else:
         #     steps.append({
         #         "name": "Zenoh to CAN bridge",
-        #         "cwd": "$HOME/autoverse/bridges/can/can-zenoh-bridge-python/src",
+        #         "cwd": "$AUTOVERSE_ROOT/bridges/can/can-zenoh-bridge-python/src",
         #         "cmd": [PYTHON, "bridge.py", "config/config.json"],
         #         "kill_patterns": [
         #             "bridges/can/can-zenoh-bridge-python/src",
@@ -272,7 +277,7 @@ def build_steps(
         steps.append({
             "name": "Zenoh to SOME-IP bridge",
             "containers": [os.environ.get("CONTAINER", "bridge-e2e")],
-            "cwd": "$HOME/autoverse/bridges/someip/zenoh-someip-bridge",
+            "cwd": "$AUTOVERSE_ROOT/bridges/someip/zenoh-someip-bridge",
             "cmd": ["./scripts/ctl.sh",  "start"],
             "stp": ["./scripts/ctl.sh",  "stop"],
             "kill_patterns": [],
@@ -288,7 +293,7 @@ def build_steps(
                 + (["docker_setup-adas_score-1"]
                    if os.environ.get("SCORE_FOR") == "All" else [])
             ),
-            "cwd": "$HOME/autoverse/vecu/s-core",
+            "cwd": "$AUTOVERSE_ROOT/vecu/s-core",
             "cmd": ["./ctl.sh",  "start"],
             "stp": ["./ctl.sh",  "stop"],
             "kill_patterns": [],
@@ -305,7 +310,7 @@ def build_steps(
     steps.append({
         "name": "OTA stack: EOL backend + RTCU (APK installer)",
         "containers": ["ota-backend", "ota-rtcu"],
-        "cwd": "$HOME/autoverse/vecu/ota",
+        "cwd": "$AUTOVERSE_ROOT/vecu/ota",
         "cmd": ["./ctl.sh", "up"],      # compose up -d --build + opens EOL console
         "stp": ["./ctl.sh", "stop"],
         "kill_patterns": [],
@@ -315,7 +320,7 @@ def build_steps(
     # Common modules always used
     steps.append({
         "name": "Vehicle Manual Control module",
-        "cwd": "$HOME/autoverse/bridges/carla/examples",
+        "cwd": "$AUTOVERSE_ROOT/bridges/carla/examples",
         "cmd": [PYTHON, "vehicle_manual_control.py"],
         "kill_patterns": [
             "bridges/carla/examples/vehicle_manual_control.py",
@@ -326,7 +331,7 @@ def build_steps(
     })
     steps.append({
         "name": "CARLA automate.py",
-        "cwd": "$HOME/autoverse/bridges/carla/examples",
+        "cwd": "$AUTOVERSE_ROOT/bridges/carla/examples",
         "cmd": automate_cmd,
         "kill_patterns": [
             "bridges/carla/examples/automate.py",
@@ -338,7 +343,7 @@ def build_steps(
     steps.append({
         "name": "ANDROID Cuttlefish",
         "containers": [os.environ.get("CONTAINER", "cuttlefish-orchestration-cont")],
-        "cwd": "$HOME/autoverse/aaos_digital_cluster/cuttlefish_emulator",
+        "cwd": "$AUTOVERSE_ROOT/aaos_digital_cluster/cuttlefish_emulator",
         "cmd": ["./ctl.sh",  "start"],
         "stp": ["./ctl.sh",  "stop"],
         "kill_patterns": [],

@@ -16,7 +16,9 @@
 #
 # Environment overrides:
 #   AZ3166_PORT     serial device (default: the ST-LINK /dev/serial/by-id path)
-#   CAN_BRIDGE_DIR  Zenoh2CAN bridge checkout
+#   AUTOVERSE_ROOT  X-Verse checkout (default: set by run_autoverse.py, else
+#                   ../demo/X-Verse in Thinking_CAPs, else ~/autoverse)
+#   CAN_BRIDGE_DIR  Zenoh2CAN bridge checkout ($AUTOVERSE_ROOT/bridges/can/...)
 #   ZENOH_ENDPOINT  Zenoh router (default tcp/127.0.0.1:7447)
 #   PYTHON          interpreter with python-can 4.2.2, pyserial and zenoh
 
@@ -31,7 +33,16 @@ fi
 THREADX_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SELF="$THREADX_DIR/ctl.sh"
 
-CAN_BRIDGE_DIR="${CAN_BRIDGE_DIR:-$HOME/autoverse/bridges/can/can-zenoh-bridge-python}"
+# X-Verse checkout: the launcher passes AUTOVERSE_ROOT; otherwise the
+# demo/X-Verse next to this folder in Thinking_CAPs, else ~/autoverse.
+if [[ -z "${AUTOVERSE_ROOT:-}" ]]; then
+    if [[ -d "$THREADX_DIR/../demo/X-Verse/bridges" ]]; then
+        AUTOVERSE_ROOT="$(cd -- "$THREADX_DIR/../demo/X-Verse" && pwd)"
+    else
+        AUTOVERSE_ROOT="$HOME/autoverse"
+    fi
+fi
+CAN_BRIDGE_DIR="${CAN_BRIDGE_DIR:-$AUTOVERSE_ROOT/bridges/can/can-zenoh-bridge-python}"
 ZENOH_ENDPOINT="${ZENOH_ENDPOINT:-tcp/127.0.0.1:7447}"
 PYTHON="${PYTHON:-python3}"
 
