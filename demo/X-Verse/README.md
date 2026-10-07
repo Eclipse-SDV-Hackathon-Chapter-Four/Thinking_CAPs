@@ -9,17 +9,17 @@ This repository selects vehicle component repositories through [autoverse.repos]
 With the X-Verse environment already provisioned, start the complete vehicle demo with:
 
 ```bash
-cd "$HOME/autoverse"
+cd "$HOME/autoverse"            # or your checkout, e.g. Thinking_CAPs/demo/X-Verse
 python3 run_autoverse.py --enable-camera-display --vcu-zenoh
 ```
 
-This single command coordinates CARLA, the Zenoh VCU, the Zenoh–SOME/IP bridge, S-CORE ADAS, Vehicle Manual Control, the virtual vehicle with its camera display, and the Android Cuttlefish cluster. There is no need to start these components individually. Press **Ctrl+C** in this terminal to stop the supervised environment, and run the same command to resume it.
+This single command coordinates CARLA, the Zenoh VCU, the Zenoh–SOME/IP bridge, S-CORE ADAS, the OTA vECU (EOL backend + RTCU), Vehicle Manual Control, the virtual vehicle with its camera display, and the Android Cuttlefish cluster. It also starts a Zenoh router when none is running, and the ThreadX AZ3166 lighting ECU when that board is plugged in. There is no need to start these components individually. Press **Ctrl+C** in this terminal to stop the supervised environment, and run the same command to resume it.
 
 The [first-installation reference](#first-installation-reference) below covers acquiring dependencies and provisioning the environment on a new machine. For an existing workspace, continue with the [OpenSOVD/openDuT and web UI guide](#bring-up-the-agreed-opensovdopendut-use-case).
 
 The diagnostic campaigns have their own lifecycle: they start instrumented application instances on the managed openDuT bench and a dedicated CARLA instance. Stop the interactive X-Verse supervisor (it also stops the Zenoh router it started) and any separately started Zenoh router before running that workflow. The router can bind port 7447 on every interface and prevent the campaign listener from starting. OpenSOVD, openDuT, and Vehicle Lab are started by the integration instructions below.
 
-For a fresh installation, follow [Recreate the integration](docs/fresh-workspace.md). It covers source checkout, image/native builds, configuration generation, web UI checks, Android readiness and teardown. The integration is published on `contributions/eclipse-sdv-hackathon`; Autoverse and the bridge/S-CORE fixes are on `dev/sdv-hackathon-2026`, with Cuttlefish fixes on `main`.
+For a fresh installation, follow [Recreate the integration](docs/fresh-workspace.md). It covers source checkout, image/native builds, configuration generation, web UI checks, Android readiness and teardown. The integration is published on `contributions/eclipse-sdv-hackathon`; Autoverse and the CARLA bridge, SOME/IP bridge, S-CORE, Zenoh VCU, OTA vECU and Cuttlefish changes are on the `dev/sdv-hackathon-2026` branch of their repositories.
 
 ## Eclipse SDV Hackathon 2026 — Track 2
 
@@ -162,7 +162,7 @@ export SDV_WORKSPACE="${SDV_WORKSPACE:-$HOME}"
 mkdir -p "$SDV_WORKSPACE"
 ```
 
-The baseline supervisor and several recipes expect `~/autoverse`. For another checkout location, the [workspace isolation steps](docs/fresh-workspace.md#9-prepare-and-check-the-complete-supervisor) provide the required filesystem namespace and container/image overrides. Run one baseline or managed campaign at a time: they share ports, Docker resources and the testbench network profile.
+The integration steps below use `~/autoverse`; the baseline supervisor itself runs from any checkout location. For an isolated second workspace, the [workspace isolation steps](docs/fresh-workspace.md#9-prepare-and-check-the-complete-supervisor) provide the required filesystem namespace and container/image overrides. Run one baseline or managed campaign at a time: they share ports, Docker resources and the testbench network profile.
 
 ### 1. Prepare the vehicle assets and integration checkout
 
@@ -547,7 +547,7 @@ You need:
 
 A Logitech G920 wheel is optional; Vehicle Manual Control supports keyboard input. Mock mode removes the CARLA server requirement, but the supervisor still starts Cuttlefish and graphical client interfaces.
 
-Clone into **`~/autoverse`**. The launcher and several recipes use this location explicitly.
+The commands below use **`~/autoverse`**; substitute your checkout path if it lives elsewhere. `run_autoverse.py` resolves every component from its own location, so any directory works, including the copy inside the Thinking_CAPs repository (`Thinking_CAPs/demo/X-Verse`, see step 2).
 
 ### Provision the vehicle components
 
@@ -592,7 +592,15 @@ just check-host
 just --list
 ```
 
-[autoverse.repos](autoverse.repos) is the source of truth for component branches and tags. The CARLA bridge, SOME/IP bridge, and S-CORE integration use the hackathon branch; other components use the versions listed in the manifest.
+**From the Thinking_CAPs repository.** Thinking_CAPs carries an exact copy of this branch in `demo/X-Verse` (it is not edited there; changes are made here and synced). Its ThreadX lighting controller sits next to it in `ThreadX/`, where the launcher finds it. The components are imported the same way:
+
+```bash
+git clone git@github.com:Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs.git
+cd Thinking_CAPs/demo/X-Verse
+vcs import . < autoverse.repos
+```
+
+[autoverse.repos](autoverse.repos) is the source of truth for component branches and tags. The CARLA bridge, SOME/IP bridge, S-CORE, Zenoh VCU, OTA vECU and Cuttlefish use the hackathon branch; other components use the versions listed in the manifest. Access to the The-Xverse repositories over SSH is required.
 
 For an existing workspace, check local changes in the component repositories before updating them. Import any newly added repositories and pull the nested repositories:
 
@@ -711,9 +719,9 @@ or resuming Android. Cuttlefish checks space for an 8 GB userdata image even whe
 that image already exists as a sparse file. Check `df -h runtime` after builds
 and extraction; insufficient headroom prevents the guest from starting.
 
-The supervisor later runs `./ctl.sh start`, which boots Android and installs the APK when creating the container. Its browser interface is **`https://localhost:8443`**; Android debugging uses **`localhost:6520`**. The default container name is `cuttlefish-orchestration-cont`.
+The supervisor later runs `./ctl.sh start`, which boots Android and waits for boot completion. It does **not** install the cluster APK: the app is delivered over the air by the OTA vECU ([step 10](#10-install-the-cluster-app-over-the-air-ota)), and `make` leaves the APK at `apk/digital-cluster-app-debug.apk` for that upload. Its browser interface is **`https://localhost:8443`**; Android debugging uses **`localhost:6520`**. The default container name is `cuttlefish-orchestration-cont`.
 
-**Verify Android readiness.** The Cuttlefish startup script enables the serial console, waits for boot completion and installs the APK against `localhost:6520`. Check guest boot and APK installation before launching the complete baseline.
+**Verify Android readiness.** The Cuttlefish startup script enables the serial console and waits for boot completion against `localhost:6520`. Check guest boot before launching the complete baseline.
 
 Before starting the supervisor, boot Cuttlefish separately and verify its guest:
 
@@ -724,7 +732,7 @@ timeout 10 adb -s localhost:6520 shell getprop sys.boot_completed
 adb -s localhost:6520 shell pm list packages | rg com.example.digitalclusterapp
 ```
 
-Boot completion must print `1` and the package query must list `com.example.digitalclusterapp`. `ctl.sh start` waits up to 300 seconds and must report APK installation `Success`. If a step fails, inspect `runtime/cvd_launch.log` and `runtime/cvd-state/instances/cvd-1/logs/kernel.log`; resolve startup before continuing. For an explicit reinstall:
+Boot completion must print `1`. The package query lists `com.example.digitalclusterapp` once the app was installed over the air (step 10); on a fresh guest it is empty until then. `ctl.sh start` waits up to 300 seconds for the boot. If a step fails, inspect `runtime/cvd_launch.log` and `runtime/cvd-state/instances/cvd-1/logs/kernel.log`; resolve startup before continuing. For a manual install without OTA:
 
 ```bash
 adb -s localhost:6520 install -r apk/digital-cluster-app-debug.apk
@@ -764,7 +772,33 @@ The launcher selects an interpreter with the required component packages automat
 
 Omit `--enable-camera-display` to disable the CARLA camera window. Vehicle Manual Control and Cuttlefish still have graphical interfaces.
 
-### 10. Verify the demo and stop it
+### 10. Install the cluster app over the air (OTA)
+
+The supervisor starts the OTA vECU (`vecu/ota`: EOL backend + one RTCU) and opens its EOL console at **`https://localhost:9444`** once it answers (self-signed certificate: accept the warning). The RTCU registers the vehicle and lists its Android targets: `PC-CUTTLEFISH-01` (Cuttlefish, `127.0.0.1:6520`) and, optionally, a Raspberry Pi. A green row is reachable.
+
+On a fresh setup, install the cluster app on Cuttlefish once:
+
+1. **Upload an APK**: enter a version and choose `aaos_digital_cluster/cuttlefish_emulator/apk/digital-cluster-app-debug.apk` (created by `./ctl.sh make` in step 7).
+2. **Push update** to `PC-CUTTLEFISH-01`.
+3. The campaign moves through `downloading` → `installing` → `success` within about 10–20 s; the RTCU installs it with `adb`.
+
+The upload and installed state persist in `vecu/ota/data/` across restarts. To roll back or update, upload another APK and push again. Follow the RTCU with `docker logs -f ota-rtcu`; `vecu/ota/ctl.sh logs` follows both containers. See the [OTA vECU README](vecu/ota/README.md) for the design and configuration.
+
+**Optional Raspberry Pi target (Android Automotive on a Pi 4).** The RTCU updates every target in `vecu/ota/config.json` (`targets[].adb_endpoint`). A large APK over Wi-Fi takes minutes, so connect the Pi by Ethernet:
+
+```bash
+# Ethernet cable Pi <-> PC: let NetworkManager hand out addresses (10.42.0.0/24).
+# Use your wired profile's name from `nmcli con show` (often "Wired connection 1").
+nmcli con modify "Wired connection 1" ipv4.method shared && nmcli con up "Wired connection 1"
+# Pi over USB once: enable ADB over TCP, keep it across reboots (userdebug build)
+adb -s <usb-serial> tcpip 5555
+adb -s <usb-serial> shell su 0 setprop persist.adb.tcp.port 5555
+adb -s <usb-serial> shell ip -4 -br addr show eth0   # e.g. 10.42.0.35
+```
+
+Put `<pi-address>:5555` into the `PI-ANDROID-15` target in `vecu/ota/config.json`, run `docker restart ota-rtcu` (the RTCU reads the file at startup), and accept the first ADB authorization on the Pi. For the cluster app on the Pi to receive vehicle data, open its Zenoh settings (`adb shell am start -a com.example.digitalclusterapp.ZENOH_SETTINGS`), select **client (router)** with endpoint `tcp/10.42.0.1:7447`, save, and restart the app (`adb shell am start --user current -n com.example.digitalclusterapp/.app.MainActivity`).
+
+### 11. Verify the demo and stop it
 
 Check the supervisor output for the selected Python, CARLA endpoint, launched processes, and container status. The supervisor checks that managed containers are running and reports a component failure.
 
@@ -774,7 +808,7 @@ In another terminal:
 docker ps --format 'table {{.Names}}\t{{.Status}}'
 ```
 
-For the S-CORE mode, expect `bridge-e2e`, `docker_setup-adas_score-1`, and `cuttlefish-orchestration-cont` to be running, alongside the separately managed Zenoh router.
+For the S-CORE mode, expect `bridge-e2e`, `docker_setup-adas_score-1`, `ota-backend`, `ota-rtcu` and `cuttlefish-orchestration-cont` to be running, plus `autoverse-zenoh-router` when the supervisor started the router.
 
 Focus the **Vehicle Manual Control** window to drive:
 
@@ -786,8 +820,17 @@ Focus the **Vehicle Manual Control** window to drive:
 | `C` | Toggle cruise control |
 | `Z` / `X` | Decrease / increase the speed request |
 | `Q` | Toggle reverse |
+| `I` | Toggle the vehicle-speed publish inhibit (fault injection: the speed signal stops, upstream of the bridge) |
 
-With the Zenoh VCU, cruise control engagement requires at least 10 km/h and forward operation. Accelerate, engage cruise control, change the speed request, and check that telemetry and controller outputs change consistently. Braking disengages cruise control. Open `https://localhost:8443`, then launch the installed cluster from Android's app menu. You can also launch it with:
+With the Zenoh VCU, cruise control engagement requires at least 10 km/h and forward operation. Accelerate, engage cruise control, change the speed request, and check that telemetry and controller outputs change consistently. Braking disengages cruise control.
+
+**Lost speed signal.** With cruise control engaged, press `I`. After about 1.1 s without a speed sample (`CRUISE_SIGNAL_BUDGET_MS` 1000 + `CRUISE_DEBOUNCE_FAILED_MS` 100), S-CORE cancels cruise control and sends `adas/cruise_control/cancel_req`; the VCU disengages. S-CORE's diagnostics server reports DTC `CC.LostCommunication` over SOVD:
+
+```bash
+curl -s http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/cc_lost_communication
+```
+
+With a fresh speed signal it reports `"status":"passed"`; while the signal is lost the entry qualifies the failure, and pressing `I` again restores the signal (see the [cruise control docs](vecu/s-core/cc_s-core/score/cruise_control/docs/index.rst) for the debounce). Open `https://localhost:8443`, then launch the cluster installed in step 10 from Android's app menu. You can also launch it with:
 
 ```bash
 adb -s localhost:6520 shell am start \
@@ -808,6 +851,12 @@ gateway rather than relying on the bundled Android Emulator default
 `tcp/10.0.2.2:7447`. Keep the host Zenoh router running and verify changing
 speed on the Android display while driving. The saved endpoint survives app
 and guest restarts; recheck it if the Cuttlefish network changes.
+
+### 12. Optional: ThreadX AZ3166 lighting ECU
+
+The ThreadX zonal lighting controller can run on an MXChip AZ3166 board as the vehicle's brake/reverse lighting ECU. It lives in the Thinking_CAPs repository (`ThreadX/`; build, flash and SLCAN details in `ThreadX/az3166/README.md`). Prepare the host once with `./setup.sh --threadx` (bridge Python packages and the `dialout` group; log in again afterwards), flash the board, and plug it in over USB.
+
+When the board's ST-LINK serial port is present, the supervisor adds the step **ThreadX zonal lights (AZ3166)** before the VCU. It runs `ThreadX/ctl.sh start`: a watchdog keeps the unchanged Zenoh2CAN bridge connected to the board, also across USB re-enumeration, and `ctl.sh down` closes it at shutdown. The board's OLED shows *X-Verse online*. Brake (`S`) lights its red RGB LED and reverse (`Q`) its user LED, and the CARLA vehicle's brake and reverse lights follow the board's commands. Check it with `ThreadX/ctl.sh status` and `ThreadX/ctl.sh logs`.
 
 Press **`Ctrl+C` in the supervisor terminal** to stop the launched processes and managed containers. Local CARLA is cleaned up; a server selected with `--external-carla-server` is left running. The Zenoh router started by the supervisor is stopped with it; a separately started router can be stopped with `Ctrl+C` in its own terminal.
 
@@ -879,6 +928,8 @@ cd "$HOME/autoverse"
 
 Use `--steer` for the G920 setup, `--rust` for host Rust tooling and `--threadx` for the ThreadX AZ3166 lighting ECU (bridge dependencies and `dialout` group). The checkout does not have to be at `~/autoverse`: the script works in its own directory, and `run_autoverse.py` resolves every component path from its own location (exported to the components as `AUTOVERSE_ROOT`; set it to override). After `vcs import` it lists component checkouts that are not on the branch or tag in `autoverse.repos`, because `vcs import` does not switch existing checkouts. Omit `--carla` when using an existing server or mock mode, then run `just install-client` separately to prepare the client environment. The script always prepares the SOME/IP bridge and S-CORE, so it also builds those components for a Zenoh-only deployment. The Zenoh router is started by `run_autoverse.py` when needed.
 
+After the script, start X-Verse ([step 9](#9-start-x-verse)) and install the cluster app over the air once ([step 10](#10-install-the-cluster-app-over-the-air-ota)).
+
 The script modifies `~/.bashrc`, installs packages, imports repositories, and provisions containers. The manual steps above explain those operations and provide checkpoints for troubleshooting. The CARLA server installation in the script tolerates failures; confirm server installation separately before a local simulation launch.
 
 ## Launcher reference
@@ -906,6 +957,11 @@ python3 run_autoverse.py --help
 | `SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS` | Set to `0` to keep SDL fullscreen windows visible after focus changes |
 | `SCORE_FOR` | S-CORE deployment profile; use `X-Verse` for this walkthrough |
 | `CARLA_PORT`, `CARLA_STREAMING_PORT` | Ports used by CARLA process cleanup; defaults `2000` and `2001` |
+| `AUTOVERSE_ROOT` | Checkout the components are taken from; defaults to the launcher's own directory and is passed to the components |
+| `AUTOVERSE_ZENOH_ROUTER` | `0` never starts the Docker Zenoh router; by default it starts when nothing answers on `127.0.0.1:7447` |
+| `ZENOH_ROUTER_IMAGE` | Router image; default `eclipse/zenoh:1.3.4` |
+| `THREADX_DIR` | ThreadX checkout; default `ThreadX/` next to `demo/X-Verse` in Thinking_CAPs, else `~/Thinking_CAPs/ThreadX` |
+| `AZ3166_PORT` | AZ3166 serial device; default the ST-LINK `/dev/serial/by-id/...-if02` path |
 
 `--carla-port` configures the launch endpoint; `CARLA_PORT` and `CARLA_STREAMING_PORT` affect cleanup. For a custom local port, align those environment variables with the server configuration. Monitor placement uses X11 and may behave differently under Wayland.
 
@@ -923,6 +979,8 @@ Container logs for the main integration are available with:
 docker logs bridge-e2e
 docker logs docker_setup-adas_score-1
 docker logs cuttlefish-orchestration-cont
+docker logs ota-backend
+docker logs ota-rtcu
 ```
 
 | Symptom | Check or fix |
@@ -938,6 +996,12 @@ docker logs cuttlefish-orchestration-cont
 | Cuttlefish browser shows a certificate prompt | Use the local emulator certificate exception described by its control script |
 | Cruise control does not engage | Focus Vehicle Manual Control, reach the VCU minimum speed, and check engagement and brake state |
 | A second launcher is rejected | Stop the existing supervisor before starting another instance |
+| Cluster app missing on Cuttlefish | Install it over the air ([step 10](#10-install-the-cluster-app-over-the-air-ota)); `ctl.sh start` no longer installs it |
+| EOL console does not open | Open `https://localhost:9444` manually and accept the certificate; check `docker logs ota-backend` |
+| OTA target shows unreachable | Check `adb connect <endpoint>`; after a Pi reboot without `persist.adb.tcp.port`, run `adb tcpip 5555` over USB again |
+| OTA campaign stays in `installing` | The APK is still transferring; over Wi-Fi a Pi needs minutes, use Ethernet |
+| AZ3166 OLED shows *X-Verse offline* | Run `ThreadX/ctl.sh status`; check the board's `/dev/serial/by-id/` entry and membership of `dialout` (log in again after `setup.sh --threadx`) |
+| Lights do not change in CARLA | Check the light commands with `ThreadX/ctl.sh logs`; without the board, no component publishes `vehicle/lights/*_cmd` |
 
 For the known WSL recipe permission issue, use `just fix-wsl`, then open a new shell or run `source ~/.bashrc` and retry `just check-host`. WSL deployments also need working GUI, GPU, Docker, and virtualization support for the chosen components.
 
