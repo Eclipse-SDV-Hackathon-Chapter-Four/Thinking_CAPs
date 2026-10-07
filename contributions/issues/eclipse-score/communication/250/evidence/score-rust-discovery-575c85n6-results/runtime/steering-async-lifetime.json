@@ -1,0 +1,6 @@
+{
+  "text": "Independent Codex plan review: re-read task mandatory_api_and_async_refinements. Existing ServiceDiscoveryFuture.poll consumer.rs1031-1049 completes on first callback even EMPTY; await then drops/stops it. Do not claim empty initial result then later updates through same completed future (#1261 excluded). More serious: baseline get_available_instances_async starts native search at953-965 BEFORE returning outer async block966; inner ServiceDiscoveryFuture/Drop is created only on first poll971. Never-polled returned future can leak the already-started search. Fix new Any with immediate owning stop guard on start or deferred start with ownership at first poll, and test never-polled drop plus polled-pending cancellation. Keep existing descriptor signature and use additive fallible accessor with honest legacy limitation. Update plan as needed, then proceed to source within admitted correction budget.",
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "Steer delivered to stage plan@1.\n"
+}

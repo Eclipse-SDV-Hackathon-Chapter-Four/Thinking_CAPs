@@ -1,0 +1,90 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 6 packages loaded
+Analyzing: 5 targets (10 packages loaded, 0 targets configured)
+Analyzing: 5 targets (10 packages loaded, 0 targets configured)
+
+Analyzing: 5 targets (102 packages loaded, 9 targets configured)
+
+Analyzing: 5 targets (163 packages loaded, 3160 targets configured)
+
+Analyzing: 5 targets (321 packages loaded, 12589 targets configured)
+
+Analyzing: 5 targets (365 packages loaded, 14920 targets configured)
+
+Analyzing: 5 targets (370 packages loaded, 14945 targets configured)
+[42 / 216] checking cached actions
+Analyzing: 5 targets (370 packages loaded, 14945 targets configured)
+[130 / 290] checking cached actions
+Analyzing: 5 targets (370 packages loaded, 14945 targets configured)
+[266 / 290] checking cached actions
+Analyzing: 5 targets (371 packages loaded, 14951 targets configured)
+[290 / 290] no actions running
+Analyzing: 5 targets (371 packages loaded, 14951 targets configured)
+[290 / 290] no actions running
+Analyzing: 5 targets (371 packages loaded, 14951 targets configured)
+[290 / 290] no actions running
+Analyzing: 5 targets (371 packages loaded, 14951 targets configured)
+[290 / 290] no actions running
+INFO: Analyzed 5 targets (372 packages loaded, 19995 targets configured).
+[302 / 310] Clippy //score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola; 0s linux-sandbox ... (2 actions, 1 running)
+INFO: From Action score/mw/com/rust/score_com_concept/score_com_concept.AspectRulesLintClippy.out:
+
+INFO: From Action score/mw/com/rust/score_com_concept/score_com_concept.AspectRulesLintClippy.report:
+Successfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/rust/score_com_concept/score_com_concept.AspectRulesLintClippy.report
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.AspectRulesLintClippy.report:
+Successfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.AspectRulesLintClippy.report
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.AspectRulesLintClippy.out:
+
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-runtime-mock/com-api-runtime-mock.AspectRulesLintClippy.out:
+
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-runtime-mock/com-api-runtime-mock.AspectRulesLintClippy.report:
+Successfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-runtime-mock/com-api-runtime-mock.AspectRulesLintClippy.report
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola.AspectRulesLintClippy.report:
+Successfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola.AspectRulesLintClippy.report
+[312 / 316] Clippy //score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs; 0s linux-sandbox ... (2 actions, 1 running)
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-runtime-lola/com-api-runtime-lola.AspectRulesLintClippy.out:
+warning: transmute used without annotations
+    --> score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs:1027:68
+     |
+1027 |         let callable = unsafe { FindServiceCallable::new(std::mem::transmute(dyn_callback)) };
+     |                                                                    ^^^^^^^^^ help: consider adding missing annotations: `transmute::<std::boxed::Box<dyn std::ops::FnMut(bridge_ffi_rs::HandleContainer, bridge_ffi_rs::NativeFindServiceHandle) + std::marker::Send>, bridge_ffi_rs::FatPtr>`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#missing_transmute_annotations
+     = note: `#[warn(clippy::missing_transmute_annotations)]` on by default
+
+warning: using `clone` on type `TypeOperationsManager` which implements the `Copy` trait
+    --> score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs:1241:31
+     |
+1241 |                     type_ops: type_ops.clone(),
+     |                               ^^^^^^^^^^^^^^^^ help: try dereferencing it: `*type_ops`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#clone_on_copy
+     = note: `#[warn(clippy::clone_on_copy)]` on by default
+
+warning: 2 warnings emitted
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_rs.AspectRulesLintClippy.out:
+warning: this returns a `Result<_, ()>`
+   --> score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs:283:5
+    |
+283 |     fn find_service(&self, instance_specifier: InstanceSpecifier) -> Result<HandleContainer, ()>;
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: use a custom `Error` type instead
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#result_unit_err
+    = note: `#[warn(clippy::result_unit_err)]` on by default
+
+warning: 1 warning emitted
+INFO: From Action score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_rs.AspectRulesLintClippy.report:
+Successfully wrote output to bazel-out/k8-fastbuild/bin/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_rs.AspectRulesLintClippy.report
+INFO: Found 5 targets...
+INFO: Elapsed time: 27.344s, Critical Path: 1.20s
+INFO: 27 processes: 303 action cache hit, 10 internal, 15 linux-sandbox, 2 local.
+INFO: Build completed successfully, 27 total actions

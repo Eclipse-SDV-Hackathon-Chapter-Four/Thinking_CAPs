@@ -1,0 +1,2312 @@
+{
+  "title": "Thinking CAPs Eclipse contribution compliance audit",
+  "captured_at": "2026-10-07T10:49:47.205684+00:00",
+  "verdict": "Not all contributions are ready or demonstrably compliant. Two published native PRs have failing ECA gates; policy/checklist, commit metadata, disclosure, IP-review and evidence issues remain.",
+  "scope": "The captured 24-issue registry (20 initially registered issues plus four communication bugs imported during the audit); selected current native patches and all referenced PR drafts; local and remote Git branch contribution records; GitHub native PRs #601/#40/#3307 and hackathon PRs #32/#33/#34; source notice scan outside imported evidence. No source code or original evidence was changed.",
+  "applicability": "Official Eclipse project requirements apply to native contributions. Thinking_CAPs is an event repository: its status as an official Foundation-managed project repository was not established. Foundation requirements are used as upstream readiness criteria for its integration code, not asserted as automatic legal violations for every hackathon commit. Team README review/transparency promises apply to its work.",
+  "limits": [
+    "This is an evidence and process audit, not legal clearance or complete semantic code/security review.",
+    "Native builds, hardware campaigns and model calls were not rerun. Recorded successes are subject-bound historical evidence.",
+    "Workspace imports changed concurrently during the audit. Audited Git refs are captured in audit-subject.json; measured manifest outputs describe the bytes when checked, not an atomic snapshot of the final mutable workspace.",
+    "Employer approval, confidential/PII prompt handling, provider terms, training use, indemnity conditions, plagiarism filtering and all third-party provenance cannot be certified from these artifacts.",
+    "No evidence establishes automatic AI merging. Missing review records do not prove that an offline review never occurred.",
+    "Encryption/cryptography applicability, official project committer status and IP review exemptions require the receiving project disposition.",
+    "Hackathon eligibility and organizer submission rules were not assessed."
+  ],
+  "summary": {
+    "registered_issues": 24,
+    "additional_records_or_groups": 9,
+    "registered_manifest_entries_hash_matched": 35399,
+    "registered_manifest_missing_entries": 1,
+    "registered_manifest_hash_mismatches": 0,
+    "registered_selected_patch_files": 19,
+    "native_pr_eca_failed": [
+      601,
+      40
+    ],
+    "native_pr_eca_passed": [
+      3307
+    ]
+  },
+  "policy_sources": [
+    {
+      "title": "Eclipse Project Handbook",
+      "url": "https://www.eclipse.org/projects/handbook/",
+      "retrieved_on": "2026-10-07"
+    },
+    {
+      "title": "S-CORE Git Guidelines",
+      "url": "https://eclipse-score.github.io/score/main/contribute/general/git.html",
+      "retrieved_on": "2026-10-07"
+    },
+    {
+      "title": "Eclipse ECA API documentation",
+      "url": "https://webdev.eclipse.org/docs/api/git-eca-rest-api/",
+      "retrieved_on": "2026-10-07"
+    },
+    {
+      "title": "Communication contribution guide",
+      "url": "https://github.com/eclipse-score/communication/blob/main/CONTRIBUTING.md"
+    },
+    {
+      "title": "S-CORE contribution guide",
+      "url": "https://github.com/eclipse-score/score/blob/main/CONTRIBUTION.md"
+    },
+    {
+      "title": "SOME/IP contribution guide",
+      "url": "https://github.com/eclipse-score/inc_someip_gateway/blob/main/CONTRIBUTION.md"
+    },
+    {
+      "title": "Lifecycle contribution guide",
+      "url": "https://github.com/eclipse-score/lifecycle/blob/main/CONTRIBUTION.md"
+    },
+    {
+      "title": "Diagnostics contribution guide",
+      "url": "https://github.com/eclipse-score/inc_diagnostics/blob/main/CONTRIBUTION.md"
+    },
+    {
+      "title": "CDA contribution guide",
+      "url": "https://github.com/eclipse-opensovd/classic-diagnostic-adapter/blob/main/CONTRIBUTING.md"
+    },
+    {
+      "title": "OpenSOVD core contribution guide",
+      "url": "https://github.com/eclipse-opensovd/opensovd-core/blob/main/CONTRIBUTING.md"
+    },
+    {
+      "title": "Fault-lib contribution guide",
+      "url": "https://github.com/eclipse-opensovd/fault-lib/blob/main/CONTRIBUTING.md"
+    },
+    {
+      "title": "OpenBSW contribution guide",
+      "url": "https://github.com/eclipse-openbsw/openbsw/blob/main/CONTRIBUTING.md"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "high",
+      "status": "confirmed_failed_gate",
+      "title": "Two published upstream PRs fail Eclipse ECA validation",
+      "observation": "GitHub reports eclipsefdn/eca=failure for CDA PR #601 and inc_diagnostics PR #40. The official Eclipse validation pages specifically report that the author and committer Eclipse accounts cannot be found for their erupuri identity/email. Their branch submission checklists nevertheless mark ECA as DONE. This is an account/commit eligibility failure, not proof that the person never signed an agreement under another identity.",
+      "affected": [
+        "CDA #543 / PR #601",
+        "Diagnostics #16 / PR #40"
+      ],
+      "evidence": [
+        "https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601",
+        "https://github.com/eclipse-score/inc_diagnostics/pull/40",
+        "eclipse-opensovd--classic-diagnostic-adapter-pr-601.json",
+        "eclipse-score--inc_diagnostics-pr-40.json"
+      ],
+      "corrective_action": "The contributor must resolve account/agreement/email eligibility and obtain a passing PR ECA status. Correct the checklists to reflect the actual gate until it passes."
+    },
+    {
+      "id": "F02",
+      "severity": "high",
+      "status": "confirmed_incorrect_guideline",
+      "title": "Submission checklists incorrectly require no AI attribution",
+      "observation": "The CDA and diagnostics branch submission documents contain No AI Attribution= DONE / Clean commit message; the CDA checklist also calls No AI attribution=PASS. Neither retrieved upstream contribution guide requires hiding AI use. The published PRs and their commit messages contain no AI assistance disclosure. Significant AI use on these particular patches remains an authorship question, so missing disclosure is conditional; the written checklist rule is already wrong.",
+      "affected": [
+        "CDA #543 / PR #601",
+        "Diagnostics #16 / PR #40"
+      ],
+      "evidence": [
+        "origin/feature/cda-543-result-error-handling:contributions/cda-543-evidence/PR-543-contribution-checklist.md",
+        "origin/feature/cda-543-result-error-handling:contributions/cda-543-evidence/PR-543-submission.md",
+        "origin/feature/inc-diagnostics-16-sovd-adapter:contributions/inc-diagnostics-16-evidence/PR-16-submission.md"
+      ],
+      "corrective_action": "Replace the invented no-attribution criterion with accurate AI disclosure. Establish whether meaningful AI was used and disclose it in the published contribution when applicable."
+    },
+    {
+      "id": "F03",
+      "severity": "high",
+      "status": "confirmed_metadata_gap_for_upstream",
+      "title": "AI tools are recorded as human coauthors",
+      "observation": "All five prepared Rust API mail patches (#1261, #250, #560, #781, #490) include Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>. The hackathon Rust queue, ThreadX, X-COM and OpenBSW branch commits also use this trailer. Eclipse coauthor entries identify real contributors subject to agreement validation. These commits already disclose AI use; an Assisted-by trailer is the appropriate identity convention, not a legal AI coauthor.",
+      "affected": [
+        "Communication #1261, #250, #560, #781, #490",
+        "ThreadX",
+        "X-COM",
+        "OpenBSW",
+        "Hackathon PR #34"
+      ],
+      "evidence": [
+        "patch-audit.json",
+        "hackathon-32-commits.json",
+        "hackathon-33-commits.json",
+        "git log --all"
+      ],
+      "corrective_action": "Use Assisted-by for AI tool identification in future/native submission commits. Preserve real human authors and historical evidence; do not silently rewrite shared history."
+    },
+    {
+      "id": "F04",
+      "severity": "high",
+      "status": "submission_readiness_gap",
+      "title": "AI disclosure does not consistently travel with native contributions",
+      "observation": "Known AI-assisted SOME/IP, lifecycle, communication #1265/#1167 and four bug-queue PR drafts omit an explicit assistance disclosure. All selected registered patches lack AI Disclosure/CC0-1.0 markers. Rust API mail messages do disclose DeepSeek and corrections in prose, which is positive. The lifecycle new macro is explicitly attributed to Fabro/Flash in its record but has only an Apache-2.0 header. Source files largely generated by AI need the handbook file disclosure treatment; the degree of generation must be confirmed per file. PR #3307 discusses AI tooling but does not explicitly disclose AI assistance in authoring that contribution.",
+      "affected": [
+        "SOME/IP #84",
+        "Lifecycle #704",
+        "Communication #1265/#1167",
+        "Rust API patches",
+        "Bug queue #1236/#1031/#1104/#751",
+        "S-CORE #3115 / PR #3307"
+      ],
+      "evidence": [
+        "patch-audit.json",
+        "bug-queue-audit.json",
+        "native-3307-commits.json",
+        "contributions/issues/eclipse-score/lifecycle/704/README.md"
+      ],
+      "corrective_action": "Add explicit tool/model disclosure to the intended native commits and PRs. Review new files for largely AI-generated content and apply the handbook header/disclosure example with the actual project licence. Do not relabel copied third-party code or blanket-convert the repository to CC0."
+    },
+    {
+      "id": "F05",
+      "severity": "high",
+      "status": "required_review_not_evidenced",
+      "title": "Large native patches have no recorded Eclipse IP Team review",
+      "observation": "Patch additions are SOME/IP #84: 3198; communication #1261: 2132; #250: 1544; #560: 1976; OpenBSW transportRouter: 2353. Published diagnostics PR #40 adds 1503 lines. No corresponding IP review reference was found in the inspected records. The old five diagnostics patches add 2012 lines in total, including lock changes; they are not the same payload as PR #40. Added-line totals flag review candidates, not a legal calculation of net new IP. Generated/repeated content and committer status require project disposition.",
+      "affected": [
+        "SOME/IP #84",
+        "Communication #1261/#250/#560",
+        "Diagnostics #16 / PR #40",
+        "OpenBSW transportRouter"
+      ],
+      "evidence": [
+        "patch-audit.json",
+        "openbsw-packet-check.json",
+        "eclipse-score--inc_diagnostics-pr-40.json",
+        "ip-review-search.json"
+      ],
+      "corrective_action": "Ask the relevant project committer to evaluate net new content and the applicable IP review requirement; record the review/request and approval before official merging. Do not treat tests or splitting one contribution into smaller commits as IP approval."
+    },
+    {
+      "id": "F06",
+      "severity": "high",
+      "status": "confirmed_native_commit_gap",
+      "title": "Diagnostics PR #40 lacks required DCO sign-offs",
+      "observation": "All three commits in inc_diagnostics PR #40 have no Signed-off-by trailer. Its current CONTRIBUTION.md explicitly requires both ECA and DCO. The SOME/IP and lifecycle artifacts are plain uncommitted diffs: absent trailers there are preparation items, not defective existing commits. S-CORE PR #3307 has a Signed-off-by trailer. Communication CONTRIBUTING.md does not itself explicitly mandate DCO, so no blanket DCO failure is asserted for that module.",
+      "affected": [
+        "Diagnostics #16 / PR #40",
+        "SOME/IP #84",
+        "Lifecycle #704"
+      ],
+      "evidence": [
+        "eclipse-score--inc_diagnostics-pr-40.json",
+        "native-guidance.json",
+        "native-3307-commits.json"
+      ],
+      "corrective_action": "The actual contributor must supply the required truthful DCO certification for the diagnostics commits. Include it in future SOME/IP/lifecycle commits when preparing their submissions."
+    },
+    {
+      "id": "F07",
+      "severity": "medium",
+      "status": "identity_conformance_gap",
+      "title": "Author names and ECA coverage need checking per native commit",
+      "observation": "Many root/prepared commits and PR #3307 use author name jnsagai; CDA #601 and diagnostics #40 use erupuri. Eclipse requires the author actual legal name and matching account email. These values look like login handles; they are not verified legal identities. The declared Eclipse username jnascimento6p0 has a current signed-ECA lookup result (HTTP 200). PR #3307 independently has a passing ECA check. Neither result validates every other contributor, every email, or the proposed AI coauthors.",
+      "affected": [
+        "Root history",
+        "Rust API patches",
+        "CDA PR #601",
+        "Diagnostics PR #40",
+        "S-CORE PR #3307"
+      ],
+      "evidence": [
+        "eca-lookups.json",
+        "3307-status.json",
+        "native-3307-commits.json",
+        "patch-audit.json"
+      ],
+      "corrective_action": "Use the responsible contributor legal name and registered email in native commits. Validate each native PR through its actual Eclipse ECA check rather than extending one username lookup to every contribution."
+    },
+    {
+      "id": "F08",
+      "severity": "high",
+      "status": "confirmed_evidence_failures",
+      "title": "The contribution registry cannot verify all submission records",
+      "observation": "scripts/verify_contributions.py --json exits 1 on diagnostics #16: registry observation date 2026-10-06 versus snapshot 2026-10-04. Both diagnostics and CDA recovered-patch paths are relative to contributions/ but actual files are under OpenSOVD/patches/. CDA lacks an evidence_manifest and upstream_snapshot field. Both are marked submission_candidate=true despite testing-pending records and no singular patch as expected by the verifier. The independently inspected #1265 engineering-review manifest contains one missing native-verification/execution/attempts/first-native-run/tools/bazel entry. Registered patches with declared SHA-256 values match; the remaining tested manifest entries match their captured hashes.",
+      "affected": [
+        "Diagnostics #16",
+        "CDA #543",
+        "Communication #1265",
+        "Registry-wide readiness"
+      ],
+      "evidence": [
+        "scripts/verify_contributions.py",
+        "contributions/registry.json",
+        "independent-integrity.json",
+        "full-manifest-results.json"
+      ],
+      "corrective_action": "Correct registry/path/date/schema inconsistencies using genuine current evidence; add a supported multi-patch representation and the missing CDA metadata. Restore the missing #1265 artifact or explicitly document and rework its portability binding. Preserve historical bytes and avoid marking untested recovered patches ready."
+    },
+    {
+      "id": "F09",
+      "severity": "medium",
+      "status": "confirmed_stale_inventory",
+      "title": "Published contributions and branch packets are missing from the registry",
+      "observation": "The initial working registry had 20 entries and the later captured registry has 24 after the four communication bugs were imported concurrently. Neither records PR #601 for CDA #543 or PR #40 for diagnostics #16, although GitHub and branch documents name them. OpenBSW transportRouter, fault-storage write-through, receiver instrumentation and ThreadX/X-COM integration are outside the issue inventory. Old CDA/diagnostics patches do not identify the current submitted revisions.",
+      "affected": [
+        "Registry",
+        "CDA #543",
+        "Diagnostics #16",
+        "OpenBSW",
+        "Fault storage",
+        "Integration contributions",
+        "Communication bug queue"
+      ],
+      "evidence": [
+        "contributions/registry.json",
+        "branch-inventory.json",
+        "eclipse-opensovd--classic-diagnostic-adapter-pr-601.json",
+        "eclipse-score--inc_diagnostics-pr-40.json"
+      ],
+      "corrective_action": "Record current publication/head/base/status and evidence links for the published PRs. Add separate entries for distinct prepared contributions and distinguish submitted code from old recovered patches and integration examples."
+    },
+    {
+      "id": "F10",
+      "severity": "medium",
+      "status": "confirmed_licensing_documentation_gap",
+      "title": "The root licence is abbreviated and source headers are inconsistent",
+      "observation": "Root LICENSE is a 15-line Apache notice, not the full Apache-2.0 terms; GitHub reports NOASSERTION for its detected licence. There is no root CONTRIBUTING file, including the inspected organization defaults. A scan of 111 tracked source/script files outside contribution/evidence imports found 68 without SPDX markers and no copyright ownership marker in their first 2500 characters. This set includes imported helper scripts and is not a declaration of authorship. In remote ThreadX PR #32, 3/19 added source/script files lack SPDX; in X-COM PR #33 all 9 inspected new Python files lack SPDX. Existing native S-CORE new-source headers are generally present. JSON configurations cannot use ordinary comment headers and need separate treatment.",
+      "affected": [
+        "Root repository",
+        "AutoSD",
+        "OpenDut",
+        "OpenSOVD integration",
+        "ThreadX",
+        "X-COM"
+      ],
+      "evidence": [
+        "LICENSE",
+        "owned-source-headers.json",
+        "32-files-headers.json",
+        "33-files-headers.json",
+        "native-guidance.json"
+      ],
+      "corrective_action": "Supply the full intended licence and document contribution/AI/review requirements. Establish actual ownership/provenance before adding appropriate file notices. Preserve upstream MIT/Apache and other imported notices; use supported sidecars or licence metadata for formats without comments."
+    },
+    {
+      "id": "F11",
+      "severity": "medium",
+      "status": "human_review_not_evidenced",
+      "title": "Independent human review is not consistently recorded",
+      "observation": "SOME/IP/lifecycle records contain scoped local owner approval, which is positive but not upstream committer acceptance. Communication implementations and assessments explicitly retain pending acceptance. ThreadX PR #32 was merged by its author jnsagai and has no GitHub review or issue-comment records; X-COM PR #33 and Rust queue PR #34 also have no review records at retrieval. A human merge identity does not establish that an agent merged automatically, and an empty GitHub review list does not disprove an offline review. Root README requires another team member for critical changes and explicit human review of AI-modified code.",
+      "affected": [
+        "ThreadX PR #32",
+        "X-COM PR #33",
+        "Rust queue PR #34",
+        "Communication packets",
+        "Native PRs"
+      ],
+      "evidence": [
+        "README.md",
+        "hackathon-32-reviews.json",
+        "hackathon-33-reviews.json",
+        "hackathon-34-reviews.json",
+        "contributions/communication-1167/submission/HUMAN-DISPOSITION.md"
+      ],
+      "corrective_action": "Retain a real reviewer identity, reviewed revision and decision, including the additional reviewer required for critical changes. Keep human approval before official merges; do not infer it from agent reviews or test passes."
+    },
+    {
+      "id": "F12",
+      "severity": "medium",
+      "status": "testing_and_scope_gaps",
+      "title": "Selected Linux evidence does not establish every native gate",
+      "observation": "The Rust API packets retain unrun QNX, test-code Clippy, sanitizers and analyzers; #1261 adds a Clippy warning and has scope/allocation/ABI questions. #250 has unresolved alignment with system-wide discovery; #560 retains warnings. #781 remains an ABI/ownership draft; #490 has never successfully run its test group. The four bug-queue latest proposals build and run 502 tests with 6 skips, but retain failed copyright checks and specific lint/analyzer/production-integration gaps. PR #3307 correctly retains an inherited failing docs check. OpenBSW lacks the full CI/toolchain/doc matrix and prior issue agreement. Fault-lib lacks full CI/pre-commit and human reproduction acceptance. Platform relevance must be disposed by maintainers, rather than automatically demanding every possible check.",
+      "affected": [
+        "Rust API queue",
+        "Communication bug queue",
+        "S-CORE PR #3307",
+        "OpenBSW",
+        "Fault storage"
+      ],
+      "evidence": [
+        "contributions/issues/eclipse-score/communication/rust-api-queue/README.md",
+        "contributions/communication-bug-queue-20261006/recovery-1/REVIEW.md",
+        "contributions/communication-bug-queue-20261006/recovery-1/additional-751/REVIEW.md",
+        "native-3307.json",
+        "openbsw-packet-check.json",
+        "OpenSOVD/contributions/fault-storage-write-through/validation.md"
+      ],
+      "corrective_action": "Resolve or obtain the project authorized disposition of failing required gates and scope questions. Rerun affected checks after source changes/rebases. Keep the unbuilt and incomplete proposals as drafts or assessments."
+    },
+    {
+      "id": "F13",
+      "severity": "low",
+      "status": "transparency_inconsistency",
+      "title": "Prework declaration conflicts with retained implementation dates",
+      "observation": "prework/README.md describes prework as research/design/documentation only and the contribution plan says no code written. Recovered diagnostic implementation commits are dated 2026-09-22 and diagnostic campaign evidence includes 2026-09-25, before the October 6 event start. The root README already promises to identify preexisting development. This is an internal transparency inconsistency; competition eligibility has not been established and no organizer-policy violation is asserted.",
+      "affected": [
+        "Prework declaration",
+        "Diagnostics #16",
+        "Demo integration"
+      ],
+      "evidence": [
+        "prework/README.md",
+        "prework/plans/CONTRIBUTION_PLAN.md",
+        "patch-audit.json",
+        "evidence/runs/20260925T125437Z"
+      ],
+      "corrective_action": "Clarify original implementation versus event changes and keep actual dates. Verify organizer rules separately before claiming competition eligibility."
+    }
+  ],
+  "registered_contributions": [
+    {
+      "id": "eclipse-score/inc_someip_gateway#84",
+      "status": "Preparation gaps",
+      "assessment": "Scoped owner approval and substantial native evidence retained; 3198 additions flag IP review, native AI disclosure and future DCO/author identity remain open.",
+      "finding_ids": [
+        "F04",
+        "F05",
+        "F07"
+      ],
+      "record": "contributions/issues/eclipse-score/inc_someip_gateway/84/README.md",
+      "upstream_url": "https://github.com/eclipse-score/inc_someip_gateway/issues/84",
+      "registry_status": "scoped_fix_verified",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/inc_someip_gateway/84/imported/pr-preparation/someip-84-verified.patch",
+          "registry_path_exists": true,
+          "sha256": "c581f6319e5301d751b0a1caf2e51fbc8eda374d172199b121c1962158479732",
+          "sha_matches": true,
+          "mail_header": "",
+          "added": 3198,
+          "removed": 6,
+          "files": [
+            {
+              "file": "score/socom/BUILD",
+              "added": 13,
+              "removed": 0
+            },
+            {
+              "file": "score/socom/impl/service_identifier.cpp",
+              "added": 9,
+              "removed": 1
+            },
+            {
+              "file": "score/socom/impl/service_identifier.hpp",
+              "added": 6,
+              "removed": 4
+            },
+            {
+              "file": "score/socom/test/unit/BUILD",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "score/socom/test/unit/runtime_tests.cpp",
+              "added": 944,
+              "removed": 1
+            },
+            {
+              "file": "score/socom/test/unit/service_identifier_tests.cpp",
+              "added": 2225,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/socom/test/unit/service_identifier_tests.cpp",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/lifecycle#704",
+      "status": "Preparation gaps",
+      "assessment": "113 recorded native cases and scoped owner approval; Flash-authored macro lacks file AI disclosure; future DCO and upstream acceptance pending.",
+      "finding_ids": [
+        "F04",
+        "F06",
+        "F07"
+      ],
+      "record": "contributions/issues/eclipse-score/lifecycle/704/README.md",
+      "upstream_url": "https://github.com/eclipse-score/lifecycle/issues/704",
+      "registry_status": "implemented_locally",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/lifecycle/704/imported/fabro/evidence/lifecycle-704-upstream-packet/lifecycle-704.patch",
+          "registry_path_exists": true,
+          "sha256": "c8a33936900b24c13b46298e929d4ef483d0e128d44f9a2cce97909f55702f01",
+          "sha_matches": true,
+          "mail_header": "",
+          "added": 250,
+          "removed": 249,
+          "files": [
+            {
+              "file": "score/launch_manager/src/daemon/src/control/BUILD",
+              "added": 8,
+              "removed": 0
+            },
+            {
+              "file": "score/launch_manager/src/daemon/src/control/control_provider_test_mw_com_config.json",
+              "added": 0,
+              "removed": 70
+            },
+            {
+              "file": "score/launch_manager/src/lm_control/BUILD",
+              "added": 8,
+              "removed": 0
+            },
+            {
+              "file": "score/launch_manager/src/lm_control/src/details/test_lmcontrol_mw_com_config.json",
+              "added": 0,
+              "removed": 77
+            },
+            {
+              "file": "tests/utils/environments/BUILD",
+              "added": 6,
+              "removed": 2
+            },
+            {
+              "file": "tests/utils/environments/mw_com_config.json",
+              "added": 0,
+              "removed": 100
+            },
+            {
+              "file": "config/mw_com_config.bzl",
+              "added": 228,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "config/mw_com_config.bzl",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/inc_diagnostics#16",
+      "status": "Published PR blocked",
+      "assessment": "Current submitted PR #40 differs from old recovered patches; ECA fails, all three commits lack DCO, checklist wrongly says no AI attribution; 1503 added lines flag IP review.",
+      "finding_ids": [
+        "F01",
+        "F02",
+        "F05",
+        "F06",
+        "F08",
+        "F09"
+      ],
+      "record": "contributions/issues/eclipse-score/inc_diagnostics/16/README.md",
+      "upstream_url": "https://github.com/eclipse-score/inc_diagnostics/issues/16",
+      "registry_status": "patches_recovered",
+      "patch_checks": [
+        {
+          "path": "OpenSOVD/patches/inc_diagnostics/0001-build-bazel-apply-the-opensovd_core-cargo-bazel-lock.patch",
+          "registry_path_exists": false,
+          "sha256": "55fcef3d9741a08faf9a2540c1093820967469efec85d1b1cb88b075f80797c4",
+          "sha_matches": null,
+          "mail_header": "From a74efb8adbe116441e64a0901d6b6b00e49fdfa0 Mon Sep 17 00:00:00 2001\nFrom: Purushotham Erupuri <erupuripurushotham1@gmail.com>\nDate: Tue, 22 Sep 2026 15:34:12 +0200\nSubject: [PATCH 1/5] build(bazel): apply the opensovd_core cargo-bazel-lock\n patch\n\npatches/opensovd-core-cargo-bazel-lock.patch was exported but not referenced\nby the opensovd_core git_override, so crate_universe aborted with\n'Digests do not match'.\n\n---\n MODULE.bazel | 2 ++\n 1 file changed, 2 insertions(+)\n\n",
+          "added": 2,
+          "removed": 0,
+          "files": [
+            {
+              "file": "MODULE.bazel",
+              "added": 2,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        },
+        {
+          "path": "OpenSOVD/patches/inc_diagnostics/0002-build-bazel-expose-opensovd_core-s-tokio-and-serde_j.patch",
+          "registry_path_exists": false,
+          "sha256": "7694141e873437f1155f33a4b7a01b03b84f9048f25ddecf186b325e4c98aa42",
+          "sha_matches": null,
+          "mail_header": "From 3f55cf6a4e6f8707a6fe2287875a5c5d8242ccbe Mon Sep 17 00:00:00 2001\nFrom: Purushotham Erupuri <erupuripurushotham1@gmail.com>\nDate: Tue, 22 Sep 2026 15:43:48 +0200\nSubject: [PATCH 2/5] build(bazel): expose opensovd_core's tokio and serde_json\n\nApply the existing expose-tokio patch and add the same for serde_json, so\ncode linking diag_api and opensovd_core can name opensovd's crate instances.\nAdd async-trait to score_crate_index.\n\n---\n MODULE.bazel                                  |  10 +-\n MODULE.bazel.lock                             | 690 +++++++++++++-----\n patches/BUILD.bazel                           |   1 +\n patches/opensovd-core-expose-serde-json.patch |  29 +\n 4 files changed, 552 insertions(+), 178 deletions(-)\n create mode 100644 patches/opensovd-core-expose-serde-json.patch\n\n",
+          "added": 552,
+          "removed": 178,
+          "files": [
+            {
+              "file": "MODULE.bazel",
+              "added": 9,
+              "removed": 1
+            },
+            {
+              "file": "MODULE.bazel.lock",
+              "added": 513,
+              "removed": 177
+            },
+            {
+              "file": "patches/BUILD.bazel",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "patches/opensovd-core-expose-serde-json.patch",
+              "added": 29,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "patches/opensovd-core-expose-serde-json.patch",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        },
+        {
+          "path": "OpenSOVD/patches/inc_diagnostics/0003-feat-diag_api-re-export-JsonSchemaRequired.patch",
+          "registry_path_exists": false,
+          "sha256": "8404a408ca9051259beb4c6a0006ae38617e89aa5124e13907d514bd1ac4c60a",
+          "sha_matches": null,
+          "mail_header": "From 5feb748b9214611bfa1562726dba55bfe64ef7ab Mon Sep 17 00:00:00 2001\nFrom: Purushotham Erupuri <erupuripurushotham1@gmail.com>\nDate: Tue, 22 Sep 2026 15:43:48 +0200\nSubject: [PATCH 3/5] feat(diag_api): re-export JsonSchemaRequired\n\nReplyMessageEncoding::JSON takes a JsonSchemaRequired, which was not reachable\nthrough the diag_api facade.\n\n---\n score/mw/diag/api/diag_api.rs | 1 +\n 1 file changed, 1 insertion(+)\n\n",
+          "added": 1,
+          "removed": 0,
+          "files": [
+            {
+              "file": "score/mw/diag/api/diag_api.rs",
+              "added": 1,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        },
+        {
+          "path": "OpenSOVD/patches/inc_diagnostics/0004-feat-sovd_adapter-serve-diag_api-DataResources-as-an.patch",
+          "registry_path_exists": false,
+          "sha256": "23b0318df8a18b28d7a9ac97c5a58f42c31ba6fc077d562c0588355cdb4469c1",
+          "sha_matches": null,
+          "mail_header": "From 4342d577970bddcf5879d9a4de119275719addb3 Mon Sep 17 00:00:00 2001\nFrom: Purushotham Erupuri <erupuripurushotham1@gmail.com>\nDate: Tue, 22 Sep 2026 15:43:48 +0200\nSubject: [PATCH 4/5] feat(sovd_adapter): serve diag_api DataResources as an\n opensovd DataProvider\n\nDataResourceRegistry keeps each resource next to its metadata; SovdDataProvider\nimplements opensovd_core::DataProvider over it:\n\n- list/categories/groups from DataResourceMetadata, with category/group/tag filters\n- read/write await ReadValueHandle/WriteValueHandle (ready, future, closure)\n- resources sit behind a Mutex (write takes &mut self); the lock is never held\n  across an await\n- per-resource PayloadFormat so the binary-only uds adapters are served as hex\n  without extra code\n- diag_api errors and NRCs map to DataError; read-only writes are rejected\n\nRefs #16\n\n---\n score/mw/diag/sovd_adapter/BUILD       |  54 +++++\n score/mw/diag/sovd_adapter/convert.rs  | 260 ++++++++++++++++++++\n score/mw/diag/sovd_adapter/handle.rs   |  95 ++++++++\n score/mw/diag/sovd_adapter/lib.rs      |  36 +++\n score/mw/diag/sovd_adapter/provider.rs | 321 +++++++++++++++++++++++++\n score/mw/diag/sovd_adapter/registry.rs | 203 ++++++++++++++++\n 6 files changed, 969 insertions(+)\n create mode 100644 score/mw/diag/sovd_adapter/BUILD\n create mode 100644 score/mw/diag/sovd_adapter/convert.rs\n create mode 100644 score/mw/diag/sovd_adapter/handle.rs\n create mode 100644 score/mw/diag/sovd_adapter/lib.rs\n create mode 100644 score/mw/diag/sovd_adapter/provider.rs\n create mode 100644 score/mw/diag/sovd_adapter/registry.rs\n\n",
+          "added": 969,
+          "removed": 0,
+          "files": [
+            {
+              "file": "score/mw/diag/sovd_adapter/BUILD",
+              "added": 54,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/diag/sovd_adapter/convert.rs",
+              "added": 260,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/diag/sovd_adapter/handle.rs",
+              "added": 95,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/diag/sovd_adapter/lib.rs",
+              "added": 36,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/diag/sovd_adapter/provider.rs",
+              "added": 321,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/diag/sovd_adapter/registry.rs",
+              "added": 203,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/mw/diag/sovd_adapter/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/diag/sovd_adapter/convert.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/diag/sovd_adapter/handle.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/diag/sovd_adapter/lib.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/diag/sovd_adapter/provider.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/diag/sovd_adapter/registry.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        },
+        {
+          "path": "OpenSOVD/patches/inc_diagnostics/0005-feat-opensovd-gateway-serve-HVAC-diag_api-resources-.patch",
+          "registry_path_exists": false,
+          "sha256": "7dc6919e424106e412bf76fd61e7070dee015ef1cb06cf5e2a82661fd1e02d8c",
+          "sha_matches": null,
+          "mail_header": "From 9c04a512357ee387256484536f4a939cadc92c41 Mon Sep 17 00:00:00 2001\nFrom: Purushotham Erupuri <erupuripurushotham1@gmail.com>\nDate: Tue, 22 Sep 2026 15:43:48 +0200\nSubject: [PATCH 5/5] feat(opensovd-gateway): serve HVAC diag_api resources\n instead of demo data\n\nReplace the Constant demo providers with an example HVAC application whose\ncabin_temp, sensor_fault_status and sensor_stuck resources are served through\nthe sovd_adapter. A time-based debounce (Debounce::TimeBased semantics) turns\nan injected stuck sensor into a qualified fault. Integration tests drive the\nrunning gateway through opensovd-client.\n\nRefs #16\n\n---\n score/opensovd-gateway/BUILD       |  46 +++-\n score/opensovd-gateway/src/hvac.rs | 335 +++++++++++++++++++++++++++++\n score/opensovd-gateway/src/main.rs | 135 ++++++++++--\n 3 files changed, 488 insertions(+), 28 deletions(-)\n create mode 100644 score/opensovd-gateway/src/hvac.rs\n\n",
+          "added": 488,
+          "removed": 28,
+          "files": [
+            {
+              "file": "score/opensovd-gateway/BUILD",
+              "added": 37,
+              "removed": 9
+            },
+            {
+              "file": "score/opensovd-gateway/src/hvac.rs",
+              "added": 335,
+              "removed": 0
+            },
+            {
+              "file": "score/opensovd-gateway/src/main.rs",
+              "added": 116,
+              "removed": 19
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/opensovd-gateway/src/hvac.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        }
+      ],
+      "actual_pr_url": "https://github.com/eclipse-score/inc_diagnostics/pull/40"
+    },
+    {
+      "id": "eclipse-opensovd/classic-diagnostic-adapter#543",
+      "status": "Published PR blocked",
+      "assessment": "Current PR #601 (+83/-37) has failing ECA; old recovered patch is +162/-70; checklist no-AI-attribution rule is wrong and registry lacks current evidence.",
+      "finding_ids": [
+        "F01",
+        "F02",
+        "F07",
+        "F08",
+        "F09"
+      ],
+      "record": "contributions/issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md",
+      "upstream_url": "https://github.com/eclipse-opensovd/classic-diagnostic-adapter/issues/543",
+      "registry_status": "patches_recovered",
+      "patch_checks": [
+        {
+          "path": "OpenSOVD/patches/classic-diagnostic-adapter/0001-refactor-cda-main-return-Result-instead-of-Option-in.patch",
+          "registry_path_exists": false,
+          "sha256": "9d97f53aa9fe2bf794b0f2989678158a153f91dd0b3c6bce25f3f876e7b83567",
+          "sha_matches": null,
+          "mail_header": "\n\n",
+          "added": 162,
+          "removed": 70,
+          "files": [
+            {
+              "file": "cda-main/src/mdd.rs",
+              "added": 162,
+              "removed": 70
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        }
+      ],
+      "actual_pr_url": "https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601"
+    },
+    {
+      "id": "eclipse-score/communication#1265",
+      "status": "Assessment with gaps",
+      "assessment": "Six recorded Linux cases; human/dependency qualification disposition pending; one manifest artifact missing; native AI disclosure absent.",
+      "finding_ids": [
+        "F04",
+        "F08",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1265",
+      "registry_status": "assessment_linux_integration_verified_agent_review_complete",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1265/communication-1265.patch",
+          "registry_path_exists": true,
+          "sha256": "eb687c1a36b054315970fdbb2a4833cbb5e9470fb30eb06e67a446ca87951c19",
+          "sha_matches": true,
+          "mail_header": "",
+          "added": 154,
+          "removed": 1,
+          "files": [
+            {
+              "file": "score/mw/com/rust/README.md",
+              "added": 2,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/rust/design/identifier_pasting_assessment.md",
+              "added": 152,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#1167",
+      "status": "Preparation gaps",
+      "assessment": "503 recorded tests, 6 skips and 204 inherited copyright findings; manifest matched at measurement; human disposition and native AI disclosure pending.",
+      "finding_ids": [
+        "F04",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/communication-1167/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1167",
+      "registry_status": "implemented_locally",
+      "patch_checks": [
+        {
+          "path": "contributions/communication-1167/final-review/verification-run/communication-1167.patch",
+          "registry_path_exists": true,
+          "sha256": "aaadfe6e5a383e228fca99a2b73aa630a5cfcfb73cd7fc56de199f5b48161a4f",
+          "sha_matches": true,
+          "mail_header": "",
+          "added": 557,
+          "removed": 2,
+          "files": [
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/BUILD",
+              "added": 61,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/api_idempotency_datatype.cpp",
+              "added": 13,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/api_idempotency_datatype.h",
+              "added": 43,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/config/logging.json",
+              "added": 7,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/config/mw_com_config.json",
+              "added": 47,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/integration_test/BUILD",
+              "added": 29,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/integration_test/api_idempotency_test.py",
+              "added": 40,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/api_idempotency/main_api_idempotency.cpp",
+              "added": 315,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/mw/com/test/api_idempotency/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/api_idempotency_datatype.cpp",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/api_idempotency_datatype.h",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/config/logging.json",
+              "spdx": false,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/config/mw_com_config.json",
+              "spdx": false,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/integration_test/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/integration_test/api_idempotency_test.py",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/api_idempotency/main_api_idempotency.cpp",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": false,
+          "ai_coauthor": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#1261",
+      "status": "Preparation gaps",
+      "assessment": "Linux selected checks recorded; 2132 additions flag IP review, AI coauthor metadata and file disclosures need attention; scope/allocation/ABI and warnings remain.",
+      "finding_ids": [
+        "F03",
+        "F04",
+        "F05",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1261/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1261",
+      "registry_status": "proposed_fix_linux_verified",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1261/communication-1261.patch",
+          "registry_path_exists": true,
+          "sha256": "be96156d1e937865f180444117f9ba4285de08862c28971d0ab445eb45a36698",
+          "sha_matches": true,
+          "mail_header": "From 4760fe47f2edc25c16f7f76f70c68397feb90586 Mon Sep 17 00:00:00 2001\nFrom: jnsagai <jnsagai@gmail.com>\nDate: Wed, 7 Oct 2026 04:54:16 +0100\nSubject: [PATCH] Rust::com: Add async stream of newly available services\n\nAddresses #1261.\n\nAdd Runtime::find_all_services(), an asynchronous stream of\ninterface-independent ServiceDescriptor items (service type name, version,\nbinding, binding service id and instance id).\n\nThe LoLa backend starts one find-any watch per service type present in the\nloaded configuration (including add-on configurations merged before the\nstream is opened) and reports any concrete provider instance id. Services\nthat are already offered are yielded first; an identity is yielded again\nwhen it is re-offered after a withdrawal. Pending items are coalesced: at\nmost one item per currently offered identity, discarded if the service is\nwithdrawn before being polled, which bounds the backlog by the offered set.\nThe stream ends when it is dropped, which stops every native watch.\nDiscovery callbacks only hold a weak reference to the stream state.\n\nIRuntime gains GetConfiguredServiceWildcardIdentifiers(), declared last\nwith a default implementation. Runtime serializes add-on configuration\nmerges with the wildcard enumeration and invalidates its cache; returned\nidentifiers stay valid in address-stable storage.\n\nAdds LoLa backend unit tests and the all_services_stream ITF integration\ntest (initial offer, later offer, withdrawal, re-offer with exact\nidentities and duplicate detection).\n\nImplemented with DeepSeek V4 Flash (Fabro) and corrected by Claude.\nOpen design points (configured-service scope, operational-phase\nallocation) are raised on #1261.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n---\n score/mw/com/impl/i_runtime.h                 |  17 +\n score/mw/com/impl/runtime.cpp                 |  76 +++\n score/mw/com/impl/runtime.h                   |  25 +\n .../com-api/com-api-ffi-lola/bridge_ffi.rs    |  64 +-\n .../com-api-ffi-lola/bridge_ffi_lola.rs       | 150 ++++-\n .../com-api-ffi-lola/bridge_ffi_mock.rs       |  37 +-\n .../rust/com-api/com-api-ffi-lola/common.rs   |   7 +\n .../registry_bridge_macro.cpp                 | 236 ++++++++\n .../rust/com-api/com-api-runtime-lola/BUILD   |   1 +\n .../rust/com-api/com-api-runtime-lola/lib.rs  |   2 +\n .../com-api/com-api-runtime-lola/runtime.rs   |  10 +\n .../com-api-runtime-lola/service_stream.rs    | 557 ++++++++++++++++++\n .../rust/design/high_level_design_detail.md   |   3 +\n score/mw/com/rust/score_com.rs                |   2 +-\n .../mw/com/rust/score_com_concept/concept.rs  | 174 ++++++\n score/mw/com/rust/score_com_concept/error.rs  |   2 +\n .../basic_rust_api/all_services_stream/BUILD  |  77 +++\n .../all_services_stream/consumer_app.rs       | 236 ++++++++\n .../all_services_stream/etc/BUILD             |  24 +\n .../all_services_stream/etc/config.json       | 121 ++++\n .../etc/producer_config.json                  | 121 ++++\n .../integration_test/BUILD                    |  22 +\n .../com_api_all_services_stream_test.py       |  51 ++\n .../all_services_stream/provider_app.rs       | 121 ++++\n 24 files changed, 2132 insertions(+), 4 deletions(-)\n create mode 100644 score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/consumer_app.rs\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/etc/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/etc/config.json\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/etc/producer_config.json\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/integration_test/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/integration_test/com_api_all_services_stream_test.py\n create mode 100644 score/mw/com/test/basic_rust_api/all_services_stream/provider_app.rs\n\n",
+          "added": 2132,
+          "removed": 4,
+          "files": [
+            {
+              "file": "score/mw/com/impl/i_runtime.h",
+              "added": 17,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/runtime.cpp",
+              "added": 76,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/runtime.h",
+              "added": 25,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs",
+              "added": 63,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs",
+              "added": 149,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs",
+              "added": 36,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/common.rs",
+              "added": 7,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp",
+              "added": 236,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/BUILD",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/lib.rs",
+              "added": 2,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs",
+              "added": 10,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs",
+              "added": 557,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/rust/design/high_level_design_detail.md",
+              "added": 3,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/rust/score_com.rs",
+              "added": 1,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/rust/score_com_concept/concept.rs",
+              "added": 174,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/rust/score_com_concept/error.rs",
+              "added": 2,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/BUILD",
+              "added": 77,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/consumer_app.rs",
+              "added": 236,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/etc/BUILD",
+              "added": 24,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/etc/config.json",
+              "added": 121,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/etc/producer_config.json",
+              "added": 121,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/integration_test/BUILD",
+              "added": 22,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/integration_test/com_api_all_services_stream_test.py",
+              "added": 51,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/all_services_stream/provider_app.rs",
+              "added": 121,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/consumer_app.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/etc/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/etc/config.json",
+              "spdx": false,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/etc/producer_config.json",
+              "spdx": false,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/integration_test/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/integration_test/com_api_all_services_stream_test.py",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/all_services_stream/provider_app.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": true,
+          "ai_coauthor": true
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#250",
+      "status": "Preparation gaps",
+      "assessment": "68 recorded passing child cases, 2 ignored doctests; 1544 additions flag IP review; AI coauthor metadata and discovery scope need resolution.",
+      "finding_ids": [
+        "F03",
+        "F04",
+        "F05",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/250/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/250",
+      "registry_status": "proposed_fix_linux_verified",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/250/communication-250.patch",
+          "registry_path_exists": true,
+          "sha256": "b9f09bae291784836b544c68d0be09edd6e82f48df89c47a79b5476e9307a581",
+          "sha_matches": true,
+          "mail_header": "From 84075c096b835c82af1c40e0b2328fba11bc8438 Mon Sep 17 00:00:00 2001\nFrom: jnsagai <jnsagai@gmail.com>\nDate: Wed, 7 Oct 2026 04:54:16 +0100\nSubject: [PATCH] Rust::com: Support typed FindServiceSpecifier::Any discovery\n\nAddresses #250.\n\nReplace the panic for FindServiceSpecifier::Any with typed, same-interface\nAny discovery in the LoLa runtime. Interfaces register their LoLa wildcard\nconfiguration; find_service and the async discovery path resolve Any\nthrough native find-any (FFI find_service_any / start_find_service_any)\nand return ServiceNotFound for unmapped, concrete or malformed\nregistrations. The async search stop guard is created synchronously after\na successful start, so a never-polled or cancelled future stops the native\nsearch.\n\nAdds LoLa unit tests and the consumer_any_apis ITF integration test.\n\nThis is typed same-interface discovery, not system-wide discovery of all\ninterfaces (see #1261).\n\nImplemented with DeepSeek V4 Flash (Fabro).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n---\n .../com-api/com-api-ffi-lola/bridge_ffi.rs    |  18 +\n .../com-api-ffi-lola/bridge_ffi_lola.rs       |  58 +++\n .../com-api-ffi-lola/bridge_ffi_mock.rs       |  16 +\n .../registry_bridge_macro.cpp                 | 138 ++++++\n .../com-api-ffi-lola/registry_bridge_macro.h  |  63 +++\n .../com-api/com-api-runtime-lola/consumer.rs  | 315 +++++++++++---\n .../com-api/com-api-runtime-lola/runtime.rs   |  13 +-\n score/mw/com/rust/score_com.rs                |   9 +-\n .../mw/com/rust/score_com_concept/concept.rs  |  37 +-\n .../basic_rust_api/bigdata_com_api_gen.cpp    |  39 +-\n .../basic_rust_api/bigdata_com_api_gen.rs     |   8 +\n .../basic_rust_api/consumer_any_apis/BUILD    |  57 +++\n .../consumer_any_apis/consumer_app.rs         | 403 ++++++++++++++++++\n .../consumer_any_apis/integration_test/BUILD  |  22 +\n .../integration_test/com_api_any_api_test.py  |  56 +++\n score/mw/com/test/basic_rust_api/etc/BUILD    |   5 +-\n .../com/test/basic_rust_api/etc/config.json   |  42 ++\n .../basic_rust_api/etc/provider_config.json   | 228 ++++++++++\n .../producer_app/producer_app.rs              |  83 +++-\n 19 files changed, 1544 insertions(+), 66 deletions(-)\n create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs\n create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py\n create mode 100644 score/mw/com/test/basic_rust_api/etc/provider_config.json\n\n",
+          "added": 1544,
+          "removed": 66,
+          "files": [
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs",
+              "added": 18,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs",
+              "added": 58,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs",
+              "added": 16,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp",
+              "added": 138,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h",
+              "added": 63,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs",
+              "added": 264,
+              "removed": 51
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs",
+              "added": 8,
+              "removed": 5
+            },
+            {
+              "file": "score/mw/com/rust/score_com.rs",
+              "added": 7,
+              "removed": 2
+            },
+            {
+              "file": "score/mw/com/rust/score_com_concept/concept.rs",
+              "added": 34,
+              "removed": 3
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/bigdata_com_api_gen.cpp",
+              "added": 36,
+              "removed": 3
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/bigdata_com_api_gen.rs",
+              "added": 8,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD",
+              "added": 57,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs",
+              "added": 403,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD",
+              "added": 22,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py",
+              "added": 56,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/etc/BUILD",
+              "added": 4,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/etc/config.json",
+              "added": 42,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/etc/provider_config.json",
+              "added": 228,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/producer_app/producer_app.rs",
+              "added": 82,
+              "removed": 1
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/etc/provider_config.json",
+              "spdx": false,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": true,
+          "ai_coauthor": true
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#560",
+      "status": "Preparation gaps",
+      "assessment": "14 recorded actual cases; 1976 additions flag IP review; AI coauthor metadata, file disclosure, warnings and native applicability unresolved.",
+      "finding_ids": [
+        "F03",
+        "F04",
+        "F05",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/560/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/560",
+      "registry_status": "proposed_fix_linux_verified",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/560/communication-560.patch",
+          "registry_path_exists": true,
+          "sha256": "afb61ba86e412f3386235adebaacb73e297930d40e6414db2b9e37d336769b71",
+          "sha_matches": true,
+          "mail_header": "From 290fea70b5123426b58a784ab836725830469ecc Mon Sep 17 00:00:00 2001\nFrom: jnsagai <jnsagai@gmail.com>\nDate: Wed, 7 Oct 2026 04:54:16 +0100\nSubject: [PATCH] Rust::com: Add subscription state change APIs\n\nAddresses #560.\n\nExpose the proxy event subscription state to the Rust COM-API:\nget_subscription_state(), set_subscription_state_change_handler() and\nunset_subscription_state_change_handler(), backed by new LoLa FFI entry\npoints, plus the mock runtime implementation, design and user-facing\nAPI documentation.\n\nAdds the subscription_state_apis test application with a scripted\nprovider/consumer integration test.\n\nImplemented with DeepSeek V4 Flash (Fabro); test-application ownership and\nbuilder-type corrections by Codex.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n---\n .../com-api/com-api-ffi-lola/bridge_ffi.rs    |   24 +\n .../com-api-ffi-lola/bridge_ffi_lola.rs       |  113 ++\n .../com-api-ffi-lola/bridge_ffi_mock.rs       |   29 +\n .../registry_bridge_macro.cpp                 |   41 +\n .../com-api-ffi-lola/registry_bridge_macro.h  |   35 +\n .../com-api/com-api-runtime-lola/consumer.rs  |  440 ++++++-\n .../com-api/com-api-runtime-mock/runtime.rs   |   19 +-\n .../rust/design/high_level_design_detail.md   |    1 +\n .../com/rust/doc/user_facing_api_examples.md  |   36 +\n score/mw/com/rust/score_com.rs                |    2 +-\n .../mw/com/rust/score_com_concept/concept.rs  |   69 ++\n score/mw/com/rust/score_com_concept/error.rs  |    2 +\n .../subscription_state_apis/BUILD             |   67 ++\n .../integration_test/BUILD                    |   28 +\n .../test_subscription_state_apis.py           |   62 +\n .../subscription_state_app.rs                 | 1011 +++++++++++++++++\n 16 files changed, 1976 insertions(+), 3 deletions(-)\n create mode 100644 score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/BUILD\n create mode 100644 score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/test_subscription_state_apis.py\n create mode 100644 score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs\n\n",
+          "added": 1976,
+          "removed": 3,
+          "files": [
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs",
+              "added": 24,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs",
+              "added": 113,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs",
+              "added": 29,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp",
+              "added": 41,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h",
+              "added": 35,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs",
+              "added": 439,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs",
+              "added": 18,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/rust/design/high_level_design_detail.md",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/rust/doc/user_facing_api_examples.md",
+              "added": 36,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/rust/score_com.rs",
+              "added": 1,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/rust/score_com_concept/concept.rs",
+              "added": 69,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/rust/score_com_concept/error.rs",
+              "added": 2,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD",
+              "added": 67,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/BUILD",
+              "added": 28,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/test_subscription_state_apis.py",
+              "added": 62,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs",
+              "added": 1011,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/BUILD",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/test_subscription_state_apis.py",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            },
+            {
+              "path": "score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": true,
+          "ai_coauthor": true
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#781",
+      "status": "Draft only",
+      "assessment": "ABI/ownership unresolved with incomplete lint evidence; no engineering acceptance; AI coauthor metadata needs correction before submission.",
+      "finding_ids": [
+        "F03",
+        "F04",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/781/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/781",
+      "registry_status": "draft_patch_partially_verified",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/781/communication-781.patch",
+          "registry_path_exists": true,
+          "sha256": "4111fff111764a5e56c45efe54bf9bfaf0eab97dc1f822c84543dae303d9bd57",
+          "sha_matches": true,
+          "mail_header": "From 494d7b78612a3f3c2c75711b7ec3e5a6a75651cd Mon Sep 17 00:00:00 2001\nFrom: jnsagai <jnsagai@gmail.com>\nDate: Wed, 7 Oct 2026 04:54:16 +0100\nSubject: [PATCH] Rust::com: Add MethodInArgPtr for Rust method arguments\n (draft)\n\nAddresses #781 (draft, not ready for review).\n\nAdd a MethodInArgPtr<T> plumbing type with a LoLa size-check test\nsupport library. ABI layout and ownership semantics are not yet settled\nand lint evidence is missing.\n\nImplemented with DeepSeek V4 Flash (Fabro).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n---\n score/mw/com/impl/plumbing/rust/BUILD         | 26 ++++-\n .../impl/plumbing/rust/method_in_arg_ptr.rs   | 94 +++++++++++++++++++\n .../com/impl/plumbing/rust/test_support/BUILD |  1 +\n .../rust/test_support/test_helper_size_ffi.rs | 22 ++++-\n .../test_helper_size_provider.cpp             | 23 +++++\n .../test_support/test_helper_size_provider.h  |  6 ++\n 6 files changed, 170 insertions(+), 2 deletions(-)\n create mode 100644 score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs\n\n",
+          "added": 170,
+          "removed": 2,
+          "files": [
+            {
+              "file": "score/mw/com/impl/plumbing/rust/BUILD",
+              "added": 25,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs",
+              "added": 94,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/plumbing/rust/test_support/BUILD",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/plumbing/rust/test_support/test_helper_size_ffi.rs",
+              "added": 21,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.cpp",
+              "added": 23,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.h",
+              "added": 6,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [
+            {
+              "path": "score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs",
+              "spdx": true,
+              "ai_disclosure": false,
+              "cc0": false
+            }
+          ],
+          "prose_ai_disclosure": true,
+          "ai_coauthor": true
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#490",
+      "status": "Draft only",
+      "assessment": "Test group never executed successfully; correctly retained as unverified; AI coauthor metadata needs correction.",
+      "finding_ids": [
+        "F03",
+        "F04",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/490/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/490",
+      "registry_status": "draft_patch_unverified",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/490/communication-490.patch",
+          "registry_path_exists": true,
+          "sha256": "a7eb2bb7b7f2d3e93a95f0e400b50dd0721bb5a9bd79067a403aa63bb12b5166",
+          "sha_matches": true,
+          "mail_header": "From 35c58aac1d57ceeac0da504d8e9ecbae77bc54fd Mon Sep 17 00:00:00 2001\nFrom: jnsagai <jnsagai@gmail.com>\nDate: Wed, 7 Oct 2026 04:54:16 +0100\nSubject: [PATCH] Rust::com: Add mock runtime for the Rust COM-API (draft)\n\nAddresses #490 (draft, not ready for review).\n\nAdd an in-process mock runtime (registry-backed find_service, publisher\nand subscription) for testing Rust COM-API applications without LoLa.\nNot yet verified: its test group failed while loading Bazel module\nextensions before any test ran.\n\nImplemented with DeepSeek V4 Flash (Fabro).\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n---\n .../rust/com-api/com-api-runtime-mock/BUILD   |  17 +-\n .../com-api/com-api-runtime-mock/runtime.rs   | 566 ++++++++++++------\n score/mw/com/rust/BUILD                       |   2 +-\n .../rust/design/high_level_design_detail.md   |   4 +-\n 4 files changed, 413 insertions(+), 176 deletions(-)\n\n",
+          "added": 413,
+          "removed": 176,
+          "files": [
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-mock/BUILD",
+              "added": 16,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs",
+              "added": 393,
+              "removed": 173
+            },
+            {
+              "file": "score/mw/com/rust/BUILD",
+              "added": 1,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/rust/design/high_level_design_detail.md",
+              "added": 3,
+              "removed": 1
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false,
+          "new_file_headers": [],
+          "prose_ai_disclosure": true,
+          "ai_coauthor": true
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#173",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/173/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/173",
+      "registry_status": "assessment_refreshed_no_source_change",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#1264",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1264/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1264",
+      "registry_status": "assessment_no_source_change",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#1263",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1263/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1263",
+      "registry_status": "assessment_no_source_change",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#794",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/794/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/794",
+      "registry_status": "no_patch_upstream_in_progress",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#782",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/782/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/782",
+      "registry_status": "assessment_no_source_change",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#1062",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1062/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1062",
+      "registry_status": "design_assessment_no_source_change",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#741",
+      "status": "Assessment or no implementation",
+      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "finding_ids": [
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/741/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/741",
+      "registry_status": "not_implemented",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/score#3115",
+      "status": "Published draft with gaps",
+      "assessment": "PR #3307 is draft and ECA passes; DCO and native licence header present; no maintainer review, docs gate remains failed, contribution-authoring AI disclosure needs clarification.",
+      "finding_ids": [
+        "F04",
+        "F07",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/score/3115/README.md",
+      "upstream_url": "https://github.com/eclipse-score/score/issues/3115",
+      "registry_status": "draft_published_review_requested",
+      "patch_checks": [],
+      "actual_pr_url": "https://github.com/eclipse-score/score/pull/3307"
+    },
+    {
+      "id": "eclipse-score/score#2850",
+      "status": "Proposal only",
+      "assessment": "Retrieval foundation is not the native assurance harness implementation; no current native patch/acceptance claim; meaningful AI authorship should travel with any later contribution.",
+      "finding_ids": [
+        "F04",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/score/2850/README.md",
+      "upstream_url": "https://github.com/eclipse-score/score/issues/2850",
+      "registry_status": "evidence_collected_integration_proposed",
+      "patch_checks": []
+    },
+    {
+      "id": "eclipse-score/communication#1236",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
+      "finding_ids": [
+        "F04",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1236/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1236",
+      "registry_status": "draft_imported_native_lint_failure",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1236/communication-1236.patch",
+          "registry_path_exists": true,
+          "sha256": "7988657efea0ac647991eda56a5b15fccb9eabeb347caac9fa98abf2f5fba60f",
+          "sha_matches": true,
+          "added": 184,
+          "removed": 2,
+          "files": [
+            {
+              "file": ".github/workflows/_linter.yml",
+              "added": 22,
+              "removed": 0
+            },
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "tools/lint/buildifier/BUILD",
+              "added": 41,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/buildifier_lint.py",
+              "added": 69,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/buildifier_lint_test.py",
+              "added": 40,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/clean_fixture.bzl.txt",
+              "added": 5,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/warning_fixture.bzl.txt",
+              "added": 5,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#1031",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
+      "finding_ids": [
+        "F04",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1031/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1031",
+      "registry_status": "draft_imported_integration_pending",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1031/communication-1031.patch",
+          "registry_path_exists": true,
+          "sha256": "cc3fd7f7ce150f9d941959ceeacea2f0654a35c3fbd1a65415aee72c2ce6c180",
+          "sha_matches": true,
+          "added": 87,
+          "removed": 3,
+          "files": [
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "quality/visibility_guard/public_targets.golden",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/BUILD",
+              "added": 11,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/README.md",
+              "added": 28,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/aou_forwarding_test/BUILD",
+              "added": 21,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/aou_forwarding_test/component_requirements.trlc",
+              "added": 24,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#751",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
+      "finding_ids": [
+        "F04",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/751/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/751",
+      "registry_status": "draft_imported_linux_checks_review_pending",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/751/communication-751.patch",
+          "registry_path_exists": true,
+          "sha256": "4460dc0ced124b963c112017185361dcf3a347042eecb8855d5e6ced07da6997",
+          "sha_matches": true,
+          "added": 308,
+          "removed": 6,
+          "files": [
+            {
+              "file": ".github/workflows/_codeql.yml",
+              "added": 6,
+              "removed": 2
+            },
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "quality/static_analysis/BUILD",
+              "added": 12,
+              "removed": 1
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint.py",
+              "added": 148,
+              "removed": 1
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint_test.py",
+              "added": 140,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
+    },
+    {
+      "id": "eclipse-score/communication#1104",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
+      "finding_ids": [
+        "F04",
+        "F11",
+        "F12"
+      ],
+      "record": "contributions/issues/eclipse-score/communication/1104/README.md",
+      "upstream_url": "https://github.com/eclipse-score/communication/issues/1104",
+      "registry_status": "draft_imported_root_cause_review_pending",
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1104/communication-1104.patch",
+          "registry_path_exists": true,
+          "sha256": "9e9236d5de6996c09b00a0cc35c88410ec036563f732d6f15b99c1cdb88b6347",
+          "sha_matches": true,
+          "added": 154,
+          "removed": 3,
+          "files": [
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "quality/static_analysis/BUILD",
+              "added": 12,
+              "removed": 1
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint.py",
+              "added": 55,
+              "removed": 0
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint_test.py",
+              "added": 85,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
+    }
+  ],
+  "additional_contributions": [
+    {
+      "id": "OpenBSW transportRouter",
+      "status": "Local preparation gaps",
+      "assessment": "Signed-off commit uses legal-looking human name; 20 packet files hash-match the pinned branch; 2353 additions flag IP review. Native patch/PR omit AI disclosure. Prior issue agreement, full CI/documentation and native acceptance pending.",
+      "finding_ids": [
+        "F04",
+        "F05",
+        "F09",
+        "F12"
+      ],
+      "record": "feature/openbsw-diag-gateway:contributions/openbsw-transport-router/README.md"
+    },
+    {
+      "id": "OpenBSW zonal gateway and board port",
+      "status": "Integration with gaps",
+      "assessment": "Agent assistance is disclosed in branch commits. Recorded requirements include failed/unimplemented and partly verified items; this is not a completed native upstream contribution. Imported reference-app provenance/licences and explicit human review need continued tracking.",
+      "finding_ids": [
+        "F03",
+        "F09",
+        "F11",
+        "F12"
+      ],
+      "record": "feature/openbsw-diag-gateway:OpenBSW/README.md"
+    },
+    {
+      "id": "ThreadX AZ3166 / hackathon PR #32",
+      "status": "Merged integration; review evidence incomplete",
+      "assessment": "PR body and commits disclose Claude. Human account merged own PR; no recorded GitHub reviewer. File notice gaps remain. 9243 PR additions include generated evidence, so the number is not treated as net new native IP.",
+      "finding_ids": [
+        "F03",
+        "F10",
+        "F11"
+      ],
+      "upstream_url": "https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/pull/32"
+    },
+    {
+      "id": "X-COM Serial2CAN / hackathon PR #33",
+      "status": "Integration; review and headers incomplete",
+      "assessment": "PR body and commit disclose Claude; all 9 inspected new Python files lack SPDX markers. No GitHub review record. Main contains its head commit at capture, while PR endpoint reported open; no automated push or approval is inferred.",
+      "finding_ids": [
+        "F03",
+        "F10",
+        "F11"
+      ],
+      "upstream_url": "https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/pull/33"
+    },
+    {
+      "id": "OpenSOVD fault-storage write-through",
+      "status": "Local preparation gaps",
+      "assessment": "Patch changes one native file (+199/-5); native regression records are retained. Full CI/pre-commit, human reproduction and contribution AI disclosure remain unverified; not registered or publicly submitted.",
+      "finding_ids": [
+        "F04",
+        "F09",
+        "F12"
+      ],
+      "record": "OpenSOVD/contributions/fault-storage-write-through/README.md"
+    },
+    {
+      "id": "Receiver observation instrumentation",
+      "status": "Integration only",
+      "assessment": "Explicitly described as local instrumentation on The-Xverse/adas_s-core. It is not a published Eclipse-native contribution; upstream ownership/licence attribution and any future review route must stay explicit.",
+      "finding_ids": [
+        "F09",
+        "F10",
+        "F11"
+      ],
+      "record": "OpenSOVD/patches/receiver-diagnostics/README.md"
+    },
+    {
+      "id": "OpenSOVD fault-provider #156 scaffolding",
+      "status": "Integration only",
+      "assessment": "Root commit b1a86584 adds legacy Rust scaffolding and design documents, not an upstream merged fault-provider implementation. No applicable ECA/CI/AI authorship proof for a native submission is established. Source header scan flags legacy Rust files.",
+      "finding_ids": [
+        "F07",
+        "F09",
+        "F10",
+        "F11"
+      ],
+      "record": "OpenSOVD/legacy/README.md"
+    },
+    {
+      "id": "OpenSOVD core #553",
+      "status": "Planned reference only",
+      "assessment": "Referenced as planned API work in prework; no independently identified native patch/submission in the inspected inventory. No completed contribution or compliance approval can be inferred.",
+      "finding_ids": [
+        "F09"
+      ],
+      "record": "prework/plans/CONTRIBUTION_PLAN.md"
+    },
+    {
+      "id": "AutoSD / openDUT / dashboard / demonstration implementation",
+      "status": "Integration evidence; not native acceptance",
+      "assessment": "Local code and evidence exist; file notice scan flags several integration-owned scripts and Rust files. AI authorship extent, complete IP provenance, employer/input rules and human review are not proven by implementation/test records.",
+      "finding_ids": [
+        "F10",
+        "F11",
+        "F13"
+      ],
+      "record": "README.md"
+    }
+  ],
+  "integrity_results": [
+    {
+      "id": "eclipse-score/inc_someip_gateway#84",
+      "entries": 41,
+      "matched": 41,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/lifecycle#704",
+      "entries": 296,
+      "matched": 296,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/inc_diagnostics#16",
+      "entries": 3,
+      "matched": 3,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-opensovd/classic-diagnostic-adapter#543",
+      "manifest": "absent"
+    },
+    {
+      "id": "eclipse-score/communication#1265",
+      "entries": 1393,
+      "matched": 1392,
+      "missing": [
+        "native-verification/execution/attempts/first-native-run/tools/bazel"
+      ],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1167",
+      "entries": 29679,
+      "matched": 29679,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1261",
+      "entries": 478,
+      "matched": 478,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#250",
+      "entries": 397,
+      "matched": 397,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#560",
+      "entries": 601,
+      "matched": 601,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#781",
+      "entries": 147,
+      "matched": 147,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#490",
+      "entries": 117,
+      "matched": 117,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#173",
+      "entries": 409,
+      "matched": 409,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1264",
+      "entries": 123,
+      "matched": 123,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1263",
+      "entries": 192,
+      "matched": 192,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#794",
+      "entries": 156,
+      "matched": 156,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#782",
+      "entries": 209,
+      "matched": 209,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1062",
+      "entries": 157,
+      "matched": 157,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#741",
+      "entries": 68,
+      "matched": 68,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/score#3115",
+      "entries": 644,
+      "matched": 644,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/score#2850",
+      "entries": 266,
+      "matched": 266,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1236",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1031",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#751",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1104",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    }
+  ],
+  "additional_checks": [
+    {
+      "command": [
+        "python3",
+        "contributions/issues/eclipse-score/score/3115/verify_packet.py"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"verified\",\n  \"scope\": \"retained byte integrity and identity; no test execution or engineering acceptance\",\n  \"packet_files\": 644,\n  \"source_files\": 1139,\n  \"candidate_repositories\": 8,\n  \"native_packet_files\": {\n    \"eclipse-score/inc_someip_gateway#84\": 41,\n    \"eclipse-score/lifecycle#704\": 296,\n    \"eclipse-score/communication#1261\": 478,\n    \"eclipse-score/communication#250\": 397,\n    \"eclipse-score/communication#560\": 601,\n    \"eclipse-score/communication#173\": 409,\n    \"eclipse-score/communication#1261-historical-failed-attempt\": 478\n  },\n  \"unique_native_manifests\": 6,\n  \"unique_native_manifest_entries\": 2222\n}\n",
+      "stderr": ""
+    },
+    {
+      "check": "someip portable archive",
+      "result": {
+        "portable_entries": 1046,
+        "candidate_sources": 269,
+        "changed_files": 6
+      }
+    }
+  ],
+  "positive_evidence": [
+    "Current ECA lookup for declared Eclipse username jnascimento6p0 succeeds; S-CORE PR #3307 actual ECA gate passes.",
+    "PR #3307 has human DCO sign-off, native licence header, draft status and honest inherited docs-failure reporting.",
+    "SOME/IP portable archive verifies 1046 entries and 269 candidate-source bindings.",
+    "S-CORE #3115 offline verifier succeeds, including 644 packet files and 1139 source-archive files.",
+    "Rust API and bug queue records preserve failures and explicitly avoid claiming native engineering acceptance.",
+    "Scoped local owner approvals for SOME/IP and lifecycle are retained separately from upstream acceptance."
+  ],
+  "recommended_order": [
+    "Resolve actual failing ECA gates for PR #601 and PR #40, and supply required diagnostics DCO.",
+    "Correct no-AI-attribution checklists; confirm and disclose meaningful AI use on each current published contribution.",
+    "Prepare correct human author identity and Assisted-by metadata; apply per-file AI disclosure where largely generated.",
+    "Obtain receiving-project IP review/disposition for the large native contributions.",
+    "Reconcile actual PR revisions, registry paths/schema/dates and missing evidence; rerun evidence verifiers.",
+    "Disposition remaining native checks/scope questions and record real human reviews before official acceptance."
+  ],
+  "evidence_files": {
+    "eclipse-opensovd--classic-diagnostic-adapter-eca-response-readable.txt": "3c52b868274fb0c047f747de2f91a4c4aa6252f44ef999f7a758dbf510105843",
+    "32-files-headers.json": "df33f7c2221dede0e5ae25a9e0c3618e4e7e5c2aa7876da47ee684188139cf27",
+    "bug-queue-audit.json": "0fd561b05df0078944179ea411e3d74344460866f2a9b6957edfc01302cd7346",
+    "openbsw-CONTRIBUTING.md": "b045a1abf434259aac337bde5feca4a87ab783fe714eee6f704afd3c88f8d87a",
+    "openbsw-packet-check.json": "a9d32339fa41398e0b894ccdcaf1e95ff404138681fb9fca066c4854d24334f2",
+    "native-3307.json": "d6598ca3b38cacd768f3e671bb4eed93303876f6e4144bb68f43fd579036ff52",
+    "owned-source-headers.json": "cc6092f5fa4cebc472c24a2158ab6756674dd64fa07ebcd8f3fa4f5501f49824",
+    "native-3307-commits.json": "0257a7a55ad277c8768e4b93bf5c57da024d3165bded7abb1522c1be2ee2f7d8",
+    "ip-review-search.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "hackathon-33-commits.json": "bb4fd6e80080b8014a6f6ed7cd1d5a6ce0fa6d8213591cb66f7c2672b7c1bb7f",
+    "hackathon-32-reviews.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "native-guidance.json": "6132756864538c2214fcf1b45c9b7615e8097db4c7e6c23c2260d67e42294ab0",
+    "eclipse-score--score-eca-response-readable.txt": "df1f73ffde91c57d752c235e78a418dedb7615ce33168d0a16fded1bae1aac3d",
+    "hackathon-34.json": "379c652b6310208b7e004181c4b5892e2a0a5adcb2cf79223cd99e9ecc060476",
+    "3307-checks.json": "41a758df914ad9f63dfffd5887f05fcef02037d200e9756027ef83a6ccc851a8",
+    "full-manifest-results.json": "f9152b7adf561c3d710143acef108346ba82c1b547b762ad26c5c725d658a135",
+    "hackathon-33-reviews.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "fault-lib-CONTRIBUTING.md": "367d5122de4e76cd86791cec8233336cea01a1f01ea37e25cee9c60ed876f825",
+    "hackathon-32.json": "5d8ad184bd67fc14d21042f9ecdd77ebedef318de62b0bc2f06d20a1833a65dc",
+    "3307-files-headers.json": "6fa4df0cee7fd8cbfcfffa99f913739f41497170803109cf295dd0e700d9aa1b",
+    "eclipse-score--inc_diagnostics-eca-response-readable.txt": "7b39c95f379661fdb5f4886ed440c4155317d6e8c346f0993ad593321352db51",
+    "patch-audit.json": "c8a884fe15c622da23fde4f1e1f38b1da2eb3a32d2f15224c5173f81ab204023",
+    "3307-files.json": "9aab09e13d8d4bf4f1289e190be96c682fc6c9abfa7ac982968de6d7a289fcba",
+    "33-files-headers.json": "2e23c1635b4da71cc7586f3eb04f7ba4358a110db847736a0e377ee756a9a192",
+    "eclipse-opensovd--classic-diagnostic-adapter-pr-601.json": "1c15a56929dfe24fe4843c805f426fbe0eb9aaf66108ce1831abef7ac2bba0f5",
+    "hackathon-32-commits.json": "dc44e318b80a1a229e049ed8e91f8313df07b4f9183945aff7ef1e8d7edb4192",
+    "hackathon-33.json": "6e59fe1f530337ba6d598f25ab8e1f354b4ba185629ee3055946c7267809e851",
+    "additional-checks.json": "68e6f37b53de92333532e7bc18429923bec026d97b4f46a602d53a2d65c8b5a4",
+    "independent-integrity.json": "173759552c0ad9907aebc717fb0527bdba674d00a43f8ba5b5b61cfe55ae1631",
+    "audit-subject.json": "a364ad4bb27151c15b05d609c1fae8b71fb6caf3abaa955db01addefc85ba5d6",
+    "eclipse-score--inc_diagnostics-pr-40.json": "fd82af07f225bc694f15a0daae13c9b96510f696626a7455dc851200ae21f1b8",
+    "eca-lookups.json": "77631c5468476ee80404b38ea8018bed53513564e84e5c330458a2515e58eedc",
+    "registry-snapshot.json": "d44f80aa86ed410a3d86e276da41952744c5dafbbd42a9742e3c5c8139d9d233",
+    "3307-status.json": "04e16b90ade7dc63294cfcb01c06da3b46771476fe2863ae7546308c2fc5cdeb",
+    "branch-inventory.json": "b093bbd35c9982779e934b6497d3d7c3030bab8a6caa9d8b8b72343e65ad94a5",
+    "hackathon-34-reviews.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "branch-files/feature--openbsw-diag-gateway/contributions/openbsw-transport-router/README.md": "f0c8c71950ff9894a4707d7968c0280db5f13ef9f52cdcef596dfde9f3b9b45d",
+    "branch-files/feature--openbsw-diag-gateway/contributions/openbsw-transport-router/validation.md": "2fd305b2988ac52fb537604dbb7ee4cb3ba63c1a6424378eb30b197d7ba7e00e",
+    "branch-files/feature--openbsw-diag-gateway/contributions/openbsw-transport-router/PR-description.md": "ee79f65d8a7a8af9581b955474e27e6c67f458e45b99febdb9d4b091c6d1f18e",
+    "branch-files/feature--openbsw-diag-gateway/contributions/issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md": "5c564098cacd621f5c5723e3e33d3baf1adfc0cc5fb59bf63fffb82c5d8f2342",
+    "branch-files/origin--feature--inc-diagnostics-16-sovd-adapter/contributions/inc-diagnostics-16-evidence/PR-16-submission.md": "b09105c30cb50f3a8f7172e07773d647557407444faf7a1369946cb1df1af879",
+    "branch-files/origin--feature--inc-diagnostics-16-sovd-adapter/contributions/issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md": "5c564098cacd621f5c5723e3e33d3baf1adfc0cc5fb59bf63fffb82c5d8f2342",
+    "branch-files/origin--feature--cda-543-result-error-handling/contributions/cda-543-evidence/PR-543-contribution-checklist.md": "905191c6c07c983c94fa2480564278d742e4844c5e481d5e53075f5510688e89",
+    "branch-files/origin--feature--cda-543-result-error-handling/contributions/cda-543-evidence/PR-543-submission.md": "84e9b6d9f7477d17d974849432606140f79b951945f1d7067e8d3712222b2392",
+    "branch-files/origin--feature--cda-543-result-error-handling/contributions/issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md": "5c564098cacd621f5c5723e3e33d3baf1adfc0cc5fb59bf63fffb82c5d8f2342"
+  }
+}

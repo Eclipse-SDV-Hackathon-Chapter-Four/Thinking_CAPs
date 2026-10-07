@@ -1,0 +1,7 @@
+# #1261 failed source attempt2 — terminal reconciliation
+
+Native run01M49MB1BWVT6CKAZ7WZ7JAYM2 retained60627events, onlyDeepSeekFlash in implementation/supervisor, zero native retries. Lifecycle succeeded while implementationfailed provider400 and checkfailed missing dedicatedpositiveplan. Operator didnotretry source/model. Nativeexport succeeded;5filefullbaselinepatch and2878sourcehashes exactlymatchmeasurement.
+
+All4selectedcompatibilitygroupspassed:94actualchildcases,2ignored doctests;5librarySARIFreports retain4warnings. These do not establishheterogeneousdiscovery: unchangedLoLaruntime returnsNotSupported, no nativebackend/watch/drop logic or dedicatedregression. Source draft changedownedversioneddescriptor/facade and addedunusedimport; importedoriginalerror/designnotes remainedbyte-identical. Read immutableCodexfinalreview forAPI/identity/allocation/quality/qualification limits and count corrections.
+
+Exactevent41068emptyassistant(0content,0tools,1115reasoning) followed41069queuedguidance,41070newrequest,41071provider400. Pinnedcodec cannotvalidlyreplayreasoningonlyhistory. Steering queued at naturalanswerboundary; no evidence itcreated/cancelledtheemptyturn. No output-limitwarning; maxperresponse7452<16000. Finalattemptcanusefreshconversationandallguidanceatadmission,no midturnfollowup. Codecunpatched; mitigationdoesnotguaranteeprovidercompletion or nativebackend correctness. Preservefailedattemptas sourcecorrection2/3, oneleft; #250STOP3/3; no budgetreset, fallback or publishing. Humanacceptancependingoffline.

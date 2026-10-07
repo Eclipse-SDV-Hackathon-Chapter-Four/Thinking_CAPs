@@ -1,0 +1,97 @@
+{
+  "issue": 1062,
+  "title": "Improvement: E2E protection for Rust Method/Field APIs",
+  "repository": "eclipse-score/communication",
+  "baseline": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+  "mode": "design",
+  "status": "open — exported offline for authorized human review; no engineering/safety acceptance claimed",
+  "supersedes": null,
+  "note": "Re-exported by the implementation stage of the design-mode run. The scope-stage report with this filename could not be re-read inside this session (file-tool boundary); the decision set below is reconstructed from the supplied issue/comments, scope.md, e2e-design-draft.md and review-packet.md and remains a proposal only. No native artifact or accepted design is asserted.",
+  "reviewers_required": [
+    "communication maintainers (C++ E2E protection/verification API owner)",
+    "Rust public-API owners (#782 Method/Field API)",
+    "requirements/architecture reviewers",
+    "safety/licensing reviewers"
+  ],
+  "decisions": [
+    {
+      "id": "OD-1",
+      "title": "E2E application point / architecture",
+      "question": "Where does E2E wrap the data: transparently in the Rust<->C++ FFI boundary (binding-owned buffer growth), as a field of the user wire payload type, or at a payload level independent of communication type?",
+      "alternatives": ["A: transparent FFI-boundary (binding grows buffer)", "B: header as a field of the user wire type", "C: payload-level, communication-type independent"],
+      "source_evidence": ["issue body: 'Not designed yet'", "comment 5601398184 (payload level, independent of communication type)", "comment 5632794860 (Method buffers are fixed-size and pre-computed; lockstep C++/Rust size change required)", "comment 5634513270 (align to C++ API)"],
+      "native_obligation": "FEAT_SafeCommunication@1; FEAT_Method@1 / FEAT_Field@1 / FEAT_EventType@1",
+      "status": "open",
+      "why_not_decided_by_agent": "Source explicitly says the design has not been discussed; implementing any option would be an unaccepted safety/architecture decision."
+    },
+    {
+      "id": "OD-2",
+      "title": "Wire format / profile family",
+      "question": "What wire/profile family is adopted, and how are shared vs communication-mode-specific fields defined? Method needs strictly more fields (Message Type/Result/Source ID) than Event/Field.",
+      "alternatives": ["one shared schema sized for the widest (Method) field set", "shared wrap/unwrap with mode-specific field blocks"],
+      "source_evidence": ["comment 5632794860 (Xm profile family adds fields vs plain Event/Field)", "comment 5601398184 ('independent of communication type' must not be read as identical wire format)"],
+      "native_obligation": "FEAT_SafeCommunication@1; cross-language wire compatibility via ASR_ProgrammingLanguagesForApplicationDevelopment@1",
+      "status": "open",
+      "why_not_decided_by_agent": "Requires the C++ side's convention and an accepted design; AUTOSAR-spec-derived formats are licence-restricted in S-CORE."
+    },
+    {
+      "id": "OD-3",
+      "title": "Increment staging (Event-first vs shared-from-start)",
+      "question": "Is the first increment Event-only and Method/Field later, or one schema sized for Method from the start (avoiding a later breaking change)?",
+      "source_evidence": ["comment 5634513270 (maintainer recommends event mechanics first, method afterwards)", "comment 5632794860 (question 3)"],
+      "native_obligation": "FEAT_EventType@1 first; FEAT_Method@1 / FEAT_Field@1 follow",
+      "status": "open"
+    },
+    {
+      "id": "OD-4",
+      "title": "Alignment with the C++ E2E protection/verification API",
+      "question": "Align Rust wire format, profile, DataID and error-class conventions with the C++ E2E API once it is published.",
+      "source_evidence": ["comment 5634513270 (C++ E2E API is being designed and will be shared; Rust must derive its API from it)"],
+      "native_obligation": "Unknown until the C++ API exists; blocked external dependency",
+      "status": "blocked",
+      "blocking_on": "C++ E2E protection/verification API not published at this baseline"
+    },
+    {
+      "id": "OD-5",
+      "title": "E2E error classes",
+      "question": "Which error classes/variants may the Rust API expose, and how do they map to score_com::Error (result mechanism, no exceptions)?",
+      "source_evidence": ["comment 5634513270 ('error classes will be restricted to what C++ provides')", "FEAT_ErrorHandling@1 / ASR_ErrorHandling@1"],
+      "native_obligation": "FEAT_ErrorHandling@1",
+      "status": "open",
+      "why_not_decided_by_agent": "Rust taxonomy may not be invented independently of C++."
+    },
+    {
+      "id": "OD-6",
+      "title": "Prerequisite: Rust Method<T>/Field<T> API (#782)",
+      "question": "When does the Rust Method<T>/Field<T> public API land, since E2E cannot attach to APIs the interface! macro currently rejects?",
+      "source_evidence": ["interface_macros.rs:110-122 emits compile_error! for Method/Field", "issue body (split out of #782)", "references/dependency-and-macros.md (do not invent rejected syntax)"],
+      "native_obligation": "FEAT_Method@1 / FEAT_Field@1 (not yet implemented)",
+      "status": "blocked",
+      "blocking_on": "#782 Method/Field API"
+    },
+    {
+      "id": "OD-7",
+      "title": "Requirements / architecture impact",
+      "question": "Are requirements/architecture affected? Is a new requirement work product needed, or do existing IDs (FEAT_SafeCommunication@1 + FEAT_DataCorruption/DataReordering/DataRepetition/DataLoss@1) provide the trace?",
+      "source_evidence": ["issue body template checkbox unchecked", "feature_requirements_ipc.trlc (E2E is not its own named requirement)"],
+      "native_obligation": "Proposed derivation only; no accepted trace at baseline",
+      "status": "open",
+      "reviewer_role": "requirements/architecture reviewers"
+    },
+    {
+      "id": "OD-8",
+      "title": "Safety scope of the first increment and licence-clean mechanism",
+      "question": "Is the first pass limited to CRC + DataID checking, or does it include the counter-delta tolerance and consecutive-failure 'apply/reject the call' state machine? Which licence-clean mechanism is used (no AUTOSAR-spec-derived implementation)?",
+      "source_evidence": ["comment 5632794860 (question 4; fork prototype skips the state machine)", "comment 5634513270 (AUTOSAR spec cannot be used directly due to licensing; error classes restricted to C++)"],
+      "native_obligation": "FEAT_SafeCommunication@1 / FEAT_CommunicationASILLevel@1; safety decision reserved to authorized humans",
+      "status": "open",
+      "why_not_decided_by_agent": "This is an unaccepted safety decision; the agent must not implement or accept it."
+    }
+  ],
+  "preserved_constraints": [
+    "Do not implement or accept an E2E design/safety decision.",
+    "Do not use AUTOSAR-spec-derived code (licence restriction).",
+    "Do not invent Method/Field macro support the baseline rejects.",
+    "Preserve native lint profiles, toolchain pins and published statuses."
+  ]
+}

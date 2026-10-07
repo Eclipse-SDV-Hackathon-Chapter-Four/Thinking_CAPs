@@ -1,0 +1,21 @@
+{
+  "url": "https://github.com/eclipse-score/communication/issues/794",
+  "issue_number": 794,
+  "state": "open",
+  "captured_on": "2026-10-07",
+  "updated_at": "2026-10-05T06:20:31Z",
+  "title": "Improvement: Remove bazel `tags = [\"manual\"]` from rust test targets",
+  "labels": [
+    "rust-api"
+  ],
+  "assignees": [],
+  "body": "### What\n\nRemove bazel `tags = [\"manual\"]` for runtime and concept test target of `score_com` rust library.\n\n### How\n\n_No response_\n\n### Estimates for realization\n\n0\n\n### Category\n\n- [ ] Affects Detailed Design\n\n### Requirements / Architecture\n\n- [ ] Requirements / Architecture are not affected by this change?",
+  "comments": [
+    {
+      "author": "bharatGoswami8",
+      "created_at": "2026-10-05T06:20:13Z",
+      "body": "Update on removing `tags = [\"manual\"]` from the Rust test targets:\n\nEnabled (manual tag removed)\n- `//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests`\n- `//score/mw/com/rust/score_com_concept:score_com_concept-test`\n\nBoth pass in the default build and under `--config=asan_ubsan_lsan` and `--config=tsan_ubsan`. The sanitizer issue that was the reason for the tag no longer reproduces.\n\nEnabled, but skipped under sanitizers\n- `//score/mw/com/example/com-api-example:com-api-example-tokio-integration-test`\n\nThe tag is removed, so it runs in normal `bazel test` runs, but I excluded it from sanitizer builds. The tests pass functionally, but the Tokio multi-thread runtime (`#[tokio::test(flavor = \"multi_thread\")]`) triggers sanitizer findings:\n- `asan_ubsan_lsan`: LeakSanitizer reports , all from `tokio::runtime::scheduler::multi_thread::MultiThread::new` / worker thread startup.\n- `tsan_ubsan`: data race in `<String as Clone>::clone` between the test thread and a `tokio-rt-worker` thread. Neither stack frame is in COM code.\n\nThe target uses `target_compatible_with = select({\"@score_cpp_policies//sanitizers/flags:any_sanitizer\": [\"@platforms//:incompatible\"], \"//conditions:default\": []})`. It is built and run normally and reported as SKIPPED under any sanitizer config. The reason is documented in the BUILD file.\n\nStill `manual`\n- `//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests` (doc test). `rust_doc_test` does not forward native C++ link flags, which fails with LLD. This is unrelated to the sanitizers.\n\n**Follow-up**\nThe Tokio sanitizer findings (leak and race) need to investigate, either to fix the test/runtime setup or to add targeted suppressions. Once that is done, the `target_compatible_with` restriction can be removed."
+    }
+  ],
+  "source": "gh issue view (read-only), 2026-10-07"
+}

@@ -1,0 +1,240 @@
+compiler_profile: deterministic-compiler-v1
+digest: ffb2b153c783a794501770b839632fd26128967a6225a8a39592acd98cb8e244
+edges:
+- condition: null
+  loop_id: null
+  origin: &id001
+    decision_ref: user-additional-751-20261006
+    kind: authorized_human_decision
+    pointer: /scope
+    rationale: 'User explicitly authorized one additional deterministic #751 correction;
+      no paid calls, original $10 cap and retry history preserved. Engineering acceptance
+      remains offline and pending.'
+    source_ref:
+      path: authority.json
+      sha256: 8ddc27516945109cc6e85eb38cab8d47c4def48f53fb885057917a5a1da90b96
+  outcome: null
+  source: start
+  target: apply_expected_order
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: apply_expected_order
+  target: verify_751
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: verify_751
+  target: export
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: apply_expected_order
+  target: export
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: verify_751
+  target: export
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: export
+  target: exit
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: export
+  target: exit
+  type: failure
+fan_groups: []
+id: bugqueue-recovery-additional-751
+loop_policies: []
+plan_version: 1
+review:
+  reference:
+    path: authority.json
+    scope: User operational task authority only; native acceptance pending
+    sha256: 8ddc27516945109cc6e85eb38cab8d47c4def48f53fb885057917a5a1da90b96
+  state: reviewed
+rules:
+- actions:
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/apply_expected_order.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - apply_expected_order-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-additional-751-apply_expected_order
+    label: apply_expected_order
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage apply_expected_order
+    ref: apply_expected_order
+    role: measurement_runner
+    support_files:
+    - commands/apply_expected_order.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/verify_751.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - verify_751-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-additional-751-verify_751
+    label: verify_751
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage verify_751
+    ref: verify_751
+    role: measurement_runner
+    support_files:
+    - commands/verify_751.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/export.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - export-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-additional-751-export
+    label: export
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage export
+    ref: export
+    role: measurement_runner
+    support_files:
+    - commands/export.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  id: bounded-recovery-additional-751
+  instance_ids:
+  - local-recovery-additional-751-apply_expected_order
+  - local-recovery-additional-751-verify_751
+  - local-recovery-additional-751-export
+schema_version: 1
+support_files:
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/additional751.py
+    apply_expected_order
+
+    '
+  origin: *id001
+  path: commands/apply_expected_order.sh
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/additional751.py
+    verify_751
+
+    '
+  origin: *id001
+  path: commands/verify_751.sh
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/additional751.py
+    export
+
+    '
+  origin: *id001
+  path: commands/export.sh
+version: 1

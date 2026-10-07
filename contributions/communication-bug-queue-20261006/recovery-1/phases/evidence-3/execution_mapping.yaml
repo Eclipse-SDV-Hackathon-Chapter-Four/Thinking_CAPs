@@ -1,0 +1,307 @@
+compiler_profile: deterministic-compiler-v1
+digest: bc4992c006e19172c284641b78d6b2d0289af2816ac6e33e0b9757b6ef476430
+edges:
+- condition: null
+  loop_id: null
+  origin: &id001
+    decision_ref: user-go-recovery-20261006
+    kind: authorized_human_decision
+    pointer: /scope
+    rationale: Authorized execution within original $10; engineering acceptance remains
+      offline and pending.
+    source_ref:
+      path: authority.json
+      sha256: d07820c202d6216a598d05eefd95c960f98afccf78966f82ded161ae961ce946
+  outcome: null
+  source: start
+  target: buildifier_help
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: buildifier_help
+  target: aou_test
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: aou_test
+  target: codeql_analyze
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: codeql_analyze
+  target: export
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: buildifier_help
+  target: aou_test
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: aou_test
+  target: codeql_analyze
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: codeql_analyze
+  target: export
+  type: failure
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: success
+  source: export
+  target: exit
+  type: success
+- condition: null
+  loop_id: null
+  origin: *id001
+  outcome: failure
+  source: export
+  target: exit
+  type: failure
+fan_groups: []
+id: bugqueue-recovery-evidence-3
+loop_policies: []
+plan_version: 1
+review:
+  reference:
+    path: authority.json
+    scope: User operational task authority only; native acceptance pending
+    sha256: d07820c202d6216a598d05eefd95c960f98afccf78966f82ded161ae961ce946
+  state: reviewed
+rules:
+- actions:
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/buildifier_help.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - buildifier_help-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-evidence-3-buildifier_help
+    label: buildifier_help
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage buildifier_help
+    ref: buildifier_help
+    role: measurement_runner
+    support_files:
+    - commands/buildifier_help.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/aou_test.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - aou_test-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-evidence-3-aou_test
+    label: aou_test
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage aou_test
+    ref: aou_test
+    role: measurement_runner
+    support_files:
+    - commands/aou_test.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/codeql_analyze.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - codeql_analyze-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-evidence-3-codeql_analyze
+    label: codeql_analyze
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage codeql_analyze
+    ref: codeql_analyze
+    role: measurement_runner
+    support_files:
+    - commands/codeql_analyze.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  - allowed_inputs:
+    - authority.json
+    - budget-audit.json
+    - source-bound-evidence
+    allowed_paths:
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    budget:
+      attempts: 1
+      cost_microunits: 0
+      input_tokens: 0
+      output_tokens: 0
+      tool_calls: 20
+      wall_time_seconds: 14400
+    command_file: commands/export.sh
+    completion_predicate: Drafts/evidence exported; engineering acceptance remains
+      separate.
+    data_destinations:
+    - local:contribution-artifacts
+    evidence_expectation: Exact native commands, hashes, failures, diagnostics and
+      unresolved obligations.
+    expected_outputs:
+    - export-result.json
+    fallible_outcomes:
+    - failure
+    - success
+    instance_ids:
+    - local-recovery-evidence-3-export
+    label: export
+    model_capability: none
+    origin: *id001
+    prohibited_authority:
+    - approval
+    - trusted_evidence_collection
+    - automatic_approval
+    - replayed_approval
+    purpose: Run protected native recovery stage export
+    ref: export
+    role: measurement_runner
+    support_files:
+    - commands/export.sh
+    tool_profile: frozen-host-collector
+    type: deterministic_check
+    write_scope:
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1
+    - /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z
+    - /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/state.json
+  id: bounded-recovery-evidence-3
+  instance_ids:
+  - local-recovery-evidence-3-buildifier_help
+  - local-recovery-evidence-3-aou_test
+  - local-recovery-evidence-3-codeql_analyze
+  - local-recovery-evidence-3-export
+schema_version: 1
+support_files:
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py
+    buildifier_help
+
+    '
+  origin: *id001
+  path: commands/buildifier_help.sh
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py
+    aou_test
+
+    '
+  origin: *id001
+  path: commands/aou_test.sh
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py
+    codeql_analyze
+
+    '
+  origin: *id001
+  path: commands/codeql_analyze.sh
+- content: 'env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python
+    /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py
+    export
+
+    '
+  origin: *id001
+  path: commands/export.sh
+version: 1

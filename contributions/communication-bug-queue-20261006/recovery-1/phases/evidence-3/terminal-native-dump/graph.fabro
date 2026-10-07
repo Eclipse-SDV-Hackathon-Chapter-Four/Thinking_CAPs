@@ -1,0 +1,19 @@
+digraph SCoreWorkflow {
+  graph [goal="Execute reviewed S-CORE obligations", max_node_visits=20, on_failure="route"];
+  rankdir=LR;
+  exit [label="Exit", type="exit"];
+  node_2db5a8a24d07a2082064aff8 [allow_partial=false, label="aou_test", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py aou_test\n", selection="deterministic", timeout="14400s", type="command"];
+  node_5498c7614d5930e06eb2f82e [allow_partial=false, label="buildifier_help", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py buildifier_help\n", selection="deterministic", timeout="14400s", type="command"];
+  node_7bd54f2c0c704e846dbe4931 [allow_partial=false, label="codeql_analyze", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py codeql_analyze\n", selection="deterministic", timeout="14400s", type="command"];
+  node_90b3e6ccda249de3b829be74 [allow_partial=false, label="export", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence3.py export\n", selection="deterministic", timeout="14400s", type="command"];
+  start [label="Start", type="start"];
+  node_2db5a8a24d07a2082064aff8 -> node_7bd54f2c0c704e846dbe4931 [condition="outcome=failed"];
+  node_5498c7614d5930e06eb2f82e -> node_2db5a8a24d07a2082064aff8 [condition="outcome=failed"];
+  node_7bd54f2c0c704e846dbe4931 -> node_90b3e6ccda249de3b829be74;
+  node_7bd54f2c0c704e846dbe4931 -> node_90b3e6ccda249de3b829be74 [condition="outcome=failed"];
+  node_90b3e6ccda249de3b829be74 -> exit;
+  node_2db5a8a24d07a2082064aff8 -> node_7bd54f2c0c704e846dbe4931;
+  node_90b3e6ccda249de3b829be74 -> exit [condition="outcome=failed"];
+  node_5498c7614d5930e06eb2f82e -> node_2db5a8a24d07a2082064aff8;
+  start -> node_5498c7614d5930e06eb2f82e;
+}

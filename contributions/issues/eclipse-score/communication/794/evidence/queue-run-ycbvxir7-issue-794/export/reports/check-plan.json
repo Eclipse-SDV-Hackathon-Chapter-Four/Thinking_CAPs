@@ -1,0 +1,113 @@
+{
+  "checks": [
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:all"
+      ],
+      "reason": "Enumerate the concept package's rules to confirm which targets are wildcard-discoverable (non-manual) versus intentionally manual. The issue's `concept test target` score_com_concept-test is expected to be present and non-manual; score_com_concept-macros-tests is expected to carry tags=[\"manual\"] (documented rust_doc_test native-link limitation).",
+      "native_obligation": "Wildcard CI discovery in .github/workflows/_build_and_test_gcc15.yml (`bazel test --config=ci //... --build_tests_only`): `manual` targets are excluded from `//...`.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ],
+      "reason": "Compile the score_com concept library that the concept rust_test and rust_doc_test are built from; prerequisite for the issue's concept test target.",
+      "native_obligation": ".github/workflows/_build_and_test_gcc15.yml step `bazel build --config=ci //...`.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test"
+      ],
+      "reason": "The issue's `concept test target` for the score_com Rust library; source shows no tags=[\"manual\"], so removing the tag is already in effect and the test is picked up by `//...`.",
+      "native_obligation": ".github/workflows/_build_and_test_gcc15.yml (`bazel test --config=ci //... --build_tests_only`), plus sanitizer variants in _address_sanitizer.yml and _thread_sanitizer.yml; all rely on the target not being `manual`.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "reason": "Discoverable Rust unit test for the interface macros in the concept package (forwarding target of rust_unit_test, not manual); checks the macros exercised by the concept library still run under the wildcard.",
+      "native_obligation": "quality/unit_testing/unit_testing.bzl `rust_unit_test` exposes a non-manual forwarding `{name}` target for `//...` discovery; CI host wildcard in _build_and_test_gcc15.yml.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "reason": "Verify the doc-test target still carries tags=[\"manual\"] and therefore stays OUT of wildcard CI discovery, per the documented rust_doc_test/LLD native-link limitation. This is the single intentionally-retained manual Rust target and must not be changed.",
+      "native_obligation": "Source-backed restriction documented in score/mw/com/rust/score_com_concept/BUILD (rust_doc_test does not forward native C++ link flags -> LLD undefined symbols); retaining `manual` prevents a broken doc test from entering `//...`.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"
+      ],
+      "reason": "Compile the score_com Lola runtime library whose runtime rust_test is the issue's second subject.",
+      "native_obligation": ".github/workflows/_build_and_test_gcc15.yml step `bazel build --config=ci //...`.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "The issue's `runtime test target`; source shows no tags=[\"manual\"], so the requested removal is already in effect and the test is picked up by `//...`.",
+      "native_obligation": ".github/workflows/_build_and_test_gcc15.yml, _address_sanitizer.yml and _thread_sanitizer.yml wildcard test runs; a `manual` tag would exclude it from all of them.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests"
+      ],
+      "reason": "Non-manual rustdoc test for the runtime library; confirms doc-test coverage remains part of wildcard discovery for the touched Rust libraries.",
+      "native_obligation": "rules_rust rust_doc_test targets participate in `bazel test //...`; CI host wildcard in _build_and_test_gcc15.yml.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/rust/score_com_macros:score-com-macros-tests"
+      ],
+      "reason": "Non-manual rustdoc test for score_com_macros, a transitive build dependency of the concept library; verifies documentation checks for the Rust surface remain discoverable.",
+      "native_obligation": "rules_rust rust_doc_test participates in `bazel test //...`; CI host wildcard in _build_and_test_gcc15.yml.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/example/com-api-example:com-api-example-lib"
+      ],
+      "reason": "Compile the example library backing the enabled Tokio integration test.",
+      "native_obligation": ".github/workflows/_build_and_test_gcc15.yml step `bazel build --config=ci //...`.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/example/com-api-example:com-api-example-tokio-integration-test"
+      ],
+      "reason": "Now-enabled (manual tag removed) example integration test, intentionally excluded from sanitizer builds via target_compatible_with on @score_cpp_policies//sanitizers/flags:any_sanitizer. Under the default config it must run; under sanitizer configs it must report SKIPPED, not run.",
+      "native_obligation": ".github/workflows/_address_sanitizer.yml and _thread_sanitizer.yml (`--config=asan_ubsan_lsan` / `--config=tsan`) plus _build_and_test_gcc15.yml wildcard; the target's select(...) makes it incompatible with any sanitizer configuration.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"
+      ],
+      "reason": "Run the project's clippy policy over the touched Rust libraries to confirm the build-tag change did not disturb lint coverage and that no lint exclusions were relaxed to obtain cleanliness.",
+      "native_obligation": ".github/workflows/_linter.yml clippy job: `aspect lint --bazel-flag=--config=ci --bazel-flag=--config=clippy ... -- //...`; aspect defined by @score_rust_policies//clippy:linters.bzl%clippy_strict in quality/static_analysis/static_analysis.bazelrc.",
+      "config": "linux_x64"
+    }
+  ]
+}

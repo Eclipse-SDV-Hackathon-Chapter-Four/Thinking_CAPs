@@ -1,0 +1,8 @@
+{
+  "entrypoint": "workflow.fabro",
+  "workflow_dependencies": {},
+  "files": {
+    "workflow.fabro": "digraph Rust560CodexCorrection1 {\n graph [goal=\"Measure Codex correction 1 on bound Linux source; export failures; no LLM agents\", default_max_retries=0, max_node_visits=1, on_failure=\"route\"];\n start [type=\"start\"];\n exit [type=\"exit\"];\n check [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-560-codex-eppa905r/measure.py check 1\", timeout=\"3600s\", max_retries=0, on_failure=\"route\"];\n export [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-560-codex-eppa905r/measure.py export 1\", timeout=\"3600s\", max_retries=0, on_failure=\"route\"];\n start -> check;\n check -> export;\n export -> exit;\n}\n",
+    "workflow.toml": "_version = 1\n[workflow]\ngraph = \"workflow.fabro\"\n[run.model]\nname = \"deepseek-flash\"\nprovider = \"deepseek\"\n[run.model.fallbacks]\n[run.clone]\nenabled = false\n"
+  }
+}

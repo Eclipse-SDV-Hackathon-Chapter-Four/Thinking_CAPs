@@ -1,0 +1,181 @@
+diff --git a/quality/static_analysis/BUILD b/quality/static_analysis/BUILD
+--- a/quality/static_analysis/BUILD
++++ b/quality/static_analysis/BUILD
+@@ -11,7 +11,7 @@
+-load("@rules_python//python:defs.bzl", "py_binary")
++load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+@@ -34,6 +34,14 @@
+     deps = ["@rules_python//python/runfiles"],
+ )
+ 
++py_test(
++    name = "codeql_lint_test",
++    srcs = [
++        "codeql_lint.py",
++        "codeql_lint_test.py",
++    ],
++    target_compatible_with = ["@platforms//os:linux"],
++)
++
+ filegroup(
+     name = "config",
+     srcs = ["config.yaml"],
+ )
+diff --git a/quality/static_analysis/codeql_lint.py b/quality/static_analysis/codeql_lint.py
+--- a/quality/static_analysis/codeql_lint.py
++++ b/quality/static_analysis/codeql_lint.py
+@@ -234,6 +234,40 @@
+     os.replace(normalized_sarif_path, sarif_path)
+     return sarif_path
+ 
+ 
++PLACEHOLDER_URIS = {"file:/", "file:", "file:///", ""}
++
++
++def _normalize_placeholder_artifact_locations(value):
++    if isinstance(value, dict):
++        if value.get("uri") in PLACEHOLDER_URIS and "index" in value:
++            del value["uri"]
++        artifact_location = value.get("artifactLocation")
++        if isinstance(artifact_location, dict):
++            uri = artifact_location.get("uri")
++            if uri in PLACEHOLDER_URIS:
++                if "index" in artifact_location:
++                    del artifact_location["uri"]
++                else:
++                    del value["artifactLocation"]
++        for child in value.values():
++            _normalize_placeholder_artifact_locations(child)
++    elif isinstance(value, list):
++        for child in value:
++            _normalize_placeholder_artifact_locations(child)
++
++
++def normalize_sarif_placeholder_locations(sarif_path):
++    with open(sarif_path, "r", encoding="utf-8") as sarif_file:
++        sarif = json.load(sarif_file)
++
++    for run in sarif.get("runs", []):
++        _normalize_placeholder_artifact_locations(run)
++
++    normalized_sarif_path = f"{sarif_path}.placeholder_normalized"
++    with open(normalized_sarif_path, "w", encoding="utf-8") as sarif_file:
++        json.dump(sarif, sarif_file, indent=2)
++        sarif_file.write("\n")
++    os.replace(normalized_sarif_path, sarif_path)
++    return sarif_path
++
++
+ def _normalize_sarif_run(run):
+@@ -291,6 +325,7 @@
+     recategorize_sarif(
+         recategorize_path,
+         coding_standards_config_path,
+         sarif_path,
+     )
+     normalize_sarif_rule_order(sarif_path)
++    normalize_sarif_placeholder_locations(sarif_path)
+ 
+     # Generate reports using CodeQL analysis_report tool
+diff --git a/quality/static_analysis/codeql_lint_test.py b/quality/static_analysis/codeql_lint_test.py
+new file mode 100644
+--- /dev/null
++++ b/quality/static_analysis/codeql_lint_test.py
+@@ -0,0 +1,76 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import json
++import os
++import tempfile
++import unittest
++
++import codeql_lint
++
++
++class NormalizePlaceholderLocationsTest(unittest.TestCase):
++    def test_removes_placeholder_uri_with_index(self):
++        sarif = {
++            "runs": [
++                {
++                    "artifacts": [
++                        {"location": {"uri": "file:/", "index": 101}},
++                    ],
++                    "results": [
++                        {
++                            "relatedLocations": [
++                                {
++                                    "physicalLocation": {
++                                        "artifactLocation": {"uri": "file:/"}
++                                    },
++                                    "message": {"text": "Result"},
++                                }
++                            ]
++                        }
++                    ],
++                }
++            ]
++        }
++        codeql_lint._normalize_placeholder_artifact_locations(sarif)
++        artifact_location = sarif["runs"][0]["artifacts"][0]["location"]
++        self.assertNotIn("uri", artifact_location)
++        self.assertEqual(artifact_location["index"], 101)
++        related_physical = sarif["runs"][0]["results"][0]["relatedLocations"][0]["physicalLocation"]
++        self.assertNotIn("artifactLocation", related_physical)
++
++    def test_preserves_valid_uri(self):
++        sarif = {
++            "runs": [
++                {
++                    "results": [
++                        {
++                            "physicalLocation": {
++                                "artifactLocation": {
++                                    "uri": "score/mw/com/impl/foo.cpp",
++                                }
++                            }
++                        }
++                    ]
++                }
++            ]
++        }
++        codeql_lint._normalize_placeholder_artifact_locations(sarif)
++        artifact_location = sarif["runs"][0]["results"][0]["physicalLocation"]["artifactLocation"]
++        self.assertEqual(artifact_location["uri"], "score/mw/com/impl/foo.cpp")
++
++    def test_normalize_sarif_placeholder_locations_writes_file(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            sarif_path = os.path.join(tmpdir, "out.sarif")
++            sarif = {
++                "runs": [
++                    {
++                        "results": [
++                            {
++                                "physicalLocation": {
++                                    "artifactLocation": {"uri": "file:/"}
++                                }
++                            }
++                        ]
++                    }
++                ]
++            }
++            with open(sarif_path, "w") as f:
++                json.dump(sarif, f)
++            codeql_lint.normalize_sarif_placeholder_locations(sarif_path)
++            with open(sarif_path, "r") as f:
++                normalized = json.load(f)
++            physical = normalized["runs"][0]["results"][0]["physicalLocation"]
++            self.assertNotIn("artifactLocation", physical)
++
++
++if __name__ == "__main__":
++    unittest.main()

@@ -1,0 +1,65 @@
+--- a/config.json
++++ b/config.json
+@@ -22,18 +22,36 @@
+       "id": "s-core",
+       "name": "S-Core Fabric",
+       "path": "~/s-core_sw_fabric",
+-      "match": ["s-core", "s_core", "score", "someip"],
++      "match": [
++        "s-core",
++        "s_core",
++        "score",
++        "someip"
++      ],
+       "queue_globs": [
+         "docs/handoff/someip-84/factory/runs/*/overnight-queue.json",
+-        "docs/handoff/someip-84/factory/runs/*/queue-record.json"
++        "docs/handoff/someip-84/factory/runs/*/queue-record.json",
++        "../eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-*/queue-record.json"
+       ]
+     },
+     {
+       "id": "x-verse",
+       "name": "X-Verse Fabric",
+       "path": "~/x-verse_fabric",
+-      "match": ["x-verse", "x_verse", "xverse", "xcom", "x-com", "argus", "xdl", "t025"],
+-      "queue_globs": ["automation/backlogs/*/queue.json", "automation/projects/*/*/manifest.json"]
++      "match": [
++        "x-verse",
++        "x_verse",
++        "xverse",
++        "xcom",
++        "x-com",
++        "argus",
++        "xdl",
++        "t025"
++      ],
++      "queue_globs": [
++        "automation/backlogs/*/queue.json",
++        "automation/projects/*/*/manifest.json"
++      ]
+     }
+   ]
+ }
+--- a/server.py
++++ b/server.py
+@@ -114,14 +114,17 @@
+     run_ids.update(i["run_id"] for i in items if i["run_id"])
+     done = sum(i["status"] in {"succeeded", "completed", "complete", "accepted", "delivered"} for i in items)
+     modified = max(path.stat().st_mtime, state_path.stat().st_mtime if state_path.exists() else 0)
++    reported_cost = state.get("deepseek_reported_total_usd_micros")
++    if reported_cost is None:
++        reported_cost = state.get("deepseek_usage", {}).get("usd_micros")
+     return {"id": project["id"] + ":" + queue_id, "name": queue_id, "project": project["id"],
+             "status": kind(state.get("status") or manifest.get("status"), "unknown"),
+             "items": items, "completed": done, "total": len(items),
+             "progress_known": bool(items) and any(i["status"] != "unobserved" for i in items),
+             "run_ids": sorted(run_ids), "path": str(path), "updated_at": datetime.fromtimestamp(modified, timezone.utc).isoformat(),
+             "deadline": manifest.get("stop_at_utc") or manifest.get("deadline"),
+-            "note": state.get("abort_reason") or state.get("last_error") or manifest.get("blocked_by"),
+-            "cost_usd": state.get("deepseek_reported_total_usd_micros", state.get("deepseek_usage", {}).get("usd_micros", 0)) / 1e6}
++            "note": state.get("abort_reason") or state.get("last_error") or state.get("notes") or manifest.get("blocked_by"),
++            "cost_usd": reported_cost / 1e6 if isinstance(reported_cost, (int, float)) else None}
+ 
+ 
+ def normalize_run(raw, source, project):

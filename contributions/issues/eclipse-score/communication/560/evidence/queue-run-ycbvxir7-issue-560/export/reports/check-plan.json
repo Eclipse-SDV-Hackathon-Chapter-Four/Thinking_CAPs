@@ -1,0 +1,199 @@
+{
+  "checks": [
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept"],
+      "reason": "Abstraction-layer crate now defines SubscriptionState (#[repr(u8)], discriminants 0/1/2) and the three new Subscription trait methods; must compile under the native Linux/Ferrocene framework.",
+      "native_obligation": "Native verification matrix 'Rust library/API' requires the native build of the changed library; rule kind is rust_library in score/mw/com/rust/score_com_concept/BUILD.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/rust:score_com"],
+      "reason": "Public re-export crate now also exposes SubscriptionState so applications can name the returned state.",
+      "native_obligation": "rust_library in score/mw/com/rust/BUILD; public visibility; downstream compilation obligation for a public API change.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/rust:score_com_mock"],
+      "reason": "Test-only re-export target re-exports score_com unchanged; must still build after the public API extension.",
+      "native_obligation": "testonly rust_library in score/mw/com/rust/BUILD; included in the native build/test set for the mock runtime.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"],
+      "reason": "LoLa runtime implements the three Subscription methods, the AtomicBool handler-set flag and the teardown ordering; core of the behavior change.",
+      "native_obligation": "rust_library in com-api-runtime-lola/BUILD; native build obligation for the Rust library/API change surface.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"],
+      "reason": "Mock runtime implements Subscription; the required trait methods force an update so the crate keeps compiling.",
+      "native_obligation": "rust_library in com-api-runtime-mock/BUILD; trait-implementor compile obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs"],
+      "reason": "FFIBridge trait surface gains get/set/unset subscription-state methods (raw u8/bool); ABI-visible FFI contract.",
+      "native_obligation": "rust_library in com-api-ffi-lola/BUILD; FFI boundary compile obligation (unsafe/FFI change surface).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"],
+      "reason": "extern C declarations plus the invocation trampoline and the typed box dropper for the subscription-state-change callback.",
+      "native_obligation": "rust_library in com-api-ffi-lola/BUILD; FFI callback ABI obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_mock"],
+      "reason": "mockall MockFFIBridge and SharedMockBridge now declare/forward the new FFIBridge methods or the runtime unit tests will not build.",
+      "native_obligation": "rust_library in com-api-ffi-lola/BUILD; mock surface completeness for trait changes.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"],
+      "reason": "C++ extern C wrappers, the RustBoxedCallable<bool, SubscriptionState> specialization and the typed-dropper declaration implement the bridge side.",
+      "native_obligation": "cc_library in com-api-ffi-lola/BUILD with COMPILER_WARNING_FEATURES; C++ FFI wrapper build obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer"],
+      "reason": "Downstream synchronous consumer binary compiled against the changed public API (representative downstream compilation).",
+      "native_obligation": "rust_binary in basic_rust_api/consumer_sync_apis/BUILD; native verification matrix requires representative downstream compilation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async"],
+      "reason": "Downstream asynchronous consumer binary compiled against the changed public API (async surface).",
+      "native_obligation": "rust_binary in basic_rust_api/consumer_async_apis/BUILD; downstream compilation obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"],
+      "reason": "Mock-bridge unit tests are the native vehicle for the new API. New cases: test_get_subscription_state_maps_raw_values (sync mapping incl. out-of-contract value), test_set_and_unset_subscription_state_change_handler (async register/unregister, unset bounded to times(1)), test_set_handler_failure_is_reported_and_box_reclaimed (failure + box reclaim), test_drop_unregisters_registered_state_handler (teardown ordering). Reentrancy remains a documented contract enforced through the existing ProxyEventManager guard.",
+      "native_obligation": "Existing rust_test target (already depends on bridge_ffi_mock + mockall); Rust library/API + concurrency/lifetime obligations from references/native-verification.md and references/issue-types.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-test"],
+      "reason": "Concept crate unit tests must keep passing after adding SubscriptionState and extending the Subscription trait.",
+      "native_obligation": "rust_test in score_com_concept/BUILD; regression obligation for the abstraction layer.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"],
+      "reason": "Macro unit tests link against the changed concept crate; compile/link regression obligation.",
+      "native_obligation": "rust_unit_test (unit_testing.bzl) in score_com_concept/BUILD; Linux forwarding target.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/bindings/lola:subscription_state_machine_methods_test"],
+      "reason": "C++ state-machine method tests cover SetSubscriptionStateChangeHandler/UnsetSubscriptionStateChangeHandler semantics (override, unset-never-called-again, false-return unregister) that the Rust bridge now calls.",
+      "native_obligation": "cc_unit_test in bindings/lola/BUILD; C++ middleware contract obligations O2/O3/O5/O6.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/bindings/lola:subscription_state_machine_events_test"],
+      "reason": "C++ event-driven state transitions (subscribe/pending/subscribed/not-subscribed/stop-offer) that drive the notification callback.",
+      "native_obligation": "cc_unit_test in bindings/lola/BUILD; state transition obligation O1/O2.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/bindings/lola:subscription_state_machine_states_test"],
+      "reason": "C++ per-state behavior for the three SubscriptionState values mirrored by the Rust enum.",
+      "native_obligation": "cc_unit_test in bindings/lola/BUILD; enum-value ABI obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/bindings/lola:subscription_state_machine_stress_test"],
+      "reason": "Supplementary concurrent state-transition stress coverage; a short passing run does not establish absence of races/deadlocks.",
+      "native_obligation": "cc_unit_test in bindings/lola/BUILD; explicitly recorded as supplementary, not proof of race absence.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/impl/bindings/lola:proxy_event_subscription_test"],
+      "reason": "C++ ProxyEventBase Get/Set/Unset subscription-state API contract that the FFI wrappers bind to.",
+      "native_obligation": "cc_unit_test in bindings/lola/BUILD; ProxyEventBase contract obligation from proxy_event_base.h.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync"],
+      "reason": "Existing end-to-end Rust consumer integration flow; regression coverage after extending the public API.",
+      "native_obligation": "integration_test (quality/integration_testing) in basic_rust_api/consumer_sync_apis/integration_test/BUILD; communication-behavior integration obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": ["//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"],
+      "reason": "Existing end-to-end Rust async consumer integration flow; regression coverage after extending the public API.",
+      "native_obligation": "integration_test (quality/integration_testing) in basic_rust_api/consumer_async_apis/integration_test/BUILD; communication-behavior integration obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests"],
+      "reason": "Rustdoc tests for the LoLa crates must still compile/run with the new trait methods and doc comments.",
+      "native_obligation": "rust_doc_test in com-api-runtime-lola/BUILD; native verification matrix docs obligation.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"],
+      "reason": "rust_doc_test for the concept crate; must be enumerated explicitly. This target is tagged manual and has a documented rules_rust native-linking limitation, so it is not assumed to run.",
+      "native_obligation": "rust_doc_test in score_com_concept/BUILD with tags=['manual']; per references/native-verification.md, manual/excluded checks must be enumerated and their exclusion tracked.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "Clippy (score_rust_policies clippy_strict aspect) over the changed Rust libraries; existing allow-lints and pinned policy must be preserved with no new suppressions.",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc declares the clippy aspect for the Linux configuration; Rust coding guideline doc__rust_coding_guidelines applies. Exact aspect invocation is a command-stage concern outside agent authority.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": ["//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"],
+      "reason": "clang-tidy aspect over the changed C++ FFI wrapper; do not transfer MISRA C++ policy to Rust changes.",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc declares the clang-tidy aspect; COMPILER_WARNING_FEATURES on the target must remain.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": ["//score/mw/com/rust:score_com"],
+      "reason": "Enumerate reverse dependencies/downstream consumers of the public crate so the trait addition is checked against the real compilation denominator rather than guessed names.",
+      "native_obligation": "References/native-verification.md requires discovering aliases/generated/downstream targets from rules/query results. Exact query command is a command-stage concern outside agent authority.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": ["//score/mw/com/rust/score_com_concept:score_com_concept"],
+      "reason": "Enumerate implementors of the Subscription trait to prove the required-method extension stays compile-complete. Source inspection found only the LoLa and Mock implementations; the full set is unknown until queried.",
+      "native_obligation": "Trait-compatibility obligation; unresolved target set remains open until the query result is provided by the native measurement stage.",
+      "config": "linux_x64"
+    }
+  ]
+}

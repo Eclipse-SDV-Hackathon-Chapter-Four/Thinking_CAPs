@@ -1,0 +1,435 @@
+diff --git a/.github/workflows/_codeql.yml b/.github/workflows/_codeql.yml
+index 74076518..0a351aa0 100644
+--- a/.github/workflows/_codeql.yml
++++ b/.github/workflows/_codeql.yml
+@@ -87,7 +87,9 @@ jobs:
+           bazel run --config=ci //quality/static_analysis:codeql_lint -- \
+             --output-dir /tmp/codeql-results/linux \
+             --output-prefix codeql-nightly \
+-            --target //score/message_passing //score/mw/com
++            --production-targets \
++            --target //score/message_passing //score/mw/com \
++            --audit-source score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp
+ 
+       - name: Upload Linux SARIF (intermediate)
+         if: inputs.fetch-only != 'true' && steps.run-codeql.outcome == 'success'
+@@ -142,7 +144,9 @@ jobs:
+             --build-config qnx \
+             --output-dir /tmp/codeql-results/qnx \
+             --output-prefix codeql-nightly-qnx \
+-            --target //score/message_passing //score/mw/com
++            --production-targets \
++            --target //score/message_passing //score/mw/com \
++            --audit-source score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp
+ 
+       - name: Upload QNX SARIF (intermediate)
+         if: steps.run-codeql-qnx.outcome == 'success'
+diff --git a/BUILD b/BUILD
+index a64d2a94..6beead98 100644
+--- a/BUILD
++++ b/BUILD
+@@ -55,12 +55,12 @@ copyright_checker(
+     name = "copyright",
+     srcs = [
+         ".github",
++        "BUILD",
++        "MODULE.bazel",
+         "quality",
+         "score",
+         "third_party",
+         "tools",
+-        "//:BUILD",
+-        "//:MODULE.bazel",
+     ],
+     config = "//third_party/cr_checker:config",
+     template = "//third_party/cr_checker:templates",
+diff --git a/quality/static_analysis/BUILD b/quality/static_analysis/BUILD
+index 627015e4..df4b59bb 100644
+--- a/quality/static_analysis/BUILD
++++ b/quality/static_analysis/BUILD
+@@ -11,7 +11,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # *******************************************************************************
+ 
+-load("@rules_python//python:defs.bzl", "py_binary")
++load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+ 
+ py_binary(
+     name = "codeql_lint",
+@@ -36,6 +36,17 @@ py_binary(
+     deps = ["@rules_python//python/runfiles"],
+ )
+ 
++py_test(
++    name = "codeql_lint_test",
++    srcs = [
++        "codeql_lint.py",
++        "codeql_lint_test.py",
++    ],
++    imports = ["."],
++    tags = ["local"],
++    target_compatible_with = ["@platforms//os:linux"],
++)
++
+ filegroup(
+     name = "config",
+     srcs = ["config.yaml"],
+diff --git a/quality/static_analysis/codeql_lint.py b/quality/static_analysis/codeql_lint.py
+index 713d4220..1e19bff5 100644
+--- a/quality/static_analysis/codeql_lint.py
++++ b/quality/static_analysis/codeql_lint.py
+@@ -17,6 +17,8 @@ import json
+ import subprocess
+ import datetime
+ import shutil
++import sys
++import zipfile
+ 
+ 
+ TMP_PATH_FOR_DATABASES = "/var/tmp/codeql_databases"
+@@ -28,6 +30,12 @@ CODING_STANDARDS_CONFIG_RELATIVE_PATH = "quality/static_analysis/coding-standard
+ # to this run and doesn't accumulate stale state across workspaces/versions.
+ CODEQL_FAKE_HOME_DIR_NAME = "codeql_home"
+ 
++# CodeQL stores the extracted source files for a database in this archive.
++# The audit below deliberately checks this archive instead of the SARIF output:
++# a production source file can have zero findings and therefore no SARIF result,
++# while still being present in the database.
++DATABASE_SRC_ARCHIVE = "src.zip"
++
+ 
+ # Default query suite (relative to the MISRA C++ pack root) run by the analysis.
+ # Forward-slash relative path, used both to locate the suite on disk and as the
+@@ -40,6 +48,102 @@ MISRA_DEFAULT_SUITE_NAME = "codeql-suites/misra-cpp-default.qls"
+ COMPILED_PACK_RUNFILE = "codeql_coding_standards_compiled/pack/qlpack.yml"
+ 
+ 
++def audit_database_source_coverage(database_path, source_root, expected_sources):
++    """Audit that expected source files were extracted into the CodeQL database.
++
++    CodeQL databases retain extracted sources in a ``src.zip`` archive.  This
++    check intentionally inspects that archive instead of the SARIF output: a
++    production source file can legitimately have zero findings and therefore no
++    SARIF result, while still being present in the database.  Conversely, a
++    missing database entry is real evidence that the traced build did not cover
++    the file (for example because the Bazel target pattern was too narrow).
++
++    Args:
++        database_path: Path to the finalized CodeQL database directory.
++        source_root: Root of the source tree used for the traced build.
++        expected_sources: Iterable of source paths (relative to source_root or
++            absolute) that must be present in the database.
++
++    Returns:
++        A sorted list of expected source paths that were not found.
++    """
++    src_zip = os.path.join(database_path, DATABASE_SRC_ARCHIVE)
++    if not os.path.isfile(src_zip):
++        raise RuntimeError(
++            f"CodeQL database source archive not found: {src_zip}. Cannot audit database source coverage."
++        )
++
++    source_root_abs = os.path.abspath(source_root).replace(os.sep, "/").lstrip("/")
++
++    def _normalize_expected(source):
++        if os.path.isabs(source):
++            try:
++                rel = os.path.relpath(source, source_root)
++            except ValueError:
++                # On Windows, paths on different drives cannot be relative.
++                rel = source
++        else:
++            rel = source
++        return rel.replace(os.sep, "/").lstrip("/")
++
++    with zipfile.ZipFile(src_zip, "r") as archive:
++        archive_names = set(archive.namelist())
++
++    missing = []
++    for source in expected_sources:
++        rel = _normalize_expected(source)
++        candidates = {
++            rel,
++            f"./{rel}",
++        }
++        if source_root_abs:
++            candidates.add(f"{source_root_abs}/{rel}")
++            candidates.add(f"./{source_root_abs}/{rel}")
++        if not (candidates & archive_names):
++            missing.append(rel)
++    return sorted(missing)
++
++
++def _production_target_patterns(target_spec):
++    patterns = []
++    for label in target_spec.split():
++        label = label.strip()
++        if not label.startswith("//"):
++            continue
++        patterns.append(label)
++    if not patterns:
++        raise RuntimeError(
++            "No main-repository targets found in the supplied target list; cannot derive production targets."
++        )
++    return patterns
++
++
++def _parse_production_targets(cquery_stdout):
++    labels = [line.split()[0] for line in cquery_stdout.splitlines() if line.strip()]
++    return sorted({label for label in labels if label.startswith("//")})
++
++
++def _compute_production_targets(source_root, build_configs, target_spec):
++    patterns = _production_target_patterns(target_spec)
++    query_expr = f'attr("testonly", "0", kind("cc_library|cc_binary", deps(set({" ".join(patterns)}))))'
++    cquery_cmd = "bazel cquery --config=codeql"
++    for extra_config in build_configs or []:
++        cquery_cmd += f" --config={extra_config}"
++    cquery_cmd += f" --output=label '{query_expr}'"
++    result = subprocess.run(
++        cquery_cmd,
++        shell=True,
++        cwd=source_root,
++        capture_output=True,
++        text=True,
++        check=True,
++    )
++    labels = _parse_production_targets(result.stdout)
++    if not labels:
++        raise RuntimeError(f"No production C/C++ targets found in dependency closure of {patterns}.")
++    return labels
++
++
+ def _find_coding_standards_root():
+     """Locate the vendored codeql-coding-standards repo root (the dir containing cpp/).
+ 
+@@ -161,7 +265,9 @@ def _read_pack_identity(pack_root):
+     return name, version
+ 
+ 
+-def create_database(code_ql_path, config_path, target, source_root, database_path, build_configs=None):
++def create_database(
++    code_ql_path, config_path, target, source_root, database_path, build_configs=None, production_targets=False
++):
+     """Create the CodeQL database: init, build with tracing, finalize.
+ 
+     ``build_configs`` is an optional list of additional Bazel ``--config`` names
+@@ -198,6 +304,10 @@ def create_database(code_ql_path, config_path, target, source_root, database_pat
+     for extra_config in build_configs or []:
+         bazel_cmd += f" --config={extra_config}"
+     bazel_cmd += _get_action_env_extension(codeql_env)
++    if production_targets:
++        production_target_list = _compute_production_targets(source_root, build_configs, target)
++        target = " ".join(production_target_list)
++        bazel_cmd += " --skip_incompatible_explicit_targets"
+     subprocess.run(f"{bazel_cmd} {target}", shell=True, env=env, cwd=source_root, check=True)
+ 
+     # Finalize database
+@@ -454,6 +564,23 @@ def main():
+         help="Additional Bazel --config to layer on the traced build (repeatable). "
+         "E.g. --build-config qnx runs 'bazel build --config=codeql --config=qnx'.",
+     )
++    parser.add_argument(
++        "--audit-source",
++        action="append",
++        default=[],
++        dest="audit_sources",
++        metavar="PATH",
++        help="Source file expected to be present in the CodeQL database. "
++        "Repeatable. Used to audit database source coverage independently of "
++        "SARIF results.",
++    )
++    parser.add_argument(
++        "--production-targets",
++        action="store_true",
++        help="Build main-repository C/C++ library and binary targets not marked "
++        "test-only from the dependency closure of the supplied roots, including "
++        "implementation_deps that would otherwise be built lazily.",
++    )
+ 
+     args = parser.parse_args()
+     target = " ".join(args.target) if args.target else ""
+@@ -474,9 +601,22 @@ def main():
+             source_root,
+             args.database_path,
+             build_configs=args.build_configs,
++            production_targets=args.production_targets,
+         )
++        if args.audit_sources:
++            missing = audit_database_source_coverage(args.database_path, source_root, args.audit_sources)
++            if missing:
++                raise RuntimeError(
++                    "CodeQL database source coverage audit failed; missing expected sources: " + ", ".join(missing)
++                )
+ 
+     elif args.phase == "analyze-database":
++        if args.audit_sources:
++            missing = audit_database_source_coverage(args.database_path, source_root, args.audit_sources)
++            if missing:
++                raise RuntimeError(
++                    "CodeQL database source coverage audit failed; missing expected sources: " + ", ".join(missing)
++                )
+         analyze_database(
+             codeql_path,
+             args.database_path,
+@@ -505,7 +645,14 @@ def main():
+                 source_root,
+                 database_location,
+                 build_configs=args.build_configs,
++                production_targets=args.production_targets,
+             )
++            if args.audit_sources:
++                missing = audit_database_source_coverage(database_location, source_root, args.audit_sources)
++                if missing:
++                    raise RuntimeError(
++                        "CodeQL database source coverage audit failed; missing expected sources: " + ", ".join(missing)
++                    )
+             analyze_database(
+                 codeql_path,
+                 database_location,
+diff --git a/quality/static_analysis/codeql_lint_test.py b/quality/static_analysis/codeql_lint_test.py
+new file mode 100644
+index 00000000..29b5251e
+--- /dev/null
++++ b/quality/static_analysis/codeql_lint_test.py
+@@ -0,0 +1,140 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import os
++import tempfile
++import unittest
++import zipfile
++
++import codeql_lint
++
++
++class AuditDatabaseSourceCoverageTest(unittest.TestCase):
++    def _create_database_with_sources(self, database_path, sources):
++        src_zip = os.path.join(database_path, "src.zip")
++        with zipfile.ZipFile(src_zip, "w") as archive:
++            for source in sources:
++                archive.writestr(source, "// dummy source\n")
++
++    def test_audit_passes_when_expected_source_is_present(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            self._create_database_with_sources(tmpdir, ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_reports_missing_expected_source(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            self._create_database_with_sources(tmpdir, ["score/mw/com/impl/other.cpp"])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++            self.assertEqual(
++                missing,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++
++    def test_audit_accepts_absolute_source_path(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            self._create_database_with_sources(tmpdir, [relative])
++            absolute = os.path.join(tmpdir, relative)
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                [absolute],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_raises_when_src_zip_is_missing(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            with self.assertRaises(RuntimeError):
++                codeql_lint.audit_database_source_coverage(
++                    tmpdir,
++                    tmpdir,
++                    ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++                )
++
++    def test_audit_accepts_absolute_archive_root_path(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            source_root = "/workspace"
++            archive_entry = "workspace/" + relative
++            self._create_database_with_sources(tmpdir, [archive_entry])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                source_root,
++                [relative],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_rejects_unrelated_absolute_archive_root(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            source_root = "/workspace"
++            archive_entry = "other/workspace/" + relative
++            self._create_database_with_sources(tmpdir, [archive_entry])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                source_root,
++                [relative],
++            )
++            self.assertEqual(missing, [relative])
++
++
++class ProductionTargetTest(unittest.TestCase):
++    def test_production_target_patterns_preserve_requested_roots(self):
++        patterns = codeql_lint._production_target_patterns("//score/message_passing //score/mw/com")
++        self.assertEqual(
++            patterns,
++            [
++                "//score/message_passing",
++                "//score/mw/com",
++            ],
++        )
++
++    def test_production_target_patterns_preserve_explicit_selectors(self):
++        self.assertEqual(
++            codeql_lint._production_target_patterns("//score/mw/com:com //score/message_passing/... //:api"),
++            ["//score/mw/com:com", "//score/message_passing/...", "//:api"],
++        )
++
++    def test_parse_production_targets_deduplicates_configured_labels(self):
++        self.assertEqual(
++            codeql_lint._parse_production_targets("//score/mw/com:com (aaa)\n//score/mw/com:com (bbb)\n"),
++            ["//score/mw/com:com"],
++        )
++
++    def test_production_target_patterns_reject_empty(self):
++        with self.assertRaises(RuntimeError):
++            codeql_lint._production_target_patterns("")
++
++    def test_parse_production_targets_filters_external(self):
++        labels = codeql_lint._parse_production_targets(
++            "//score/mw/com/impl:foo\n@external//bar:baz\n//score/message_passing:msg\n"
++        )
++        self.assertEqual(
++            labels,
++            [
++                "//score/mw/com/impl:foo",
++                "//score/message_passing:msg",
++            ],
++        )
++
++
++if __name__ == "__main__":
++    unittest.main()
