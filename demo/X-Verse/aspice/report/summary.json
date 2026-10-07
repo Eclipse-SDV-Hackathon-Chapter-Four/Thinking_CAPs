@@ -1,0 +1,262 @@
+{
+  "generated": "2026-10-07 15:45:54",
+  "requirements": {
+    "SWR-01": "VERIFIED",
+    "SWR-02": "VERIFIED",
+    "SWR-03": "VERIFIED",
+    "SWR-04": "VERIFIED",
+    "SWR-05": "VERIFIED",
+    "SWR-06": "VERIFIED",
+    "SWR-07": "VERIFIED",
+    "SWR-08": "VERIFIED",
+    "SWR-09": "VERIFIED",
+    "SWR-10": "VERIFIED",
+    "SWR-11": "VERIFIED"
+  },
+  "cases": {
+    "UT-LAUNCHER": {
+      "level": "UT",
+      "title": "`tests/test_run_autoverse.py` (Python unittest)",
+      "verifies": [
+        "SWR-01"
+      ],
+      "status": "PASS",
+      "detail": "OK",
+      "tests": 15,
+      "source": "run now"
+    },
+    "UT-SOMEIP": {
+      "level": "UT",
+      "title": "`tests/payload/test_convert.cpp` (`test_convert`)",
+      "verifies": [
+        "SWR-05"
+      ],
+      "status": "PASS",
+      "detail": "checks=213 failures=0 (build/test_convert)",
+      "tests": 213,
+      "source": "run now"
+    },
+    "UT-SCORE": {
+      "level": "UT",
+      "title": "`score/cruise_control/tests/cruise_control_test.cpp` (gtest)",
+      "verifies": [
+        "SWR-06"
+      ],
+      "status": "PASS",
+      "detail": "bazel test //score/cruise_control/...: 1 target(s), 15 test cases \u2014 Executed 0 out of 1 test: 1 test passes.",
+      "tests": 15,
+      "source": "run now"
+    },
+    "UT-PR16": {
+      "level": "UT",
+      "title": "`//score/mw/diag/sovd_adapter:all` (inc_diagnostics, PR #16)",
+      "verifies": [
+        "SWR-07"
+      ],
+      "status": "PASS",
+      "detail": "bazel test //score/mw/diag/sovd_adapter:all: 1 target(s), 1 test cases \u2014 Executed 0 out of 1 test: 1 test passes.",
+      "tests": 1,
+      "source": "run now"
+    },
+    "UT-OTA": {
+      "level": "UT",
+      "title": "`backend/java/src/test` (JUnit 5, Spring Boot)",
+      "verifies": [
+        "SWR-09"
+      ],
+      "status": "PASS",
+      "detail": "12 JUnit suites (mvn test)",
+      "tests": 70,
+      "source": "run now"
+    },
+    "ITC-01": {
+      "level": "IT",
+      "title": "Zenoh router reachable",
+      "verifies": [
+        "SWR-01"
+      ],
+      "status": "PASS",
+      "detail": "tcp/127.0.0.1:7447 accepts connections"
+    },
+    "ITC-02": {
+      "level": "IT",
+      "title": "Supervised containers running",
+      "verifies": [
+        "SWR-01"
+      ],
+      "status": "PASS",
+      "detail": "all running"
+    },
+    "ITC-03": {
+      "level": "IT",
+      "title": "Vehicle state and driver requests on Zenoh",
+      "verifies": [
+        "SWR-02",
+        "SWR-03"
+      ],
+      "status": "PASS",
+      "detail": "received 3/3"
+    },
+    "ITC-04": {
+      "level": "IT",
+      "title": "VCU commands on Zenoh",
+      "verifies": [
+        "SWR-04"
+      ],
+      "status": "PASS",
+      "detail": "received 2/2"
+    },
+    "ITC-05": {
+      "level": "IT",
+      "title": "Speed reaches the S-CORE ECU over SOME/IP",
+      "verifies": [
+        "SWR-05",
+        "SWR-07"
+      ],
+      "status": "PASS",
+      "detail": "vehicle_speed 0.0 km/h, age 37 ms"
+    },
+    "ITC-06": {
+      "level": "IT",
+      "title": "Cruise-control state exposed",
+      "verifies": [
+        "SWR-06"
+      ],
+      "status": "PASS",
+      "detail": "state standby, identity sha256:ae275d890718\u2026"
+    },
+    "ITC-07": {
+      "level": "IT",
+      "title": "DTC served through PR #16 `sovd_adapter`",
+      "verifies": [
+        "SWR-07"
+      ],
+      "status": "PASS",
+      "detail": "components ['cruise_control'], DTC CC.LostCommunication status passed"
+    },
+    "ITC-08": {
+      "level": "IT",
+      "title": "certgen PKI",
+      "verifies": [
+        "SWR-08"
+      ],
+      "status": "PASS",
+      "detail": "verified against ca.crt: server.crt, client-PC-CUTTLEFISH-01.crt, client-PI-ANDROID-15.crt"
+    },
+    "ITC-09": {
+      "level": "IT",
+      "title": "Device API requires mutual TLS",
+      "verifies": [
+        "SWR-09"
+      ],
+      "status": "PASS",
+      "detail": "without client cert: rejected; with client cert: HTTP/1.1 400 Bad Request"
+    },
+    "ITC-10": {
+      "level": "IT",
+      "title": "RTCU registered and targets reported",
+      "verifies": [
+        "SWR-09",
+        "SWR-10"
+      ],
+      "status": "PASS",
+      "detail": "PC-CUTTLEFISH-01 reachable, PI-ANDROID-15 reachable; last seen 9 s ago"
+    },
+    "ITC-11": {
+      "level": "IT",
+      "title": "Campaign outcomes recorded per target",
+      "verifies": [
+        "SWR-10"
+      ],
+      "status": "PASS",
+      "detail": "success: PC-CUTTLEFISH-01 #17, PI-ANDROID-15 #19; unreachable target closed as failed: #8"
+    },
+    "ITC-12": {
+      "level": "IT",
+      "title": "CARLA ego vehicle present",
+      "verifies": [
+        "SWR-02"
+      ],
+      "status": "PASS",
+      "detail": "ego_vehicle vehicle.audi.etron (id 24)"
+    },
+    "ITC-13": {
+      "level": "IT",
+      "title": "Android target ready with the cluster app",
+      "verifies": [
+        "SWR-11"
+      ],
+      "status": "PASS",
+      "detail": "boot_completed=1, cluster app installed"
+    },
+    "QTC-01": {
+      "level": "QT",
+      "title": "One-command start and stop",
+      "verifies": [
+        "SWR-01"
+      ],
+      "status": "PASS",
+      "detail": "2 supervised run(s) reached 'Supervisor is now running', 1 completed shutdown (~/.cache/autoverse-runner)",
+      "manual": false
+    },
+    "QTC-02": {
+      "level": "QT",
+      "title": "Drive and cruise control",
+      "verifies": [
+        "SWR-02",
+        "SWR-03",
+        "SWR-04"
+      ],
+      "status": "PASS",
+      "detail": "witnessed live in the dry run (cruise engaged before the fault)",
+      "manual": true
+    },
+    "QTC-03": {
+      "level": "QT",
+      "title": "Lost speed signal",
+      "verifies": [
+        "SWR-03",
+        "SWR-04",
+        "SWR-05",
+        "SWR-06",
+        "SWR-07"
+      ],
+      "status": "PASS",
+      "detail": "witnessed live in the dry run in front of the competition (issue #44)",
+      "manual": true
+    },
+    "QTC-04": {
+      "level": "QT",
+      "title": "OTA update of the Cuttlefish cluster",
+      "verifies": [
+        "SWR-09",
+        "SWR-10",
+        "SWR-11"
+      ],
+      "status": "PASS",
+      "detail": "campaign #17 v1.3: downloading \u2192 installing \u2192 success",
+      "manual": false
+    },
+    "QTC-05": {
+      "level": "QT",
+      "title": "OTA update of the Raspberry Pi",
+      "verifies": [
+        "SWR-10"
+      ],
+      "status": "PASS",
+      "detail": "campaign #19 v1.4: downloading \u2192 installing \u2192 success",
+      "manual": false
+    },
+    "QTC-06": {
+      "level": "QT",
+      "title": "OTA to an unreachable target",
+      "verifies": [
+        "SWR-10"
+      ],
+      "status": "PASS",
+      "detail": "campaign #8 closed failed: target unreachable at RTCU probe (adb 192.168.1.72:5555)",
+      "manual": false
+    }
+  },
+  "traceability_issues": []
+}

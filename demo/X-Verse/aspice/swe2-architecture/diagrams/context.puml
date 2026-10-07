@@ -1,0 +1,22 @@
+@startuml context
+title X-Verse end-to-end demonstration — system context
+left to right direction
+skinparam shadowing false
+actor Driver
+actor "EOL operator" as Operator
+actor "Diagnostic tester" as Tester
+rectangle "X-Verse end-to-end system" as SYS {
+  usecase "Drive the vehicle\n(SYS-01, SYS-02)" as UC1
+  usecase "Diagnose a lost\nspeed signal (SYS-03)" as UC2
+  usecase "Update the cluster app\nover the air (SYS-04)" as UC3
+  usecase "Start / stop everything\n(SYS-05)" as UC4
+}
+node "CARLA simulator" as CARLA
+node "Android targets\n(Cuttlefish, Raspberry Pi 4)" as AND
+Driver --> UC1
+Driver --> UC4
+Tester --> UC2
+Operator --> UC3
+UC1 --> CARLA
+UC3 --> AND
+@enduml

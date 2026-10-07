@@ -1,0 +1,28 @@
+@startuml sequence-dtc
+title Lost vehicle-speed signal → cruise cancel + DTC CC.LostCommunication
+skinparam shadowing false
+actor Driver
+participant "Manual control" as MC
+participant "Virtual vehicle" as VV
+participant "Zenoh–SOME/IP\nbridge" as BR
+participant "cruise_control\n(SignalLossGuard)" as CC
+participant "cruise-control-diag\n(PR16 sovd_adapter)" as DIAG
+participant VCU
+actor Tester
+Driver -> MC : I (fault injection)
+MC -> VV : vehicle/control/speed_publish_inhibit = True
+VV -[#red]x BR : vehicle/status/velocity_status stops
+BR -[#red]x CC : SOME/IP speed events stop
+note over CC : no accepted sample for\nbudget 1000 ms + debounce 100 ms
+CC -> CC : disengage, stop throttle request
+CC -> BR : adas_cc_cancel_req = true (event 30603)\nevery 50 ms until disengaged
+BR -> VCU : adas/cruise_control/cancel_req = true
+VCU -> VCU : cruise control off
+CC -> DIAG : per-cycle observation: signal lost
+DIAG -> DIAG : qualify DTC CC.LostCommunication
+Tester -> DIAG : GET /sovd/v1/components/cruise_control/data/cc_lost_communication
+DIAG --> Tester : status failed
+Driver -> MC : I (restore)
+VV -> BR : speed samples again
+DIAG --> Tester : status passed (after debounce)
+@enduml

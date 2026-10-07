@@ -1,0 +1,54 @@
+@startuml components
+title Components and deployment (one host + optional Raspberry Pi)
+skinparam shadowing false
+skinparam componentStyle rectangle
+node "Host" {
+  component "Launcher\nrun_autoverse.py" as L
+  queue "Zenoh router\n:7447" as Z
+  node "CARLA server" as CS
+  component "Virtual vehicle" as VV
+  component "Manual control" as MC
+  component "VCU (Python)" as VCU
+  node "bridge-e2e" {
+    component "Zenoh–SOME/IP bridge" as BR
+  }
+  node "docker_setup-adas_score-1 (S-CORE ECU)" {
+    component "cruise_control\n+ SignalLossGuard" as CC
+    component "gatewayd / someipd" as GW
+    component "cruise-control-diag\n(inc_diagnostics + PR16 sovd_adapter)" as DIAG
+    interface "SOVD :7691" as SOVD
+  }
+  node "OTA vECU" {
+    component "certgen" as CG
+    component "ota-backend\n:9444 / :9443 mTLS" as BE
+    component "ota-rtcu" as RTCU
+  }
+  node "cuttlefish-orchestration-cont" {
+    component "AAOS + cluster app" as CF
+  }
+}
+node "Raspberry Pi 4 (AAOS)" as PI
+L ..> Z : starts if absent
+L ..> VV
+L ..> VCU
+L ..> BR
+L ..> CC
+L ..> BE
+L ..> CF
+VV -- CS : CARLA API
+VV --> Z : IF-01
+MC --> Z : IF-02
+VCU <--> Z : IF-03 / IF-05
+BR <--> Z
+BR <--> GW : IF-04 SOME/IP
+GW <--> CC
+CC --> DIAG : IF-06
+DIAG -- SOVD : IF-07
+CG ..> BE : certificates
+CG ..> RTCU : certificates
+RTCU --> BE : IF-09 mTLS
+RTCU --> CF : IF-10 adb
+RTCU --> PI : IF-10 adb
+CF --> Z : cluster data
+PI --> Z : cluster data
+@enduml

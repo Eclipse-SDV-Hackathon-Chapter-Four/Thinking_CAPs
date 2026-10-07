@@ -1,0 +1,28 @@
+@startuml sequence-ota
+title Over-the-air update of the cluster app (one RTCU, all targets)
+skinparam shadowing false
+actor Operator
+participant "ota-backend\n:9444 / :9443" as BE
+participant "ota-rtcu" as RTCU
+participant "Android target\n(Cuttlefish / Pi)" as T
+RTCU -> BE : register (mTLS, CN = vehicle id)
+loop every cycle (~10 s)
+  RTCU -> T : probe (TCP + adb get-state)
+  RTCU -> BE : POST /api/v1/targets (reachable flags)
+end
+Operator -> BE : upload APK (version) → SHA-256 stored
+Operator -> BE : push update to target
+RTCU -> BE : poll manifest for target (mTLS)
+BE --> RTCU : campaign, artifact id, SHA-256
+RTCU -> BE : status downloading
+RTCU -> BE : GET artifact
+RTCU -> RTCU : verify SHA-256
+RTCU -> BE : status installing
+RTCU -> T : adb install -r
+alt target reachable
+  RTCU -> BE : status success
+else target unreachable
+  RTCU -> BE : status failed (campaign closes)
+end
+BE --> Operator : per-target phases in the console
+@enduml

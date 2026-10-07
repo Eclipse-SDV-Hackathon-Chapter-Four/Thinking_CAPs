@@ -874,6 +874,15 @@ When the board's ST-LINK serial port is present, the supervisor adds the step **
 
 Press **`Ctrl+C` in the supervisor terminal** to stop the launched processes and managed containers. Local CARLA is cleaned up; a server selected with `--external-carla-server` is left running. The Zenoh router started by the supervisor is stopped with it; a separately started router can be stopped with `Ctrl+C` in its own terminal.
 
+## ASPICE SWE evidence for the end-to-end flow
+
+[aspice/](aspice/README.md) holds demonstration work products for SWE.1–SWE.6 of the flow
+above (CARLA, virtual vehicle, VCU, SOME/IP bridge, S-CORE ECU with the DTC over SOVD via
+PR #16, OTA with certgen, EOL backend, RTCU and the Android targets): requirements,
+PlantUML architecture, detailed design, unit, integration and qualification tests, and a
+generated HTML report ([aspice/report/aspice-swe-report.html](aspice/report/aspice-swe-report.html)).
+With the system running, regenerate it with `python3 aspice/tools/generate_report.py --full`.
+
 ## Other baseline launch modes
 
 All examples assume the applicable setup steps above are complete. Every supervisor mode includes Vehicle Manual Control, the virtual vehicle automation, and Cuttlefish.
