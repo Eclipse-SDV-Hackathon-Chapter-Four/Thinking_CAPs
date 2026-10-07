@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-10-07T16:26:33.440619+00:00",
+  "repository": "eclipse-score/inc_someip_gateway",
+  "issue": 84,
+  "baseline": "f8a196c3b16d5172d898394ab99b0ed81346d63d",
+  "native_commit": "f9d46949e40e18637f4c51fcc878339552aa7409",
+  "patch_sha256": "74cbb93a27072a6bf2a59e48590fe9f184c13585474470eeb4876ea174ee5b14",
+  "native_policy_unchanged": true,
+  "execution_class": "direct local native commands; not upstream CI or human approval",
+  "checks": [
+    {
+      "name": "final-clang-tidy",
+      "evidence": "evidence/final-clang-tidy.json",
+      "exit_code": 0,
+      "elapsed_seconds": 190.14601612091064,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "--config=clang-tidy",
+        "//score/socom/...",
+        "--nocache_test_results",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-precommit",
+      "evidence": "evidence/final-precommit.json",
+      "exit_code": 0,
+      "elapsed_seconds": 21.728649854660034,
+      "exact_final_source": true,
+      "command": [
+        "pre-commit",
+        "run",
+        "--all-files"
+      ]
+    },
+    {
+      "name": "final-format",
+      "evidence": "evidence/final-format.json",
+      "exit_code": 0,
+      "elapsed_seconds": 9.52513837814331,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "//:format.check",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-build",
+      "evidence": "evidence/final-build.json",
+      "exit_code": 0,
+      "elapsed_seconds": 214.93080496788025,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "build",
+        "--jobs=2",
+        "//...",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-host",
+      "evidence": "evidence/final-host.json",
+      "exit_code": 0,
+      "elapsed_seconds": 112.14116334915161,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "//...",
+        "--build_tests_only",
+        "--nocache_test_results",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-asan",
+      "evidence": "evidence/final-asan.json",
+      "exit_code": 0,
+      "elapsed_seconds": 143.56919884681702,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "//score/socom/test/unit:socom_test",
+        "--features=asan",
+        "--features=lsan",
+        "--features=ubsan_clang",
+        "--nocache_test_results",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-tsan",
+      "evidence": "evidence/final-tsan.json",
+      "exit_code": 0,
+      "elapsed_seconds": 145.1721613407135,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "//score/socom/test/unit:socom_test",
+        "--features=tsan",
+        "--nocache_test_results",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-quality-tests",
+      "evidence": "evidence/final-quality-tests.json",
+      "exit_code": 0,
+      "elapsed_seconds": 122.19810724258423,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "//:unit_tests",
+        "//:component_tests",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-docs",
+      "evidence": "evidence/final-docs.json",
+      "exit_code": 0,
+      "elapsed_seconds": 30.581978797912598,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "run",
+        "--jobs=2",
+        "//:docs",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    },
+    {
+      "name": "final-traceability",
+      "evidence": "evidence/final-traceability.json",
+      "exit_code": 0,
+      "elapsed_seconds": 15.762561321258545,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "run",
+        "--jobs=2",
+        "//:traceability_gate",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1",
+        "--",
+        "--metrics-json",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/_build/metrics.json",
+        "--need-type=comp_req"
+      ]
+    },
+    {
+      "name": "final-qemu",
+      "evidence": "evidence/final-qemu.json",
+      "exit_code": 3,
+      "elapsed_seconds": 929.3204026222229,
+      "exact_final_source": true,
+      "command": [
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/bin/bazel",
+        "--batch",
+        "test",
+        "--jobs=2",
+        "--config=qemu-integration",
+        "--action_env=PATH=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/cloud-tools/usr/bin:/usr/bin:/bin",
+        "--test_env=PATH=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/cloud-tools/usr/bin:/usr/bin:/bin",
+        "--action_env=TMPDIR=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp",
+        "--test_env=TMPDIR=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp",
+        "//quality/...",
+        "//tests/integration_test/...",
+        "--nocache_test_results",
+        "--repository_cache=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-compliance-959u7rde/bazel-output/cache/repos/v1"
+      ]
+    }
+  ],
+  "socom_case_counts": {
+    "final-host": {
+      "target": "//score/socom/test/unit:socom_test",
+      "test_cases": 722,
+      "failures": 0,
+      "errors": 0,
+      "xml": "evidence/final-host/score/socom/test/unit/socom_test/test.xml"
+    },
+    "final-asan": {
+      "target": "//score/socom/test/unit:socom_test",
+      "test_cases": 722,
+      "failures": 0,
+      "errors": 0,
+      "xml": "evidence/final-asan/score/socom/test/unit/socom_test/test.xml"
+    },
+    "final-tsan": {
+      "target": "//score/socom/test/unit:socom_test",
+      "test_cases": 722,
+      "failures": 0,
+      "errors": 0,
+      "xml": "evidence/final-tsan/score/socom/test/unit/socom_test/test.xml"
+    }
+  },
+  "supplementary_carried_evidence": [
+    {
+      "name": "gcc-final-compile",
+      "exit_code": 0,
+      "evidence": "evidence/gcc-final-compile.json",
+      "classification": "carried supplementary API/type check; excludes runtime implementation",
+      "verified_unchanged_source_inputs": {
+        "score/socom/service_interface_identifier.hpp": "70bd5d2fef0bbaa2d3852413c77731c2067778537f648a6907b713e5f1c053f1",
+        "score/socom/string_registry.hpp": "909ca6a47b1e7bb76bc05f3f05144ee6c80350fe4643df61d5efe4ef5f38693f",
+        "score/socom/registry_string_view.hpp": "6640b529ea626c50944e1afe6240f84ac02551901c5a12ca846ea1ba37f18647",
+        "score/socom/impl/string_registry.cpp": "f486e72a96429fea4b06f505b96b4fa00aa831a6834959169e409200e8ee8fbb"
+      }
+    },
+    {
+      "name": "gcc-final-tests",
+      "exit_code": 0,
+      "evidence": "evidence/gcc-final-tests.json",
+      "classification": "carried supplementary API/type check; excludes runtime implementation",
+      "verified_unchanged_source_inputs": {
+        "score/socom/service_interface_identifier.hpp": "70bd5d2fef0bbaa2d3852413c77731c2067778537f648a6907b713e5f1c053f1",
+        "score/socom/string_registry.hpp": "909ca6a47b1e7bb76bc05f3f05144ee6c80350fe4643df61d5efe4ef5f38693f",
+        "score/socom/registry_string_view.hpp": "6640b529ea626c50944e1afe6240f84ac02551901c5a12ca846ea1ba37f18647",
+        "score/socom/impl/string_registry.cpp": "f486e72a96429fea4b06f505b96b4fa00aa831a6834959169e409200e8ee8fbb"
+      }
+    },
+    {
+      "name": "baseline-api-control",
+      "exit_code": 1,
+      "evidence": "evidence/baseline-api-control.json",
+      "classification": "Baseline API absence probe, expected failure; not current runtime evidence",
+      "verified_baseline_inputs": "evidence/baseline-api-subject.json"
+    }
+  ],
+  "historical_attempts": "Other retained evidence records are exploratory, failed, earlier-source or environment setup attempts; not final acceptance results. initial-unit-retry changed source during execution. bounded-clang-tidy completed lint but exited 4 because the library target has no tests. qemu-default failed because cloud-localds was missing. docs failed on a title underline before correction.",
+  "unmeasured_native_ci": [
+    "successful full default QEMU integration; four capture targets fail locally",
+    "full //score/... //tests/... sanitizer matrix",
+    "QEMU sanitizer matrix",
+    "performance/flamegraphs",
+    "73% coverage threshold workflow",
+    "repository-wide clang-tidy and ruff checks",
+    "conditional cross/QNX matrices",
+    "actual PR ECA/DCO/license and can_merge jobs"
+  ],
+  "traceability_gap": {
+    "raw_gate_output": "evidence/final-traceability.stdout",
+    "scope": "repository-wide native component-requirement metrics",
+    "source_linked_requirements": 0,
+    "test_linked_requirements": 0,
+    "component_requirements": 8,
+    "linked_tests": 0,
+    "tests": 996,
+    "baseline_thresholds": "zero; passing is not accepted trace coverage for new behavior"
+  },
+  "engineering_acceptance": "pending exact-revision human AI review, committer API/scope/requirements acceptance, IP assessment and required IP Team disposition",
+  "integration_disposition": "evidence/qemu-disposition.json"
+}

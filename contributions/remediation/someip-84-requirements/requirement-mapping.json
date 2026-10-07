@@ -1,0 +1,1648 @@
+{
+  "baseline": "f8a196c3b16d5172d898394ab99b0ed81346d63d",
+  "native_commit": "3a3a0d9ee0e502df99dc52279cdd2e536d361c0a",
+  "scope": "Issue 84 native SOCom proposals; unrelated TC8 requirements unchanged",
+  "feature": "feat_req__socom__version_selection",
+  "stakeholder": "stkh_req__someip_gw__local_version_selection",
+  "requirements": [
+    {
+      "requirement_id": "comp_req__socom__available_offers",
+      "title": "Available local offers and actual versions",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/impl/runtime_impl.cpp",
+          "line": 325,
+          "sha256": "bd27883584c4998cdc9719d04eba8bf88a9c3f166a83dcaef3d6f8c77dae248b"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "NoOffersReturnsZeroAndClearsOldSlots",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 178,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "ReportsActualMinorOfEachInstanceAndIgnoresOtherServices",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 189,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "DisabledAndDestroyedServersAreNotDiscoverable",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 240,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "ReplacingAnOfferUsesTheNewMinorInsteadOfTheIndexKey",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 259,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "ClientOnlyRecordDoesNotAdvertiseAnOfferOrItsMinor",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 285,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__bounded_discovery",
+      "title": "Bounded discovery output",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/impl/runtime_impl.cpp",
+          "line": 325,
+          "sha256": "bd27883584c4998cdc9719d04eba8bf88a9c3f166a83dcaef3d6f8c77dae248b"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "FindServiceRuntimeDeathTest",
+          "name": "InvalidOutputStorageIsRejected",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 340,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "NoOffersReturnsZeroAndClearsOldSlots",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 178,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "CountOnlyAndTruncationReportAllMatchingOffers",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 224,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__canonical_identity",
+      "title": "Canonical service identity",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/service_interface_identifier.hpp",
+          "line": 81,
+          "sha256": "b01483c9cdffb19af79c108e6afb0e47217d92ff7427582b477003252256fb57"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "ServiceIdentityTest",
+          "name": "MinorVersionsShareCanonicalIdentityAndHash",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 36,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceIdentityTest",
+          "name": "DifferentIdsAndMajorsRemainSeparate",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 50,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceIdentityTest",
+          "name": "AllConstructorsUseRegisteredStringIdentity",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 63,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__connector_compatibility",
+      "title": "Versioned connector compatibility",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/impl/runtime_impl.cpp",
+          "line": 136,
+          "sha256": "bd27883584c4998cdc9719d04eba8bf88a9c3f166a83dcaef3d6f8c77dae248b"
+        },
+        {
+          "path": "score/socom/service_interface_identifier.hpp",
+          "line": 115,
+          "sha256": "b01483c9cdffb19af79c108e6afb0e47217d92ff7427582b477003252256fb57"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "ServiceIdentityTest",
+          "name": "MinorVersionsShareCanonicalIdentityAndHash",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 36,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_version_match_expect_connect_0",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_mismatch_and_version_match_expect_no_connect_1",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_version_match_expect_connect_2",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_version_match_expect_connect_3",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_version_match_expect_connect_0",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_mismatch_and_version_match_expect_no_connect_1",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_version_match_expect_connect_2",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Identifier/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_version_match_expect_connect_3",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_version_match_expect_connect_0",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_1",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_2",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_match_and_client_minor_version_is_greater_expect_no_connect_3",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_match_and_client_minor_version_is_lower_equal_expect_connect_4",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_5",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_6",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_match_and_client_minor_version_is_greater_expect_no_connect_7",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_major_version_match_and_client_minor_version_is_lower_equal_expect_connect_8",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ServerCreatedBeforeClient/id_match_and_version_match_expect_connect_9",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 82,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_version_match_expect_connect_0",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_1",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_2",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_match_and_client_minor_version_is_greater_expect_no_connect_3",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_match_and_client_minor_version_is_lower_equal_expect_connect_4",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_5",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_mismatch_and_client_minor_version_is_lower_equal_expect_no_connect_6",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_match_and_client_minor_version_is_greater_expect_no_connect_7",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_major_version_match_and_client_minor_version_is_lower_equal_expect_connect_8",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Version/InterfaceCompatibilityTest",
+          "name": "ClientCreatedBeforeServer/id_match_and_version_match_expect_connect_9",
+          "path": "score/socom/test/unit/interface_compatibility_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__discovery_filters",
+      "title": "Optional local discovery filters",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/service_interface_identifier.hpp",
+          "line": 230,
+          "sha256": "b01483c9cdffb19af79c108e6afb0e47217d92ff7427582b477003252256fb57"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "FindServiceRequestTest",
+          "name": "MissingFiltersAcceptEveryMinorAndInstance",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 117,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRequestTest",
+          "name": "IdAndMajorMustMatchExactlyIncluding255",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 127,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRequestTest",
+          "name": "EmptyInstanceFilterIsAnExactId",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 141,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "AppliesMinorAndInstanceFiltersTogether",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 209,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "MinimumAndMaximumMinorHaveNoSentinelMeaning",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 274,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/0",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/1",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/2",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/3",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/4",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/5",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/6",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/7",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/8",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/9",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/10",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/11",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/12",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/13",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/14",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "Boundaries/FindServiceCompatibilityTest",
+          "name": "MinimumMinorUsesCompatibleOfferSemantics/15",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 100,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__discovery_synchronization",
+      "title": "Synchronized local snapshot",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/impl/runtime_impl.cpp",
+          "line": 588,
+          "sha256": "bd27883584c4998cdc9719d04eba8bf88a9c3f166a83dcaef3d6f8c77dae248b"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "SnapshotCanRunWhileOffersAreRegisteredAndDestroyed",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 303,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__instance_identity",
+      "title": "Full offered instance identity",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/service_interface_identifier.hpp",
+          "line": 208,
+          "sha256": "b01483c9cdffb19af79c108e6afb0e47217d92ff7427582b477003252256fb57"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "ServiceIdentityTest",
+          "name": "FullInstanceIdentityIncludesActualMinorAndInstance",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 78,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "ReportsActualMinorOfEachInstanceAndIgnoresOtherServices",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 189,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    },
+    {
+      "requirement_id": "comp_req__socom__registration_identity",
+      "title": "Single server registration identity",
+      "status": "invalid",
+      "acceptance": "proposal, pending committer review",
+      "parent": [
+        "feat_req__socom__version_selection"
+      ],
+      "component": [
+        "comp__socom"
+      ],
+      "design": "score/socom/docs/version_handling.rst",
+      "source": [
+        {
+          "path": "score/socom/impl/service_identifier.hpp",
+          "line": 32,
+          "sha256": "0f6bddfde6d3e630cb1d2c941520b703898f25476f9f3e7db2a62d18a9562845"
+        }
+      ],
+      "tests": [
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 337,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateMultipleTimesReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 353,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "CreatingServerConnectorDeletingItAndRecreatingReturnsValidServerConnector",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 374,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateDifferingOnlyInMinorVersionReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 405,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateSameConfigurationWhileBothConnectorsDisabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 444,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDifferentMajorWhileBothConnectorsDisabledReturnsDistinctServerConnectors",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 475,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDifferentInstanceWhileBothConnectorsDisabledReturnsDistinctServerConnectors",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 509,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDifferentServiceIdWhileBothConnectorsDisabledReturnsDistinctServerConnectors",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 542,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateMinorBoundariesWhileBothConnectorsDisabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 577,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateWithSmallerMinorWhileBothConnectorsDisabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 611,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateRepeatedlyWhileBothConnectorsDisabledKeepsSlotHeld",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 645,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateWhileFirstConnectorEnabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 697,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateDifferingOnlyInMinorVersionWhileFirstConnectorEnabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 732,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDifferentInstanceWhileFirstConnectorEnabledReturnsDistinctServerConnectors",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 770,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDifferentServiceIdWhileFirstConnectorEnabledReturnsDistinctServerConnectors",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 803,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateMinorBoundariesWhileFirstConnectorEnabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 839,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateWithSmallerMinorWhileFirstConnectorEnabledReturnsDuplicateServiceError",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 876,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateRepeatedlyWhileFirstConnectorEnabledKeepsSlotHeld",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 914,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDifferentMajorWhileFirstConnectorEnabledReturnsDistinctServerConnectors",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 962,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateAfterEnabledConnectorDestroyedReturnsValidServerConnector",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 997,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateAfterDisabledConnectorDestroyedWithChangedMinorVersionReturnsValidServerConnector",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 1058,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "ConstructDuplicateAfterEnabledConnectorDestroyedWithChangedMinorVersionReturnsValidServerConnector",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 1105,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "DestroyingOneMajorSlotKeepsOtherMajorSlotOccupied",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 1155,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "DestroyingOneInstanceSlotKeepsOtherInstanceSlotOccupied",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 1212,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "RuntimeTest",
+          "name": "DestroyingOneServiceIdSlotKeepsOtherServiceIdSlotOccupied",
+          "path": "score/socom/test/unit/runtime_tests.cpp",
+          "line": 1268,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "FindServiceRuntimeTest",
+          "name": "ReplacingAnOfferUsesTheNewMinorInsteadOfTheIndexKey",
+          "path": "score/socom/test/unit/service_discovery_tests.cpp",
+          "line": 259,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SameIdentifierIsNotLessThanItself",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 168,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeysDifferingOnlyInMinorVersionAreDuplicates",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 174,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MinorVersionBoundariesAreDuplicates",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 182,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "AllMinorVersionsCollapseToSingleKey",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 192,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MinorHighBitVariantsAreEquivalent",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 203,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeysDifferingInMajorVersionAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 217,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorVersionBoundariesAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 225,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorVersionSweepProducesDistinctKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 235,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "AdjacentMajorVersionBoundariesAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 246,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeysDifferingInServiceIdAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 262,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "DistinctServiceIdsProduceDistinctKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 270,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EqualServiceIdTextProducesEquivalentKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 281,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ServiceIdOrderingIsLexicographic",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 295,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeysDifferingInInstanceAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 309,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "DistinctInstancesProduceDistinctKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 317,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EqualInstanceTextProducesEquivalentKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 328,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "InstanceOrderingIsLexicographic",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 339,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ServiceInstanceMajorMatrixProducesDistinctKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 355,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ServiceInstanceMajorMatrixCollapsesMinorVersions",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 369,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ThreeByThreeByThreeMatrixProducesDistinctKeys",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 385,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ThreeByThreeByThreeMatrixCollapsesMinorVersions",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 399,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeyEquivalenceDependsOnInstanceServiceIdAndMajor",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 417,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MinorVersionNeverAffectsOrdering",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 427,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "OrderingOrderIsInstanceThenServiceIdThenMajor",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 438,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "OrderingIsTransitive",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 457,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EquivalenceIsTransitive",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 470,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorDifferenceOutweighsMinorDifference",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 483,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "InstanceIsThePrimaryOrderingComponent",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 493,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorIsTheTertiaryOrderingComponent",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 503,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "DistinctKeysAreOrderedInExactlyOneDirection",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 513,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "StrictWeakOrderingHoldsAcrossMinorVariants",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 534,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SortingAgreesWithIndependentTupleOrder",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 561,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SetUniquenessMatchesDistinctIdentityTupleCount",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 586,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SetIterationFollowsInstanceThenServiceIdThenMajor",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 607,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyStrictWeakOrderingAxiomsHoldOnDeterministicDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 632,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyEquivalenceMatchesIdentityTupleOnDeterministicDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 660,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyOrderingIsDeterministicTotalAndTupleConsistent",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 685,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyEquivalenceClassesMatchDistinctIdentityTupleCount",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 710,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertySetUniquenessIsIndependentOfInsertionOrder",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 733,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "VersionedContractDistinguishesMajorAndMinorBoundaries",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 782,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyRetainsInstanceServiceIdMajorAndStoresMinor",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 810,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyMinorBoundariesCollapseToSingleIdentity",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 830,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyMajorBoundariesStayDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 844,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyTextAndRegistryConstructionAgreeAtBoundaries",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 858,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyCollapsesConfigMinorsThatNarrowAlike",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 881,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyIsDeterministicAcrossRepeatedConversions",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 908,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EmptyServiceIdIsDistinctAndOrdersFirst",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 924,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EmptyInstanceIdIsDistinctAndOrdersFirst",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 940,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EmptyIdKeysCollapseAcrossMinorVersions",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 956,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ServiceIdPrefixOrderingIsLexicographic",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 967,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "InstanceIdPrefixOrderingIsLexicographic",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 982,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorHighBitAdjacencyIsOrdered",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 995,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeysDifferingInInstanceAndMinorAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1006,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeysDifferingInMajorAndMinorAreDistinct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1018,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SetFindLocatesMinorVariantAndCountsItOnce",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1031,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertySortedDomainMatchesSortedIdentityTuples",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1052,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyStrictWeakOrderingAxiomsOnVersionBoundaryDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1084,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyIdentityEqualityClassesOnVersionBoundaryDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1112,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedInstanceTextPathsAgreeAtBoundaries",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1148,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedContractDistinguishesMinorBoundariesWhileKeyCollapses",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1185,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ServiceIdLadderOrdersLexicographicallyAndDistinctly",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1216,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "InstanceIdLadderOrdersLexicographicallyAndDistinctly",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1239,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorVersionLadderOrdersNumericallyAndDistinctly",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1262,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MinorVariantsCompareIdenticallyAgainstWholeDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1290,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "StdSetCollapsesFiveMinorVariantsOfEveryIdentity",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1319,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EquivalenceIsCompatibleWithStrictOrder",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1341,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "OrderingAgreesWithTupleOrderOnMixedBoundaryDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1361,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SingleComponentChangesBreakEquivalenceAcrossAllBases",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1405,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyStrictWeakOrderingOnCombinedRegistrationKeyDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1456,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "PropertyIdentifierEqualityOnCombinedRegistrationKeyDomain",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1488,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedInterfaceConstructionPathsAgreeAtEveryVersionBoundary",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1531,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedInstanceRegistryIdPathAgreesWithTextPaths",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1563,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedKeyRetainsConfigWidthMajorBoundaries",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1589,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ServiceIdOrderingIsLexicographicNotNumeric",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1624,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "InstanceIdOrderingIsLexicographicNotNumeric",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1640,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorVersionByteBoundariesAreDistinctAndOrdered",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1655,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MajorVersionOrderMatchesUnsignedNumericOrder",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1679,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MinorVariantsBoundDistinctIdentitiesWithoutBreakingOrder",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1702,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "MinorSweepCollapsesPerIdentityAtEveryMajorBoundary",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1728,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "SetInsertionResultMatchesEquivalenceAcrossMinorVariants",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1754,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "EquivalenceCoincidesWithIdentityOverFixtureCrossProduct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1777,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "OrderingIsAntiSymmetricOverFixtureCrossProduct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1817,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "KeyIdentityIsStableUnderRepeatedMinorRewritesOfTheSameIdentity",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1851,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedEmptyTextInterfacePathsAgreeAtVersionBoundaries",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1886,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedEmptyTextInstancePathsAgreeWithRegistryPath",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1932,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "FreshDynamicServiceIdStringViewRegistersAndCollapses",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 1986,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "FreshDynamicServiceIdRvalueRegistersAndCollapses",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 2016,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedInterfaceAndInstanceConstructionPathsAgreeAcrossFullCrossProduct",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 2065,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "ConvertedConfigMinorNarrowingBoundariesCollapseAndDistinguish",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 2105,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "FreshDynamicInstanceIdStringViewRegistersAndCollapses",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 2151,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        },
+        {
+          "suite": "ServiceRegistrationKeyTest",
+          "name": "FreshDynamicInstanceIdRvalueRegistersAndCollapses",
+          "path": "score/socom/test/unit/service_identifier_tests.cpp",
+          "line": 2182,
+          "link_type": "PartiallyVerifies",
+          "result": "passed"
+        }
+      ],
+      "verification_limits": "Partial case links; complete requirement adequacy and implementation review remain human decisions. Synchronization also needs inspection of lock, no allocation/callbacks and caller lifetime obligations."
+    }
+  ],
+  "native_metamodel": "score_docs_as_code 8.2.0; derived_from/satisfied_by; invalid status required until accepted, because draft is unsupported",
+  "source_revision_bound": true
+}

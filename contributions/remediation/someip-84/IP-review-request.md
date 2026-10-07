@@ -14,7 +14,10 @@ under issue #84 remains open.
 
 Responsible contributor: Jefferson Nascimento, `jnsagai@gmail.com`, Eclipse
 `jnascimento6p0`. The current ECA lookup passes; an eventual native PR still needs
-its actual author/committer eligibility checks and the author's DCO certification.
+its actual author/committer eligibility checks. The user-authorized DCO sign-off is
+prepared on local native commit `28b0d84c990a539bd61ec107b2f9e66f9ab741a2`;
+the mail patch and authorization record are retained in this packet. No technical
+or IP approval follows from that sign-off.
 
 Historical implementation was drafted with OpenAI Codex; native Fabro verification
 and repair evidence is retained. Exact historical model revision was not recorded.

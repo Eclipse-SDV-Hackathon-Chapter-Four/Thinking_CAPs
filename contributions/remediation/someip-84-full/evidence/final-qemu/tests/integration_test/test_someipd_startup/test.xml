@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="ITF" errors="0" failures="1" skipped="0" tests="1" time="25.675" timestamp="2026-10-07T16:21:27.771667+00:00" hostname="master"><testcase classname="" name="test_start_someipd" file="../_main/tests/integration_test/someipd_startup.py" line="18" time="2.325"><failure message="AssertionError: ('sh: 1: exec: /opt/someipd: not found&#10;  ', 'exit code: ', 127)&#10;assert False&#10; +  where False = is_running()&#10; +    where is_running = &lt;score.itf.plugins.qemu.qemu_target.QemuAsyncProcess object at 0x75f04bf89640&gt;.is_running">clean_state = &lt;score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x75f04c8954c0&gt;
+
+    def test_start_someipd(clean_state):
+        with ShellProcess(
+            clean_state,
+            "/opt/someipd",
+            args=[
+                "--configuration",
+                "/opt/mw_someip_config.bin",
+            ],
+            env="VSOMEIP_CONFIGURATION=/opt/vsomeip.json",
+        ) as someipd_process:
+            assert someipd_process.is_running(), someipd_process.get_output()
+            time.sleep(1)  # check that daemon does not crash immediately and prints output
+&gt;           assert someipd_process.is_running(), (
+                someipd_process.get_output(),
+                "exit code: ",
+                someipd_process.get_exit_code(),
+            )
+E           AssertionError: ('sh: 1: exec: /opt/someipd: not found
+E             ', 'exit code: ', 127)
+E           assert False
+E            +  where False = is_running()
+E            +    where is_running = &lt;score.itf.plugins.qemu.qemu_target.QemuAsyncProcess object at 0x75f04bf89640&gt;.is_running
+
+tests/integration_test/someipd_startup.py:31: AssertionError</failure></testcase></testsuite></testsuites>

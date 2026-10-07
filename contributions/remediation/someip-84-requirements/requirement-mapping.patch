@@ -1,0 +1,743 @@
+diff --git a/docs/requirements/component/index.rst b/docs/requirements/component/index.rst
+index 07366d102c701de2c11655074aa6811efe21d07e..ad64f3e6d3a69e7803662ddfc58a509990407032 100644
+--- a/docs/requirements/component/index.rst
++++ b/docs/requirements/component/index.rst
+@@ -9,16 +9,19 @@
+    # terms of the Apache License Version 2.0 which is available at
+    # https://www.apache.org/licenses/LICENSE-2.0
+    #
+-   # SPDX-License-Identifier: Apache-2.0
++   # SPDX-License-Identifier: Apache-2.0 AND CC0-1.0
++   # AI Disclosure: Issue #84 requirement mapping assisted by OpenAI Codex.
++   # AI-generated additions are offered under CC0-1.0; pre-existing content
++   # retains Apache-2.0. Human review is pending.
+    # *******************************************************************************
+ 
+ Component Requirements
+ ======================
+ 
+ Component-level requirements for the SOME/IP Gateway. Each component
+-requirement derives from a feature requirement via ``:satisfies:`` and
++requirement derives from a feature requirement via ``:derived_from:`` and
+ is scoped to a specific component (``gatewayd``, ``someipd``, or
+-``network_service``).
++``network_service``, or ``socom``).
+ 
+ Component requirement IDs follow the format:
+ ``comp_req__<component>__<title_snake_case>``
+@@ -34,3 +37,5 @@ Assumption of Use (AoU) requirements use:
+ 
+ .. toctree::
+    :maxdepth: 1
++
++   socom/index
+diff --git a/docs/requirements/component/socom/index.rst b/docs/requirements/component/socom/index.rst
+new file mode 100644
+index 0000000000000000000000000000000000000000..e952f7f57b46ad969a7fa434e7a6fb392b350138
+--- /dev/null
++++ b/docs/requirements/component/socom/index.rst
+@@ -0,0 +1,149 @@
++..
++   # *******************************************************************************
++   # Copyright (c) 2026 Contributors to the Eclipse Foundation
++   #
++   # See the NOTICE file(s) distributed with this work for additional
++   # information regarding copyright ownership.
++   #
++   # This program and the accompanying materials are made available under the
++   # terms of the Apache License Version 2.0 which is available at
++   # https://www.apache.org/licenses/LICENSE-2.0
++   #
++   # SPDX-License-Identifier: Apache-2.0 AND CC0-1.0
++   # AI Disclosure: Generated with OpenAI Codex (model revision unavailable).
++   # AI-generated portions are offered under CC0-1.0; copyrightable curation
++   # retains Apache-2.0. Human review is pending.
++   # *******************************************************************************
++
++SOCom version handling requirements
++===================================
++
++These requirements are **proposals derived from issue #84**, pending committer
++review. The pinned docs-as-code 8.2.0 metamodel permits only ``valid`` or
++``invalid`` requirement status. Consequently, ``invalid`` with the
++``proposal`` tag means not yet accepted here; it does not claim that the
++implemented behavior has failed verification. QM and security NO follow the
++existing SOCom component declaration and remain subject to classification review.
++No approved release applicability or stakeholder acceptance is asserted.
++
++Source: `issue #84 <https://github.com/eclipse-score/inc_someip_gateway/issues/84>`_.
++Design and verification rationale: :doc:`/socom/version_handling`.
++
++.. comp_req:: Canonical service identity
++   :id: comp_req__socom__canonical_identity
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   Service identity equality, ordering and hashing shall depend only on the exact registered service ID and unsigned 16-bit major version; differing minor versions shall share canonical identity.
++
++.. comp_req:: Full offered instance identity
++   :id: comp_req__socom__instance_identity
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   An offered instance identifier shall contain service ID, major version, actual offered unsigned 16-bit minor version and instance ID. Equality, ordering and hashing shall include all four fields.
++
++.. comp_req:: Versioned connector compatibility
++   :id: comp_req__socom__connector_compatibility
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   Full connector contracts shall retain both major and minor versions. A client shall be compatible only with an offer having the same service ID and major version and an offered minor at least its required minor; full contract equality shall distinguish different minors.
++
++.. comp_req:: Single server registration identity
++   :id: comp_req__socom__registration_identity
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   The runtime shall reject simultaneous server registrations sharing service ID, major version and instance ID irrespective of minor version. Disabled servers shall retain registration; destruction shall release it and permit a replacement with a different minor.
++
++.. comp_req:: Optional local discovery filters
++   :id: comp_req__socom__discovery_filters
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   A find request shall match the exact service ID and major version. An absent minor or instance filter shall accept any value of that field; a supplied minor shall be a minimum and a supplied instance shall match exactly, including an empty ID. Major 255 and minor 65535 shall be ordinary values, not wildcard sentinels.
++
++.. comp_req:: Available local offers and actual versions
++   :id: comp_req__socom__available_offers
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   Local discovery shall enumerate only enabled server connectors in the queried runtime, report each actual server minor, and exclude disabled, destroyed and client-only records. Replacing an offer shall report the replacement minor rather than a retained index-key minor.
++
++.. comp_req:: Bounded discovery output
++   :id: comp_req__socom__bounded_discovery
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   Local discovery shall return the total matching count and write at most the supplied capacity, in unspecified order, clearing unused supplied slots. A null output pointer with zero capacity shall count without writing; a null pointer with positive capacity shall violate the precondition.
++
++.. comp_req:: Synchronized local snapshot
++   :id: comp_req__socom__discovery_synchronization
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: feat_req__socom__version_selection
++   :satisfied_by: comp__socom
++
++   Local discovery shall hold the runtime database mutex while enumerating and copying the snapshot, perform no heap allocation and invoke no callbacks. The snapshot shall not reserve a connector or guarantee availability after return. Query IDs shall be registered during setup and caller output shall be valid and exclusively accessible.
++
++Verification limits
++-------------------
++
++Test links below use ``PartiallyVerifies`` because individual cases exercise
++parts of each requirement. Link presence is not proof of complete verification.
++Allocation and callback absence, locking scope, caller obligations and snapshot
++lifetime require implementation/design review in addition to the concurrency
++test. IPC layout preservation and downstream source migration are design
++constraints verified separately; these requirements do not claim wire-level
++or external-runtime interoperability acceptance.
++
++.. needtable::
++   :filter: type == 'comp_req' and 'issue_84' in tags
++   :columns: id;status;derived_from;satisfied_by;source_code_link;testlink
+diff --git a/docs/requirements/feature/index.rst b/docs/requirements/feature/index.rst
+index c5de8d1ca29c66ecd72532777a062a3344fc91f5..fbc7e4ef9084a0c0421b97fd98db255bbaf287fc 100644
+--- a/docs/requirements/feature/index.rst
++++ b/docs/requirements/feature/index.rst
+@@ -9,14 +9,17 @@
+    # terms of the Apache License Version 2.0 which is available at
+    # https://www.apache.org/licenses/LICENSE-2.0
+    #
+-   # SPDX-License-Identifier: Apache-2.0
++   # SPDX-License-Identifier: Apache-2.0 AND CC0-1.0
++   # AI Disclosure: Issue #84 requirement mapping assisted by OpenAI Codex.
++   # AI-generated additions are offered under CC0-1.0; pre-existing content
++   # retains Apache-2.0. Human review is pending.
+    # *******************************************************************************
+ 
+ Feature Requirements
+ ====================
+ 
+ Feature-level requirements for the SOME/IP Gateway. Each feature requirement
+-derives from a stakeholder requirement via ``:satisfies:`` and is scoped to
++derives from a stakeholder requirement via ``:derived_from:`` and is scoped to
+ a specific gateway capability.
+ 
+ Feature requirement IDs follow the format:
+@@ -30,3 +33,5 @@ Feature requirement IDs follow the format:
+ 
+ .. toctree::
+    :maxdepth: 1
++
++   socom/index
+diff --git a/docs/requirements/feature/socom/index.rst b/docs/requirements/feature/socom/index.rst
+new file mode 100644
+index 0000000000000000000000000000000000000000..0051f52c3e81574057ebe9a0b21ef61505a5e765
+--- /dev/null
++++ b/docs/requirements/feature/socom/index.rst
+@@ -0,0 +1,47 @@
++..
++   # *******************************************************************************
++   # Copyright (c) 2026 Contributors to the Eclipse Foundation
++   #
++   # See the NOTICE file(s) distributed with this work for additional
++   # information regarding copyright ownership.
++   #
++   # This program and the accompanying materials are made available under the
++   # terms of the Apache License Version 2.0 which is available at
++   # https://www.apache.org/licenses/LICENSE-2.0
++   #
++   # SPDX-License-Identifier: Apache-2.0 AND CC0-1.0
++   # AI Disclosure: Generated with OpenAI Codex (model revision unavailable).
++   # AI-generated portions are offered under CC0-1.0; copyrightable curation
++   # retains Apache-2.0. Human review is pending.
++   # *******************************************************************************
++
++SOCom version selection
++=======================
++
++These requirements are **proposals derived from issue #84**, pending committer
++review. The pinned docs-as-code 8.2.0 metamodel permits only ``valid`` or
++``invalid`` requirement status. Consequently, ``invalid`` with the
++``proposal`` tag means not yet accepted here; it does not claim that the
++implemented behavior has failed verification. QM and security NO follow the
++existing SOCom component declaration and remain subject to classification review.
++No approved release applicability or stakeholder acceptance is asserted.
++
++.. feat_req:: SOCom version identity and local discovery
++   :id: feat_req__socom__version_selection
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :valid_from: v0.1
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :derived_from: stkh_req__someip_gw__local_version_selection
++   :satisfied_by: feat__someip_gateway
++
++   The gateway middleware abstraction shall separate canonical service identity
++   from full offered-instance identity and full connector contracts, and expose
++   bounded local discovery with optional minimum-minor and instance filters.
++
++   Interpreting a supplied minor as a minimum compatible version preserves the
++   existing client/server rule; this interpretation and the new public discovery
++   API are design proposals requiring committer acceptance.
+diff --git a/docs/requirements/stakeholder.rst b/docs/requirements/stakeholder.rst
+index 28dbc44e85ee0fe5999a8d39b1fc7b802341fb57..4df08a26dc4f0496055ac7b01b3fab2c7d45059e 100644
+--- a/docs/requirements/stakeholder.rst
++++ b/docs/requirements/stakeholder.rst
+@@ -9,7 +9,10 @@
+    # terms of the Apache License Version 2.0 which is available at
+    # https://www.apache.org/licenses/LICENSE-2.0
+    #
+-   # SPDX-License-Identifier: Apache-2.0
++   # SPDX-License-Identifier: Apache-2.0 AND CC0-1.0
++   # AI Disclosure: Issue #84 requirement mapping assisted by OpenAI Codex.
++   # AI-generated additions are offered under CC0-1.0; pre-existing content
++   # retains Apache-2.0. Human review is pending.
+    # *******************************************************************************
+ 
+ Stakeholder Requirements
+@@ -45,3 +48,34 @@ feature and component requirements derive from these.
+    :doc:`/tc8_conformance/requirements`) derives from this stakeholder
+    requirement: TC8 wire-level conformance testing is the verification
+    activity for this interoperability need.
++
++SOCom version selection proposal
++--------------------------------
++
++These requirements are **proposals derived from issue #84**, pending committer
++review. The pinned docs-as-code 8.2.0 metamodel permits only ``valid`` or
++``invalid`` requirement status. Consequently, ``invalid`` with the
++``proposal`` tag means not yet accepted here; it does not claim that the
++implemented behavior has failed verification. QM and security NO follow the
++existing SOCom component declaration and remain subject to classification review.
++No approved release applicability or stakeholder acceptance is asserted.
++
++.. stkh_req:: Unambiguous local service version selection
++   :id: stkh_req__someip_gw__local_version_selection
++   :status: invalid
++   :version: 1
++   :tags: proposal, issue_84
++   :valid_from: v0.1
++   :safety: QM
++   :security: NO
++   :reqtype: Functional
++   :rationale: Issue 84 asks for separate service and full instance identities and optional instance/minor discovery filters; application users need predictable local version selection.
++
++   Application developers shall be able to distinguish a service contract from
++   an offered instance and request compatible instances in the local SOCom
++   runtime using an exact service ID and major version.
++
++   This is a proposed module-local stakeholder need, not an existing accepted
++   S-CORE stakeholder requirement. ``valid_from`` is a proposed applicability
++   window required by the metamodel, not release acceptance. Network discovery
++   and wire-level TC8 conformance remain outside this requirement.
+diff --git a/score/config/mw_someip_config.fbs b/score/config/mw_someip_config.fbs
+index 3149aa59466ffcb12d14fae79b0e8aced453f59f..794063c320020069675c2eb9a2e5b9fceddd1895 100644
+--- a/score/config/mw_someip_config.fbs
++++ b/score/config/mw_someip_config.fbs
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ namespace score.mw_someip_config;
+ 
+ /// Top-level element of the gateway configuration
+diff --git a/score/socom/BUILD b/score/socom/BUILD
+index 96e94cbc0e697c074927142cde2c2fed745a3055..e1c0b623c687c777fa5f66c24f9b6125877bba5e 100644
+--- a/score/socom/BUILD
++++ b/score/socom/BUILD
+@@ -68,3 +68,14 @@ cc_library(
+         "@googletest//:gtest_for_library",
+     ],
+ )
++
++# Explicit implementation inputs for the native docs requirement source linker.
++filegroup(
++    name = "version_handling_trace",
++    srcs = [
++        "impl/runtime_impl.cpp",
++        "impl/service_identifier.hpp",
++        "service_interface_identifier.hpp",
++    ],
++    visibility = ["//score/socom/docs:__pkg__"],
++)
+diff --git a/score/socom/docs/BUILD b/score/socom/docs/BUILD
+index d0ae3749967afa28357503159efdb40d7824185f..5ff03f1a2665a8b0aa80e4abfc8b376d4013241e 100644
+--- a/score/socom/docs/BUILD
++++ b/score/socom/docs/BUILD
+@@ -17,6 +17,7 @@ load("@score_docs_as_code//:docs.bzl", "docs_bundle")
+ # load() of @score_docs_as_code.
+ docs_bundle(
+     name = "docs_bundle",
++    code_targets = ["//score/socom:version_handling_trace"],
+     source_dir = "",
+     visibility = ["//visibility:public"],
+ )
+diff --git a/score/socom/docs/version_handling.rst b/score/socom/docs/version_handling.rst
+index fb6e587f0b4f028dae4860e3d8cb787e38e1ddfd..d3fea9edf505cf1a025ef2507510051f77ce94b4 100644
+--- a/score/socom/docs/version_handling.rst
++++ b/score/socom/docs/version_handling.rst
+@@ -23,7 +23,12 @@ This design implements the three use cases proposed in
+ It is a proposal for committer review, not an accepted change to native
+ requirements. The existing ``comp__socom`` component belongs to
+ ``feat__someip_gateway`` and is classified QM in its component declaration.
+-No native requirement ID or acceptance status is introduced here.
++The proposed native hierarchy and implementation/test trace are defined in
++:doc:`/requirements/component/socom/index` and
++:doc:`/requirements/feature/socom/index`. Requirements carry ``invalid``
++status and ``proposal`` tags until reviewed, as the pinned metamodel has no
++``draft`` requirement status. The separate module-local stakeholder proposal
++is in :doc:`/requirements/stakeholder`.
+ 
+ Identity and compatibility
+ --------------------------
+@@ -113,3 +118,27 @@ regressions continue to run. Native build/test, sanitizer, documentation and
+ integration evidence are recorded against the submitted revision in the review
+ packet. Measurements do not replace committer design review, required IP review
+ or CI acceptance.
++
++Requirement to design mapping
++-----------------------------
++
++* :need:`comp_req__socom__canonical_identity`: canonical identity and database key.
++* :need:`comp_req__socom__instance_identity`: offered-instance result model.
++* :need:`comp_req__socom__connector_compatibility`: full connector contracts and
++  existing client/server compatibility rule.
++* :need:`comp_req__socom__registration_identity`: internal registration key and
++  lifetime, distinct from the public offered-instance identifier.
++* :need:`comp_req__socom__discovery_filters`: typed optional filters and ordinary
++  numeric version boundaries.
++* :need:`comp_req__socom__available_offers`: enabled local offers and actual minors.
++* :need:`comp_req__socom__bounded_discovery`: total count, caller storage bounds,
++  clearing and output preconditions.
++* :need:`comp_req__socom__discovery_synchronization`: mutex scope, allocation and
++  callback constraints, setup IDs and snapshot/caller lifetime obligations.
++
++The first five behaviors follow the issue's version model and preserved
++compatibility behavior. Synchronous snapshots, enabled-only enumeration,
++bounded caller storage and minimum-minor interpretation are the implementation's
++explicit design choices; acceptance of these choices remains with committers.
++The eight existing ``comp_req__tc8_conformance__*`` requirements concern network
++protocol verification and are not claimed as satisfied by these local tests.
+diff --git a/score/socom/impl/runtime_impl.cpp b/score/socom/impl/runtime_impl.cpp
+index 3260e3f19ef8bf604baf7faefb5bea2256229d3a..07839eb8039014cb6ce37b5e2a6289e4112062ca 100644
+--- a/score/socom/impl/runtime_impl.cpp
++++ b/score/socom/impl/runtime_impl.cpp
+@@ -133,6 +133,7 @@ bool is_minor_version_compatible(Service_interface const& server, Service_interf
+     return client.version.minor <= server.version.minor;
+ }
+ 
++// req-Id: comp_req__socom__connector_compatibility
+ bool is_interface_compatible(Service_interface const& server, Service_interface const& client) {
+     // Defensive programming. This function is called in the two register_connector functions.
+     // First, a record is loaded depending on service interface and instance. The record ensures
+@@ -321,6 +322,7 @@ Service_record& Service_database::get_record(Service_interface const& interface,
+     return record;
+ }
+ 
++// req-Id: comp_req__socom__available_offers, comp_req__socom__bounded_discovery
+ std::size_t Service_database::find_service(Find_service_request const& request,
+                                            std::optional<Service_instance_identifier>* results,
+                                            std::size_t capacity) const {
+@@ -583,6 +585,7 @@ void Runtime_impl::remove_from_service_requests(Service_interface_definition con
+     cleanup(m_service_requests, std::make_tuple(configuration, instance));
+ }
+ 
++// req-Id: comp_req__socom__discovery_synchronization
+ std::size_t Runtime_impl::find_service(Find_service_request const& request,
+                                        std::optional<Service_instance_identifier>* results,
+                                        std::size_t capacity) const {
+diff --git a/score/socom/impl/service_identifier.hpp b/score/socom/impl/service_identifier.hpp
+index 334d4efcce8b452b7799f5df91aa58a00993832e..5c4f22d719990537057f4f300ae70e6356eaf0f7 100644
+--- a/score/socom/impl/service_identifier.hpp
++++ b/score/socom/impl/service_identifier.hpp
+@@ -29,6 +29,7 @@ namespace score::socom {
+ /// For that check the interface is reduced to its service id and major version; the minor version
+ /// is a compatibility property of the instance and is intentionally not part of the identity (see
+ /// the operator< definition). This matches the canonical Service_database index.
++// req-Id: comp_req__socom__registration_identity
+ struct Service_registration_key final {
+     Service_interface interface;
+     Service_instance instance;
+diff --git a/score/socom/service_interface_identifier.hpp b/score/socom/service_interface_identifier.hpp
+index f27c238b85f9f0d14ad9df8f121a7a00d64e35d8..080625d8bbf159ee770aec2072fcd9af66d90252 100644
+--- a/score/socom/service_interface_identifier.hpp
++++ b/score/socom/service_interface_identifier.hpp
+@@ -78,6 +78,7 @@ inline bool operator<(Service_instance const& lhs, Service_instance const& rhs)
+ 
+ /// \brief Identity of a service: its ID and exact major version.
+ /// Minor versions describe compatible instances, not different services.
++// req-Id: comp_req__socom__canonical_identity
+ struct Service_interface_identifier final {
+     using Id = Registry_string_view;
+     Id id;
+@@ -111,6 +112,7 @@ inline bool operator<(Service_interface_identifier const& lhs,
+ 
+ /// \brief Versioned connector contract: required minor for a client, offered minor for a server.
+ /// Use get_identifier() when indexing services independently of their minor version.
++// req-Id: comp_req__socom__connector_compatibility
+ struct Service_interface {
+    public:
+     /// \brief Alias for a service interface identifier.
+@@ -203,6 +205,7 @@ inline bool operator<(Service_interface const& lhs, Service_interface const& rhs
+ }
+ 
+ /// \brief An offered instance, including its actual minor version.
++// req-Id: comp_req__socom__instance_identity
+ struct Service_instance_identifier final {
+     Service_interface_identifier interface;
+     std::uint16_t minor_version;
+@@ -224,6 +227,7 @@ inline bool operator<(Service_instance_identifier const& lhs,
+ /// \brief Discovery filter with an exact service/major and optional minimum minor and instance.
+ /// An absent minor accepts every offered minor; a present minor requires offer >= request.
+ /// There is no wildcard-major sentinel. An empty instance ID is a concrete ID, not a wildcard.
++// req-Id: comp_req__socom__discovery_filters
+ struct Find_service_request final {
+     Service_interface_identifier interface;
+     std::optional<std::uint16_t> minor_version;
+diff --git a/score/socom/test/unit/interface_compatibility_tests.cpp b/score/socom/test/unit/interface_compatibility_tests.cpp
+index 909d5706231357ef1f28ad6ae5ea0d5e794cab61..f30e6cadbe738cf0f9abedf439b7d36e7bf865ec 100644
+--- a/score/socom/test/unit/interface_compatibility_tests.cpp
++++ b/score/socom/test/unit/interface_compatibility_tests.cpp
+@@ -51,6 +51,12 @@ using Interface_configuration_and_expected_connection =
+ class InterfaceCompatibilityTest
+     : public ::testing::TestWithParam<Interface_configuration_and_expected_connection> {
+    protected:
++    void SetUp() override {
++        RecordProperty("TestType", "requirements-based");
++        RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes");
++        RecordProperty("PartiallyVerifies", "comp_req__socom__connector_compatibility");
++    }
++
+     Service_instance const instance{"VersionCompatibilityTest", Literal_tag{}};
+ };
+ 
+diff --git a/score/socom/test/unit/runtime_tests.cpp b/score/socom/test/unit/runtime_tests.cpp
+index cdff000328634c8d253ef851e5d1c699118f380e..0fa0a2e2e8b1f244f1b7b90e1e94c78aa4401c6f 100644
+--- a/score/socom/test/unit/runtime_tests.cpp
++++ b/score/socom/test/unit/runtime_tests.cpp
+@@ -261,12 +261,12 @@ class RuntimeTest : public SingleConnectionTest {
+     ///        while a different component is a distinct key - and from the design of the
+     ///        registration-key lifetime in Runtime_impl.
+     ///
+-    ///        TestType and the PartiallyVerifies/FullyVerifies links are deliberately NOT recorded:
+-    ///        this bounded slice has no verified native requirement or interface identifier to link
+-    ///        to and inventing one is prohibited (same rationale as service_identifier_tests.cpp).
++    ///        Links refer to the proposed native registration requirement and verify parts only.
+     void record_registration_key_metadata(std::string const& description) {
+         RecordProperty("DerivationTechnique", "design-analysis,equivalence-classes");
+         RecordProperty("Description", description);
++        RecordProperty("TestType", "requirements-based");
++        RecordProperty("PartiallyVerifies", "comp_req__socom__registration_identity");
+     }
+ };
+ 
+diff --git a/score/socom/test/unit/service_discovery_tests.cpp b/score/socom/test/unit/service_discovery_tests.cpp
+index d6ba3c56f1c2364317ae0d0d1816214736f78fc3..8b6fb3b65d80836e6f2e080b04dd60299b5066d4 100644
+--- a/score/socom/test/unit/service_discovery_tests.cpp
++++ b/score/socom/test/unit/service_discovery_tests.cpp
+@@ -34,6 +34,10 @@ namespace score::socom {
+ namespace {
+ 
+ TEST(ServiceIdentityTest, MinorVersionsShareCanonicalIdentityAndHash) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies",
++                   "comp_req__socom__canonical_identity, comp_req__socom__connector_compatibility");
+     Service_interface const old_contract{std::string_view{"service"}, {1U, 0U}};
+     Service_interface const new_contract{std::string_view{"service"}, {1U, 65535U}};
+     EXPECT_EQ(old_contract.get_identifier(), new_contract.get_identifier());
+@@ -44,6 +48,9 @@ TEST(ServiceIdentityTest, MinorVersionsShareCanonicalIdentityAndHash) {
+ }
+ 
+ TEST(ServiceIdentityTest, DifferentIdsAndMajorsRemainSeparate) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__canonical_identity");
+     Service_interface_identifier const first{std::string_view{"service"}, 1U};
+     Service_interface_identifier const other_id{std::string_view{"other"}, 1U};
+     Service_interface_identifier const other_major{std::string_view{"service"}, 2U};
+@@ -54,6 +61,9 @@ TEST(ServiceIdentityTest, DifferentIdsAndMajorsRemainSeparate) {
+ }
+ 
+ TEST(ServiceIdentityTest, AllConstructorsUseRegisteredStringIdentity) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__canonical_identity");
+     auto const registered = service_id_registry().insert(std::string_view{"service"}).first;
+     Service_interface_identifier const by_registry{registered, 1U};
+     Service_interface_identifier const by_view{std::string_view{"service"}, 1U};
+@@ -66,6 +76,9 @@ TEST(ServiceIdentityTest, AllConstructorsUseRegisteredStringIdentity) {
+ }
+ 
+ TEST(ServiceIdentityTest, FullInstanceIdentityIncludesActualMinorAndInstance) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__instance_identity");
+     Service_interface_identifier const service{std::string_view{"service"}, 1U};
+     Service_instance const instance{std::string_view{"first"}};
+     Service_instance_identifier const first{service, 0U, instance};
+@@ -85,6 +98,9 @@ class FindServiceCompatibilityTest
+     : public ::testing::TestWithParam<std::tuple<std::uint16_t, std::uint16_t>> {};
+ 
+ TEST_P(FindServiceCompatibilityTest, MinimumMinorUsesCompatibleOfferSemantics) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_filters");
+     auto const requested = std::get<0>(GetParam());
+     auto const offered = std::get<1>(GetParam());
+     Service_interface_identifier const service{std::string_view{"service"}, 1U};
+@@ -99,6 +115,9 @@ INSTANTIATE_TEST_SUITE_P(Boundaries, FindServiceCompatibilityTest,
+                                             ::testing::Values<std::uint16_t>(0U, 1U, 42U, 65535U)));
+ 
+ TEST(FindServiceRequestTest, MissingFiltersAcceptEveryMinorAndInstance) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_filters");
+     Service_interface_identifier const service{std::string_view{"service"}, 1U};
+     Find_service_request const request{service, std::nullopt, std::nullopt};
+     EXPECT_TRUE(request.matches({service, 0U, Service_instance{std::string_view{""}}}));
+@@ -106,6 +125,9 @@ TEST(FindServiceRequestTest, MissingFiltersAcceptEveryMinorAndInstance) {
+ }
+ 
+ TEST(FindServiceRequestTest, IdAndMajorMustMatchExactlyIncluding255) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_filters");
+     Find_service_request const request{
+         {std::string_view{"service"}, 255U}, std::nullopt, std::nullopt};
+     EXPECT_TRUE(request.matches(
+@@ -117,6 +139,9 @@ TEST(FindServiceRequestTest, IdAndMajorMustMatchExactlyIncluding255) {
+ }
+ 
+ TEST(FindServiceRequestTest, EmptyInstanceFilterIsAnExactId) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_filters");
+     Service_interface_identifier const service{std::string_view{"service"}, 1U};
+     Find_service_request const request{service, std::nullopt,
+                                        Service_instance{std::string_view{""}}};
+@@ -151,6 +176,10 @@ class FindServiceRuntimeTest : public ::testing::Test {
+ };
+ 
+ TEST_F(FindServiceRuntimeTest, NoOffersReturnsZeroAndClearsOldSlots) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies",
++                   "comp_req__socom__available_offers, comp_req__socom__bounded_discovery");
+     results[0] =
+         Service_instance_identifier{identity, 7U, Service_instance{std::string_view{"stale"}}};
+     EXPECT_EQ(0U, find());
+@@ -158,6 +187,10 @@ TEST_F(FindServiceRuntimeTest, NoOffersReturnsZeroAndClearsOldSlots) {
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, ReportsActualMinorOfEachInstanceAndIgnoresOtherServices) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies",
++                   "comp_req__socom__available_offers, comp_req__socom__instance_identity");
+     add_server(2U, "first");
+     add_server(7U, "second");
+     add_server(9U, "first", 2U);
+@@ -174,6 +207,9 @@ TEST_F(FindServiceRuntimeTest, ReportsActualMinorOfEachInstanceAndIgnoresOtherSe
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, AppliesMinorAndInstanceFiltersTogether) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_filters");
+     add_server(2U, "first");
+     add_server(7U, "second");
+     ASSERT_EQ(1U, find(3U));
+@@ -186,6 +222,9 @@ TEST_F(FindServiceRuntimeTest, AppliesMinorAndInstanceFiltersTogether) {
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, CountOnlyAndTruncationReportAllMatchingOffers) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__bounded_discovery");
+     add_server(2U, "first");
+     add_server(7U, "second");
+     Find_service_request const request{identity, std::nullopt, std::nullopt};
+@@ -199,6 +238,9 @@ TEST_F(FindServiceRuntimeTest, CountOnlyAndTruncationReportAllMatchingOffers) {
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, DisabledAndDestroyedServersAreNotDiscoverable) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__available_offers");
+     Server_service_interface_definition const configuration{
+         Service_interface{std::string_view{"service"}, {1U, 2U}}, to_num_of_methods(1U),
+         to_num_of_events(1U)};
+@@ -215,6 +257,10 @@ TEST_F(FindServiceRuntimeTest, DisabledAndDestroyedServersAreNotDiscoverable) {
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, ReplacingAnOfferUsesTheNewMinorInsteadOfTheIndexKey) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies",
++                   "comp_req__socom__available_offers, comp_req__socom__registration_identity");
+     add_server(2U, "first");
+     ASSERT_EQ(1U, find());
+     EXPECT_EQ(2U, results[0]->minor_version);
+@@ -226,6 +272,9 @@ TEST_F(FindServiceRuntimeTest, ReplacingAnOfferUsesTheNewMinorInsteadOfTheIndexK
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, MinimumAndMaximumMinorHaveNoSentinelMeaning) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_filters");
+     add_server(0U, "first");
+     add_server(std::numeric_limits<std::uint16_t>::max(), "second");
+     EXPECT_EQ(2U, find(0U));
+@@ -234,6 +283,9 @@ TEST_F(FindServiceRuntimeTest, MinimumAndMaximumMinorHaveNoSentinelMeaning) {
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, ClientOnlyRecordDoesNotAdvertiseAnOfferOrItsMinor) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__available_offers");
+     Client_connector_callbacks_mock client_callbacks;
+     Service_interface_definition const configuration{
+         Service_interface{std::string_view{"service"}, {1U, 0U}}};
+@@ -249,6 +301,9 @@ TEST_F(FindServiceRuntimeTest, ClientOnlyRecordDoesNotAdvertiseAnOfferOrItsMinor
+ }
+ 
+ TEST_F(FindServiceRuntimeTest, SnapshotCanRunWhileOffersAreRegisteredAndDestroyed) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__discovery_synchronization");
+     std::atomic<bool> stop{false};
+     std::atomic<std::size_t> observations{0U};
+     Find_service_request const request{identity, std::nullopt, std::nullopt};
+@@ -283,6 +338,9 @@ TEST_F(FindServiceRuntimeTest, SnapshotCanRunWhileOffersAreRegisteredAndDestroye
+ using FindServiceRuntimeDeathTest = FindServiceRuntimeTest;
+ 
+ TEST_F(FindServiceRuntimeDeathTest, InvalidOutputStorageIsRejected) {
++    RecordProperty("TestType", "requirements-based");
++    RecordProperty("DerivationTechnique", "boundary-values,equivalence-classes,design-analysis");
++    RecordProperty("PartiallyVerifies", "comp_req__socom__bounded_discovery");
+     Find_service_request const request{identity, std::nullopt, std::nullopt};
+     EXPECT_DEATH((void)runtime->find_service(request, nullptr, 1U), "");
+ }
+diff --git a/score/socom/test/unit/service_identifier_tests.cpp b/score/socom/test/unit/service_identifier_tests.cpp
+index 8a3d1af83e1913ef3e2fafa059417ea255380bfe..c55a2bf8dd60faca3f531eb75c032d8929c3fa0c 100644
+--- a/score/socom/test/unit/service_identifier_tests.cpp
++++ b/score/socom/test/unit/service_identifier_tests.cpp
+@@ -60,14 +60,9 @@ class ServiceRegistrationKeyTest : public Test {
+             "Service_registration_key duplicate-server registration key (issue #84): the key "
+             "identity is (instance, service id, major) and the minor version is not part of it.");
+ 
+-        // TestType and the PartiallyVerifies/FullyVerifies links are deliberately NOT recorded.
+-        // This bounded slice has no verified native requirement or interface identifier to link
+-        // to: docs/requirements/component and docs/requirements/feature define no socom
+-        // requirement, and the only native requirement identifiers in the repository
+-        // (comp_req__tc8_conformance__*, feat_req__tc8_conformance__*) scope TC8 wire-level
+-        // conformance, not socom registration. gd_req__verification_checks_extended forbids an
+-        // interface-test / requirements-based TestType without such a link, and inventing an
+-        // identifier is prohibited. The missing identity is therefore recorded, not fabricated.
++        // Proposed native requirement; no acceptance or complete verification is implied.
++        RecordProperty("TestType", "requirements-based");
++        RecordProperty("PartiallyVerifies", "comp_req__socom__registration_identity");
+     }
+ 
+     static constexpr std::string_view service_id_a{"TestInterface"};
