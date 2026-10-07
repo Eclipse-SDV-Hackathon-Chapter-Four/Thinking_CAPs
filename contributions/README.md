@@ -5,18 +5,18 @@ Eclipse SDV Hackathon submission. Inventory initially captured on **2026-10-04**
 
 | Project / issue | Contribution | Local result | Upstream / next action |
 | --- | --- | --- | --- |
-| [SOME/IP #84](issues/eclipse-score/inc_someip_gateway/84/README.md) | Reject duplicate SOCom servers across minor versions | Scoped fix verified; local user approval recorded; patch and full portable evidence retained | Issue open; prepared upstream PR body; broader identifier/discovery work remains |
+| [SOME/IP #84](remediation/someip-84-publication/README.md) | Full identity/discovery implementation with eight proposed native component requirements | Full build and 722 SOCom cases pass; 177 linked cases; all 243 code/build headers checked | [Draft PR #322](https://github.com/eclipse-score/inc_someip_gateway/pull/322) for user review; ECA passed; requirement/IP review, integration and CI pending |
 | [Lifecycle #704](issues/eclipse-score/lifecycle/704/README.md) | Generate three communication configurations from shared definitions | Fabro/DeepSeek Flash patch verified; 113 native cases pass; scoped local owner approval recorded | Issue open; upstream-template PR body and title prepared; upstream review/CI pending |
 | [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Five patches recovered; native validation pending | [Native PR #40](https://github.com/eclipse-score/inc_diagnostics/pull/40) open; actual ECA check fails; author DCO, IP disposition and native validation pending |
 | [Communication #1265](issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch; six Linux integration cases passed; agent engineering review complete, retain pastey0.2.3 recommended | Issue open; exact compiler qualification/adoption and human acceptance pending; historical evidence preserved |
-| [Communication #1167](communication-1167/README.md) | Dedicated COM API idempotency integration test | Agent review complete; 503 full-suite tests pass, 6 skipped; 204 inherited copyright findings retained | Issue open; original hackathon-source branch push recorded; native PR and formal acceptance pending |
-| [S-CORE #3115](issues/eclipse-score/score/3115/README.md) | AI SDLC / SpecKit tooling evaluation using `s-core_sw_fabric` experience | Current native DR prepared; 925 existing needs unchanged; fresh checks retain one inherited docs failure | Issue open; draft PR #3307 offered for PR #3140; assignee review requested; docs CI, comparative pilots and acceptance pending |
-| [S-CORE #2850](issues/eclipse-score/score/2850/README.md) | Documentation chatbot retrieval/provenance foundation | Current source, design records, fresh deterministic checks and historical release evidence retained | Issue open; scoped proposal only; native harness adapter and maintainer agreement pending |
+| [Communication #1167](communication-1167/README.md) | COM API idempotency integration test and repository code headers | Six non-QNX fork Host jobs pass; 507 GCC15 tests; zero new-test lint findings. Separate header repair: 2,367 code paths, 91 repaired files, zero code findings; 136 non-code findings remain | [PR #1335](https://github.com/eclipse-score/communication/pull/1335) and [PR #1341](https://github.com/eclipse-score/communication/pull/1341) open; ECA passed; native workflow approval, code-owner review, copyright handling and merge queue pending |
+| [S-CORE #3115](issues/eclipse-score/score/3115/README.md) | AI SDLC / SpecKit tooling evaluation using `s-core_sw_fabric` experience | Explicit selection/rationale for all eight tools; native version 3 and complete merge packet; local CI passes | PR #3307 ready for review; one code owner approval required; hosted workflows await maintainer approval; native acceptance pending |
+| [S-CORE #2850](issues/eclipse-score/score/2850/README.md) | Native assurance harness MVP | Native adapter, rules/blocks, 30 search + 10 held-out scenarios, full traces, CI and review packet | Stacked adapter follow-up selected; #628 integration, inherited typing debt and human acceptance pending |
 | [CDA #543](issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md) | Replace Option error paths with Result | Patch recovered; snapshot and manifest bound; native testing pending | [Native PR #601](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601) open; actual ECA check fails; review and current-revision verification pending |
-| [Communication #1236](issues/eclipse-score/communication/1236/README.md) | Buildifier CI enforcement | Original draft/recovery retained; 27 baseline-identical lint findings remain | Imported; human review and native lint cleanup pending |
-| [Communication #1031](issues/eclipse-score/communication/1031/README.md) | AoU visibility and traceability | Historical scoped checks retained | Imported; production Config Management/FMEA integration and review pending |
-| [Communication #751](issues/eclipse-score/communication/751/README.md) | CodeQL production-source completeness | Latest correction: 502 tests pass, 6 skipped; failures/history retained | Imported; copyright, full query analysis, QNX, coverage and review pending |
-| [Communication #1104](issues/eclipse-score/communication/1104/README.md) | CodeQL finding locations | Exact-scope baseline root cause and draft normalizer retained | Imported; normalizer hides placeholders without restoring locations; review pending |
+| [Communication #1236](issues/eclipse-score/communication/1236/README.md) | Buildifier CI enforcement | Native warnings repaired; final pinned lint and regression fixtures pass | [PR packet prepared](communication-followup-20261007/README.md); native CI/codeowner review pending |
+| [Communication #1031](issues/eclipse-score/communication/1031/README.md) | AoU visibility and traceability | Public API/fixture and real provider consumption verified | [Companion proposal](communication-followup-20261007/pr-config-management.md); full consumer safety integration blocked on owner decisions |
+| [Communication #751](issues/eclipse-score/communication/751/README.md) | CodeQL production-source completeness | Current 516/516 inputs hash-match; 218 queries/reporting pass; 508 host tests pass, 7 skipped | [Verification packet](communication-followup-20261007/verification.md); headers verified; hosted/platform CI and review pending |
+| [Communication #1104](issues/eclipse-score/communication/1104/README.md) | CodeQL finding locations | Native query restores links; 501 findings preserved and 281 empty URI occurrences removed | [Query fix and full current-suite evidence](communication-followup-20261007/README.md); native review pending |
 
 The first two rows are completed local implementations with retained measurements.
 Upstream review, merge and issue closure have their own statuses. The diagnostics row
@@ -25,6 +25,14 @@ The communication assessment was added on **2026-10-06** and is excluded from co
 The tooling evaluation packet was added on **2026-10-07** and is a proposed assessment,
 excluded from completed/accepted fix counts. Its scoped offline verifier checks the new
 packet and referenced native evidence independently. The initial repository-wide verifier failure is retained in the packet as history.
+
+The [qualification and adoption decision packet](assessment-decisions-20261007/README.md)
+sets out proposed dispositions, missing evidence and reviewer roles for #1265 and the
+assessment-only entries, including adjacent upstream-owned/unimplemented scopes.
+The user [accepted the prepared packet](assessment-decisions-20261007-acceptance.json)
+on **2026-10-07**. Native qualification/adoption and engineering acceptance remain
+pending; these entries contribute no completed-fix claim.
+
 The 2026-10-07 import reconciles registry metadata with frozen snapshots and restores
 a missing, exact-hash original Bazel binary; the current full registry verifier passes.
 The inventory covers identifiable contributions in the inspected local factory
@@ -36,6 +44,8 @@ handoffs and this repository; add other completed work as its artifacts are reco
 - `issues/<organization>/<project>/<issue>/`: readable record, upstream snapshot,
   provenance, original patches/logs/licenses and SHA-256 artifact manifest.
 - [templates/issue.md](templates/issue.md): reusable record for additional issues.
+- [Reusable author DCO](DCO.md): Jefferson's signing identity, commit trailer and
+  the complete DCO 1.1 text for contribution-specific certification.
 - [Evidence gaps](EVIDENCE_GAPS.md): references still needing original artifacts.
 - [Native fault-storage write-through packet](fault-storage-write-through/README.md):
   new local preparation, separate from the historic completed-fix inventory above;
@@ -48,6 +58,8 @@ handoffs and this repository; add other completed work as its artifacts are reco
   contribution of a diagnostic gateway router module for Eclipse OpenBSW (issue draft,
   signed-off patch, PR description, gate evidence); not yet submitted, no upstream issue yet.
 - [Submission checklist](submission/README.md) and [hackathon PR draft](submission/hackathon-pr-description.md).
+- [Assessment decisions](assessment-decisions-20261007/README.md): baseline-bound proposals,
+  qualification/adoption inputs, empty acceptance-record template and offline verifier.
 
 ## Verify the evidence
 
@@ -123,3 +135,18 @@ the initial audit remain historical. All unresolved submissions are marked
 The verifier checks recovered patch series and separately recorded submitted
 heads. It also verifies the restored [OpenBSW transportRouter packet](openbsw-transport-router/README.md)
 and native fault-storage packet. Neither is claimed merged or accepted.
+
+
+## Rust API readiness follow-up — 2026-10-07
+
+[Communication #1261, #250 and #560 completion packet](issues/eclipse-score/communication/rust-api-queue/completion-20261007/README.md)
+contains the integrated configured-LoLa contribution, portable source artifacts,
+PR draft and exact-source verification results. All 40 changed code files carry
+the native Apache-2.0 notices and pass the modified-file checker. The full host
+suite passes 510 targets and ASan passes 509, with native skips recorded. The
+TSan finding, inherited full-tree notice findings, incomplete macro-test Clippy
+coverage, document findings, QCC and human/IP/hosted acceptance remain pending.
+The [preceding readiness review](issues/eclipse-score/communication/rust-api-queue/readiness-review-20261007/README.md)
+and original proposals remain historical evidence. The contribution remains a
+proposal, excluded from accepted-fix counts; broader unconfigured discovery in
+#1261 remains open.

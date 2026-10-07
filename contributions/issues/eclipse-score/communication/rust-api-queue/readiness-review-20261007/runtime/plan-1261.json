@@ -1,0 +1,51 @@
+{
+  "checks": [
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Native BUILD/CI and issue1261 (Claude correction under explicit user instruction); no QNX, no automatic acceptance.",
+      "reason": "Unit/compatibility: runtime_test (restored MergeAdditionalConfiguration, cache invalidation), configuration, LoLa stream backend units (coalescing, Weak ownership, deterministic assertions), concept tests.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+        "//score/mw/com/impl/configuration:configuration_test",
+        "//score/mw/com/impl:runtime_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Native BUILD/CI and issue1261 (Claude correction under explicit user instruction); no QNX, no automatic acceptance.",
+      "reason": "Existing sync/async/FindAny integration compatibility plus the dedicated phased heterogeneous stream integration.",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics",
+        "//score/mw/com/test/basic_rust_api/all_services_stream/integration_test:test_com_api_all_services_stream"
+      ]
+    },
+    {
+      "config": "linux_x64_gcc_15",
+      "kind": "doctest",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Native BUILD/CI and issue1261 (Claude correction under explicit user instruction); no QNX, no automatic acceptance.",
+      "reason": "Native compatibility checks for the actual changed heterogeneous discovery subjects; dedicated new-stream integration required separately.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "lint",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Native BUILD/CI and issue1261 (Claude correction under explicit user instruction); no QNX, no automatic acceptance.",
+      "reason": "Native compatibility checks for the actual changed heterogeneous discovery subjects; dedicated new-stream integration required separately.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ]
+    }
+  ]
+}

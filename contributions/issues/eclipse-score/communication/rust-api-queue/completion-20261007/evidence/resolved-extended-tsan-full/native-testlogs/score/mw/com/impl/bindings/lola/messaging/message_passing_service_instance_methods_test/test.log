@@ -1,0 +1,326 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/bindings/lola/messaging:message_passing_service_instance_methods_test
+-----------------------------------------------------------------------------
+==12==WARNING: ThreadSanitizer: memory layout is incompatible, possibly due to high-entropy ASLR.
+Re-execing with fixed virtual address space.
+N.B. reducing ASLR entropy is preferable.
+==12==Installed the sigaction for signal 11
+==12==Installed the sigaction for signal 7
+==12==Installed the sigaction for signal 8
+ThreadSanitizer: reading suppressions file at /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/2941/execroot/_main/bazel-out/k8-fastbuild-tsan/bin/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.runfiles/score_cpp_policies+/sanitizers/suppressions/tsan.supp
+***** Running under ThreadSanitizer v3 (pid 12) *****
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 68 tests from 15 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m4 tests from MessagePassingServiceInstanceLocalCallMethodTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingWithSelfPidCallsMethodHandlerLocally
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingWithSelfPidCallsMethodHandlerLocally (1 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingWillFailIfRegisteredUidDoesNotMatchProcessUid
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/07 19:30:42.1442667 1636809071 000 ECU1 NONE lola log error verbose 1 Could not invoke method call handler because uid of proxy calling method is not the same one that registered the handler. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingWillFailIfRegisteredUidDoesNotMatchProcessUid (1 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingWithProxyIdentifierThatWasNeverRegisteredReturnsError
+2026/10/07 19:30:42.1442668 1636809077 000 ECU1 NONE lola log error verbose 1 Method call handler has not been registered for this ProxyMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingWithProxyIdentifierThatWasNeverRegisteredReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingAfterMethodHandlerScopeHasExpiredReturnsError
+2026/10/07 19:30:42.1442669 1636809084 000 ECU1 NONE lola log error verbose 1 Invocation of method call handler failed as scope has been destroyed: SkeletonMethod has already been destroyed. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalCallMethodTest.CallingAfterMethodHandlerScopeHasExpiredReturnsError (0 ms)
+[0;32m[----------] [m4 tests from MessagePassingServiceInstanceLocalCallMethodTest (3 ms total)
+
+[0;32m[----------] [m5 tests from MessagePassingServiceInstanceRemoteCallMethodTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteCallMethodTest.CallingWithOtherProcessPidSendsMethodCallMessage
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteCallMethodTest.CallingWithOtherProcessPidSendsMethodCallMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteCallMethodTest.CallingGetsClientWithProvidedPid
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteCallMethodTest.CallingGetsClientWithProvidedPid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteCallMethodTest.ReturnsErrorWhenSendWaitReplyReturnsError
+2026/10/07 19:30:42.1442670 1636809098 000 ECU1 NONE lola log error verbose 5 MessagePassingService: Sending CallServiceMethodMessage to node_id  10  failed with error:  An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteCallMethodTest.ReturnsErrorWhenSendWaitReplyReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteCallMethodTest.ReturnsErrorWhenReplyPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442671 1636809103 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  6 , expected  4 
+2026/10/07 19:30:42.1442671 1636809103 000 ECU1 NONE lola log error verbose 3 MessagePassingService: Parsing CallServiceMethodMessage reply from node_id  10 failed during deserialization 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteCallMethodTest.ReturnsErrorWhenReplyPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteCallMethodTest.ReturnsErrorWhenReplyReportedError
+2026/10/07 19:30:42.1442671 1636809107 000 ECU1 NONE lola log error verbose 3 MessagePassingService: CallServiceMethodMessage reply from node_id  10 returned failure 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteCallMethodTest.ReturnsErrorWhenReplyReportedError (0 ms)
+[0;32m[----------] [m5 tests from MessagePassingServiceInstanceRemoteCallMethodTest (2 ms total)
+
+[0;32m[----------] [m6 tests from MessagePassingServiceInstanceLocalSubscribeMethodTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWithSelfPidCallsMethodHandlerLocally
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWithSelfPidCallsMethodHandlerLocally (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWillFailIfRegisteredUidDoesNotMatchProcessUid
+2026/10/07 19:30:42.1442672 1636809115 000 ECU1 NONE lola log error verbose 1 Could not invoke subscribe service method handler because uid of proxy calling subscribe is not in allowed_consumers list. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWillFailIfRegisteredUidDoesNotMatchProcessUid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWillSucceedIfRegisteredWithEmptyUidSet
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp:120:
+    Function call: Call(Application ID: 3. Proxy Instance Counter: 1, 3, 1)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWillSucceedIfRegisteredWithEmptyUidSet (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWithSkeletonIdentifierThatWasNeverRegisteredReturnsError
+2026/10/07 19:30:42.1442672 1636809122 000 ECU1 NONE lola log error verbose 1 Subscribe method handler has not been registered for this SkeletonMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingWithSkeletonIdentifierThatWasNeverRegisteredReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingAfterSubscribeMethodHandlerScopeHasExpiredReturnsError
+2026/10/07 19:30:42.1442673 1636809126 000 ECU1 NONE lola log error verbose 1 Invocation of subscribe service method handler failed as scope has been destroyed: SkeletonMethod has already been destroyed. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.CallingAfterSubscribeMethodHandlerScopeHasExpiredReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.ReturnsErrorWhenReplyReportedError
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalSubscribeMethodTest.ReturnsErrorWhenReplyReportedError (0 ms)
+[0;32m[----------] [m6 tests from MessagePassingServiceInstanceLocalSubscribeMethodTest (2 ms total)
+
+[0;32m[----------] [m5 tests from MessagePassingServiceInstanceRemoteSubscribeMethodTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.CallingWithOtherProcessPidSendsMethodCallMessage
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.CallingWithOtherProcessPidSendsMethodCallMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.CallingGetsClientWithProvidedPid
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.CallingGetsClientWithProvidedPid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.ReturnsErrorWhenSendWaitReplyReturnsError
+2026/10/07 19:30:42.1442674 1636809141 000 ECU1 NONE lola log error verbose 5 MessagePassingServiceInstance: Sending SubscribeServiceMethodMessage to node_id  10  failed with error:  An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.ReturnsErrorWhenSendWaitReplyReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.ReturnsErrorWhenReplyPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442675 1636809145 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  6 , expected  4 
+2026/10/07 19:30:42.1442675 1636809145 000 ECU1 NONE lola log error verbose 3 MessagePassingService: Parsing SubscribeServiceMethodMessage reply from node_id  10 failed during deserialization 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.ReturnsErrorWhenReplyPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.ReturnsErrorWhenReplyReportedError
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteSubscribeMethodTest.ReturnsErrorWhenReplyReportedError (0 ms)
+[0;32m[----------] [m5 tests from MessagePassingServiceInstanceRemoteSubscribeMethodTest (2 ms total)
+
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceRegisterMethodCallHandlerTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRegisterMethodCallHandlerTest.ReregisteringHandlerWhenOneIsAlreadyStoredViolatesAPrecondition
+[0;32m[       OK ] [mMessagePassingServiceInstanceRegisterMethodCallHandlerTest.ReregisteringHandlerWhenOneIsAlreadyStoredViolatesAPrecondition (0 ms)
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceRegisterMethodCallHandlerTest (0 ms total)
+
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceRegisterSubscribeHandlerTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRegisterSubscribeHandlerTest.ReregisteringHandlerReturnsError
+2026/10/07 19:30:42.1442676 1636809158 000 ECU1 NONE lola log error verbose 1 MessagePassingService: Failed to register OnServiceMethodSubscribedHandler since it could not be inserted into map. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRegisterSubscribeHandlerTest.ReregisteringHandlerReturnsError (0 ms)
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceRegisterSubscribeHandlerTest (0 ms total)
+
+[0;32m[----------] [m6 tests from MessagePassingServiceInstanceHandleMessageWithReplyTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.ReturnsErrorWhenEmptyMessageReceived
+2026/10/07 19:30:42.1442676 1636809162 000 ECU1 NONE lola log error verbose 2 MessagePassingService: Empty message received from  1 
+2026/10/07 19:30:42.1442676 1636809162 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.ReturnsErrorWhenEmptyMessageReceived (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.RepliesWithErrorWhenEmptyMessageReceived
+2026/10/07 19:30:42.1442677 1636809166 000 ECU1 NONE lola log error verbose 2 MessagePassingService: Empty message received from  1 
+2026/10/07 19:30:42.1442677 1636809166 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.RepliesWithErrorWhenEmptyMessageReceived (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.ReturnsErrorWhenUnexpectedMessageReceived
+2026/10/07 19:30:42.1442677 1636809170 000 ECU1 NONE lola log error verbose 2 MessagePassingService: Unsupported MessageWithReplyType received from  1 
+2026/10/07 19:30:42.1442677 1636809170 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected type was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.ReturnsErrorWhenUnexpectedMessageReceived (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.RepliesWithErrorWhenUnexpectedMessageReceived
+2026/10/07 19:30:42.1442678 1636809173 000 ECU1 NONE lola log error verbose 2 MessagePassingService: Unsupported MessageWithReplyType received from  10 
+2026/10/07 19:30:42.1442678 1636809174 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected type was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.RepliesWithErrorWhenUnexpectedMessageReceived (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.ReturnsErrorWhenMessageCallbackWithReplyScopeExpiredAndReplyFails
+2026/10/07 19:30:42.1442678 1636809178 000 ECU1 NONE lola log error verbose 2 Calling message_callback_with_reply_scoped_function failed because scope expired 10 
+2026/10/07 19:30:42.1442678 1636809178 000 ECU1 NONE lola log error verbose 1 Failed to send reply after failing to process method due to scope expiring. Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.ReturnsErrorWhenMessageCallbackWithReplyScopeExpiredAndReplyFails (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.RepliesWithErrorWhenMessageCallbackWithReplyScopeExpired
+2026/10/07 19:30:42.1442678 1636809182 000 ECU1 NONE lola log error verbose 2 Calling message_callback_with_reply_scoped_function failed because scope expired 1 
+2026/10/07 19:30:42.1442678 1636809182 000 ECU1 NONE lola log error verbose 1 Failed to send reply after failing to process method due to scope expiring. Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleMessageWithReplyTest.RepliesWithErrorWhenMessageCallbackWithReplyScopeExpired (0 ms)
+[0;32m[----------] [m6 tests from MessagePassingServiceInstanceHandleMessageWithReplyTest (2 ms total)
+
+[0;32m[----------] [m10 tests from MessagePassingServiceInstanceHandleCallMethodMessageTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsErrorWhenPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442679 1636809186 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  25 , expected  24 
+2026/10/07 19:30:42.1442679 1636809186 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsErrorWhenPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesWithErrorWhenPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442679 1636809190 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  25 , expected  24 
+2026/10/07 19:30:42.1442679 1636809190 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesWithErrorWhenPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsSuccessWhenHandlerNotRegistered
+2026/10/07 19:30:42.1442680 1636809194 000 ECU1 NONE lola log error verbose 1 Method call handler has not been registered for this ProxyMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsSuccessWhenHandlerNotRegistered (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesWithErrorWhenHandlerNotRegistered
+2026/10/07 19:30:42.1442680 1636809198 000 ECU1 NONE lola log error verbose 1 Method call handler has not been registered for this ProxyMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesWithErrorWhenHandlerNotRegistered (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsSuccessWhenHandlerScopeAlreadyExpired
+2026/10/07 19:30:42.1442680 1636809201 000 ECU1 NONE lola log error verbose 1 Invocation of method call handler failed as scope has been destroyed: SkeletonMethod has already been destroyed. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsSuccessWhenHandlerScopeAlreadyExpired (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesWithErrorWhenHandlerScopeAlreadyExpired
+2026/10/07 19:30:42.1442681 1636809205 000 ECU1 NONE lola log error verbose 1 Invocation of method call handler failed as scope has been destroyed: SkeletonMethod has already been destroyed. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesWithErrorWhenHandlerScopeAlreadyExpired (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.CallsCallMethodHandlerRegisteredWithProvidedProxyIdentifier
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.CallsCallMethodHandlerRegisteredWithProvidedProxyIdentifier (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesSuccessWhenMethodHandlerCalledSuccessfully
+
+GMOCK WARNING:
+Uninteresting mock function call - returning directly.
+    Function call: Call(1)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesSuccessWhenMethodHandlerCalledSuccessfully (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsSuccessWhenCallerUidDoesNotMatchRegisteredUid
+2026/10/07 19:30:42.1442682 1636809217 000 ECU1 NONE lola log error verbose 1 Could not invoke method call handler because uid of proxy calling method is not the same one that registered the handler. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.ReturnsSuccessWhenCallerUidDoesNotMatchRegisteredUid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesErrorWhenCallerUidDoesNotMatchRegisteredUid
+2026/10/07 19:30:42.1442682 1636809221 000 ECU1 NONE lola log error verbose 1 Could not invoke method call handler because uid of proxy calling method is not the same one that registered the handler. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleCallMethodMessageTest.RepliesErrorWhenCallerUidDoesNotMatchRegisteredUid (0 ms)
+[0;32m[----------] [m10 tests from MessagePassingServiceInstanceHandleCallMethodMessageTest (3 ms total)
+
+[0;32m[----------] [m12 tests from MessagePassingServiceInstanceHandleSubscribeMethodMessageTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsErrorWhenPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442683 1636809226 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  13 , expected  12 
+2026/10/07 19:30:42.1442683 1636809226 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsErrorWhenPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesWithErrorWhenPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442683 1636809230 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  13 , expected  12 
+2026/10/07 19:30:42.1442683 1636809230 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesWithErrorWhenPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenHandlerNotRegistered
+2026/10/07 19:30:42.1442684 1636809234 000 ECU1 NONE lola log error verbose 1 Subscribe method handler has not been registered for this SkeletonMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenHandlerNotRegistered (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesWithErrorWhenHandlerNotRegistered
+2026/10/07 19:30:42.1442684 1636809238 000 ECU1 NONE lola log error verbose 1 Subscribe method handler has not been registered for this SkeletonMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesWithErrorWhenHandlerNotRegistered (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenHandlerScopeAlreadyExpired
+2026/10/07 19:30:42.1442684 1636809241 000 ECU1 NONE lola log error verbose 1 Invocation of subscribe service method handler failed as scope has been destroyed: SkeletonMethod has already been destroyed. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenHandlerScopeAlreadyExpired (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesWithErrorWhenHandlerScopeAlreadyExpired
+2026/10/07 19:30:42.1442685 1636809245 000 ECU1 NONE lola log error verbose 1 Invocation of subscribe service method handler failed as scope has been destroyed: SkeletonMethod has already been destroyed. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesWithErrorWhenHandlerScopeAlreadyExpired (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.CallsSubscribeMethodHandlerRegisteredWithProvidedSkeletonIdentifier
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.CallsSubscribeMethodHandlerRegisteredWithProvidedSkeletonIdentifier (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesSuccessWhenSubscribeMethodHandlerCalledSuccessfully
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp:120:
+    Function call: Call(Application ID: 3. Proxy Instance Counter: 1, 30, 10)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesSuccessWhenSubscribeMethodHandlerCalledSuccessfully (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenCallerUidDoesNotMatchRegisteredUid
+2026/10/07 19:30:42.1442686 1636809257 000 ECU1 NONE lola log error verbose 1 Could not invoke subscribe service method handler because uid of proxy calling subscribe is not in allowed_consumers list. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenCallerUidDoesNotMatchRegisteredUid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesErrorWhenCallerUidDoesNotMatchRegisteredUid
+2026/10/07 19:30:42.1442686 1636809261 000 ECU1 NONE lola log error verbose 1 Could not invoke subscribe service method handler because uid of proxy calling subscribe is not in allowed_consumers list. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesErrorWhenCallerUidDoesNotMatchRegisteredUid (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenHandlerRegisteredAllowingAllUids
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.ReturnsSuccessWhenHandlerRegisteredAllowingAllUids (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesSuccessWhenHandlerRegisteredAllowingAllUids
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp:120:
+    Function call: Call(Application ID: 3. Proxy Instance Counter: 1, 60, 10)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleSubscribeMethodMessageTest.RepliesSuccessWhenHandlerRegisteredAllowingAllUids (0 ms)
+[0;32m[----------] [m12 tests from MessagePassingServiceInstanceHandleSubscribeMethodMessageTest (4 ms total)
+
+[0;32m[----------] [m2 tests from MessagePassingServiceInstanceUnregisterMethodCallHandlerTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceUnregisterMethodCallHandlerTest.CallingHandlerAfterUnregisteringReturnsError
+2026/10/07 19:30:42.1442688 1636809273 000 ECU1 NONE lola log error verbose 1 Method call handler has not been registered for this ProxyMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceUnregisterMethodCallHandlerTest.CallingHandlerAfterUnregisteringReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceUnregisterMethodCallHandlerTest.CallingUnregisterHandlerBeforeRegisterTerminates
+[0;32m[       OK ] [mMessagePassingServiceInstanceUnregisterMethodCallHandlerTest.CallingUnregisterHandlerBeforeRegisterTerminates (0 ms)
+[0;32m[----------] [m2 tests from MessagePassingServiceInstanceUnregisterMethodCallHandlerTest (0 ms total)
+
+[0;32m[----------] [m2 tests from MessagePassingServiceInstanceUnregisterSubscribeMethodHandlerTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceUnregisterSubscribeMethodHandlerTest.CallingHandlerAfterUnregisteringReturnsError
+2026/10/07 19:30:42.1442688 1636809281 000 ECU1 NONE lola log error verbose 1 Subscribe method handler has not been registered for this SkeletonMethod! 
+[0;32m[       OK ] [mMessagePassingServiceInstanceUnregisterSubscribeMethodHandlerTest.CallingHandlerAfterUnregisteringReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceUnregisterSubscribeMethodHandlerTest.CallingUnregisterHandlerBeforeRegisterTerminates
+[0;32m[       OK ] [mMessagePassingServiceInstanceUnregisterSubscribeMethodHandlerTest.CallingUnregisterHandlerBeforeRegisterTerminates (0 ms)
+[0;32m[----------] [m2 tests from MessagePassingServiceInstanceUnregisterSubscribeMethodHandlerTest (0 ms total)
+
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceRegisterUnsubscribeHandlerTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRegisterUnsubscribeHandlerTest.ReregisteringHandlerWhenOneIsAlreadyRegisteredReturnsError
+2026/10/07 19:30:42.1442689 1636809289 000 ECU1 NONE lola log error verbose 1 MessagePassingService: Failed to register OnServiceMethodUnsubscribedHandler since it could not be inserted into map. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRegisterUnsubscribeHandlerTest.ReregisteringHandlerWhenOneIsAlreadyRegisteredReturnsError (0 ms)
+[0;32m[----------] [m1 test from MessagePassingServiceInstanceRegisterUnsubscribeHandlerTest (0 ms total)
+
+[0;32m[----------] [m4 tests from MessagePassingServiceInstanceLocalUnsubscribeMethodTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingWithSelfPidCallsUnsubscribeHandlerLocally
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingWithSelfPidCallsUnsubscribeHandlerLocally (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingWithSkeletonIdentifierThatWasNeverRegisteredReturnsSuccess
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingWithSkeletonIdentifierThatWasNeverRegisteredReturnsSuccess (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingAfterUnsubscribeHandlerScopeHasExpiredReturnsSuccess
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingAfterUnsubscribeHandlerScopeHasExpiredReturnsSuccess (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingAfterUnsubscribeHandlerScopeHasExpiredDoesNotCallHandler
+[0;32m[       OK ] [mMessagePassingServiceInstanceLocalUnsubscribeMethodTest.CallingAfterUnsubscribeHandlerScopeHasExpiredDoesNotCallHandler (0 ms)
+[0;32m[----------] [m4 tests from MessagePassingServiceInstanceLocalUnsubscribeMethodTest (1 ms total)
+
+[0;32m[----------] [m3 tests from MessagePassingServiceInstanceRemoteUnsubscribeMethodTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteUnsubscribeMethodTest.CallingWithOtherProcessPidSendsUnsubscribeMessage
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteUnsubscribeMethodTest.CallingWithOtherProcessPidSendsUnsubscribeMessage (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteUnsubscribeMethodTest.ReturnsErrorWhenSendWaitReplyReturnsError
+2026/10/07 19:30:42.1442692 1636809314 000 ECU1 NONE lola log error verbose 5 MessagePassingServiceInstance: Sending UnsubscribeServiceMethodMessage to node_id  10  failed with error:  An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteUnsubscribeMethodTest.ReturnsErrorWhenSendWaitReplyReturnsError (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceRemoteUnsubscribeMethodTest.ReturnsErrorWhenReplyPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442692 1636809319 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  6 , expected  4 
+2026/10/07 19:30:42.1442692 1636809319 000 ECU1 NONE lola log error verbose 3 MessagePassingService: Parsing UnsubscribeServiceMethodMessage reply from node_id  10 failed during deserialization 
+[0;32m[       OK ] [mMessagePassingServiceInstanceRemoteUnsubscribeMethodTest.ReturnsErrorWhenReplyPayloadHasUnexpectedSize (0 ms)
+[0;32m[----------] [m3 tests from MessagePassingServiceInstanceRemoteUnsubscribeMethodTest (1 ms total)
+
+[0;32m[----------] [m6 tests from MessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.ReturnsErrorWhenPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442693 1636809324 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  13 , expected  12 
+2026/10/07 19:30:42.1442693 1636809324 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.ReturnsErrorWhenPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.RepliesWithErrorWhenPayloadHasUnexpectedSize
+2026/10/07 19:30:42.1442693 1636809328 000 ECU1 NONE lola log error verbose 4 Wrong payload size, got  13 , expected  12 
+2026/10/07 19:30:42.1442693 1636809328 000 ECU1 NONE lola log error verbose 5 Handling message with reply failed with unrecoverable error: Error  Message with an unexpected size was received.  occurred . Disconnecting from client. 
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.RepliesWithErrorWhenPayloadHasUnexpectedSize (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.ReturnsSuccessWhenUnsubscribeHandlerNotRegistered
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.ReturnsSuccessWhenUnsubscribeHandlerNotRegistered (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.RepliesWithSuccessWhenUnsubscribeHandlerNotRegistered
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.RepliesWithSuccessWhenUnsubscribeHandlerNotRegistered (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.CallsUnsubscribeMethodHandlerRegisteredWithProvidedSkeletonIdentifier
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.CallsUnsubscribeMethodHandlerRegisteredWithProvidedSkeletonIdentifier (0 ms)
+[0;32m[ RUN      ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.RepliesSuccessWhenUnsubscribeMethodHandlerCalledSuccessfully
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp:121:
+    Function call: Call(Application ID: 3. Proxy Instance Counter: 1)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mMessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest.RepliesSuccessWhenUnsubscribeMethodHandlerCalledSuccessfully (0 ms)
+[0;32m[----------] [m6 tests from MessagePassingServiceInstanceHandleUnsubscribeMethodMessageTest (2 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m68 tests from 15 test suites ran. (29 ms total)
+[0;32m[  PASSED  ] [m68 tests.
+Stats: SizeClassAllocator64: 17M mapped (0M rss) in 3400 allocations; remains 3400
+  01 (    16): mapped:    256K allocs:     256 frees:       0 inuse:    256 num_freed_chunks   16128 avail:  16384 rss:      4K releases:      0 last released:      0K region: 0x720400000000
+  02 (    32): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    8064 avail:   8192 rss:      4K releases:      0 last released:      0K region: 0x720800000000
+  03 (    48): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    5333 avail:   5461 rss:      4K releases:      0 last released:      0K region: 0x720c00000000
+  04 (    64): mapped:    256K allocs:     256 frees:       0 inuse:    256 num_freed_chunks    3840 avail:   4096 rss:     12K releases:      0 last released:      0K region: 0x721000000000
+  05 (    80): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    3148 avail:   3276 rss:      4K releases:      0 last released:      0K region: 0x721400000000
+  06 (    96): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    2602 avail:   2730 rss:      8K releases:      0 last released:      0K region: 0x721800000000
+  07 (   112): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    2212 avail:   2340 rss:      4K releases:      0 last released:      0K region: 0x721c00000000
+  08 (   128): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1920 avail:   2048 rss:      4K releases:      0 last released:      0K region: 0x722000000000
+  09 (   144): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1692 avail:   1820 rss:      4K releases:      0 last released:      0K region: 0x722400000000
+  10 (   160): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1510 avail:   1638 rss:      4K releases:      0 last released:      0K region: 0x722800000000
+  11 (   176): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1361 avail:   1489 rss:      4K releases:      0 last released:      0K region: 0x722c00000000
+  12 (   192): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1237 avail:   1365 rss:      4K releases:      0 last released:      0K region: 0x723000000000
+  13 (   208): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1132 avail:   1260 rss:      4K releases:      0 last released:      0K region: 0x723400000000
+  14 (   224): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1042 avail:   1170 rss:      4K releases:      0 last released:      0K region: 0x723800000000
+  15 (   240): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     964 avail:   1092 rss:      4K releases:      0 last released:      0K region: 0x723c00000000
+  16 (   256): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     896 avail:   1024 rss:      4K releases:      0 last released:      0K region: 0x724000000000
+  17 (   320): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     691 avail:    819 rss:     28K releases:      0 last released:      0K region: 0x724400000000
+  18 (   384): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     554 avail:    682 rss:      4K releases:      0 last released:      0K region: 0x724800000000
+  19 (   448): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     457 avail:    585 rss:      4K releases:      0 last released:      0K region: 0x724c00000000
+  20 (   512): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     384 avail:    512 rss:      4K releases:      0 last released:      0K region: 0x725000000000
+  21 (   640): mapped:    256K allocs:     102 frees:       0 inuse:    102 num_freed_chunks     307 avail:    409 rss:      4K releases:      0 last released:      0K region: 0x725400000000
+  22 (   768): mapped:    256K allocs:      85 frees:       0 inuse:     85 num_freed_chunks     256 avail:    341 rss:      4K releases:      0 last released:      0K region: 0x725800000000
+  23 (   896): mapped:    256K allocs:      73 frees:       0 inuse:     73 num_freed_chunks     219 avail:    292 rss:      4K releases:      0 last released:      0K region: 0x725c00000000
+  24 (  1024): mapped:    256K allocs:      64 frees:       0 inuse:     64 num_freed_chunks     192 avail:    256 rss:      4K releases:      0 last released:      0K region: 0x726000000000
+  25 (  1280): mapped:    256K allocs:      51 frees:       0 inuse:     51 num_freed_chunks     153 avail:    204 rss:     16K releases:      0 last released:      0K region: 0x726400000000
+  28 (  2048): mapped:    256K allocs:      32 frees:       0 inuse:     32 num_freed_chunks      96 avail:    128 rss:     20K releases:      0 last released:      0K region: 0x727000000000
+  29 (  2560): mapped:    256K allocs:      25 frees:       0 inuse:     25 num_freed_chunks      77 avail:    102 rss:      4K releases:      0 last released:      0K region: 0x727400000000
+  32 (  4096): mapped:    256K allocs:      16 frees:       0 inuse:     16 num_freed_chunks      48 avail:     64 rss:      8K releases:      0 last released:      0K region: 0x728000000000
+  33 (  5120): mapped:    256K allocs:      12 frees:       0 inuse:     12 num_freed_chunks      39 avail:     51 rss:     12K releases:      0 last released:      0K region: 0x728400000000
+  37 ( 10240): mapped:    256K allocs:       6 frees:       0 inuse:      6 num_freed_chunks      19 avail:     25 rss:      8K releases:      0 last released:      0K region: 0x729400000000
+  41 ( 20480): mapped:    256K allocs:       3 frees:       0 inuse:      3 num_freed_chunks       9 avail:     12 rss:     16K releases:      0 last released:      0K region: 0x72a400000000
+  43 ( 28672): mapped:    256K allocs:       2 frees:       0 inuse:      2 num_freed_chunks       7 avail:      9 rss:     36K releases:      0 last released:      0K region: 0x72ac00000000
+  44 ( 32768): mapped:    256K allocs:       2 frees:       0 inuse:      2 num_freed_chunks       6 avail:      8 rss:     32K releases:      0 last released:      0K region: 0x72b000000000
+  45 ( 40960): mapped:    256K allocs:       1 frees:       0 inuse:      1 num_freed_chunks       5 avail:      6 rss:     28K releases:      0 last released:      0K region: 0x72b400000000
+  47 ( 57344): mapped:    256K allocs:       1 frees:       0 inuse:      1 num_freed_chunks       3 avail:      4 rss:     28K releases:      0 last released:      0K region: 0x72bc00000000
+  49 ( 81920): mapped:   8960K allocs:     109 frees:       0 inuse:    109 num_freed_chunks       3 avail:    112 rss:    436K releases:      0 last released:      0K region: 0x72c400000000
+Stats: LargeMmapAllocator: allocated 0 times, remains 0 (0 K) max 0 M; by size logs: 

@@ -1,0 +1,21 @@
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs
+@@ -49,7 +49,7 @@
+ use futures::task::AtomicWaker;
+ 
+ use bridge_ffi_rs::{
+-    FFIBridge, FindServiceCallable, FindServiceHandle, HandleContainer, NativeFindServiceHandle,
++    FatPtr, FFIBridge, FindServiceCallable, FindServiceHandle, HandleContainer, NativeFindServiceHandle,
+     NativeServiceIdentity,
+ };
+ use score_com_concept::{Error, Result, ServiceDescriptor, ServiceFailedReason, ServiceVersion};
+@@ -231,7 +231,8 @@
+         let dyn_callback: Box<dyn FnMut(HandleContainer, NativeFindServiceHandle) + Send + 'static> = callback;
+         // SAFETY: `dyn_callback` is a `FnMut(HandleContainer, NativeFindServiceHandle)`, exactly the find-service
+         // callback contract, and its `FatPtr` is passed to native discovery.
+-        let callable = unsafe { FindServiceCallable::new(std::mem::transmute(dyn_callback)) };
++        let fat_ptr: FatPtr = unsafe { std::mem::transmute(dyn_callback) };
++        let callable = unsafe { FindServiceCallable::new(fat_ptr) };
+ 
+         let raw_handle = bridge.start_find_service_any(
+             &service_type.name,

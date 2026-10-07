@@ -1,0 +1,93 @@
+' *******************************************************************************
+' Copyright (c) 2026 Contributors to the Eclipse Foundation
+'
+' See the NOTICE file(s) distributed with this work for additional
+' information regarding copyright ownership.
+'
+' This program and the accompanying materials are made available under the
+' terms of the Apache License Version 2.0 which is available at
+' https://www.apache.org/licenses/LICENSE-2.0
+'
+' SPDX-License-Identifier: Apache-2.0
+' *******************************************************************************
+
+@startuml
+
+skinparam SequenceMessageAlignment center
+title ConfigProvider library initialization
+
+participant AdaptiveApplication
+participant ProxyFactory
+participant "mw::service" as mwService
+participant "mw::com" as mwCom
+participant "KeyValueStorage" as KVS <<external>>
+
+AdaptiveApplication -> AdaptiveApplication : Initialize()
+activate AdaptiveApplication
+
+create ConfigProvider
+AdaptiveApplication -> ConfigProvider : ConfigProvider()
+
+activate ConfigProvider
+
+ConfigProvider -> ProxyFactory : Create(proxies)
+activate ProxyFactory
+ProxyFactory --> ConfigProvider : proxies = ProxyNeeds::Create<InternalConfigProviderStrategy>()
+deactivate ProxyFactory
+
+ConfigProvider -> mwService : WaitForMandatoryProxies(token)
+activate mwService
+mwService -> mwCom : FindService()
+activate mwCom
+mwCom --> mwService : ok
+deactivate mwCom
+mwService --> ConfigProvider : ProxyContainer<ProxySpec...>
+deactivate mwService
+
+ConfigProvider -> mwService : proxies.Get<InternalConfigProvider>()
+activate mwService
+mwService --> ConfigProvider : internal_config_provider_proxy_
+deactivate mwService
+
+create InternalConfigProviderImpl
+ConfigProvider -> InternalConfigProviderImpl : InternalConfigProviderImpl(\n  proxy, timeout\n)
+
+ConfigProvider -> InternalConfigProviderImpl : TrySubscribeToLastUpdatedParameterSetEvent(\n  stop_token, callback\n)
+activate InternalConfigProviderImpl
+InternalConfigProviderImpl -> mwCom : SetReceiveHandler(callback)
+activate mwCom
+mwCom --> InternalConfigProviderImpl : ok
+deactivate mwCom
+
+InternalConfigProviderImpl -> mwCom : Subscribe(kNewestN, 1)
+activate mwCom
+mwCom --> InternalConfigProviderImpl : ok
+deactivate mwCom
+InternalConfigProviderImpl --> ConfigProvider : subscribed
+deactivate InternalConfigProviderImpl
+
+ConfigProvider --> AdaptiveApplication : init complete
+
+create PersistencyFactory
+ConfigProvider -> PersistencyFactory : Create(handle, memory_resource)
+PersistencyFactory -> KVS : Open(storage_specifier)
+activate KVS
+KVS --> PersistencyFactory : SharedHandle
+deactivate KVS
+PersistencyFactory --> ConfigProvider : PersistencyImpl
+
+ConfigProvider -> PersistencyImpl : ReadCachedParameterSets(...)
+PersistencyImpl -> KVS : GetAllKeys()
+KVS --> PersistencyImpl : keys
+PersistencyImpl --> ConfigProvider : cached sets
+
+ConfigProvider --> AdaptiveApplication : ready
+deactivate ConfigProvider
+
+AdaptiveApplication -> ConfigProvider : OnChangedParameterSet(\n  set_name, callback\n)
+activate ConfigProvider
+ConfigProvider -> ConfigProvider : register handler
+ConfigProvider --> AdaptiveApplication : registered
+deactivate ConfigProvider
+
+@enduml

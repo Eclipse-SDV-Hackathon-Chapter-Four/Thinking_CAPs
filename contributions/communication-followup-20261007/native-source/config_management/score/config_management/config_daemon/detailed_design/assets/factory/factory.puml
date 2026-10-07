@@ -1,0 +1,52 @@
+' *******************************************************************************
+' Copyright (c) 2026 Contributors to the Eclipse Foundation
+'
+' See the NOTICE file(s) distributed with this work for additional
+' information regarding copyright ownership.
+'
+' This program and the accompanying materials are made available under the
+' terms of the Apache License Version 2.0 which is available at
+' https://www.apache.org/licenses/LICENSE-2.0
+'
+' SPDX-License-Identifier: Apache-2.0
+' *******************************************************************************
+
+@startuml
+
+!startsub IFactory
+namespace score::config_management::config_daemon {
+abstract class IFactory {
+  + {abstract} CreateInternalConfigProviderService(\n\
+      read_only_parameter_data_interface : const std::shared_ptr<data_model::IParameterSetCollection>) : mw::service::ProvidedServiceContainer
+  + {abstract} CreateLastUpdatedParameterSetSender(services : mw::service::ProvidedServiceContainer&) : LastUpdatedParameterSetSender
+  + {abstract} CreateInitialQualifierStateSender(services : mw::service::ProvidedServiceContainer&) : InitialQualifierStateSender
+  + {abstract} CreateParameterSetCollection() : std::shared_ptr<data_model::IParameterSetCollection>
+  + {abstract} CreatePluginCollector() : std::unique_ptr<IPluginCollector>
+  + {abstract} CreateFaultEventReporter() : std::shared_ptr<fault_event_reporter::IFaultEventReporter>
+  --
+  Responsibilities: This is interface of Factory class
+}
+}
+!endsub
+
+!startsub Factory
+namespace score::config_management::config_daemon {
+class Factory {
+  + CreateInternalConfigProviderService(\n\
+      read_only_parameter_data_interface : const std::shared_ptr<data_model::IParameterSetCollection>) : mw::service::ProvidedServiceContainer
+  + CreateLastUpdatedParameterSetSender(services : mw::service::ProvidedServiceContainer&) : LastUpdatedParameterSetSender
+  + CreateInitialQualifierStateSender(services : mw::service::ProvidedServiceContainer&) : InitialQualifierStateSender
+  + CreateParameterSetCollection() : std::shared_ptr<data_model::IParameterSetCollection>
+  + CreatePluginCollector() : std::unique_ptr<IPluginCollector>
+  + CreateFaultEventReporter() : std::shared_ptr<fault_event_reporter::IFaultEventReporter>
+  --
+  - json_helper_ : std::shared_ptr<common::IJsonHelper>
+  - hash_calculator_factory_ : std::shared_ptr<score::hash::IHashCalculatorFactory>
+  --
+  Responsibilities: This class is responsible for creating all the necessary internal objects.
+}
+}
+IFactory <|-- Factory
+!endsub
+
+@enduml

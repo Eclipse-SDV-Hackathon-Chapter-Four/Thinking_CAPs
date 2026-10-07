@@ -1,0 +1,602 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/355/execroot/_main/bazel-out/k8-fastbuild/bin/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/test_com_api_async.runfiles/score_itf+
+configfile: pytest.ini
+collected 3 items
+
+../score_itf+::test_bigdata_async_with_cancellation 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 17:31:19.133] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh
+[2026-10-07 17:31:23.036] [INFO] [score.itf.plugins.docker] Bootstrap stdout: Loaded image: test_com_api_async:latest
+
+[2026-10-07 17:31:23.036] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:23.037] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:23.037] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:23.037] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:23.050] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+[2026-10-07 17:31:23.144] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/networks/create HTTP/1.1" 201 87
+[2026-10-07 17:31:23.147] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/networks/36a772520130fd89fa96f77e0027bdcd64f1c31fec4b848d68fb8d33489e3b9a HTTP/1.1" 200 564
+[2026-10-07 17:31:23.629] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/create HTTP/1.1" 201 88
+[2026-10-07 17:31:23.631] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4/json HTTP/1.1" 200 None
+[2026-10-07 17:31:24.002] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4/start HTTP/1.1" 204 0
+[2026-10-07 17:31:24.003] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:24.003] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:24.003] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:24.003] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:24.023] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+-------------------------------- live log call ---------------------------------
+[2026-10-07 17:31:24.026] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:24.028] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/6837f5e4e77cca77d72cfad728c9c192e54b9b5e23b2767f6ec8b9c7f8d1b3c3/start HTTP/1.1" 101 0
+[2026-10-07 17:31:24.097] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:24.099] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/start HTTP/1.1" 101 0
+[2026-10-07 17:31:24.165] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.194] [INFO] [bigdata-producer] [bigdata-producer] Starting bigdata test with num_cycles=40
+[2026-10-07 17:31:24.203] [INFO] [bigdata-consumer-async] [bigdata-consumer] Starting, will try to receive samples 25 times using mode WithCancellation
+[2026-10-07 17:31:24.208] [INFO] [bigdata-consumer-async] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-07 17:31:24.210] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:24.4284209 1565224492 000 ECU1 BIGD lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-07 17:31:24.210] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:24.4284210 1565224497 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 0
+[2026-10-07 17:31:24.211] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:24.4284211 1565224504 000 ECU1 BIGD lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/6432/1
+[2026-10-07 17:31:24.267] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.369] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.471] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.573] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.676] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.778] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.880] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:24.982] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.084] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.186] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.288] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.390] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.492] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.594] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.696] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.798] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:25.900] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.002] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.104] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.195] [INFO] [bigdata-producer] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-07 17:31:26.196] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286196 1565244354 000 ECU1 BIGD lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-07 17:31:26.197] [INFO] [bigdata-producer] warn: logger not initialized
+[2026-10-07 17:31:26.197] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286197 1565244365 000 ECU1 BIGD lola log debug verbose 5 Recreating SHM of Skeleton (S: 6432 I: 1 ) 
+[2026-10-07 17:31:26.197] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286197 1565244366 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000006432-00001 
+[2026-10-07 17:31:26.197] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286197 1565244366 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000006432-00001-b
+[2026-10-07 17:31:26.198] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286197 1565244367 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000006432-00001
+[2026-10-07 17:31:26.198] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286197 1565244370 000 ECU1 BIGD lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  6432 : 1  are as follows:
+[2026-10-07 17:31:26.198] [INFO] [bigdata-producer] QM-Ctrl:  2144 , ASIL_B-Ctrl:  0 , Data:  218001128
+[2026-10-07 17:31:26.198] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286197 1565244371 000 ECU1 BIGD shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForUser
+[2026-10-07 17:31:26.198] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286198 1565244374 000 ECU1 BIGD shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForUser
+[2026-10-07 17:31:26.198] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286198 1565244376 000 ECU1 BIGD lola log debug verbose 5 Created shared-memory-object for DATA (S:  6432  I: 1 )
+[2026-10-07 17:31:26.206] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.308] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.411] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.414] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286414 1565246533 000 ECU1 BIGD lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/6432/1 
+[2026-10-07 17:31:26.414] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286414 1565246534 000 ECU1 BIGD lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/6432/1/8_asil-qm_156524435211598
+[2026-10-07 17:31:26.414] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286414 1565246537 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/6432/1 (ASIL-QM)
+[2026-10-07 17:31:26.415] [INFO] [bigdata-producer] [bigdata-producer] Service offered, starting send loop
+[2026-10-07 17:31:26.415] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=1
+[2026-10-07 17:31:26.415] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286414 1565246538 000 ECU1 BIGD lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-07 17:31:26.415] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286414 1565246538 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-07 17:31:26.415] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286414 1565246539 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] warn: logger not initialized
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246546 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 1
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246547 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246547 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246549 000 ECU1 BIGD lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246551 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 2
+[2026-10-07 17:31:26.416] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246552 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 2
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286415 1565246552 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 2 finished
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286416 1565246553 000 ECU1 BIGD lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] [bigdata-consumer] Using async cancellable receive with timeout
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286416 1565246557 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286416 1565246557 000 ECU1 BIGD mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_8_QM
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286416 1565246559 000 ECU1 BIGD mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_8_QM 
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:26.4286416 1565246560 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:26.417] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 1
+[2026-10-07 17:31:26.513] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.515] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286514 1565247539 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-07 17:31:26.515] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286514 1565247539 000 ECU1 BIGD mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_14_QM
+[2026-10-07 17:31:26.515] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:26.515] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286514 1565247542 000 ECU1 BIGD mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_14_QM 
+[2026-10-07 17:31:26.515] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 2
+[2026-10-07 17:31:26.516] [INFO] [bigdata-producer] 2026/10/07 17:31:26.4286515 1565247543 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-07 17:31:26.516] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=2
+[2026-10-07 17:31:26.567] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:26.615] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.615] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=3
+[2026-10-07 17:31:26.616] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:26.616] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 3
+[2026-10-07 17:31:26.667] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:26.715] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=4
+[2026-10-07 17:31:26.717] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:26.717] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 4
+[2026-10-07 17:31:26.717] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.767] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:26.816] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=5
+[2026-10-07 17:31:26.816] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:26.816] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 5
+[2026-10-07 17:31:26.819] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.868] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:26.916] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=6
+[2026-10-07 17:31:26.916] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:26.917] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 6
+[2026-10-07 17:31:26.921] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:26.968] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.016] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=7
+[2026-10-07 17:31:27.016] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.017] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 7
+[2026-10-07 17:31:27.023] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.068] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.116] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=8
+[2026-10-07 17:31:27.117] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.117] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 8
+[2026-10-07 17:31:27.125] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.169] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.217] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=9
+[2026-10-07 17:31:27.217] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.217] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 9
+[2026-10-07 17:31:27.227] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.269] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.317] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.317] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=10
+[2026-10-07 17:31:27.317] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 10
+[2026-10-07 17:31:27.329] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.369] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.417] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=11
+[2026-10-07 17:31:27.417] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.418] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 11
+[2026-10-07 17:31:27.431] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.470] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.517] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=12
+[2026-10-07 17:31:27.518] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.518] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 12
+[2026-10-07 17:31:27.533] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.570] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.617] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=13
+[2026-10-07 17:31:27.618] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:27.618] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 13
+[2026-10-07 17:31:27.635] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 466
+[2026-10-07 17:31:27.670] [INFO] [bigdata-consumer-async] [bigdata-consumer] Receive error or timeout: ReceiveError(Cancelled)
+[2026-10-07 17:31:27.671] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:27.4287670 1565259100 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1 
+[2026-10-07 17:31:27.671] [INFO] [bigdata-consumer-async] [bigdata-consumer] Completed 25 receive attempts, exiting
+[2026-10-07 17:31:27.671] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:27.4287670 1565259101 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 2
+[2026-10-07 17:31:27.671] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:27.4287671 1565259103 000 ECU1 BIGD lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-07 17:31:27.681] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:27.4287681 1565259207 000 ECU1 BIGD mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-07 17:31:27.682] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:27.4287681 1565259208 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-07 17:31:27.682] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:27.4287681 1565259209 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-07 17:31:27.692] [INFO] [bigdata-producer] 2026/10/07 17:31:27.4287691 1565259311 000 ECU1 BIGD mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-07 17:31:27.692] [INFO] [bigdata-producer] 2026/10/07 17:31:27.4287691 1565259311 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-07 17:31:27.692] [INFO] [bigdata-producer] 2026/10/07 17:31:27.4287691 1565259312 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-07 17:31:27.718] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=14
+[2026-10-07 17:31:27.737] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 464
+[2026-10-07 17:31:27.739] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/d6a3d574e0ea1b6e00fea1efd7994990b396a6929e5b7f85efa6b0ca6972a69f/json HTTP/1.1" 200 464
+[2026-10-07 17:31:27.739] [DEBUG] [score.itf.core.process.wrapped_process] Application [bigdata-consumer-async] exit code: [0]
+[2026-10-07 17:31:27.740] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/6837f5e4e77cca77d72cfad728c9c192e54b9b5e23b2767f6ec8b9c7f8d1b3c3/json HTTP/1.1" 200 439
+[2026-10-07 17:31:27.742] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:27.743] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/c5c5f72aefb4e7dbfe957b10478b192c7d963c7222ef4b8fb6c218fcba828397/start HTTP/1.1" 101 0
+[2026-10-07 17:31:27.804] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c5c5f72aefb4e7dbfe957b10478b192c7d963c7222ef4b8fb6c218fcba828397/json HTTP/1.1" 200 388
+[2026-10-07 17:31:28.806] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/6837f5e4e77cca77d72cfad728c9c192e54b9b5e23b2767f6ec8b9c7f8d1b3c3/json HTTP/1.1" 200 439
+[2026-10-07 17:31:28.808] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/6837f5e4e77cca77d72cfad728c9c192e54b9b5e23b2767f6ec8b9c7f8d1b3c3/json HTTP/1.1" 200 439
+[2026-10-07 17:31:28.809] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/6837f5e4e77cca77d72cfad728c9c192e54b9b5e23b2767f6ec8b9c7f8d1b3c3/json HTTP/1.1" 200 439
+[2026-10-07 17:31:28.810] [DEBUG] [score.itf.core.process.wrapped_process] Application [bigdata-producer] exit code: [143]
+PASSED                                                                   [ 33%]
+------------------------------ live log teardown -------------------------------
+[2026-10-07 17:31:29.384] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4/stop?t=1 HTTP/1.1" 204 0
+[2026-10-07 17:31:29.494] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/containers/da7e1f820c63f7be6efafb6f2ca1258c77f72c7ffd47aa72917b60c6f9d420a4?v=False&link=False&force=True HTTP/1.1" 204 0
+[2026-10-07 17:31:29.685] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/networks/36a772520130fd89fa96f77e0027bdcd64f1c31fec4b848d68fb8d33489e3b9a HTTP/1.1" 204 0
+
+../score_itf+::test_bigdata_async_without_cancellation 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 17:31:29.688] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh
+[2026-10-07 17:31:32.705] [INFO] [score.itf.plugins.docker] Bootstrap stdout: Loaded image: test_com_api_async:latest
+
+[2026-10-07 17:31:32.706] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:32.706] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:32.706] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:32.706] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:32.718] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+[2026-10-07 17:31:32.801] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/networks/create HTTP/1.1" 201 87
+[2026-10-07 17:31:32.803] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/networks/fa13bfddf1c969c5904d5ac97d675ce5aad0ef77c223beaf7599db83d8e643fc HTTP/1.1" 200 564
+[2026-10-07 17:31:33.300] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/create HTTP/1.1" 201 88
+[2026-10-07 17:31:33.302] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110/json HTTP/1.1" 200 None
+[2026-10-07 17:31:33.728] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110/start HTTP/1.1" 204 0
+[2026-10-07 17:31:33.729] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:33.729] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:33.729] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:33.729] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:33.748] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+-------------------------------- live log call ---------------------------------
+[2026-10-07 17:31:33.751] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:33.753] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/9f7b61a1326ec49371de714cc9d8d04390c958aeb88bfca2afb49e8438a2dae9/start HTTP/1.1" 101 0
+[2026-10-07 17:31:33.805] [INFO] [bigdata-producer] [bigdata-producer] Starting bigdata test with num_cycles=40
+[2026-10-07 17:31:33.807] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:33.809] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/start HTTP/1.1" 101 0
+[2026-10-07 17:31:33.873] [INFO] [bigdata-consumer-async] [bigdata-consumer] Starting, will try to receive samples 25 times using mode WithoutCancellation
+[2026-10-07 17:31:33.873] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:33.4293872 1565321121 000 ECU1 BIGD lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com. 
+[2026-10-07 17:31:33.874] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:33.4293873 1565321124 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 0
+[2026-10-07 17:31:33.875] [INFO] [bigdata-consumer-async] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-07 17:31:33.876] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:33.4293873 1565321128 000 ECU1 BIGD lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/6432/1
+[2026-10-07 17:31:33.876] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:33.978] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.080] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.182] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.284] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.386] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.488] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.590] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.691] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.793] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.895] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:34.997] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.100] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.201] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.303] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.405] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.507] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.609] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.711] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.806] [INFO] [bigdata-producer] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-07 17:31:35.807] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295806 1565340461 000 ECU1 BIGD lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] warn: logger not initialized
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295807 1565340471 000 ECU1 BIGD lola log debug verbose 5 Recreating SHM of Skeleton (S: 6432 I: 1 ) 
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295807 1565340471 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000006432-00001
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295807 1565340472 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000006432-00001-b 
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295807 1565340472 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000006432-00001
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295808 1565340475 000 ECU1 BIGD lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  6432 : 1  are as follows:
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] QM-Ctrl:  2144 , ASIL_B-Ctrl:  0 , Data:  218001128
+[2026-10-07 17:31:35.808] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295808 1565340476 000 ECU1 BIGD shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForUser
+[2026-10-07 17:31:35.809] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295808 1565340479 000 ECU1 BIGD shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForUser
+[2026-10-07 17:31:35.809] [INFO] [bigdata-producer] 2026/10/07 17:31:35.4295808 1565340481 000 ECU1 BIGD lola log debug verbose 5 Created shared-memory-object for DATA (S:  6432  I: 1 )
+[2026-10-07 17:31:35.813] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:35.915] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.017] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.036] [INFO] [bigdata-producer] 2026/10/07 17:31:36.4296035 1565342748 000 ECU1 BIGD lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/6432/1
+[2026-10-07 17:31:36.036] [INFO] [bigdata-producer] 2026/10/07 17:31:36.4296035 1565342750 000 ECU1 BIGD lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/6432/1/8_asil-qm_156534045990336
+[2026-10-07 17:31:36.036] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296035 1565342752 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/6432/1 (ASIL-QM)
+[2026-10-07 17:31:36.036] [INFO] [bigdata-producer] [bigdata-producer] Service offered, starting send loop
+[2026-10-07 17:31:36.037] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296036 1565342753 000 ECU1 BIGD lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles 
+[2026-10-07 17:31:36.037] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296036 1565342754 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-07 17:31:36.037] [INFO] [bigdata-consumer-async] warn: logger not initialized
+[2026-10-07 17:31:36.037] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296036 1565342755 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-07 17:31:36.037] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=1
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296036 1565342760 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 1 
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296036 1565342761 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1 
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296036 1565342762 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342763 000 ECU1 BIGD lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342764 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 2
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342764 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 2 
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342765 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 2 finished
+[2026-10-07 17:31:36.038] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342765 000 ECU1 BIGD lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] [bigdata-consumer] Using async receive without cancellation
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342766 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342767 000 ECU1 BIGD mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_8_QM
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342767 000 ECU1 BIGD mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_8_QM
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:36.4296037 1565342769 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.039] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 1
+[2026-10-07 17:31:36.119] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.136] [INFO] [bigdata-producer] 2026/10/07 17:31:36.4296136 1565343754 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-07 17:31:36.136] [INFO] [bigdata-producer] 2026/10/07 17:31:36.4296136 1565343754 000 ECU1 BIGD mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_14_QM
+[2026-10-07 17:31:36.137] [INFO] [bigdata-producer] 2026/10/07 17:31:36.4296136 1565343756 000 ECU1 BIGD mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_14_QM 
+[2026-10-07 17:31:36.137] [INFO] [bigdata-producer] 2026/10/07 17:31:36.4296136 1565343757 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-07 17:31:36.137] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.137] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 2
+[2026-10-07 17:31:36.137] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=2
+[2026-10-07 17:31:36.221] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.237] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=3
+[2026-10-07 17:31:36.237] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.237] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 3
+[2026-10-07 17:31:36.323] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.337] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=4
+[2026-10-07 17:31:36.337] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.338] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 4
+[2026-10-07 17:31:36.425] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.437] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=5
+[2026-10-07 17:31:36.438] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.438] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 5
+[2026-10-07 17:31:36.527] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.538] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=6
+[2026-10-07 17:31:36.538] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.538] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 6
+[2026-10-07 17:31:36.629] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.638] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=7
+[2026-10-07 17:31:36.638] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.638] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 7
+[2026-10-07 17:31:36.731] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.738] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=8
+[2026-10-07 17:31:36.738] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.738] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 8
+[2026-10-07 17:31:36.833] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.838] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=9
+[2026-10-07 17:31:36.838] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.839] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 9
+[2026-10-07 17:31:36.935] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:36.938] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=10
+[2026-10-07 17:31:36.939] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:36.939] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 10
+[2026-10-07 17:31:37.037] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.038] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=11
+[2026-10-07 17:31:37.039] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.039] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 11
+[2026-10-07 17:31:37.139] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=12
+[2026-10-07 17:31:37.139] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.140] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.140] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 12
+[2026-10-07 17:31:37.239] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=13
+[2026-10-07 17:31:37.239] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.239] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 13
+[2026-10-07 17:31:37.241] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.339] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=14
+[2026-10-07 17:31:37.340] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.340] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 14
+[2026-10-07 17:31:37.343] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.439] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=15
+[2026-10-07 17:31:37.440] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.440] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 15
+[2026-10-07 17:31:37.445] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.540] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=16
+[2026-10-07 17:31:37.540] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.540] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 16
+[2026-10-07 17:31:37.547] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.640] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=17
+[2026-10-07 17:31:37.640] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.640] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 17
+[2026-10-07 17:31:37.649] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.740] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=18
+[2026-10-07 17:31:37.740] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.741] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 18
+[2026-10-07 17:31:37.751] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.840] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=19
+[2026-10-07 17:31:37.841] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.841] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 19
+[2026-10-07 17:31:37.853] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:37.941] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=20
+[2026-10-07 17:31:37.941] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:37.941] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 20
+[2026-10-07 17:31:37.955] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:38.041] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=21
+[2026-10-07 17:31:38.041] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:38.041] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 21
+[2026-10-07 17:31:38.057] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:38.141] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=22
+[2026-10-07 17:31:38.141] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:38.142] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 22
+[2026-10-07 17:31:38.159] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:38.241] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=23
+[2026-10-07 17:31:38.242] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:38.242] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 23
+[2026-10-07 17:31:38.261] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:38.341] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=24
+[2026-10-07 17:31:38.342] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:38.342] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 24
+[2026-10-07 17:31:38.363] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:38.442] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=25
+[2026-10-07 17:31:38.442] [INFO] [bigdata-consumer-async] [bigdata-consumer] Received 1 samples
+[2026-10-07 17:31:38.442] [INFO] [bigdata-consumer-async] [bigdata-consumer]   Sample x: 25
+[2026-10-07 17:31:38.442] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:38.4298442 1565366814 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1 
+[2026-10-07 17:31:38.443] [INFO] [bigdata-consumer-async] [bigdata-consumer] Completed 25 receive attempts, exiting
+[2026-10-07 17:31:38.443] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:38.4298442 1565366815 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 2
+[2026-10-07 17:31:38.443] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:38.4298442 1565366817 000 ECU1 BIGD lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-07 17:31:38.453] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:38.4298452 1565366921 000 ECU1 BIGD mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-07 17:31:38.453] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:38.4298452 1565366922 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-07 17:31:38.453] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:38.4298453 1565366924 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-07 17:31:38.463] [INFO] [bigdata-producer] 2026/10/07 17:31:38.4298463 1565367026 000 ECU1 BIGD mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-07 17:31:38.463] [INFO] [bigdata-producer] 2026/10/07 17:31:38.4298463 1565367026 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-07 17:31:38.464] [INFO] [bigdata-producer] 2026/10/07 17:31:38.4298463 1565367027 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-07 17:31:38.465] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 469
+[2026-10-07 17:31:38.542] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=26
+[2026-10-07 17:31:38.567] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 467
+[2026-10-07 17:31:38.569] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/588bcb66555b85e887b01019434626661be014fb1e926f3f4239a8db2d85cbb4/json HTTP/1.1" 200 467
+[2026-10-07 17:31:38.569] [DEBUG] [score.itf.core.process.wrapped_process] Application [bigdata-consumer-async] exit code: [0]
+[2026-10-07 17:31:38.571] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/9f7b61a1326ec49371de714cc9d8d04390c958aeb88bfca2afb49e8438a2dae9/json HTTP/1.1" 200 439
+[2026-10-07 17:31:38.572] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:38.574] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/c4d5e3ddc4b93a9cd367803183eb4565f9d0fe867c3fe30c478d1507d99a26ae/start HTTP/1.1" 101 0
+[2026-10-07 17:31:38.652] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4d5e3ddc4b93a9cd367803183eb4565f9d0fe867c3fe30c478d1507d99a26ae/json HTTP/1.1" 200 388
+[2026-10-07 17:31:39.654] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/9f7b61a1326ec49371de714cc9d8d04390c958aeb88bfca2afb49e8438a2dae9/json HTTP/1.1" 200 439
+[2026-10-07 17:31:39.655] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/9f7b61a1326ec49371de714cc9d8d04390c958aeb88bfca2afb49e8438a2dae9/json HTTP/1.1" 200 439
+[2026-10-07 17:31:39.656] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/9f7b61a1326ec49371de714cc9d8d04390c958aeb88bfca2afb49e8438a2dae9/json HTTP/1.1" 200 439
+[2026-10-07 17:31:39.657] [DEBUG] [score.itf.core.process.wrapped_process] Application [bigdata-producer] exit code: [143]
+PASSED                                                                   [ 66%]
+------------------------------ live log teardown -------------------------------
+[2026-10-07 17:31:40.097] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110/stop?t=1 HTTP/1.1" 204 0
+[2026-10-07 17:31:40.178] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/containers/ac350a5becfd22383bb1c3332cf9a4a5ab79b3753e78a723ea13360e9432f110?v=False&link=False&force=True HTTP/1.1" 204 0
+[2026-10-07 17:31:40.347] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/networks/fa13bfddf1c969c5904d5ac97d675ce5aad0ef77c223beaf7599db83d8e643fc HTTP/1.1" 204 0
+
+../score_itf+::test_bigdata_async_stream 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 17:31:40.349] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/_image_test_com_api_async_loader.sh
+[2026-10-07 17:31:43.306] [INFO] [score.itf.plugins.docker] Bootstrap stdout: Loaded image: test_com_api_async:latest
+
+[2026-10-07 17:31:43.306] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:43.306] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:43.306] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:43.307] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:43.319] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+[2026-10-07 17:31:43.401] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/networks/create HTTP/1.1" 201 87
+[2026-10-07 17:31:43.404] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/networks/28a3391630453422734bdb5c35ceb65849422e2d4cb3052499ae3ae4c8f36ba0 HTTP/1.1" 200 564
+[2026-10-07 17:31:43.687] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/create HTTP/1.1" 201 88
+[2026-10-07 17:31:43.690] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca/json HTTP/1.1" 200 None
+[2026-10-07 17:31:44.007] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca/start HTTP/1.1" 204 0
+[2026-10-07 17:31:44.008] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:44.008] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:44.008] [DEBUG] [docker.utils.config] Trying paths: ['/tmp/build-home/.docker/config.json', '/tmp/build-home/.dockercfg']
+[2026-10-07 17:31:44.008] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:31:44.019] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+-------------------------------- live log call ---------------------------------
+[2026-10-07 17:31:44.022] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:44.024] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/32b046333f6f36e5b173a14da005d25ea654890bb8b201076a85a7cbee864d32/start HTTP/1.1" 101 0
+[2026-10-07 17:31:44.091] [INFO] [bigdata-producer] [bigdata-producer] Starting bigdata test with num_cycles=40
+[2026-10-07 17:31:44.093] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:44.095] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/start HTTP/1.1" 101 0
+[2026-10-07 17:31:44.160] [INFO] [bigdata-consumer-async] [bigdata-consumer] Starting, will try to receive samples 25 times using mode Stream
+[2026-10-07 17:31:44.163] [INFO] [bigdata-consumer-async] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-07 17:31:44.164] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:44.4304161 1565424003 000 ECU1 BIGD lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-07 17:31:44.164] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:44.4304161 1565424006 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 0
+[2026-10-07 17:31:44.164] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:44.4304161 1565424010 000 ECU1 BIGD lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/6432/1
+[2026-10-07 17:31:44.166] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.268] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.370] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.472] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.575] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.676] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.778] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.880] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:44.982] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.084] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.186] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.288] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.390] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.493] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.595] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.697] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.799] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:45.901] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.003] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.089] [INFO] [bigdata-producer] mw::log initialization error: Error Unsupported LogMode encountered in the RecorderFactory, using EmptyRecorder instead. occurred with context information: Requested log mode not available. Falling back to console.
+[2026-10-07 17:31:46.090] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306090 1565443293 000 ECU1 BIGD lola log info verbose 2 No explicit applicationID configured. Falling back to using process UID.  Ensure unique UIDs for applications using mw::com.
+[2026-10-07 17:31:46.091] [INFO] [bigdata-producer] warn: logger not initialized
+[2026-10-07 17:31:46.091] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306090 1565443301 000 ECU1 BIGD lola log debug verbose 5 Recreating SHM of Skeleton (S: 6432 I: 1 )
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306090 1565443302 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000006432-00001 
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306090 1565443302 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-ctl-0000000000006432-00001-b 
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306091 1565443303 000 ECU1 BIGD shm log debug verbose 2 Typed memory daemon uid is not initialized. Shm is not in TypedMemory: /lola-data-0000000000006432-00001 
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306091 1565443305 000 ECU1 BIGD lola log info verbose 10 Calculated sizes of shm-objects for service_id:instance_id  6432 : 1  are as follows:
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] QM-Ctrl:  2144 , ASIL_B-Ctrl:  0 , Data:  218001128 
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306091 1565443306 000 ECU1 BIGD shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForUser 
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306091 1565443309 000 ECU1 BIGD shm log debug verbose 1 Calculating Stat::Mode for SharedMemoryResource permissions: readWriteAccessForUser 
+[2026-10-07 17:31:46.092] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306091 1565443310 000 ECU1 BIGD lola log debug verbose 5 Created shared-memory-object for DATA (S:  6432  I: 1 )
+[2026-10-07 17:31:46.105] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.207] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.245] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306245 1565444846 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Added /tmp/mw_com_lola/service_discovery/6432/1 (ASIL-QM)
+[2026-10-07 17:31:46.245] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306245 1565444847 000 ECU1 BIGD lola log debug verbose 5 LoLa SD: Starting asynchronous call to handler for FindServiceHandle 0 with 1 handles
+[2026-10-07 17:31:46.246] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306245 1565444847 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Asynchronous call to handler for FindServiceHandle 0 finished
+[2026-10-07 17:31:46.246] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306245 1565444843 000 ECU1 BIGD lola log info verbose 2 Successfully created offer path /tmp/mw_com_lola/service_discovery/6432/1 
+[2026-10-07 17:31:46.246] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306245 1565444848 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 0
+[2026-10-07 17:31:46.246] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306245 1565444844 000 ECU1 BIGD lola log debug verbose 2 created flag file for service: /tmp/mw_com_lola/service_discovery/6432/1/8_asil-qm_156544329182288 
+[2026-10-07 17:31:46.247] [INFO] [bigdata-producer] [bigdata-producer] Service offered, starting send loop
+[2026-10-07 17:31:46.247] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=1
+[2026-10-07 17:31:46.247] [INFO] [bigdata-consumer-async] warn: logger not initialized
+[2026-10-07 17:31:46.247] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306245 1565444852 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 1
+[2026-10-07 17:31:46.247] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444853 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 1
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444853 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 1 finished
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444854 000 ECU1 BIGD lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444855 000 ECU1 BIGD lola log debug verbose 4 LoLa SD: Starting service discovery for /tmp/mw_com_lola/service_discovery/6432/1 with FindServiceHandle 2
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444855 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Synchronously calling handler for FindServiceHandle 2
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444856 000 ECU1 BIGD lola log debug verbose 3 LoLa SD: Synchronous call to handler for FindServiceHandle 2 finished
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444856 000 ECU1 BIGD lola log debug verbose 1 No enabled methods or field methods for this Proxy. Skipping method setup.
+[2026-10-07 17:31:46.248] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444857 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  0
+[2026-10-07 17:31:46.249] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444858 000 ECU1 BIGD mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_8_QM
+[2026-10-07 17:31:46.249] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444859 000 ECU1 BIGD mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_8_QM
+[2026-10-07 17:31:46.249] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:46.4306246 1565444859 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-07 17:31:46.249] [INFO] [bigdata-consumer-async] [bigdata-consumer] Using async stream
+[2026-10-07 17:31:46.249] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 1
+[2026-10-07 17:31:46.309] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.346] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 2
+[2026-10-07 17:31:46.346] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306345 1565445847 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  0 
+[2026-10-07 17:31:46.347] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306345 1565445848 000 ECU1 BIGD mp_2 log info verbose 4 ClientConnection::DoRestart  0   LoLa_2_14_QM
+[2026-10-07 17:31:46.347] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306345 1565445850 000 ECU1 BIGD mp_2 log info verbose 2 TryOpenClientConnection  LoLa_2_14_QM 
+[2026-10-07 17:31:46.347] [INFO] [bigdata-producer] 2026/10/07 17:31:46.4306345 1565445851 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  1
+[2026-10-07 17:31:46.347] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=2
+[2026-10-07 17:31:46.411] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.446] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 3
+[2026-10-07 17:31:46.447] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=3
+[2026-10-07 17:31:46.513] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.546] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=4
+[2026-10-07 17:31:46.547] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 4
+[2026-10-07 17:31:46.615] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.647] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=5
+[2026-10-07 17:31:46.647] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 5
+[2026-10-07 17:31:46.717] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.747] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=6
+[2026-10-07 17:31:46.747] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 6
+[2026-10-07 17:31:46.819] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.847] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=7
+[2026-10-07 17:31:46.847] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 7
+[2026-10-07 17:31:46.921] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:46.947] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=8
+[2026-10-07 17:31:46.948] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 8
+[2026-10-07 17:31:47.023] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.047] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=9
+[2026-10-07 17:31:47.048] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 9
+[2026-10-07 17:31:47.125] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.148] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=10
+[2026-10-07 17:31:47.148] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 10
+[2026-10-07 17:31:47.227] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.248] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 11
+[2026-10-07 17:31:47.248] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=11
+[2026-10-07 17:31:47.329] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.348] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=12
+[2026-10-07 17:31:47.348] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 12
+[2026-10-07 17:31:47.431] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.448] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=13
+[2026-10-07 17:31:47.449] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 13
+[2026-10-07 17:31:47.533] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.548] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=14
+[2026-10-07 17:31:47.549] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 14
+[2026-10-07 17:31:47.635] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.649] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=15
+[2026-10-07 17:31:47.649] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 15
+[2026-10-07 17:31:47.736] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.749] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=16
+[2026-10-07 17:31:47.749] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 16
+[2026-10-07 17:31:47.838] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.849] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=17
+[2026-10-07 17:31:47.849] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 17
+[2026-10-07 17:31:47.940] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:47.949] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 18
+[2026-10-07 17:31:47.949] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=18
+[2026-10-07 17:31:48.042] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.049] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=19
+[2026-10-07 17:31:48.049] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 19
+[2026-10-07 17:31:48.144] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.149] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=20
+[2026-10-07 17:31:48.150] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 20
+[2026-10-07 17:31:48.246] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.250] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=21
+[2026-10-07 17:31:48.250] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 21
+[2026-10-07 17:31:48.349] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.350] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=22
+[2026-10-07 17:31:48.350] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 22
+[2026-10-07 17:31:48.450] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=23
+[2026-10-07 17:31:48.451] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 23
+[2026-10-07 17:31:48.451] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.550] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=24
+[2026-10-07 17:31:48.551] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 24
+[2026-10-07 17:31:48.553] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.651] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=25
+[2026-10-07 17:31:48.651] [INFO] [bigdata-consumer-async] [bigdata-consumer] Stream received sample x: 25
+[2026-10-07 17:31:48.651] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:48.4308650 1565468902 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 1 
+[2026-10-07 17:31:48.651] [INFO] [bigdata-consumer-async] [bigdata-consumer] Completed 25 receive attempts, exiting
+[2026-10-07 17:31:48.651] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:48.4308651 1565468904 000 ECU1 BIGD lola log debug verbose 2 LoLa SD: Stopped service discovery for FindServiceHandle 2
+[2026-10-07 17:31:48.652] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:48.4308651 1565468905 000 ECU1 BIGD lola log debug verbose 1 Starting destruction of mw::com runtime
+[2026-10-07 17:31:48.655] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 455
+[2026-10-07 17:31:48.662] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:48.4308661 1565469010 000 ECU1 BIGD mp_2 log info verbose 2 TrySetStopReason  2 
+[2026-10-07 17:31:48.662] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:48.4308661 1565469011 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  2
+[2026-10-07 17:31:48.662] [INFO] [bigdata-consumer-async] 2026/10/07 17:31:48.4308661 1565469012 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-07 17:31:48.672] [INFO] [bigdata-producer] 2026/10/07 17:31:48.4308672 1565469114 000 ECU1 BIGD mp_2 log info verbose 2 TrySetStopReason  4 
+[2026-10-07 17:31:48.672] [INFO] [bigdata-producer] 2026/10/07 17:31:48.4308672 1565469114 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  2 
+[2026-10-07 17:31:48.672] [INFO] [bigdata-producer] 2026/10/07 17:31:48.4308672 1565469115 000 ECU1 BIGD mp_2 log info verbose 2 ProcessStateChange  3
+[2026-10-07 17:31:48.751] [INFO] [bigdata-producer] [bigdata-producer] Sent sample x=26
+[2026-10-07 17:31:48.757] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 453
+[2026-10-07 17:31:48.759] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/c4b3d3c3345d783674798d271a57717551588c4bb8a1d8993d3bc07332e2178b/json HTTP/1.1" 200 453
+[2026-10-07 17:31:48.759] [DEBUG] [score.itf.core.process.wrapped_process] Application [bigdata-consumer-async] exit code: [0]
+[2026-10-07 17:31:48.760] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/32b046333f6f36e5b173a14da005d25ea654890bb8b201076a85a7cbee864d32/json HTTP/1.1" 200 439
+[2026-10-07 17:31:48.762] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca/exec HTTP/1.1" 201 74
+[2026-10-07 17:31:48.763] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/e9fd0c9bc173d3d717977d7bd31851e5ddaf9af6d3f097b576d1157f90bc84f4/start HTTP/1.1" 101 0
+[2026-10-07 17:31:48.833] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/e9fd0c9bc173d3d717977d7bd31851e5ddaf9af6d3f097b576d1157f90bc84f4/json HTTP/1.1" 200 388
+[2026-10-07 17:31:49.835] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/32b046333f6f36e5b173a14da005d25ea654890bb8b201076a85a7cbee864d32/json HTTP/1.1" 200 439
+[2026-10-07 17:31:49.837] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/32b046333f6f36e5b173a14da005d25ea654890bb8b201076a85a7cbee864d32/json HTTP/1.1" 200 439
+[2026-10-07 17:31:49.838] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/32b046333f6f36e5b173a14da005d25ea654890bb8b201076a85a7cbee864d32/json HTTP/1.1" 200 439
+[2026-10-07 17:31:49.838] [DEBUG] [score.itf.core.process.wrapped_process] Application [bigdata-producer] exit code: [143]
+PASSED                                                                   [100%]
+------------------------------ live log teardown -------------------------------
+[2026-10-07 17:31:50.494] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca/stop?t=1 HTTP/1.1" 204 0
+[2026-10-07 17:31:50.574] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/containers/708bf312f653e0f255065fcdad804fab223134a687a844bf87aa7a1939fbd0ca?v=False&link=False&force=True HTTP/1.1" 204 0
+[2026-10-07 17:31:50.791] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/networks/28a3391630453422734bdb5c35ceb65849422e2d4cb3052499ae3ae4c8f36ba0 HTTP/1.1" 204 0
+
+
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/355/execroot/_main/bazel-out/k8-fastbuild/testlogs/score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/test_com_api_async/test.xml -
+============================== 3 passed in 31.70s ==============================

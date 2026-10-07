@@ -1,0 +1,53 @@
+{
+  "checks": [
+    {
+      "config": "linux_x64",
+      "kind": "build",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Issue560, native production callback contract; integration-plan.md",
+      "reason": "Build dedicated production LoLa two-process integration binary",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis"
+      ]
+    },
+    {
+      "kind": "test",
+      "config": "linux_x64",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis-tests"
+      ],
+      "reason": "Three controller subprocess cases: successful exit, acknowledged failed exit, injected wait error and owned-child reaping",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Codex review C2/C3; controller cleanup guarantees; separate from real LoLa integration"
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Supervisor O12/G8 and G6/G7; production path rather than mock substitution",
+      "reason": "Five new callback/lifecycle cases plus six existing sample regressions; uncached Linux Docker execution",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test:test_subscription_state_apis",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ]
+    },
+    {
+      "config": "clippy",
+      "kind": "lint",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Native quality/static_analysis/static_analysis.bazelrc clippy_strict",
+      "reason": "Native Clippy on newly written executable/test harness; measure actual aspect execution",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "query",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Resolve newly implemented BUILD labels; complete downstream set stays unknown",
+      "reason": "Explicit label discovery, not reverse-dependency completeness",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis",
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test:test_subscription_state_apis",
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis-tests"
+      ]
+    }
+  ]
+}

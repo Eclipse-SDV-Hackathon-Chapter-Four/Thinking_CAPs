@@ -1,0 +1,70 @@
+{
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "clippy",
+          "informationUri": "https://rust-lang.github.io/rust-clippy/",
+          "rules": [
+            {
+              "id": "clippy::iter_count",
+              "fullDescription": {
+                "text": "for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#iter_count\n`#[warn(clippy::iter_count)]` on by default\n"
+              },
+              "helpUri": "https://rust-lang.github.io/rust-clippy/master/index.html#iter_count"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "clippy::iter_count",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "called `.into_iter().count()` on a `Vec`"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs"
+                },
+                "region": {
+                  "byteOffset": 8695,
+                  "byteLength": 175,
+                  "startLine": 186,
+                  "startColumn": 17,
+                  "endLine": 190,
+                  "endColumn": 17
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs"
+                },
+                "region": {
+                  "byteOffset": 8695,
+                  "byteLength": 175,
+                  "startLine": 186,
+                  "startColumn": 17,
+                  "endLine": 190,
+                  "endColumn": 17
+                }
+              },
+              "message": {
+                "text": "try \"discovery\n        .get_available_instances()\n        .expect(\"no-offer Any discovery must return the documented Ok(empty), not an error\").len()\""
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

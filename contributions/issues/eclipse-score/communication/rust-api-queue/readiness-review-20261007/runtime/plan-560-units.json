@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "kind": "test",
+      "config": "linux_x64",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "Execute the subscription-state mock-bridge error/ownership cases and existing LoLa unit regressions, distinct from production integrations",
+      "native_obligation": "Native com-api-runtime-lola/BUILD and #560 event/FFI contract"
+    },
+    {
+      "kind": "build",
+      "config": "linux_x64",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "Compile the affected native mock-runtime implementation",
+      "native_obligation": "Native com-api-runtime-mock/BUILD; source trait compatibility"
+    }
+  ]
+}

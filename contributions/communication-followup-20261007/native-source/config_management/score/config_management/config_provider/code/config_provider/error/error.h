@@ -1,0 +1,61 @@
+/********************************************************************************
+ * Copyright (c) 2025 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+#ifndef SCORE_CONFIG_MANAGEMENT_CONFIG_PROVIDER_CODE_CONFIG_PROVIDER_ERROR_ERROR_H
+#define SCORE_CONFIG_MANAGEMENT_CONFIG_PROVIDER_CODE_CONFIG_PROVIDER_ERROR_ERROR_H
+
+#include "score/result/error.h"
+#include "score/result/error_code.h"
+#include "score/result/error_domain.h"
+
+namespace score
+{
+namespace config_management
+{
+namespace config_provider
+{
+
+/// @brief Represents all errors that can be returned by Configuration Provider
+enum class ConfigProviderError : score::result::ErrorCode
+{
+    kParsingFailed,
+    kObjectCastingError,
+    kParameterNotFound,
+    kValueCastingError,
+    kValueNotFound,
+    kProxyNotReady,
+    kProxyAccessTimeout,
+    kProxyReturnedNoResult,
+    kEmptyCallbackProvided,
+    kCallbackAlreadySet,
+    kMethodNotSupported,
+    kFailedToSubscribe,
+    kParameterSetNotFound,
+};
+
+/// @brief ADL overload to fulfill design requirements from lib/result
+score::result::Error MakeError(const ConfigProviderError code, const std::string_view user_message = "") noexcept;
+
+/// @brief Returns the singleton error domain used by all Configuration Provider errors.
+///
+/// The returned reference identifies the domain that `MakeError` attaches to every
+/// `ConfigProviderError`. Its address is stable for the whole process lifetime and is used
+/// (via the C-linkage shim in error.cpp) by the Rust bindings to recognise errors that
+/// originate from this component and map their codes back to typed variants.
+const score::result::ErrorDomain& GetConfigProviderErrorDomain() noexcept;
+
+}  // namespace config_provider
+}  // namespace config_management
+}  // namespace score
+
+#endif  // SCORE_CONFIG_MANAGEMENT_CONFIG_PROVIDER_CODE_CONFIG_PROVIDER_ERROR_ERROR_H

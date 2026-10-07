@@ -1,0 +1,50 @@
+{
+  "checks": [
+    {
+      "kind": "run",
+      "config": "linux_x64",
+      "targets": [
+        "//tools/lint:rustfmt_with_config"
+      ],
+      "arguments": [
+        "--check",
+        "--edition",
+        "2021",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/560/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs"
+      ],
+      "reason": "Check corrected source using the maintained Rust policy wrapper; no blanket formatter changes",
+      "native_obligation": "Native CONTRIBUTING.md, CI.md, tools/lint/BUILD and native BUILD target"
+    },
+    {
+      "config": "linux_x64",
+      "kind": "build",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Issue560, native production callback contract; integration-plan.md",
+      "reason": "Build dedicated production LoLa two-process integration binary; Compile the affected native mock-runtime implementation",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ]
+    },
+    {
+      "kind": "test",
+      "config": "linux_x64",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis-tests",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "Three controller subprocess cases: successful exit, acknowledged failed exit, injected wait error and owned-child reaping; Execute the subscription-state mock-bridge error/ownership cases and existing LoLa unit regressions, distinct from production integrations",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Codex review C2/C3; controller cleanup guarantees; separate from real LoLa integration"
+    },
+    {
+      "config": "clippy",
+      "kind": "lint",
+      "native_obligation": "Native BUILD/CI, current user request to address scope/ABI/warnings/checks; Native quality/static_analysis/static_analysis.bazelrc clippy_strict",
+      "reason": "Native Clippy on newly written executable/test harness; measure actual aspect execution; Resolve the cfg(test) Clippy gap on directly affected native test targets",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+        "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis-tests"
+      ]
+    }
+  ]
+}

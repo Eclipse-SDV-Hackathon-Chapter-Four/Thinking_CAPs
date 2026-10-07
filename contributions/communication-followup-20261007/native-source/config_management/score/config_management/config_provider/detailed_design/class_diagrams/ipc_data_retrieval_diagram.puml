@@ -1,0 +1,32 @@
+' *******************************************************************************
+' Copyright (c) 2026 Contributors to the Eclipse Foundation
+'
+' See the NOTICE file(s) distributed with this work for additional
+' information regarding copyright ownership.
+'
+' This program and the accompanying materials are made available under the
+' terms of the Apache License Version 2.0 which is available at
+' https://www.apache.org/licenses/LICENSE-2.0
+'
+' SPDX-License-Identifier: Apache-2.0
+' *******************************************************************************
+
+@startuml
+
+!includesub ../assets/parameter_set/parameter_set.puml!ParameterSet
+!includesub ../assets/config_provider/initial_qualifier_state_types.puml!InitialQualifierState
+!includesub ../assets/config_provider/config_provider.puml!ConfigProvider
+!includesub ../assets/config_provider/config_provider.puml!ConfigProviderImpl
+!includesub ../assets/proxies/internal_config_provider.puml!InternalConfigProvider
+!includesub ../assets/proxies/internal_config_provider.puml!IInternalConfigProvider
+
+Adaptive_Application *-down- ConfigProvider
+Adaptive_Application .down.> ParameterSet
+Adaptive_Application .down.> InitialQualifierState
+
+ConfigProvider *-up- ParameterSet
+ConfigProvider *-up- InitialQualifierState
+
+ConfigProviderImpl *-down- IInternalConfigProvider
+
+@enduml

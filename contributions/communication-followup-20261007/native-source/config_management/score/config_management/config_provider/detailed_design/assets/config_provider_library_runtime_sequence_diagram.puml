@@ -1,0 +1,92 @@
+' *******************************************************************************
+' Copyright (c) 2026 Contributors to the Eclipse Foundation
+'
+' See the NOTICE file(s) distributed with this work for additional
+' information regarding copyright ownership.
+'
+' This program and the accompanying materials are made available under the
+' terms of the Apache License Version 2.0 which is available at
+' https://www.apache.org/licenses/LICENSE-2.0
+'
+' SPDX-License-Identifier: Apache-2.0
+' *******************************************************************************
+
+@startuml
+
+skinparam SequenceMessageAlignment center
+title ConfigProvider library runtime
+
+group ConfigProvider Library
+participant AdaptiveApplication
+participant ConfigProvider
+participant InternalConfigProviderImpl
+participant "mw::com" as mwCom
+
+-> AdaptiveApplication : Run()
+activate AdaptiveApplication
+
+AdaptiveApplication -> ConfigProvider : GetParameterSet(set_name: score::cpp::string_view)
+activate ConfigProvider
+ConfigProvider -> InternalConfigProviderImpl : internal_config_provider_proxy_->GetParameterSet(set_name: score::cpp::string_view)
+activate InternalConfigProviderImpl
+InternalConfigProviderImpl -> mwCom : proxy_->GetParameterSet(set_name: score::cpp::string_view)
+activate mwCom
+mwCom --> InternalConfigProviderImpl : ParameterSet&
+deactivate mwCom
+InternalConfigProviderImpl --> ConfigProvider: ParameterSet&
+deactivate InternalConfigProviderImpl
+ConfigProvider -> AdaptiveApplication : ParameterSet&
+deactivate ConfigProvider
+
+AdaptiveApplication -> ConfigProvider : GetInitialQualifierState()
+activate ConfigProvider
+ConfigProvider -> InternalConfigProviderImpl : internal_config_provider_proxy_->GetInitialQualifierState()
+activate InternalConfigProviderImpl
+InternalConfigProviderImpl -> mwCom : proxy_->GetInitialQualifierState()
+activate mwCom
+mwCom --> InternalConfigProviderImpl : InitialQualifierState
+deactivate mwCom
+InternalConfigProviderImpl --> ConfigProvider: InitialQualifierState
+deactivate InternalConfigProviderImpl
+ConfigProvider -> AdaptiveApplication : InitialQualifierState
+deactivate ConfigProvider
+
+AdaptiveApplication -> AdaptiveApplication : wait_until_stop_requested
+
+mwCom <- : Send(data: mw::com::SampleAllocateePtr<SampleType>)
+activate mwCom
+mwCom -> InternalConfigProviderImpl : LastUpdatedParameterSetRegisteredReceiveHandler()
+activate InternalConfigProviderImpl
+InternalConfigProviderImpl->ConfigProvider : LastUpdatedParameterSetReceiveHandler(set_name: score::cpp::string_view)
+activate ConfigProvider
+ConfigProvider->ConfigProvider:if(client_handlers.find(set_name) != client_handlers.end())
+activate ConfigProvider
+ConfigProvider-->ConfigProvider
+deactivate ConfigProvider
+
+alt Parameter set key found
+    ConfigProvider->InternalConfigProviderImpl : internal_config_provider_proxy_->GetParameterSet(set_name: score::cpp::string_view)
+
+    activate InternalConfigProviderImpl
+    InternalConfigProviderImpl-> mwCom : proxy_->GetParameterSet(set_name: score::cpp::string_view)
+    activate mwCom
+    InternalConfigProviderImpl <-- mwCom : ParameterSet&
+    deactivate mwCom
+    ConfigProvider <-- InternalConfigProviderImpl : ParameterSet&
+    deactivate InternalConfigProviderImpl
+    AdaptiveApplication <- ConfigProvider : *(client_handlers[set_name])(ParameterSet&)
+    activate AdaptiveApplication
+    AdaptiveApplication -> ConfigProvider : void
+    deactivate AdaptiveApplication
+
+else else
+end
+
+ConfigProvider --> InternalConfigProviderImpl
+InternalConfigProviderImpl --> mwCom
+mwCom --> : void
+<-- AdaptiveApplication
+
+end group
+
+@enduml

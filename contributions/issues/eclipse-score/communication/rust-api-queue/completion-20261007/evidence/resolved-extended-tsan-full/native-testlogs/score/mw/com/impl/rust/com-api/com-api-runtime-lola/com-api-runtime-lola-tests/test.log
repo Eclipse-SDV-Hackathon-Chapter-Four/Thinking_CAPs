@@ -1,0 +1,75 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests
+-----------------------------------------------------------------------------
+==12==WARNING: ThreadSanitizer: memory layout is incompatible, possibly due to high-entropy ASLR.
+Re-execing with fixed virtual address space.
+N.B. reducing ASLR entropy is preferable.
+==12==Installed the sigaction for signal 11
+==12==Installed the sigaction for signal 7
+==12==Installed the sigaction for signal 8
+ThreadSanitizer: reading suppressions file at /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/3056/execroot/_main/bazel-out/k8-fastbuild-tsan/bin/score/mw/com/impl/rust/com-api/com-api-runtime-lola/test-54569430/com-api-runtime-lola-tests.runfiles/score_cpp_policies+/sanitizers/suppressions/tsan.supp
+***** Running under ThreadSanitizer v3 (pid 12) *****
+
+running 25 tests
+test consumer::test::test_any_async_never_polled_stops_native_search ... ok
+test consumer::test::test_any_async_pending_cancellation_stops_native_search ... ok
+test consumer::test::test_any_discovery_unmapped_interface_returns_error ... ok
+test consumer::test::test_drop_unregisters_before_unsubscribe_and_disposes_once ... ok
+test consumer::test::test_event_try_receive ... ok
+test consumer::test::test_get_subscription_state_maps_raw_values ... ok
+test consumer::test::test_handler_false_return_signals_cancellation ... ok
+test consumer::test::test_handler_observed_mapped_state_and_mutated_capture ... ok
+test consumer::test::test_lola_consumer_info ... ok
+test consumer::test::test_set_and_unset_disposes_captured_resource_exactly_once ... ok
+test consumer::test::test_set_handler_failure_drops_captured_resource ... ok
+test consumer::test::test_subscribe_event ... ok
+test consumer::test::test_subscribe_type_ops_none_returns_event_not_available ... ok
+test producer::test::test_provider_info_offer_service ... ok
+test producer::test::test_publisher_allocate_and_send ... ok
+test service_stream::tests::apply_snapshot_deduplicates_and_reports_reoffer_after_withdrawal ... ok
+test service_stream::tests::callbacks_do_not_keep_the_stream_state_alive ... ok
+test service_stream::tests::distinct_interfaces_with_same_instance_id_stay_distinct ... ok
+test service_stream::tests::empty_universe_stream_is_pending_not_one_shot ... ok
+test service_stream::tests::empty_withdrawal_snapshot_clears_membership_and_allows_reoffer ... ok
+test service_stream::tests::never_polled_drop_stops_every_watch ... ok
+test service_stream::tests::overlapping_watches_deduplicate_by_global_identity ... ok
+test service_stream::tests::partial_start_failure_rolls_back_earlier_watches ... ok
+test service_stream::tests::pending_items_never_exceed_currently_offered_identities ... ok
+test service_stream::tests::unpolled_flapping_is_coalesced_to_currently_offered_identities ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+Stats: SizeClassAllocator64: 8M mapped (0M rss) in 22616 allocations; remains 2752
+  01 (    16): mapped:    256K allocs:    2944 frees:    2841 inuse:    103 num_freed_chunks   16281 avail:  16384 rss:      8K releases:      0 last released:      0K region: 0x720400000000
+  02 (    32): mapped:    256K allocs:    3328 frees:    3224 inuse:    104 num_freed_chunks    8088 avail:   8192 rss:     16K releases:      0 last released:      0K region: 0x720800000000
+  03 (    48): mapped:    256K allocs:    3328 frees:    3225 inuse:    103 num_freed_chunks    5358 avail:   5461 rss:     20K releases:      0 last released:      0K region: 0x720c00000000
+  04 (    64): mapped:    256K allocs:     128 frees:      25 inuse:    103 num_freed_chunks    3993 avail:   4096 rss:      4K releases:      0 last released:      0K region: 0x721000000000
+  05 (    80): mapped:    256K allocs:     512 frees:     384 inuse:    128 num_freed_chunks    3148 avail:   3276 rss:      8K releases:      0 last released:      0K region: 0x721400000000
+  06 (    96): mapped:    256K allocs:     256 frees:     128 inuse:    128 num_freed_chunks    2602 avail:   2730 rss:      8K releases:      0 last released:      0K region: 0x721800000000
+  07 (   112): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    2212 avail:   2340 rss:      4K releases:      0 last released:      0K region: 0x721c00000000
+  08 (   128): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1920 avail:   2048 rss:      4K releases:      0 last released:      0K region: 0x722000000000
+  09 (   144): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1692 avail:   1820 rss:      4K releases:      0 last released:      0K region: 0x722400000000
+  10 (   160): mapped:    256K allocs:    3328 frees:    3200 inuse:    128 num_freed_chunks    1510 avail:   1638 rss:     16K releases:      0 last released:      0K region: 0x722800000000
+  11 (   176): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1361 avail:   1489 rss:      4K releases:      0 last released:      0K region: 0x722c00000000
+  12 (   192): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1237 avail:   1365 rss:      4K releases:      0 last released:      0K region: 0x723000000000
+  13 (   208): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1132 avail:   1260 rss:      4K releases:      0 last released:      0K region: 0x723400000000
+  14 (   224): mapped:    256K allocs:    1408 frees:    1280 inuse:    128 num_freed_chunks    1042 avail:   1170 rss:     12K releases:      0 last released:      0K region: 0x723800000000
+  15 (   240): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     964 avail:   1092 rss:      4K releases:      0 last released:      0K region: 0x723c00000000
+  16 (   256): mapped:    256K allocs:     896 frees:     768 inuse:    128 num_freed_chunks     896 avail:   1024 rss:     12K releases:      0 last released:      0K region: 0x724000000000
+  17 (   320): mapped:    256K allocs:     128 frees:      25 inuse:    103 num_freed_chunks     716 avail:    819 rss:     16K releases:      0 last released:      0K region: 0x724400000000
+  19 (   448): mapped:    256K allocs:     896 frees:     768 inuse:    128 num_freed_chunks     457 avail:    585 rss:     12K releases:      0 last released:      0K region: 0x724c00000000
+  20 (   512): mapped:    256K allocs:     896 frees:     768 inuse:    128 num_freed_chunks     384 avail:    512 rss:     12K releases:      0 last released:      0K region: 0x725000000000
+  21 (   640): mapped:    256K allocs:    1938 frees:    1836 inuse:    102 num_freed_chunks     307 avail:    409 rss:     28K releases:      0 last released:      0K region: 0x725400000000
+  23 (   896): mapped:    256K allocs:    1460 frees:    1387 inuse:     73 num_freed_chunks     219 avail:    292 rss:     20K releases:      0 last released:      0K region: 0x725c00000000
+  24 (  1024): mapped:    256K allocs:      64 frees:       0 inuse:     64 num_freed_chunks     192 avail:    256 rss:      4K releases:      0 last released:      0K region: 0x726000000000
+  25 (  1280): mapped:    256K allocs:      51 frees:       0 inuse:     51 num_freed_chunks     153 avail:    204 rss:      8K releases:      0 last released:      0K region: 0x726400000000
+  26 (  1536): mapped:    256K allocs:      42 frees:       0 inuse:     42 num_freed_chunks     128 avail:    170 rss:      4K releases:      0 last released:      0K region: 0x726800000000
+  27 (  1792): mapped:    256K allocs:      36 frees:       0 inuse:     36 num_freed_chunks     110 avail:    146 rss:      4K releases:      0 last released:      0K region: 0x726c00000000
+  29 (  2560): mapped:    256K allocs:      25 frees:       0 inuse:     25 num_freed_chunks      77 avail:    102 rss:      4K releases:      0 last released:      0K region: 0x727400000000
+  31 (  3584): mapped:    256K allocs:      18 frees:       0 inuse:     18 num_freed_chunks      55 avail:     73 rss:      4K releases:      0 last released:      0K region: 0x727c00000000
+  32 (  4096): mapped:    256K allocs:      16 frees:       0 inuse:     16 num_freed_chunks      48 avail:     64 rss:      4K releases:      0 last released:      0K region: 0x728000000000
+  33 (  5120): mapped:    256K allocs:      12 frees:       0 inuse:     12 num_freed_chunks      39 avail:     51 rss:     16K releases:      0 last released:      0K region: 0x728400000000
+  37 ( 10240): mapped:    256K allocs:       6 frees:       5 inuse:      1 num_freed_chunks      24 avail:     25 rss:     12K releases:      0 last released:      0K region: 0x729400000000
+  44 ( 32768): mapped:    256K allocs:       2 frees:       0 inuse:      2 num_freed_chunks       6 avail:      8 rss:     32K releases:      0 last released:      0K region: 0x72b000000000
+  49 ( 81920): mapped:    256K allocs:       2 frees:       0 inuse:      2 num_freed_chunks       1 avail:      3 rss:      8K releases:      0 last released:      0K region: 0x72c400000000
+Stats: LargeMmapAllocator: allocated 0 times, remains 0 (0 K) max 0 M; by size logs: 

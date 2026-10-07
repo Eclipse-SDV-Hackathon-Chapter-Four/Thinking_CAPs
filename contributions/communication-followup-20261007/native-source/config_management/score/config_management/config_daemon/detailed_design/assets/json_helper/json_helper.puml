@@ -1,0 +1,49 @@
+' *******************************************************************************
+' Copyright (c) 2026 Contributors to the Eclipse Foundation
+'
+' See the NOTICE file(s) distributed with this work for additional
+' information regarding copyright ownership.
+'
+' This program and the accompanying materials are made available under the
+' terms of the Apache License Version 2.0 which is available at
+' https://www.apache.org/licenses/LICENSE-2.0
+'
+' SPDX-License-Identifier: Apache-2.0
+' *******************************************************************************
+
+@startuml
+
+!startsub IJsonHelper
+namespace score::config_management::config_daemon::common {
+abstract class IJsonHelper {
+  + {abstract} GetJsonParser() : std::shared_ptr<json::IJsonParser>
+  + {abstract} GetJsonWriter() : std::shared_ptr<json::IJsonWriter>
+  + {abstract} GetStandardFilesystem() : std::shared_ptr<filesystem::IStandardFilesystem>
+  + {abstract} GetFileFactory() : std::shared_ptr<filesystem::IFileFactory>
+  --
+  Responsibilities: This is interface of JsonHelper class
+}
+}
+!endsub
+
+!startsub JsonHelper
+namespace score::config_management::config_daemon::common {
+class JsonHelper {
+  + GetJsonParser() : std::shared_ptr<json::IJsonParser>
+  + GetJsonWriter() : std::shared_ptr<json::IJsonWriter>
+  + GetStandardFilesystem() : std::shared_ptr<filesystem::IStandardFilesystem>
+  + GetFileFactory() : std::shared_ptr<filesystem::IFileFactory>
+  --
+  - json_parser_ : std::shared_ptr<json::IJsonParser>
+  - json_writer_ : std::shared_ptr<json::IJsonWriter>
+  - standart_filesystem_ : std::shared_ptr<filesystem::IStandardFilesystem>
+  - file_factory_ : std::shared_ptr<filesystem::IFileFactory>
+  --
+  Responsibilities: The JsonHelper class should encapsulate\n\
+  all the business logicfor working with json files.
+}
+IJsonHelper <|-- JsonHelper
+}
+!endsub
+
+@enduml

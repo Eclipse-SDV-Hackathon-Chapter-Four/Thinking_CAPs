@@ -1,0 +1,1612 @@
+diff --git a/.github/workflows/_codeql.yml b/.github/workflows/_codeql.yml
+index 7407651..0a351aa 100644
+--- a/.github/workflows/_codeql.yml
++++ b/.github/workflows/_codeql.yml
+@@ -87,7 +87,9 @@ jobs:
+           bazel run --config=ci //quality/static_analysis:codeql_lint -- \
+             --output-dir /tmp/codeql-results/linux \
+             --output-prefix codeql-nightly \
+-            --target //score/message_passing //score/mw/com
++            --production-targets \
++            --target //score/message_passing //score/mw/com \
++            --audit-source score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp
+ 
+       - name: Upload Linux SARIF (intermediate)
+         if: inputs.fetch-only != 'true' && steps.run-codeql.outcome == 'success'
+@@ -142,7 +144,9 @@ jobs:
+             --build-config qnx \
+             --output-dir /tmp/codeql-results/qnx \
+             --output-prefix codeql-nightly-qnx \
+-            --target //score/message_passing //score/mw/com
++            --production-targets \
++            --target //score/message_passing //score/mw/com \
++            --audit-source score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp
+ 
+       - name: Upload QNX SARIF (intermediate)
+         if: steps.run-codeql-qnx.outcome == 'success'
+diff --git a/.github/workflows/_linter.yml b/.github/workflows/_linter.yml
+index 71ee156..c43a15b 100644
+--- a/.github/workflows/_linter.yml
++++ b/.github/workflows/_linter.yml
+@@ -164,3 +164,25 @@ jobs:
+             ${{ matrix.id }}.sarif
+           if-no-files-found: ignore
+           retention-days: 7
++
++  buildifier:
++    name: buildifier
++    runs-on: ubuntu-24.04
++    permissions:
++      contents: read
++      actions: write
++    steps:
++      - uses: actions/checkout@v6.0.2
++        with:
++          fetch-depth: 0
++
++      - uses: ./.github/actions/00_infrastructure/prepare_bazel_environment
++        with:
++          disk-cache: ${{ inputs.fetch-only != 'true' && 'buildifier' || '' }}
++          cache-mode: ${{ inputs.cache-mode }}
++          ubuntu-snapshot-mirror-url: ${{ secrets.UBUNTU_SNAPSHOT_MIRROR_URL }}
++
++      - name: Run buildifier lint
++        if: inputs.fetch-only != 'true'
++        run: |
++          bazel run --config=ci //tools/lint/buildifier:buildifier_lint -- --recursive
+diff --git a/BUILD b/BUILD
+index a64d2a9..6beead9 100644
+--- a/BUILD
++++ b/BUILD
+@@ -55,12 +55,12 @@ copyright_checker(
+     name = "copyright",
+     srcs = [
+         ".github",
++        "BUILD",
++        "MODULE.bazel",
+         "quality",
+         "score",
+         "third_party",
+         "tools",
+-        "//:BUILD",
+-        "//:MODULE.bazel",
+     ],
+     config = "//third_party/cr_checker:config",
+     template = "//third_party/cr_checker:templates",
+diff --git a/MODULE.bazel b/MODULE.bazel
+index 2a97d5f..fb5540e 100644
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -331,6 +331,14 @@ use_repo(lint_toolchains, "sarif_parser_toolchains")
+ bazel_dep(name = "score_rust_policies", version = "0.0.5", dev_dependency = True)
+ bazel_dep(name = "rules_shell", version = "0.6.1", dev_dependency = True)
+ bazel_dep(name = "rules_build_error", version = "0.11.0", dev_dependency = True)
++
++# CodeQL tracing executes these helpers directly; declare their Bash interpreter.
++single_version_override(
++    module_name = "rules_build_error",
++    patch_strip = 1,
++    patches = ["//third_party/rules_build_error:bash-interpreters.patch"],
++)
++
+ bazel_dep(name = "google_benchmark", version = "1.9.5", dev_dependency = True)
+ bazel_dep(name = "buildifier_prebuilt", version = "8.5.1.3", dev_dependency = True)
+ bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+diff --git a/quality/api_surface/api_surface.bzl b/quality/api_surface/api_surface.bzl
+index d95408b..d56a706 100644
+--- a/quality/api_surface/api_surface.bzl
++++ b/quality/api_surface/api_surface.bzl
+@@ -111,8 +111,8 @@ def _get_hermetic_clang_command(ctx, include_args, source_file):
+ _ApiSurfaceHeadersInfo = provider(
+     doc = "Aggregated header sets for API surface extraction.",
+     fields = {
+-        "public_headers": "depset(File) of transitive direct public headers",
+         "all_headers": "depset(File) of transitive compilation headers",
++        "public_headers": "depset(File) of transitive direct public headers",
+     },
+ )
+ 
+@@ -317,6 +317,10 @@ _api_surface_compare_test = rule(
+     implementation = _api_surface_test_impl,
+     test = True,
+     attrs = {
++        "check_docs": attr.bool(
++            default = True,
++            doc = "If true, fail when public symbols lack \\api documentation.",
++        ),
+         "generated": attr.label(
+             allow_single_file = [".json"],
+             mandatory = True,
+@@ -327,10 +331,6 @@ _api_surface_compare_test = rule(
+             mandatory = True,
+             doc = "Committed lock file to compare against.",
+         ),
+-        "check_docs": attr.bool(
+-            default = True,
+-            doc = "If true, fail when public symbols lack \\api documentation.",
+-        ),
+         "_diff_tool": attr.label(
+             default = Label("//quality/api_surface:diff_api"),
+             executable = True,
+diff --git a/quality/compiler_warnings/test/BUILD b/quality/compiler_warnings/test/BUILD
+index 8a28e42..aa80a25 100644
+--- a/quality/compiler_warnings/test/BUILD
++++ b/quality/compiler_warnings/test/BUILD
+@@ -19,13 +19,13 @@ load("//score/mw:common_features.bzl", "COMPILER_WARNING_FEATURES")
+ 
+ # Compiler warning feature tests.
+ WARNING_FLAGS_BY_CASE = {
++    "cast_qual": ["-Wcast-qual"],
+     "conversion": ["-Wfloat-conversion"],
++    "delete_non_virtual_dtor": ["-Wdelete-non-virtual-dtor"],
++    "overloaded_virtual": ["-Woverloaded-virtual"],
+     "shadow": ["-Wshadow"],
+     "sign_compare": ["-Wsign-compare"],
+-    "cast_qual": ["-Wcast-qual"],
+     "undef": ["-Wundef"],
+-    "delete_non_virtual_dtor": ["-Wdelete-non-virtual-dtor"],
+-    "overloaded_virtual": ["-Woverloaded-virtual"],
+ }
+ 
+ # Case 1: warning code should compile when warnings are not treated as errors.
+diff --git a/quality/coverage/coverage_scope.bzl b/quality/coverage/coverage_scope.bzl
+index fa289a6..b68435a 100644
+--- a/quality/coverage/coverage_scope.bzl
++++ b/quality/coverage/coverage_scope.bzl
+@@ -41,8 +41,8 @@ visibility(["//..."])
+ _CoverageScopeInfo = provider(
+     doc = "Carries source file paths, cc_library labels, and object files collected by the coverage scope aspect.",
+     fields = {
+-        "source_files": "Depset of source file path strings (workspace-relative).",
+         "object_files": "Depset of compiled .o File objects for baseline coverage.",
++        "source_files": "Depset of source file path strings (workspace-relative).",
+     },
+ )
+ 
+@@ -67,12 +67,12 @@ def _coverage_scope_aspect_impl(target, ctx):
+                             direct_files.append(f.short_path)
+ 
+         # Only collect workspace-internal labels and archives
+-        if not str(target.label).startswith("@@") or str(target.label).startswith("@@//"):
++        if target.label.repo_name == "":
+             # Collect .a archive files for baseline coverage.
+             for linker_input in target[CcInfo].linking_context.linker_inputs.to_list():
+                 for lib in linker_input.libraries:
+                     for archive in [lib.static_library, lib.pic_static_library]:
+-                        if archive and "/external/" not in archive.path and not archive.path.startswith("external/"):
++                        if archive and archive.owner.repo_name == "":
+                             direct_archives.append(archive)
+                             break
+     elif CrateInfo in target:
+@@ -82,7 +82,7 @@ def _coverage_scope_aspect_impl(target, ctx):
+             if not f.path.startswith("external/") and f.is_source:
+                 direct_files.append(f.short_path)
+         out = target[CrateInfo].output
+-        if out and "/external/" not in out.path and not out.path.startswith("external/"):
++        if out and out.owner.repo_name == "":
+             direct_archives.append(out)
+ 
+     # Propagate from children traversed by the aspect
+@@ -147,7 +147,7 @@ def _coverage_scope_impl(ctx):
+         ),
+     ]
+ 
+-def _coverage_transition_impl(settings, attr):
++def _coverage_transition_impl(_settings, _attr):
+     # This dictionary modifies the build configuration
+     return {
+         "//command_line_option:collect_code_coverage": True,
+diff --git a/quality/coverage/llvm_cov/reporter_wrapper.bzl b/quality/coverage/llvm_cov/reporter_wrapper.bzl
+index 8149c03..86e2e72 100644
+--- a/quality/coverage/llvm_cov/reporter_wrapper.bzl
++++ b/quality/coverage/llvm_cov/reporter_wrapper.bzl
+@@ -73,15 +73,15 @@ reporter_wrapper = rule(
+     implementation = _reporter_wrapper_impl,
+     executable = True,
+     attrs = {
+-        "reporter": attr.label(
+-            executable = True,
+-            cfg = "exec",
+-        ),
+         "coverage_scope": attr.label(
+             cfg = "target",
+         ),
+         "module_bazel": attr.label(
+             allow_single_file = True,
+         ),
++        "reporter": attr.label(
++            executable = True,
++            cfg = "exec",
++        ),
+     },
+ )
+diff --git a/quality/integration_testing/integration_testing.bzl b/quality/integration_testing/integration_testing.bzl
+index 1069c56..ba39c80 100644
+--- a/quality/integration_testing/integration_testing.bzl
++++ b/quality/integration_testing/integration_testing.bzl
+@@ -47,8 +47,8 @@ def integration_test(name, srcs, filesystem, **kwargs):
+     repo_tag = "{}:latest".format(name)
+ 
+     LINUX_TARGET_COMPATIBLE_WITH = select({
+-        "@platforms//cpu:x86_64": ["@platforms//cpu:x86_64"],
+         "@platforms//cpu:arm64": ["@platforms//cpu:arm64"],
++        "@platforms//cpu:x86_64": ["@platforms//cpu:x86_64"],
+     }) + [
+         "@platforms//os:linux",
+     ]
+@@ -88,8 +88,8 @@ def integration_test(name, srcs, filesystem, **kwargs):
+     )
+ 
+     QNX_TARGET_COMPATIBLE_WITH = select({
+-        "@platforms//cpu:x86_64": ["@platforms//cpu:x86_64"],
+         "@platforms//cpu:arm64": ["@platforms//cpu:arm64"],
++        "@platforms//cpu:x86_64": ["@platforms//cpu:x86_64"],
+     }) + [
+         "@platforms//os:qnx",
+     ]
+@@ -106,23 +106,23 @@ def integration_test(name, srcs, filesystem, **kwargs):
+     qemu_config = Label("//quality/integration_testing/environments/qnx8_qemu:qemu_config")
+ 
+     _extend_list_in_kwargs(kwargs, "data", select({
+-        "//conditions:default": [image_loader],
+         "@platforms//os:qnx": [qemu_image, qemu_config],
++        "//conditions:default": [image_loader],
+     }))
+     _extend_list_in_kwargs(
+         kwargs,
+         "args",
+         select({
+-            "//conditions:default": [
+-                "--log-cli-level=DEBUG",
+-                "--docker-image-bootstrap=$(location {})".format(image_loader),
+-                "--docker-image={}".format(repo_tag),
+-            ],
+             "@platforms//os:qnx": [
+                 "--log-cli-level=DEBUG",
+                 "--qemu-config=$(location {})".format(qemu_config),
+                 "--qemu-image=$(location {})".format(qemu_image),
+             ],
++            "//conditions:default": [
++                "--log-cli-level=DEBUG",
++                "--docker-image-bootstrap=$(location {})".format(image_loader),
++                "--docker-image={}".format(repo_tag),
++            ],
+         }),
+     )
+ 
+@@ -153,14 +153,14 @@ def integration_test(name, srcs, filesystem, **kwargs):
+         name = name,
+         srcs = srcs,
+         plugins = select({
+-            "//conditions:default": [
+-                "@score_itf//score/itf/plugins:docker_plugin",
+-                "@score_itf//score/itf/plugins:core_dump_plugin",
+-            ],
+             "@platforms//os:qnx": [
+                 "@score_itf//score/itf/plugins:qemu_plugin",
+                 "@score_itf//score/itf/plugins:core_dump_plugin",
+             ],
++            "//conditions:default": [
++                "@score_itf//score/itf/plugins:docker_plugin",
++                "@score_itf//score/itf/plugins:core_dump_plugin",
++            ],
+         }),
+         env = {
+             "DOCKER_HOST": "",
+@@ -195,8 +195,8 @@ def dual_qemu_integration_test(
+         filesystem_b = filesystem_a
+ 
+     QNX_TARGET_COMPATIBLE_WITH = select({
+-        "@platforms//cpu:x86_64": ["@platforms//cpu:x86_64"],
+         "@platforms//cpu:arm64": ["@platforms//cpu:arm64"],
++        "@platforms//cpu:x86_64": ["@platforms//cpu:x86_64"],
+     }) + [
+         "@platforms//os:qnx",
+     ]
+diff --git a/quality/static_analysis/BUILD b/quality/static_analysis/BUILD
+index 627015e..eb99738 100644
+--- a/quality/static_analysis/BUILD
++++ b/quality/static_analysis/BUILD
+@@ -11,7 +11,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # *******************************************************************************
+ 
+-load("@rules_python//python:defs.bzl", "py_binary")
++load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+ 
+ py_binary(
+     name = "codeql_lint",
+@@ -22,7 +22,7 @@ py_binary(
+         "--analysis_report_path=$(location @codeql_coding_standards//:analysis_report)",
+         "--guideline_recategorize_path=$(location @codeql_coding_standards//:guideline_recategorize)",
+     ],
+-    data = [
++    data = glob(["query_overrides/**"]) + [
+         ":config",
+         "@codeql_bundle//:codeql_cli",
+         "@codeql_coding_standards//:analysis_report",
+@@ -36,6 +36,17 @@ py_binary(
+     deps = ["@rules_python//python/runfiles"],
+ )
+ 
++py_test(
++    name = "codeql_lint_test",
++    srcs = [
++        "codeql_lint.py",
++        "codeql_lint_test.py",
++    ],
++    imports = ["."],
++    tags = ["local"],
++    target_compatible_with = ["@platforms//os:linux"],
++)
++
+ filegroup(
+     name = "config",
+     srcs = ["config.yaml"],
+diff --git a/quality/static_analysis/codeql_lint.py b/quality/static_analysis/codeql_lint.py
+index 713d422..919bfa3 100644
+--- a/quality/static_analysis/codeql_lint.py
++++ b/quality/static_analysis/codeql_lint.py
+@@ -17,6 +17,8 @@ import json
+ import subprocess
+ import datetime
+ import shutil
++import sys
++import zipfile
+ 
+ 
+ TMP_PATH_FOR_DATABASES = "/var/tmp/codeql_databases"
+@@ -28,6 +30,12 @@ CODING_STANDARDS_CONFIG_RELATIVE_PATH = "quality/static_analysis/coding-standard
+ # to this run and doesn't accumulate stale state across workspaces/versions.
+ CODEQL_FAKE_HOME_DIR_NAME = "codeql_home"
+ 
++# CodeQL stores the extracted source files for a database in this archive.
++# The audit below deliberately checks this archive instead of the SARIF output:
++# a production source file can have zero findings and therefore no SARIF result,
++# while still being present in the database.
++DATABASE_SRC_ARCHIVE = "src.zip"
++
+ 
+ # Default query suite (relative to the MISRA C++ pack root) run by the analysis.
+ # Forward-slash relative path, used both to locate the suite on disk and as the
+@@ -40,6 +48,148 @@ MISRA_DEFAULT_SUITE_NAME = "codeql-suites/misra-cpp-default.qls"
+ COMPILED_PACK_RUNFILE = "codeql_coding_standards_compiled/pack/qlpack.yml"
+ 
+ 
++def audit_database_source_coverage(database_path, source_root, expected_sources):
++    """Audit that expected source files were extracted into the CodeQL database.
++
++    CodeQL databases retain extracted sources in a ``src.zip`` archive.  This
++    check intentionally inspects that archive instead of the SARIF output: a
++    production source file can legitimately have zero findings and therefore no
++    SARIF result, while still being present in the database.  Conversely, a
++    missing database entry is real evidence that the traced build did not cover
++    the file (for example because the Bazel target pattern was too narrow).
++
++    Args:
++        database_path: Path to the finalized CodeQL database directory.
++        source_root: Root of the source tree used for the traced build.
++        expected_sources: Iterable of source paths (relative to source_root or
++            absolute) that must be present in the database.
++
++    Returns:
++        A sorted list of expected source paths that were not found.
++    """
++    src_zip = os.path.join(database_path, DATABASE_SRC_ARCHIVE)
++    if not os.path.isfile(src_zip):
++        raise RuntimeError(
++            f"CodeQL database source archive not found: {src_zip}. Cannot audit database source coverage."
++        )
++
++    source_root_abs = os.path.abspath(source_root).replace(os.sep, "/").lstrip("/")
++
++    def _normalize_expected(source):
++        if os.path.isabs(source):
++            try:
++                rel = os.path.relpath(source, source_root)
++            except ValueError:
++                # On Windows, paths on different drives cannot be relative.
++                rel = source
++        else:
++            rel = source
++        return rel.replace(os.sep, "/").lstrip("/")
++
++    with zipfile.ZipFile(src_zip, "r") as archive:
++        archive_names = set(archive.namelist())
++
++    missing = []
++    for source in expected_sources:
++        rel = _normalize_expected(source)
++        candidates = {
++            rel,
++            f"./{rel}",
++        }
++        if source_root_abs:
++            candidates.add(f"{source_root_abs}/{rel}")
++            candidates.add(f"./{source_root_abs}/{rel}")
++        # Compile actions can name external and generated files. CodeQL stores
++        # their absolute paths; resolve Bazel's workspace symlinks as well.
++        absolute = os.path.abspath(os.path.join(source_root, source))
++        for path in (absolute, os.path.realpath(absolute)):
++            normalized = path.replace(os.sep, "/").lstrip("/")
++            candidates.update((normalized, f"./{normalized}"))
++        if not (candidates & archive_names):
++            missing.append(rel)
++    return sorted(missing)
++
++
++def _production_target_patterns(target_spec):
++    patterns = []
++    for label in target_spec.split():
++        label = label.strip()
++        if not label.startswith("//"):
++            continue
++        patterns.append(label)
++    if not patterns:
++        raise RuntimeError(
++            "No main-repository targets found in the supplied target list; cannot derive production targets."
++        )
++    return patterns
++
++
++def _parse_production_targets(cquery_stdout):
++    labels = [line.split()[0] for line in cquery_stdout.splitlines() if line.strip()]
++    return sorted({label for label in labels if label.startswith("//") or (label.startswith("@") and "//" in label)})
++
++
++def _compute_production_targets(source_root, build_configs, target_spec):
++    patterns = _production_target_patterns(target_spec)
++    query_expr = f'attr("testonly", "0", kind("cc_library|cc_binary", deps(set({" ".join(patterns)}))))'
++    cquery_cmd = "bazel cquery --config=codeql"
++    for extra_config in build_configs or []:
++        cquery_cmd += f" --config={extra_config}"
++    cquery_cmd += f" --output=label '{query_expr}'"
++    result = subprocess.run(
++        cquery_cmd,
++        shell=True,
++        cwd=source_root,
++        capture_output=True,
++        text=True,
++        check=True,
++    )
++    labels = _parse_production_targets(result.stdout)
++    if not labels:
++        raise RuntimeError(f"No production C/C++ targets found in dependency closure of {patterns}.")
++    return labels
++
++
++def _compile_sources_from_actions(actions, execution_root, external_root=None):
++    sources = set()
++    for action in actions.get("actions", []):
++        if action.get("mnemonic") != "CppCompile":
++            continue
++        arguments = action.get("arguments", [])
++        for index, argument in enumerate(arguments[:-1]):
++            if argument == "-c":
++                source = arguments[index + 1]
++                if external_root and source.startswith("external/"):
++                    source = os.path.join(external_root, source[len("external/") :])
++                sources.add(os.path.realpath(os.path.join(execution_root, source)))
++                break
++        else:
++            raise RuntimeError("C++ compile action has no source argument; cannot audit extraction.")
++    if not sources:
++        raise RuntimeError("No C++ compile actions found; cannot audit extraction.")
++    return sorted(sources)
++
++
++def _compute_compile_sources(source_root, build_configs, targets):
++    command = ["bazel", "aquery", "--config=codeql", "--output=jsonproto"]
++    command.extend(f"--config={config}" for config in build_configs or [])
++    command.append(f'mnemonic("CppCompile", deps(set({" ".join(targets)})))')
++    result = subprocess.run(command, cwd=source_root, capture_output=True, text=True, check=True)
++    info = _get_bazel_info(source_root)
++    return _compile_sources_from_actions(
++        json.loads(result.stdout), info["execution_root"], os.path.join(info["output_base"], "external")
++    )
++
++
++def _find_query_overrides_root():
++    from python.runfiles import Runfiles
++
++    anchor = Runfiles.Create().Rlocation("_main/quality/static_analysis/query_overrides/qlpack.yml")
++    if not anchor or not os.path.isfile(anchor):
++        raise RuntimeError("Unable to locate Communication query overrides in runfiles")
++    return os.path.dirname(anchor)
++
++
+ def _find_coding_standards_root():
+     """Locate the vendored codeql-coding-standards repo root (the dir containing cpp/).
+ 
+@@ -161,7 +311,9 @@ def _read_pack_identity(pack_root):
+     return name, version
+ 
+ 
+-def create_database(code_ql_path, config_path, target, source_root, database_path, build_configs=None):
++def create_database(
++    code_ql_path, config_path, target, source_root, database_path, build_configs=None, production_targets=False
++):
+     """Create the CodeQL database: init, build with tracing, finalize.
+ 
+     ``build_configs`` is an optional list of additional Bazel ``--config`` names
+@@ -171,8 +323,11 @@ def create_database(code_ql_path, config_path, target, source_root, database_pat
+     (see ``//.bazelrc`` ``common:qnx``). With no extra configs the build is the
+     unchanged Linux analysis.
+     """
++    if os.path.exists(database_path) and os.listdir(database_path):
++        raise RuntimeError("Refusing to reuse a nonempty CodeQL database directory: " + database_path)
++
+     subprocess.run(
+-        f"{code_ql_path} database init --overwrite --begin-tracing --language=cpp "
++        f"{code_ql_path} database init --begin-tracing --language=cpp "
+         f"--codescanning-config={config_path} --source-root={source_root} -- {database_path}",
+         shell=True,
+         check=True,
+@@ -198,6 +353,11 @@ def create_database(code_ql_path, config_path, target, source_root, database_pat
+     for extra_config in build_configs or []:
+         bazel_cmd += f" --config={extra_config}"
+     bazel_cmd += _get_action_env_extension(codeql_env)
++    if production_targets:
++        production_target_list = _compute_production_targets(source_root, build_configs, target)
++        target = " ".join(production_target_list)
++        bazel_cmd += " --skip_incompatible_explicit_targets"
++        expected_compile_sources = _compute_compile_sources(source_root, build_configs, production_target_list)
+     subprocess.run(f"{bazel_cmd} {target}", shell=True, env=env, cwd=source_root, check=True)
+ 
+     # Finalize database
+@@ -206,6 +366,14 @@ def create_database(code_ql_path, config_path, target, source_root, database_pat
+         shell=True,
+         check=True,
+     )
++    if production_targets:
++        missing = audit_database_source_coverage(database_path, source_root, expected_compile_sources)
++        manifest = {"expected_compile_sources": expected_compile_sources, "missing": missing}
++        with open(os.path.join(database_path, "compile-source-coverage.json"), "w", encoding="utf-8") as stream:
++            json.dump(manifest, stream, indent=2)
++            stream.write("\n")
++        if missing:
++            raise RuntimeError("CodeQL omitted configured compilation sources: " + ", ".join(missing))
+ 
+ 
+ def analyze_database(
+@@ -240,9 +408,14 @@ def analyze_database(
+         common_analyze_flags = f"--additional-packs={_find_coding_standards_root()}"
+     else:
+         pack_root = _find_compiled_pack_root()
+-        pack_name, pack_version = _read_pack_identity(pack_root)
+-        query_target = f"{pack_name}@{pack_version}:{MISRA_DEFAULT_SUITE_NAME}"
+-        common_analyze_flags = f"--search-path={pack_root}"
++        # Keep the pinned precompiled suite, replacing only the location query.
++        # The imported suite excludes its old ID before the fixed query is added.
++        overrides = _find_query_overrides_root()
++        query_target = os.path.join(overrides, "communication-default.qls")
++        libraries_root = os.path.join(pack_root, ".codeql", "libraries")
++        common_analyze_flags = f"--search-path={pack_root} --additional-packs={pack_root}:{libraries_root}"
++        fake_home = os.path.join(output_base, CODEQL_FAKE_HOME_DIR_NAME)
++        _prepare_offline_codeql_home(os.path.join(pack_root, ".codeql", "libraries"), fake_home)
+     query_arg = f" {query_target}"
+     sarif_path = f"{output_base}/{output_prefix}.sarif"
+ 
+@@ -251,11 +424,15 @@ def analyze_database(
+     # _codeql.yml) is published and consumed directly by the quality
+     # dashboard afterward; no CSV is ever generated.
+     print("\n Running CodeQL analysis...")
++    analyze_env = os.environ.copy()
++    if not query_spec:
++        analyze_env["HOME"] = fake_home
+     subprocess.run(
+         f"{code_ql_path} database analyze -j=0 {database_path}{query_arg} "
+         f"{common_analyze_flags} "
+         f"--format=sarifv2.1.0 --output={sarif_path}",
+         shell=True,
++        env=analyze_env,
+         check=True,
+     )
+ 
+@@ -454,6 +631,23 @@ def main():
+         help="Additional Bazel --config to layer on the traced build (repeatable). "
+         "E.g. --build-config qnx runs 'bazel build --config=codeql --config=qnx'.",
+     )
++    parser.add_argument(
++        "--audit-source",
++        action="append",
++        default=[],
++        dest="audit_sources",
++        metavar="PATH",
++        help="Source file expected to be present in the CodeQL database. "
++        "Repeatable. Used to audit database source coverage independently of "
++        "SARIF results.",
++    )
++    parser.add_argument(
++        "--production-targets",
++        action="store_true",
++        help="Build C/C++ library and binary targets, including dependencies, not marked "
++        "test-only from the dependency closure of the supplied roots, including "
++        "implementation_deps that would otherwise be built lazily.",
++    )
+ 
+     args = parser.parse_args()
+     target = " ".join(args.target) if args.target else ""
+@@ -474,9 +668,22 @@ def main():
+             source_root,
+             args.database_path,
+             build_configs=args.build_configs,
++            production_targets=args.production_targets,
+         )
++        if args.audit_sources:
++            missing = audit_database_source_coverage(args.database_path, source_root, args.audit_sources)
++            if missing:
++                raise RuntimeError(
++                    "CodeQL database source coverage audit failed; missing expected sources: " + ", ".join(missing)
++                )
+ 
+     elif args.phase == "analyze-database":
++        if args.audit_sources:
++            missing = audit_database_source_coverage(args.database_path, source_root, args.audit_sources)
++            if missing:
++                raise RuntimeError(
++                    "CodeQL database source coverage audit failed; missing expected sources: " + ", ".join(missing)
++                )
+         analyze_database(
+             codeql_path,
+             args.database_path,
+@@ -505,7 +712,14 @@ def main():
+                 source_root,
+                 database_location,
+                 build_configs=args.build_configs,
++                production_targets=args.production_targets,
+             )
++            if args.audit_sources:
++                missing = audit_database_source_coverage(database_location, source_root, args.audit_sources)
++                if missing:
++                    raise RuntimeError(
++                        "CodeQL database source coverage audit failed; missing expected sources: " + ", ".join(missing)
++                    )
+             analyze_database(
+                 codeql_path,
+                 database_location,
+diff --git a/quality/static_analysis/codeql_lint_test.py b/quality/static_analysis/codeql_lint_test.py
+new file mode 100644
+index 0000000..b512264
+--- /dev/null
++++ b/quality/static_analysis/codeql_lint_test.py
+@@ -0,0 +1,194 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import os
++import tempfile
++import unittest
++from unittest import mock
++import zipfile
++
++import codeql_lint
++
++
++class CompileSourceCoverageTest(unittest.TestCase):
++    def test_collects_compilation_sources_including_external_dependencies(self):
++        actions = {
++            "actions": [
++                {"mnemonic": "CppCompile", "arguments": ["g++", "-c", "score/proxy.cpp", "-o", "proxy.o"]},
++                {"mnemonic": "CppCompile", "arguments": ["g++", "-c", "external/baselib/log.cpp"]},
++                {"mnemonic": "CppLink", "arguments": ["g++", "proxy.o"]},
++            ]
++        }
++        self.assertEqual(
++            codeql_lint._compile_sources_from_actions(actions, "/workspace"),
++            ["/workspace/external/baselib/log.cpp", "/workspace/score/proxy.cpp"],
++        )
++
++    def test_external_sources_resolve_before_execution_symlinks_exist(self):
++        actions = {"actions": [{"mnemonic": "CppCompile", "arguments": ["g++", "-c", "external/base/log.cpp"]}]}
++        self.assertEqual(
++            codeql_lint._compile_sources_from_actions(actions, "/execroot", "/output/external"),
++            ["/output/external/base/log.cpp"],
++        )
++
++    def test_missing_or_unparseable_compile_action_fails_closed(self):
++        for actions in (
++            {"actions": []},
++            {"actions": [{"mnemonic": "CppCompile", "arguments": ["g++", "@unknown.params"]}]},
++        ):
++            with self.subTest(actions=actions), self.assertRaises(RuntimeError):
++                codeql_lint._compile_sources_from_actions(actions, "/workspace")
++
++    def test_failed_database_cannot_contaminate_a_retry(self):
++        with tempfile.TemporaryDirectory() as directory:
++            with open(os.path.join(directory, "leftover.trap"), "w") as stream:
++                stream.write("failed-attempt residue")
++            with mock.patch.object(codeql_lint.subprocess, "run") as run:
++                with self.assertRaisesRegex(RuntimeError, "Refusing to reuse"):
++                    codeql_lint.create_database("codeql", "config.yml", "//score", directory, directory)
++                run.assert_not_called()
++
++    def test_external_and_generated_sources_match_resolved_archive_paths(self):
++        with tempfile.TemporaryDirectory() as directory:
++            source = os.path.join(directory, "dependency", "log.cpp")
++            os.makedirs(os.path.dirname(source))
++            with open(source, "w") as stream:
++                stream.write("// dependency source\n")
++            workspace = os.path.join(directory, "workspace")
++            os.mkdir(workspace)
++            os.symlink(os.path.dirname(source), os.path.join(workspace, "external"))
++            with zipfile.ZipFile(os.path.join(directory, "src.zip"), "w") as archive:
++                archive.write(source, source.lstrip("/"))
++            self.assertEqual(codeql_lint.audit_database_source_coverage(directory, workspace, ["external/log.cpp"]), [])
++
++
++class AuditDatabaseSourceCoverageTest(unittest.TestCase):
++    def _create_database_with_sources(self, database_path, sources):
++        src_zip = os.path.join(database_path, "src.zip")
++        with zipfile.ZipFile(src_zip, "w") as archive:
++            for source in sources:
++                archive.writestr(source, "// dummy source\n")
++
++    def test_audit_passes_when_expected_source_is_present(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            self._create_database_with_sources(tmpdir, ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_reports_missing_expected_source(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            self._create_database_with_sources(tmpdir, ["score/mw/com/impl/other.cpp"])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++            self.assertEqual(
++                missing,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++
++    def test_audit_accepts_absolute_source_path(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            self._create_database_with_sources(tmpdir, [relative])
++            absolute = os.path.join(tmpdir, relative)
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                [absolute],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_raises_when_src_zip_is_missing(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            with self.assertRaises(RuntimeError):
++                codeql_lint.audit_database_source_coverage(
++                    tmpdir,
++                    tmpdir,
++                    ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++                )
++
++    def test_audit_accepts_absolute_archive_root_path(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            source_root = "/workspace"
++            archive_entry = "workspace/" + relative
++            self._create_database_with_sources(tmpdir, [archive_entry])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                source_root,
++                [relative],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_rejects_unrelated_absolute_archive_root(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            source_root = "/workspace"
++            archive_entry = "other/workspace/" + relative
++            self._create_database_with_sources(tmpdir, [archive_entry])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                source_root,
++                [relative],
++            )
++            self.assertEqual(missing, [relative])
++
++
++class ProductionTargetTest(unittest.TestCase):
++    def test_production_target_patterns_preserve_requested_roots(self):
++        patterns = codeql_lint._production_target_patterns("//score/message_passing //score/mw/com")
++        self.assertEqual(
++            patterns,
++            [
++                "//score/message_passing",
++                "//score/mw/com",
++            ],
++        )
++
++    def test_production_target_patterns_preserve_explicit_selectors(self):
++        self.assertEqual(
++            codeql_lint._production_target_patterns("//score/mw/com:com //score/message_passing/... //:api"),
++            ["//score/mw/com:com", "//score/message_passing/...", "//:api"],
++        )
++
++    def test_parse_production_targets_deduplicates_configured_labels(self):
++        self.assertEqual(
++            codeql_lint._parse_production_targets("//score/mw/com:com (aaa)\n//score/mw/com:com (bbb)\n"),
++            ["//score/mw/com:com"],
++        )
++
++    def test_production_target_patterns_reject_empty(self):
++        with self.assertRaises(RuntimeError):
++            codeql_lint._production_target_patterns("")
++
++    def test_parse_production_targets_retains_external_implementation_dependencies(self):
++        labels = codeql_lint._parse_production_targets(
++            "//score/mw/com/impl:foo\n@external//bar:baz\n//score/message_passing:msg\n"
++        )
++        self.assertEqual(
++            labels,
++            [
++                "//score/message_passing:msg",
++                "//score/mw/com/impl:foo",
++                "@external//bar:baz",
++            ],
++        )
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/quality/static_analysis/query_overrides/LICENSE.md b/quality/static_analysis/query_overrides/LICENSE.md
+new file mode 100644
+index 0000000..32c3074
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/LICENSE.md
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) 2022 GitHub
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+\ No newline at end of file
+diff --git a/quality/static_analysis/query_overrides/README.md b/quality/static_analysis/query_overrides/README.md
+new file mode 100644
+index 0000000..5af3fc4
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/README.md
+@@ -0,0 +1,25 @@
++# Pinned MISRA location query override
++
++This pack imports the native MISRA C++ 2.62.0 default suite, excludes only
++`cpp/misra/type-aliases-declaration`, and adds the corrected query with the same
++ID. The effective suite remains 218 queries. CodeQL 2.21.4 and the locked library
++versions remain unchanged.
++
++`TypeAliasesDeclaration.ql` is derived from the corresponding upstream file in
++[codeql-coding-standards v2.62.0](https://github.com/github/codeql-coding-standards/blob/v2.62.0/cpp/misra/src/rules/RULE-6-9-1/TypeAliasesDeclaration.ql).
++Its upstream MIT license is retained in `LICENSE.md`. Primary finding selection
++and rule predicates are unchanged. A located alias links to its definition; a
++locationless template alias instance links to the actual type-name use selected
++by the original query. No inferred definition location or SARIF deletion is used.
++
++The helper is inline and bound to the alias/use pair already selected by the
++query. The analyzer resolves locked dependencies from the native compiled pack's
++`.codeql/libraries` directory explicitly, including qtil and the common pack.
++Adding a second copy of the common pack introduces ambiguous pack resolution.
++
++The exact-scope retained database comparison preserves 501 findings and removes
++281 empty URI occurrences. All primary locations/fingerprints and original located
++related links are retained. Two merged messages expand as restored locations
++distinguish link targets. A fresh production database also passes all 218 queries
++and contains no empty file URI locations. These measurements do not establish
++safety acceptance or tool qualification.
+diff --git a/quality/static_analysis/query_overrides/TypeAliasesDeclaration.ql b/quality/static_analysis/query_overrides/TypeAliasesDeclaration.ql
+new file mode 100644
+index 0000000..b38d299
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/TypeAliasesDeclaration.ql
+@@ -0,0 +1,44 @@
++/**
++ * @id cpp/misra/type-aliases-declaration
++ * @name RULE-6-9-1: The same type aliases shall be used in all declarations of the same entity
++ * @description Using different type aliases on redeclarations can make code hard to understand and
++ *              maintain.
++ * @kind problem
++ * @precision very-high
++ * @problem.severity warning
++ * @tags external/misra/id/rule-6-9-1
++ *       maintainability
++ *       readability
++ *       scope/single-translation-unit
++ *       external/misra/enforcement/decidable
++ *       external/misra/obligation/required
++ */
++
++import cpp
++import codingstandards.cpp.misra
++
++// Some alias-template instances have no declaration location in the extracted
++// database. Link their actual type-name use, retaining the alias name, rather
++// than emitting a root-only URI. Located alias declarations remain unchanged.
++pragma[inline]
++bindingset[t, use]
++Element typeAliasLink(TypedefType t, DeclarationEntry use) {
++  if t.getLocation().getFile().getAbsolutePath() != ""
++  then result = t
++  else result = use
++}
++
++from DeclarationEntry decl1, DeclarationEntry decl2, TypedefType t
++where
++  not isExcluded(decl1, Declarations5Package::typeAliasesDeclarationQuery()) and
++  not isExcluded(decl2, Declarations5Package::typeAliasesDeclarationQuery()) and
++  not decl1 = decl2 and
++  decl1.getDeclaration() = decl2.getDeclaration() and
++  t.getATypeNameUse() = decl1 and
++  not t.getATypeNameUse() = decl2 and
++  //exception cases - we dont want to disallow struct typedef name use
++  not t.getBaseType() instanceof Struct and
++  not t.getBaseType() instanceof Enum
++select decl1,
++  "Declaration entry has a different type alias than $@ where the type alias used is '$@'.", decl2,
++  decl2.getName(), typeAliasLink(t, decl1), t.getName()
+diff --git a/quality/static_analysis/query_overrides/base-minus-location-query.qls b/quality/static_analysis/query_overrides/base-minus-location-query.qls
+new file mode 100644
+index 0000000..ea7b09d
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/base-minus-location-query.qls
+@@ -0,0 +1,5 @@
++- import: codeql-suites/misra-cpp-default.qls
++  from: codeql/misra-cpp-coding-standards
++  version: 2.62.0
++- exclude:
++    id: cpp/misra/type-aliases-declaration
+diff --git a/quality/static_analysis/query_overrides/codeql-pack.lock.yml b/quality/static_analysis/query_overrides/codeql-pack.lock.yml
+new file mode 100644
+index 0000000..d5affee
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/codeql-pack.lock.yml
+@@ -0,0 +1,42 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++---
++lockVersion: 1.0.0
++dependencies:
++  codeql/misra-cpp-coding-standards:
++    version: 2.62.0
++  advanced-security/qtil:
++    version: 0.0.3
++  codeql/cpp-all:
++    version: 5.0.0
++  codeql/dataflow:
++    version: 2.0.8
++  codeql/mad:
++    version: 1.0.24
++  codeql/quantum:
++    version: 0.0.2
++  codeql/rangeanalysis:
++    version: 1.0.24
++  codeql/ssa:
++    version: 2.0.0
++  codeql/tutorial:
++    version: 1.0.24
++  codeql/typeflow:
++    version: 1.0.24
++  codeql/typetracking:
++    version: 2.0.8
++  codeql/util:
++    version: 2.0.11
++  codeql/xml:
++    version: 1.0.24
++compiled: false
+diff --git a/quality/static_analysis/query_overrides/communication-default.qls b/quality/static_analysis/query_overrides/communication-default.qls
+new file mode 100644
+index 0000000..28c8820
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/communication-default.qls
+@@ -0,0 +1,2 @@
++- import: base-minus-location-query.qls
++- query: TypeAliasesDeclaration.ql
+diff --git a/quality/static_analysis/query_overrides/qlpack.yml b/quality/static_analysis/query_overrides/qlpack.yml
+new file mode 100644
+index 0000000..ae2d7e8
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/qlpack.yml
+@@ -0,0 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++name: score/communication-query-overrides
++version: 0.0.1
++dependencies:
++  codeql/misra-cpp-coding-standards: 2.62.0
+diff --git a/quality/unit_testing/unit_testing.bzl b/quality/unit_testing/unit_testing.bzl
+index 4cb96cc..d0bbb02 100644
+--- a/quality/unit_testing/unit_testing.bzl
++++ b/quality/unit_testing/unit_testing.bzl
+@@ -53,14 +53,14 @@ _forwarding_test = rule(
+             default = [],
+             allow_files = True,
+         ),
+-        # Implicit dependencies used by Bazel to generate coverage reports.
+-        "_lcov_merger": attr.label(
+-            default = configuration_field(fragment = "coverage", name = "output_generator"),
++        "_collect_cc_coverage": attr.label(
++            default = "@bazel_tools//tools/test:collect_cc_coverage",
+             executable = True,
+             cfg = config.exec(exec_group = "test"),
+         ),
+-        "_collect_cc_coverage": attr.label(
+-            default = "@bazel_tools//tools/test:collect_cc_coverage",
++        # Implicit dependencies used by Bazel to generate coverage reports.
++        "_lcov_merger": attr.label(
++            default = configuration_field(fragment = "coverage", name = "output_generator"),
+             executable = True,
+             cfg = config.exec(exec_group = "test"),
+         ),
+@@ -191,6 +191,7 @@ def rust_unit_test(name, target_compatible_with = [], tags = [], **kwargs):
+             ],
+             "//conditions:default": [],
+         }),
++        target_compatible_with = target_compatible_with,
+         tags = tags + ["unit"],
+         visibility = kwargs["visibility"],
+     )
+diff --git a/quality/visibility_guard/public_targets.golden b/quality/visibility_guard/public_targets.golden
+index 1587dc0..afa4930 100644
+--- a/quality/visibility_guard/public_targets.golden
++++ b/quality/visibility_guard/public_targets.golden
+@@ -41,6 +41,7 @@
+ //score/message_passing/dependability:dependable_element_message_passing_rst
+ //score/message_passing:message_passing
+ //score/message_passing:mock
++//score/mw/com/dependability/safety_analysis:aous
+ //score/mw/com/dependability:mw_com
+ //score/mw/com/dependability:mw_com.serve
+ //score/mw/com/dependability:mw_com_doc
+diff --git a/score/mw/com/dependability/safety_analysis/BUILD b/score/mw/com/dependability/safety_analysis/BUILD
+index 5923edc..f01d3f3 100644
+--- a/score/mw/com/dependability/safety_analysis/BUILD
++++ b/score/mw/com/dependability/safety_analysis/BUILD
+@@ -41,7 +41,7 @@ safety_analysis(
+ )
+ 
+ assumptions_of_use(
+-    name = "aous",
++    name = "aous_internal",
+     srcs = ["aou.trlc"],
+     target_compatible_with = ["@platforms//os:linux"],
+     visibility = ["//score/mw/com/dependability:__subpackages__"],
+@@ -49,6 +49,16 @@ assumptions_of_use(
+     deps = [":mw_com_safety_analysis"],
+ )
+ 
++# Public alias for external Config Management consumption. The underlying
++# assumptions_of_use target remains restricted; this alias only exposes the
++# providers needed for AoU forwarding and component-requirement derived_from
++# references.
++alias(
++    name = "aous",
++    actual = ":aous_internal",
++    visibility = ["//visibility:public"],
++)
++
+ # dependable_element consumes DependabilityAnalysisInfo, which only this rule
+ # provides -- passing the safety_analysis target directly drops it from traceability.
+ # maturity="development": traceability chain (public_api wiring, AoU root-cause
+diff --git a/score/mw/com/dependability/safety_analysis/README.md b/score/mw/com/dependability/safety_analysis/README.md
+new file mode 100644
+index 0000000..12ece95
+--- /dev/null
++++ b/score/mw/com/dependability/safety_analysis/README.md
+@@ -0,0 +1,28 @@
++# Communication Assumptions of Use Forwarding
++
++This package exposes `//score/mw/com/dependability/safety_analysis:aous` for external Config Management consumption.
++
++## Why public?
++
++Config Management needs to resolve Communication `ScoreReq.AoU` records from `aou.trlc` in its own `component_requirements` `derived_from` references. Per the pinned `@score_tooling//bazel/rules/rules_score/docs/user_guide/assumptions_of_use.rst` (score_tooling 2.3.1), a received AoU is handled by adding `Package.Record@version` to a `CompReq.derived_from` and listing the defining `assumptions_of_use` target in the `component_requirements` target's `deps`. That dependency must be visible across repositories, hence the public alias.
++
++## Forwarding semantics
++
++The pinned tooling provides two forwarding mechanisms:
++
++* Automatic forwarding (own AoUs): a dependable element's own `assumptions_of_use` are automatically forwarded to every element listing it in `deps`.
++* Chain-forwarding (received AoUs): a dependable element can selectively forward received AoUs via an `aou_forwarding` YAML with a mandatory justification.
++
++The existing `//score/mw/com/dependability:mw_com` dependable element already declares `assumptions_of_use = ["//score/mw/com/dependability/safety_analysis:aous"]`. External consumers that depend on `mw_com` receive those AoUs automatically. Consumers that need to reference the AoU directly in their `component_requirements` can list the public `aous` target.
++
++## Safety analysis dependency
++
++`aous_internal` depends on `:mw_com_safety_analysis` to resolve `mw_com_fta.<RootCause>` references in `aou.trlc`. This processing is not duplicated by the public alias. Do not recreate a parallel safety analysis target or copy AoU IDs.
++
++## Draft API addition
++
++The public `aous` alias is a draft API addition for Config Management and requires offline engineering acceptance. The internal `aous_internal` target and `aous_internal_test` remain restricted.
++
++## Regression coverage
++
++`aou_forwarding_test/component_requirements.trlc` simulates a consumer `CompReq` deriving from `Communication.MonotonicSemiDynamicMemoryAllocation@1` and depends on the public `aous` target. This exercises the tooling deps/provider path. Cross-repository verification is a separate obligation: the production Config Management provider requirements at e82ec2750d7e9a9dd18edbfe6f5a78be57c22d80 resolve this alias and pass their native TRLC test after alignment with score_tooling 2.3.1. Its complete dependable element still requires migration of legacy placeholder safety artifacts and review of received-AoU handling. The fixture does not supply those engineering decisions.
+diff --git a/score/mw/com/dependability/safety_analysis/aou_forwarding_test/BUILD b/score/mw/com/dependability/safety_analysis/aou_forwarding_test/BUILD
+new file mode 100644
+index 0000000..35e878e
+--- /dev/null
++++ b/score/mw/com/dependability/safety_analysis/aou_forwarding_test/BUILD
+@@ -0,0 +1,21 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@score_tooling//bazel/rules/rules_score:rules_score.bzl", "component_requirements")
++
++component_requirements(
++    name = "component_requirements",
++    srcs = ["component_requirements.trlc"],
++    visibility = ["//visibility:private"],
++    deps = ["//score/mw/com/dependability/safety_analysis:aous"],
++)
+diff --git a/score/mw/com/dependability/safety_analysis/aou_forwarding_test/component_requirements.trlc b/score/mw/com/dependability/safety_analysis/aou_forwarding_test/component_requirements.trlc
+new file mode 100644
+index 0000000..9e146a6
+--- /dev/null
++++ b/score/mw/com/dependability/safety_analysis/aou_forwarding_test/component_requirements.trlc
+@@ -0,0 +1,24 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++package AouForwardingTest
++
++import ScoreReq
++import Communication
++
++ScoreReq.CompReq COMP_FORWARDING_TEST_001 {
++    description = "The component shall handle the forwarded Communication MonotonicSemiDynamicMemoryAllocation assumption of use."
++    safety = ScoreReq.Asil.B
++    derived_from = [Communication.MonotonicSemiDynamicMemoryAllocation@1]
++    version = 1
++}
+diff --git a/score/mw/com/impl/configuration/converter/json_to_flatbuffer_rule.bzl b/score/mw/com/impl/configuration/converter/json_to_flatbuffer_rule.bzl
+index 809d1ad..e678cfb 100644
+--- a/score/mw/com/impl/configuration/converter/json_to_flatbuffer_rule.bzl
++++ b/score/mw/com/impl/configuration/converter/json_to_flatbuffer_rule.bzl
+@@ -54,15 +54,15 @@ _normalize_json = rule(
+             mandatory = True,
+             doc = "The JSON configuration file (public, hyphenated format).",
+         ),
++        "output": attr.string(
++            mandatory = True,
++            doc = "Name of the normalized JSON output file.",
++        ),
+         "schema": attr.label(
+             allow_single_file = [".json"],
+             mandatory = True,
+             doc = "Rich JSON schema (source of enum symbols) from generate_json_schema.",
+         ),
+-        "output": attr.string(
+-            mandatory = True,
+-            doc = "Name of the normalized JSON output file.",
+-        ),
+         "_converter": attr.label(
+             default = "//score/mw/com/impl/configuration/converter:json_to_flatbuffer",
+             executable = True,
+@@ -96,16 +96,16 @@ def _json_to_flatbuffer_impl(name, visibility, json, fbs, schema):
+ json_to_flatbuffer = macro(
+     doc = "Generates ``<name>.bin`` from a public (hyphenated) JSON config via the .fbs schema.",
+     attrs = {
+-        "json": attr.label(
+-            allow_single_file = [".json"],
+-            mandatory = True,
+-            doc = "The JSON configuration file (public, hyphenated format).",
+-        ),
+         "fbs": attr.label(
+             allow_single_file = [".fbs"],
+             default = Label("//score/mw/com/impl/configuration:mw_com_config.fbs"),
+             doc = "The FlatBuffers schema.",
+         ),
++        "json": attr.label(
++            allow_single_file = [".json"],
++            mandatory = True,
++            doc = "The JSON configuration file (public, hyphenated format).",
++        ),
+         "schema": attr.label(
+             allow_single_file = [".json"],
+             default = Label("//score/mw/com/impl/configuration:mw_com_config_schema.json"),
+diff --git a/third_party/codeql/codeql_release_pack.bzl b/third_party/codeql/codeql_release_pack.bzl
+index b511cae..ba8cda5 100644
+--- a/third_party/codeql/codeql_release_pack.bzl
++++ b/third_party/codeql/codeql_release_pack.bzl
+@@ -62,17 +62,17 @@ codeql_release_pack = repository_rule(
+     implementation = _codeql_release_pack_impl,
+     doc = "Downloads and unpacks a pre-compiled coding-standards CodeQL pack.",
+     attrs = {
+-        "urls": attr.string_list(
++        "pack_tarball": attr.string(
+             mandatory = True,
+-            doc = "URL(s) of the coding-standards-codeql-packs.zip release asset.",
++            doc = "Name of the per-standard .tgz inside the zip to extract.",
+         ),
+         "sha256": attr.string(
+             mandatory = True,
+             doc = "Expected sha256 of the downloaded zip.",
+         ),
+-        "pack_tarball": attr.string(
++        "urls": attr.string_list(
+             mandatory = True,
+-            doc = "Name of the per-standard .tgz inside the zip to extract.",
++            doc = "URL(s) of the coding-standards-codeql-packs.zip release asset.",
+         ),
+     },
+ )
+diff --git a/third_party/lobster/lobster.bzl b/third_party/lobster/lobster.bzl
+index 7a6f5aa..4b13ce4 100644
+--- a/third_party/lobster/lobster.bzl
++++ b/third_party/lobster/lobster.bzl
+@@ -22,7 +22,7 @@ def github_urls(path):
+         "https://github.com/" + path,
+     ]
+ 
+-def _lobster_impl(ctx):
++def _lobster_impl(_ctx):
+     _VERSION = "0.14.1"
+     _PATH = "bmw-software-engineering/lobster/archive/refs/tags/lobster-{version}.tar.gz".format(version = _VERSION)
+ 
+diff --git a/third_party/rules_build_error/BUILD b/third_party/rules_build_error/BUILD
+new file mode 100644
+index 0000000..b46417a
+--- /dev/null
++++ b/third_party/rules_build_error/BUILD
+@@ -0,0 +1,14 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++exports_files(["bash-interpreters.patch"])
+diff --git a/third_party/rules_build_error/README.md b/third_party/rules_build_error/README.md
+new file mode 100644
+index 0000000..ba393d8
+--- /dev/null
++++ b/third_party/rules_build_error/README.md
+@@ -0,0 +1,10 @@
++# Build-error helper interpreters
++
++The native dependency remains rules_build_error 0.11.0 (CC0-1.0).
++`bash-interpreters.patch` adds a Bash shebang to its six Bash helpers.
++CodeQL tracing executes these programs directly; without a shebang its shell
++fallback rejects `set -o pipefail`. The matcher and expected build-error
++semantics remain unchanged. MODULE.bazel applies the patch with strip level 1.
++
++The lang helpers and matcher helpers are all required: changing only the
++check entrypoints leaves their directly executed children broken under tracing.
+diff --git a/third_party/rules_build_error/bash-interpreters.patch b/third_party/rules_build_error/bash-interpreters.patch
+new file mode 100644
+index 0000000..f9f8e43
+--- /dev/null
++++ b/third_party/rules_build_error/bash-interpreters.patch
+@@ -0,0 +1,36 @@
++diff --git a/lang/private/script/check_each_message.bash b/lang/private/script/check_each_message.bash
++--- a/lang/private/script/check_each_message.bash
+++++ b/lang/private/script/check_each_message.bash
++@@ -1 +1,2 @@
+++#!/usr/bin/env bash
++ set -euo pipefail
++diff --git a/lang/private/script/check_emptiness.bash b/lang/private/script/check_emptiness.bash
++--- a/lang/private/script/check_emptiness.bash
+++++ b/lang/private/script/check_emptiness.bash
++@@ -1 +1,2 @@
+++#!/usr/bin/env bash
++ set -euo pipefail
++diff --git a/lang/private/script/try_build.bash b/lang/private/script/try_build.bash
++--- a/lang/private/script/try_build.bash
+++++ b/lang/private/script/try_build.bash
++@@ -1 +1,2 @@
+++#!/usr/bin/env bash
++ set -euo pipefail
++diff --git a/matcher/executable/contains_basic_regex.bash b/matcher/executable/contains_basic_regex.bash
++--- a/matcher/executable/contains_basic_regex.bash
+++++ b/matcher/executable/contains_basic_regex.bash
++@@ -1 +1,2 @@
+++#!/usr/bin/env bash
++ #
++diff --git a/matcher/executable/contains_extended_regex.bash b/matcher/executable/contains_extended_regex.bash
++--- a/matcher/executable/contains_extended_regex.bash
+++++ b/matcher/executable/contains_extended_regex.bash
++@@ -1 +1,2 @@
+++#!/usr/bin/env bash
++ #
++diff --git a/matcher/executable/has_substr.bash b/matcher/executable/has_substr.bash
++--- a/matcher/executable/has_substr.bash
+++++ b/matcher/executable/has_substr.bash
++@@ -1 +1,2 @@
+++#!/usr/bin/env bash
++ #
+diff --git a/tools/lint/BUILD b/tools/lint/BUILD
+index c999c07..aaff978 100644
+--- a/tools/lint/BUILD
++++ b/tools/lint/BUILD
+@@ -39,8 +39,8 @@ expand_template(
+     name = "rustfmt_with_config_script",
+     out = "rustfmt_wrapper.sh",
+     expression_substitutions = {
+-        "@@RUSTFMT_BIN@@": "$(rlocationpath @rules_rust//tools/upstream_wrapper:rustfmt)",
+-        "@@RUSTFMT_TOML@@": "$(rlocationpath :rustfmt_toml)",
++        "__RUSTFMT_BIN__": "$(rlocationpath @rules_rust//tools/upstream_wrapper:rustfmt)",
++        "__RUSTFMT_TOML__": "$(rlocationpath :rustfmt_toml)",
+     },
+     is_executable = True,
+     template = "rustfmt_wrapper.sh.tpl",
+diff --git a/tools/lint/buildifier/BUILD b/tools/lint/buildifier/BUILD
+new file mode 100644
+index 0000000..adf883e
+--- /dev/null
++++ b/tools/lint/buildifier/BUILD
+@@ -0,0 +1,41 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@rules_python//python:defs.bzl", "py_binary", "py_test")
++
++py_binary(
++    name = "buildifier_lint",
++    srcs = ["buildifier_lint.py"],
++    data = ["@buildifier_prebuilt//:buildifier"],
++    main = "buildifier_lint.py",
++    deps = ["@rules_python//python/runfiles"],
++)
++
++py_test(
++    name = "buildifier_lint_test",
++    srcs = [
++        "buildifier_lint.py",
++        "buildifier_lint_test.py",
++    ],
++    data = [
++        "clean_fixture.bzl.txt",
++        "warning_fixture.bzl.txt",
++        "@buildifier_prebuilt//:buildifier",
++    ],
++    env = {
++        "CLEAN_FIXTURE": "$(rlocationpath clean_fixture.bzl.txt)",
++        "WARNING_FIXTURE": "$(rlocationpath warning_fixture.bzl.txt)",
++    },
++    imports = ["."],
++    deps = ["@rules_python//python/runfiles"],
++)
+diff --git a/tools/lint/buildifier/buildifier_lint.py b/tools/lint/buildifier/buildifier_lint.py
+new file mode 100644
+index 0000000..b333b87
+--- /dev/null
++++ b/tools/lint/buildifier/buildifier_lint.py
+@@ -0,0 +1,69 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import argparse
++import os
++import subprocess
++import sys
++
++from python.runfiles import Runfiles
++
++
++def _find_buildifier():
++    runfiles = Runfiles.Create()
++    path = runfiles.Rlocation("buildifier_prebuilt/buildifier/buildifier.bash")
++    if not path or not os.path.exists(path):
++        raise RuntimeError("Unable to locate buildifier in runfiles")
++    return path
++
++
++def _run_buildifier(buildifier, args):
++    return subprocess.run([buildifier] + args, capture_output=True, text=True)
++
++
++def _check_result(proc):
++    output = (proc.stdout or "") + (proc.stderr or "")
++    if proc.returncode != 0 or output.strip():
++        if output:
++            print(output, file=sys.stderr)
++        return 1
++    return 0
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description="Run buildifier lint checks.")
++    parser.add_argument("--recursive", action="store_true", help="Recursively lint the workspace.")
++    parser.add_argument("--workspace", help="Workspace root for recursive lint.")
++    parser.add_argument("--type", default="auto", help="Buildifier input type.")
++    parser.add_argument("files", nargs="*", help="Files to lint.")
++    args = parser.parse_args(argv)
++
++    buildifier = _find_buildifier()
++    buildifier_args = ["-lint=warn", "-warnings=all", "-mode=check", f"-type={args.type}"]
++    if args.recursive:
++        workspace = args.workspace or os.environ.get("BUILD_WORKING_DIRECTORY")
++        if not workspace:
++            print("--workspace or BUILD_WORKING_DIRECTORY required for recursive lint.", file=sys.stderr)
++            return 2
++        buildifier_args.extend(["-r", workspace])
++    else:
++        if not args.files:
++            print("No files provided for non-recursive lint.", file=sys.stderr)
++            return 2
++        buildifier_args.extend(args.files)
++
++    proc = _run_buildifier(buildifier, buildifier_args)
++    return _check_result(proc)
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/tools/lint/buildifier/buildifier_lint_test.py b/tools/lint/buildifier/buildifier_lint_test.py
+new file mode 100644
+index 0000000..2cc0cce
+--- /dev/null
++++ b/tools/lint/buildifier/buildifier_lint_test.py
+@@ -0,0 +1,40 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import os
++import unittest
++
++import buildifier_lint
++
++
++class BuildifierLintTest(unittest.TestCase):
++    def test_clean_fixture_passes(self):
++        buildifier = buildifier_lint._find_buildifier()
++        fixture = buildifier_lint.Runfiles.Create().Rlocation(os.environ["CLEAN_FIXTURE"])
++        proc = buildifier_lint._run_buildifier(
++            buildifier, ["-lint=warn", "-warnings=all", "-mode=check", "-type=build", fixture]
++        )
++        self.assertEqual(buildifier_lint._check_result(proc), 0, proc.stderr)
++
++    def test_warning_fixture_fails(self):
++        buildifier = buildifier_lint._find_buildifier()
++        fixture = buildifier_lint.Runfiles.Create().Rlocation(os.environ["WARNING_FIXTURE"])
++        proc = buildifier_lint._run_buildifier(
++            buildifier, ["-lint=warn", "-warnings=all", "-mode=check", "-type=build", fixture]
++        )
++        self.assertNotEqual(buildifier_lint._check_result(proc), 0, "Expected warning fixture to fail")
++        output = (proc.stdout or "") + (proc.stderr or "")
++        self.assertIn('Loaded symbol "cc_test" is unused.', output)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tools/lint/buildifier/clean_fixture.bzl.txt b/tools/lint/buildifier/clean_fixture.bzl.txt
+new file mode 100644
+index 0000000..e458301
+--- /dev/null
++++ b/tools/lint/buildifier/clean_fixture.bzl.txt
+@@ -0,0 +1,5 @@
++load("@rules_cc//cc:defs.bzl", "cc_library")
++
++cc_library(
++    name = "clean",
++)
+diff --git a/tools/lint/buildifier/warning_fixture.bzl.txt b/tools/lint/buildifier/warning_fixture.bzl.txt
+new file mode 100644
+index 0000000..2abaa1a
+--- /dev/null
++++ b/tools/lint/buildifier/warning_fixture.bzl.txt
+@@ -0,0 +1,5 @@
++load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++
++cc_library(
++    name = "warning",
++)
+diff --git a/tools/lint/rustfmt_wrapper.sh.tpl b/tools/lint/rustfmt_wrapper.sh.tpl
+index 576920c..58a0dac 100644
+--- a/tools/lint/rustfmt_wrapper.sh.tpl
++++ b/tools/lint/rustfmt_wrapper.sh.tpl
+@@ -15,7 +15,7 @@ source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+   { echo >&2 "ERROR: runfiles.bash initializer cannot find $f"; exit 1; }
+ # --- end runfiles.bash initialization v3 ---
+ 
+-config="$(rlocation "@@RUSTFMT_TOML@@")"
+-rustfmt="$(rlocation "@@RUSTFMT_BIN@@")"
++config="$(rlocation "__RUSTFMT_TOML__")"
++rustfmt="$(rlocation "__RUSTFMT_BIN__")"
+ 
+ exec "$rustfmt" --config-path "$config" "$@"

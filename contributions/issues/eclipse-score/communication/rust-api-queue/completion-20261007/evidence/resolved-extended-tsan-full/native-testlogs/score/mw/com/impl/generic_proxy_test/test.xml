@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="26" failures="0" disabled="0" errors="0" time="0.022" timestamp="2026-10-07T19:31:16.343" name="AllTests">
+  <testsuite name="GenericProxyDeathTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.013" timestamp="2026-10-07T19:31:16.343">
+    <testcase name="FillingEventMapWithDuplicateEventNamesWillTerminate" file="score/mw/com/impl/generic_proxy_test.cpp" line="498" status="run" result="completed" time="0.013" timestamp="2026-10-07T19:31:16.343" classname="GenericProxyDeathTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.ReactionOnMissingEventTypeInfo"/>
+        <property name="Description" value="Checks that the function used to add GenericProxyEvents to the event map of GenericProxy i.e. FillEventMap() will terminate if an event list containing duplicate event names is provided."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="GenericProxyTest" tests="3" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T19:31:16.356">
+    <testcase name="NotCopyable" file="score/mw/com/impl/generic_proxy_test.cpp" line="112" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.356" classname="GenericProxyTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyCopySemantics"/>
+        <property name="Description" value="Checks copy semantics for GenericProxies"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="IsMoveable" file="score/mw/com/impl/generic_proxy_test.cpp" line="124" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.357" classname="GenericProxyTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyMoveSemantics"/>
+        <property name="Description" value="Checks move semantics for GenericProxies"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="ServiceElementsAreIndexedUsingElementFqId" file="score/mw/com/impl/generic_proxy_test.cpp" line="136" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.357" classname="GenericProxyTest">
+      <properties>
+        <property name="Verifies" value="SCR-21205130"/>
+        <property name="Description" value="Checks that GenericProxyEvents are stored in a std::map within GenericProxy. A std::map is provided by the standard library which is ASIL-B certified. The standard requires that inserting elements e.g. via insert() or emplace will only insert the element if the key does not exist. It will not _mistakenly_ overwrite the value of an element with a different key. Using operator[] would allowing overwriting the value corresponding to an existing key so another test will ensure that trying to fill the event map multiple times with the same key will abort."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="GenericProxyFixture" tests="13" failures="0" disabled="0" skipped="0" errors="0" time="0.007" timestamp="2026-10-07T19:31:16.357">
+    <testcase name="CanSetupFixture" file="score/mw/com/impl/generic_proxy_test.cpp" line="216" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.357" classname="GenericProxyFixture" />
+    <testcase name="CreatingGenericProxyWithValidProxyBindingReturnsValidResult" file="score/mw/com/impl/generic_proxy_test.cpp" line="218" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.357" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyExceptionLessCreation"/>
+        <property name="Description" value="Checks that a valid GenericProxy can be created from a valid HandleType and binding."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CreatingGenericProxyWithConfigurationContainingBlankBindingReturnsValidResult" file="score/mw/com/impl/generic_proxy_test.cpp" line="237" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.358" classname="GenericProxyFixture" />
+    <testcase name="CreatingGenericProxyReturnsErrorWhenBindingCreationReturnsNullptr" file="score/mw/com/impl/generic_proxy_test.cpp" line="253" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.358" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyExceptionLessCreation"/>
+        <property name="Description" value="Checks that creating a GenericProxy returns an error if the GenericProxy binding cannot be created."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CreatingGenericProxyReturnsErrorWhenBindingCreationReturnsError" file="score/mw/com/impl/generic_proxy_test.cpp" line="276" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.359" classname="GenericProxyFixture" />
+    <testcase name="CreatingGenericProxyWhenGenericProxyEventBindingCreationReturnsError" file="score/mw/com/impl/generic_proxy_test.cpp" line="292" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.360" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyExceptionLessCreation"/>
+        <property name="Description" value="Checks that creating a GenericProxy returns an error if the GenericProxyEvent binding cannot be created."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyWillCreateEventBindingsSpecifiedInHandleType" file="score/mw/com/impl/generic_proxy_test.cpp" line="317" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.360" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.EventListSource"/>
+        <property name="Description" value="Checks that the GenericProxy will create a GenericProxyEvent binding for each event listed in the HandleType used to create the GenericProxy."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyWillContainEventsSpecifiedInHandleType" file="score/mw/com/impl/generic_proxy_test.cpp" line="346" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.361" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.EventListSource, Communication.GenericProxyGetEvents"/>
+        <property name="Description" value="Checks that the GenericProxy will contain a GenericProxyEvent for each event listed in the HandleType used to create the GenericProxy (Communication.EventListSource). GetEvents will return the events contained in the GenericProxy (Communication.GenericProxyGetEvents)."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyWillOnlyCreateEventBindingsForEventsProvidedInSharedMemory" file="score/mw/com/impl/generic_proxy_test.cpp" line="370" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.362" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.ReactionOnMissingEventTypeInfo"/>
+        <property name="Description" value="Checks that the GenericProxy will only create a GenericProxyEvent binding for events that are provided in shared memory."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyWillContainEventsForEventsProvidedInSharedMemory" file="score/mw/com/impl/generic_proxy_test.cpp" line="403" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.362" classname="GenericProxyFixture">
+      <properties>
+        <property name="Verifies" value="Communication.ReactionOnMissingEventTypeInfo, Communication.GenericProxyGetEvents"/>
+        <property name="Description" value="Checks that the GenericProxy will only contain a GenericProxyEvent for events that are provided in shared memory (Communication.ReactionOnMissingEventTypeInfo). GetEvents will return the events contained in the GenericProxy (Communication.GenericProxyGetEvents)."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyWillLogErrorMessageForEventsProvidedInConfigurationButNotInSharedMemory" file="score/mw/com/impl/generic_proxy_test.cpp" line="431" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.363" classname="GenericProxyFixture">
+      <properties>
+        <property name="lobster-tracing" value="Communication.ReactionOnMissingEventTypeInfo"/>
+        <property name="Description" value="Checks that the GenericProxy will log an error message if an event is provided in the configuration but not in shared memory."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="MovingGenericProxyLeavesEventMapIntact" file="score/mw/com/impl/generic_proxy_test.cpp" line="470" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.364" classname="GenericProxyFixture" />
+    <testcase name="CreatingGenericProxyWithLolaBindingAndNoEventsReturnsValidResult" file="score/mw/com/impl/generic_proxy_test.cpp" line="666" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.364" classname="GenericProxyFixture" />
+  </testsuite>
+  <testsuite name="GenericProxyHandleTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T19:31:16.365">
+    <testcase name="GenericProxyUsesProxyBaseGetHandle" file="score/mw/com/impl/generic_proxy_test.cpp" line="517" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyHandleTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyGetHandle"/>
+        <property name="Description" value="Checks that GenericProxy uses GetHandle in ProxyBase"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyContainsPublicHandleTypeAlias" file="score/mw/com/impl/generic_proxy_test.cpp" line="528" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyHandleTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyHandleTypeClass"/>
+        <property name="Description" value="A GenericProxy contains a public alias to our implementation of HandleType."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="GenericProxyFindServiceTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T19:31:16.365">
+    <testcase name="GenericProxyUsesProxyBaseFindServiceWithInstanceSpecifier" file="score/mw/com/impl/generic_proxy_test.cpp" line="539" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyFindServiceTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyFindServiceWithInstanceSpecifier"/>
+        <property name="Description" value="Checks that GenericProxy uses FindService in ProxyBase"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GenericProxyUsesProxyBaseFindServiceWithInstanceIdentifier" file="score/mw/com/impl/generic_proxy_test.cpp" line="556" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyFindServiceTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyFindServiceWithInstanceIdentifier"/>
+        <property name="Description" value="Checks that GenericProxy uses FindService in ProxyBase"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="GenericProxyStartFindServiceTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T19:31:16.365">
+    <testcase name="GeneratedProxyUsesProxyBaseStartFindServiceWithInstanceSpecifier" file="score/mw/com/impl/generic_proxy_test.cpp" line="573" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyStartFindServiceTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyStartFindServiceWithInstanceSpecifier"/>
+        <property name="Description" value="Checks that a generic proxy uses StartFindService with InstanceSpecifier in ProxyBase"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GeneratedProxyUsesProxyBaseStartFindServiceWithInstanceIdentifier" file="score/mw/com/impl/generic_proxy_test.cpp" line="592" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyStartFindServiceTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyStartFindServiceWithInstanceIdentifier"/>
+        <property name="Description" value="Checks that a generic proxy uses StartFindService with InstanceIdentifier in ProxyBase"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="GenericProxyStopFindServiceTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T19:31:16.365">
+    <testcase name="GeneratedProxyUsesProxyBaseStopFindService" file="score/mw/com/impl/generic_proxy_test.cpp" line="611" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyStopFindServiceTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyStopFindService"/>
+        <property name="Description" value="Checks that a generic proxy uses StopFindService in ProxyBase"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+  <testsuite name="GenericProxyEventMapTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T19:31:16.365">
+    <testcase name="GenericProxyContainsEventMapClass" file="score/mw/com/impl/generic_proxy_test.cpp" line="625" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyEventMapTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyEventMapViewClass"/>
+        <property name="Description" value="Checks that GenericProxy contains a public EventMap class"/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CheckEventMapClassInterface" file="score/mw/com/impl/generic_proxy_test.cpp" line="637" status="run" result="completed" time="0." timestamp="2026-10-07T19:31:16.365" classname="GenericProxyEventMapTest">
+      <properties>
+        <property name="lobster-tracing" value="Communication.GenericProxyEventMapViewClassProperties"/>
+        <property name="Description" value="Checks that the EventMapView class adheres to the required interface and that EventMapView is a ServiceElementMapView. ServiceElementMap unit tests check that EventMapView behaves like std::map."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+  </testsuite>
+</testsuites>

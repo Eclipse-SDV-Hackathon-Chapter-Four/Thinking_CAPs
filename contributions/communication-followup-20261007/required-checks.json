@@ -1,0 +1,230 @@
+{
+  "source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+  "purpose": "Expected-check inventory; an unexecuted or unavailable check is not a pass or an accepted waiver.",
+  "checks": [
+    {
+      "id": "buildifier-regression",
+      "source": "CI.md: Bazel formatting and linting; new native fixture",
+      "record": "license-headers-host-tests",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "buildifier-repository",
+      "source": "CI.md; _linter.yml buildifier job",
+      "record": "license-headers-buildifier",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "coverage-rule-analysis",
+      "source": "Changed coverage_scope.bzl main-repository ownership selection",
+      "record": "final-source-coverage-rule",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c"
+    },
+    {
+      "id": "analyzer-regressions",
+      "source": "CONTRIBUTING.md: tests for new functionality",
+      "record": "license-headers-host-tests",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "configured-production-extraction",
+      "source": "_codeql.yml; issues #751 and #1104",
+      "record": "license-headers-production-extraction",
+      "status": "measured-pass",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs.",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c"
+    },
+    {
+      "id": "full-native-analyzer",
+      "source": "_codeql.yml: native default MISRA suite and reporting",
+      "record": "license-headers-native-analyzer-reporting-verified",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "finding-location-preservation",
+      "source": "#1104 reproduction; pinned native affected query",
+      "record": "1104-native-complete-pack-binding",
+      "limit": "Copied baseline database and affected query only; full-suite check is separate.",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "381d43dec900ab6a9076f3f30e7bfbdee019e26e"
+    },
+    {
+      "id": "native-format",
+      "source": "CONTRIBUTING.md: bazel run //:format.check",
+      "record": "license-headers-format",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "native-copyright",
+      "source": "CONTRIBUTING.md: bazel run //:copyright.check",
+      "record": "license-headers-communication-copyright-verified",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "host-tests",
+      "source": "_build_and_test_gcc15.yml",
+      "record": "license-headers-host-tests",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs."
+    },
+    {
+      "id": "host-all-build",
+      "source": "_build_and_test_gcc15.yml",
+      "command": "bazel build --config=ci //...",
+      "status": "measured-pass",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs.",
+      "record": "license-headers-all-build",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c"
+    },
+    {
+      "id": "module-integration",
+      "source": "_build_and_test_gcc15.yml",
+      "command": "cd module_integration_test && bazel build //... && bazel mod deps --lockfile_mode=update",
+      "status": "measured-pass",
+      "record": "current-module-integration",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c"
+    },
+    {
+      "id": "thread-sanitizer",
+      "source": "build_and_test_host.yml; _thread_sanitizer.yml",
+      "command": "bazel test --config=ci --config=tsan //... --build_tests_only",
+      "status": "pending-hosted-ci",
+      "limit": "No local waiver; required native CI result remains outstanding."
+    },
+    {
+      "id": "address-undefined-leak-sanitizers",
+      "source": "build_and_test_host.yml; _address_sanitizer.yml",
+      "command": "bazel test --config=ci --config=asan_ubsan_lsan //... --build_tests_only",
+      "status": "pending-hosted-ci",
+      "limit": "No local waiver; required native CI result remains outstanding."
+    },
+    {
+      "id": "aspect-lint-matrix",
+      "source": "_linter.yml: clang-tidy, clippy, ruff and event-specific hold-the-line strategy",
+      "status": "pending-hosted-ci",
+      "limit": "Pinned buildifier and formatter results do not replace this matrix."
+    },
+    {
+      "id": "public-visibility",
+      "source": "quality/visibility_guard/public_targets.golden; #1031 API addition",
+      "status": "measured-pass",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs.",
+      "record": "license-headers-host-tests",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c"
+    },
+    {
+      "id": "native-aou-fixture",
+      "source": "score/mw/com/dependability/safety_analysis/aou_forwarding_test",
+      "status": "measured-pass",
+      "limit": "Fresh source binding after license cleanup; prior checks and source bindings remain historical. Local results do not replace required hosted jobs.",
+      "record": "license-headers-host-tests",
+      "exit_code": 0,
+      "measured_source_revision": "cef680454e8586daca9f953084dca33fb3759d0c"
+    },
+    {
+      "id": "production-provider-consumer",
+      "source": "#1031; Config Management production provider requirements",
+      "record": "1031-provider-native-cc-toolchain",
+      "limit": "Correct --override_module required; earlier --override_repository runs are invalid for candidate verification. Build and TRLC records bind the baseline candidate; proposed final dependency release/commit and full integration remain pending.",
+      "status": "measured-pass",
+      "exit_code": 0,
+      "measured_source_revision": "e82ec2750d7e9a9dd18edbfe6f5a78be57c22d80"
+    },
+    {
+      "id": "production-dependable-element",
+      "source": "#1031 FMEA, LOBSTER and AoU forwarding",
+      "status": "measured-failure-unresolved",
+      "limit": "Real provider consumption passes on the bound baseline candidate; complete consumer index fails on legacy/placeholder safety records. All received AoUs, maturity/classification, actual implementation links and published dependency pin need native owner decisions.",
+      "record": "1031-production-traceability-index",
+      "exit_code": 1,
+      "measured_source_revision": "e82ec2750d7e9a9dd18edbfe6f5a78be57c22d80"
+    },
+    {
+      "id": "qnx-production-analyzer",
+      "source": "_codeql.yml: conditional QNX job",
+      "status": "unavailable-local-license",
+      "limit": "No SCORE_QNX_LICENSE environment available; platform applicability remains for native review."
+    },
+    {
+      "id": "manual-incompatible-tests",
+      "source": "CONTRIBUTING.md; native test attributes and platform configurations",
+      "status": "accounted-with-explicit-omissions",
+      "limit": "1,158 rules: 508 direct passes, 7 skips; 265 manual actuals delegated to passing configured forwarders; 264 QNX and 114 other manual rules have no direct pass claimed. See test-dispositions.json.",
+      "record": "current-configured-forwarders"
+    },
+    {
+      "id": "contributor-agreement",
+      "source": "CONTRIBUTING.md: mandatory ECA",
+      "status": "existing-account-eca-verified-new-commit-binding-pending",
+      "evidence": "contributor-eligibility.json",
+      "limit": "Carried official strict ECA result binds Jefferson Nascimento\u2019s separate published Communication commit; final author/commit verification for these patches remains pending."
+    },
+    {
+      "id": "codeowner-and-engineering-review",
+      "source": "CI.md; native requirements/safety/dependency review",
+      "status": "pending-human-acceptance",
+      "limit": "No safety, qualification, dependency migration or forwarded-AoU acceptance is asserted."
+    },
+    {
+      "id": "changed-python-ruff",
+      "source": "_linter.yml; native pinned Ruff and .ruff.toml",
+      "record": "current-final-ruff",
+      "status": "measured-pass",
+      "limit": "Changed Python files only; does not replace hosted aspect lint matrix."
+    },
+    {
+      "id": "module-integration-lock",
+      "source": "_build_and_test_gcc15.yml",
+      "record": "current-module-integration-lock",
+      "status": "measured-pass"
+    },
+    {
+      "id": "traced-build-error-regression",
+      "source": "#1104 exact-scope tracing compatibility",
+      "record": "1104-complete-bash-helper-regression",
+      "status": "measured-pass-on-baseline",
+      "limit": "Both intentional compiler failures and positive error target traced with all six Bash helpers; current production extraction is separate."
+    },
+    {
+      "id": "companion-copyright",
+      "record": "license-headers-config-management-copyright-final-lock",
+      "status": "measured-pass",
+      "exit_code": 0
+    },
+    {
+      "id": "all-code-license-headers",
+      "evidence": "license-header-audit.json",
+      "status": "measured-pass",
+      "code_files": 2858,
+      "packet_helpers": 13,
+      "failures": 0
+    }
+  ]
+}
