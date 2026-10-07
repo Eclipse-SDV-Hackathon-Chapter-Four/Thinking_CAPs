@@ -6,8 +6,8 @@ Use the [2026-10-07 native contribution packet](../../../../communication-follow
 [final verification](../../../../communication-followup-20261007/verification.md) and
 [PR draft](../../../../communication-followup-20261007/pr-communication.md).
 The submission patch targets `cef680454e8586daca9f953084dca33fb3759d0c`.
-Native owner acceptance and required hosted checks remain pending.
-[Draft PR #1342](https://github.com/eclipse-score/communication/pull/1342) is open for user review; no merge or issue closure is claimed. For #1031, complete production integration remains
+Native owner acceptance and required hosted checks remain pending; no upstream PR
+or issue closure is claimed. For #1031, complete production integration remains
 incomplete. Memory adequacy, QM/ASIL classification, received-AoU dispositions and safety-record/implementation evidence are explicitly deferred in both PR drafts. The companion remains a draft and #1031 stays open.
 
 The imported patch/draft and status below are **historical**. They are retained
