@@ -10,14 +10,15 @@ native process ownership, lifecycle loopbacks, bounded context and qualification
 | Field | Record |
 | --- | --- |
 | Captured | 2026-10-07; exact retrieval times in capture records |
-| Local status | Evidence collected; proposed decision record and native RST supplement prepared |
+| Local status | Current native review candidate prepared; fresh baseline/candidate checks retained |
 | Fabric baseline | `7e24a43c258f1dcaa2b27e02b501964847bc8714`, plus captured working-tree changes and untracked source |
 | Source | [Fabric source identity](evidence/fabric/source-identity.json), [snapshot](evidence/fabric/source-snapshot.tar.gz), [per-file hashes](evidence/fabric/source-files.json) |
 | Upstream status | Issue open, assigned to `aryansingh0012` and `praveen-ltts`; adoption and issue closure pending |
 | Existing DR | `dec_rec__infra__ai_sdlc_tooling`, proposed in PR #3140 |
 | New publication | None; local preparation only |
 
-Start with the [decision-record proposal](decision-record.md), then the
+Start with the [current native proposal and measured verification](upstream-preparation/README.md).
+The original local [decision-record proposal](decision-record.md), then the
 [evidence map](evidence-map.md) and [acceptance gaps](acceptance-mapping.md).
 [Issue selection](issue-selection.md) explains why #3115 fits this contribution.
 [PR description](pr-description.md) and [native supplement](native/supplement.rst)
@@ -61,9 +62,11 @@ stay read-only; production trust roots, credentials and private server state are
 
 ## Contribution route
 
-Offer this pilot evidence to #3115's assignees as a supplement to PR #3140. Reconcile
-the native DR against the current `docs/design_decisions/infrastructure/` layout and
-template, preserving its existing ID. The proposed decisions still need maintainers'
+The native DR has been reconciled against the current
+`docs/design_decisions/infrastructure/` layout and template, preserving its ID.
+Native checks are recorded in [the fresh verification report](upstream-preparation/verification-report.json):
+no new warnings, one unchanged baseline lifecycle warning, documentation CI still failing.
+Offer this pilot evidence to #3115's assignees for incorporation into PR #3140. The proposed decisions still need maintainers'
 review, an agreed evaluation scope and required native documentation CI. ECA/DCO
 requirements are retained in the captured contribution guide. This packet neither
 closes #3115 nor proposes wholesale adoption of the fabric.
