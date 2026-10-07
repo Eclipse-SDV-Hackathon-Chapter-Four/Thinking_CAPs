@@ -18,6 +18,8 @@ INSTALL_RUST="false"
 SETUP_STEER="false"
 INSTALL_CUTTLEFISH="false"
 SETUP_THREADX="false"
+REBUILD_DIAG="false"
+ORIG_ARGS=("$@")
 
 # Run from the checkout itself, wherever it lives (e.g. Thinking_CAPs/demo/X-Verse).
 AUTOVERSE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -27,7 +29,9 @@ usage() {
     cat <<EOF
 Usage: $0 <command>
 This script is for setting up the XVerse environment and repos after cloning the repo and before 'run_autoverse.py'.
-- Installs system packages python3-pip, rust-just, vcstool.
+- Installs host tools, Docker Engine + Compose plugin (if missing) and
+  checks /dev/kvm (needed by Android Cuttlefish).
+- Installs python packages rust-just, vcstool.
 - Runs 'just' command install-zenoh
 - Optionally runs 'just' commands to install CARLA server and client
 - Optionally runs 'just' commands to install rust language and tools.
@@ -37,6 +41,7 @@ This script is for setting up the XVerse environment and repos after cloning the
 - Works from any checkout location (~/autoverse is not required).
 - Sets up each necessary sub-repo, and warns about existing component
   checkouts that are not on the branch/tag in autoverse.repos.
+- Builds S-CORE, including its cruise-control diagnostics server.
 
 Options:
     --carla      Download and install CARLA server and client. Does not by default.
@@ -45,6 +50,9 @@ Options:
     --cuttlefish Download, install, and run the cuttlefish emulator repo
     --threadx    Install the bridge dependencies (python-can, pyserial) for the
                  ThreadX AZ3166 board and add you to the dialout group.
+    --rebuild-diag
+                 Rebuild the S-CORE cruise-control diagnostics server even if
+                 it was already built.
     -h|--help    Show this message.
 
 Examples:
@@ -77,6 +85,10 @@ while [[ $# -gt 0 ]]; do
         SETUP_THREADX="true"
         shift
         ;;
+    --rebuild-diag)
+        REBUILD_DIAG="true"
+        shift
+        ;;
     *)
         usage
         ;;
@@ -94,15 +106,54 @@ if ! grep -Fxq "$LINE_TO_ADD" ~/.bashrc; then
 fi
 
 
-## MISSING INSTALL DOCKER WITH AN ENTIRE SEPARATE SCRIPT MAYBE?
-
-
-
-
-
-## tools and root repo
+## host tools (README "Install host tools")
 sudo apt update
-sudo apt install -y curl git python3-pip
+sudo apt install -y git git-lfs curl wget unzip python3-pip python3-venv \
+    x11-xserver-utils xdg-utils adb ca-certificates
+
+## Docker Engine + Compose plugin, from Docker's official Ubuntu repository
+## (https://docs.docker.com/engine/install/ubuntu/)
+if ! command -v docker >/dev/null 2>&1 || ! docker compose version >/dev/null 2>&1; then
+    echo "installing Docker Engine and the Compose plugin"
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" \
+        | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt update
+    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+fi
+# Docker usable by the normal user. A new group applies from the next login,
+# so re-run this script once under that group to finish in this session.
+if ! docker info >/dev/null 2>&1; then
+    if ! id -nG "$USER" | tr ' ' '\n' | grep -qx docker; then
+        sudo usermod -aG docker "$USER"
+        echo "Added $USER to the docker group; it applies from the next login."
+    fi
+    if [[ -z "${AUTOVERSE_SETUP_SG:-}" ]] && getent group docker | cut -d: -f4 | tr ',' '\n' | grep -qx "$USER"; then
+        echo "Continuing the setup with the docker group ..."
+        export AUTOVERSE_SETUP_SG=1
+        exec sg docker -c "$(printf '%q ' "$AUTOVERSE_DIR/setup.sh" "${ORIG_ARGS[@]}")"
+    fi
+    echo -e "\033[1;31mDocker is not usable by $USER. Check 'docker info' (is the daemon running?).\033[0m"
+    exit 1
+fi
+
+## KVM for Android Cuttlefish (hardware virtualization, /dev/kvm). Cuttlefish
+## runs in a privileged container, so no extra user group is needed.
+if [[ ! -e /dev/kvm ]]; then
+    if grep -qw vmx /proc/cpuinfo; then
+        sudo modprobe kvm_intel || true
+    elif grep -qw svm /proc/cpuinfo; then
+        sudo modprobe kvm_amd || true
+    fi
+fi
+if [[ ! -e /dev/kvm ]]; then
+    echo -e "\033[1;31m/dev/kvm is missing: enable virtualization (VT-x/AMD-V) in the BIOS/UEFI, or nested virtualization when this is a VM. Android Cuttlefish needs it.\033[0m"
+    exit 1
+fi
+
+## python tools and root repo
 pip install --user rust-just vcstool psutil
 
 vcs import . < autoverse.repos ## DO NOT MERGE COMMENTED - temp workaround for carla 0.9.16 - manually changed, not committed
@@ -157,6 +208,19 @@ pushd vecu/s-core
     source ./prepare.sh
     # ./clean.sh
     ./make.sh
+    # Cruise-control diagnostics server (SOVD, DTC CC.LostCommunication), on
+    # Eclipse inc_diagnostics. It must be built inside the devcontainer as root
+    # (it patches the toolchain sysroot in root's Bazel cache); entrypoint.sh
+    # starts it from cc_s-core/.local/cruise-gateway.
+    if [[ "$REBUILD_DIAG" == "true" || ! -x cc_s-core/.local/cruise-gateway/cruise-control-diag ]]; then
+        devcontainer_id=$(docker ps -q --filter "label=devcontainer.local_folder=$(pwd -P)" | head -n 1)
+        if [[ -z "$devcontainer_id" ]]; then
+            echo -e "\033[1;31mS-CORE devcontainer is not running (prepare.sh should have started it).\033[0m"
+            exit 1
+        fi
+        docker exec -u root -w "/workspaces/$(basename "$(pwd -P)")" "$devcontainer_id" \
+            bash -lc 'bash third_party/build-diag-gateway.sh'
+    fi
     ./ctl.sh up
 popd
 
@@ -179,11 +243,9 @@ fi
 cat <<EOF
 
 Next steps:
-- S-CORE cruise-control diagnostics (SOVD, DTC CC.LostCommunication): build
-  the server once, inside the S-CORE devcontainer as root, from vecu/s-core:
-      bash third_party/build-diag-gateway.sh
-  and point OPENSOVD_DIR at your OpenSOVD checkout (fault profile + storage)
-  before starting S-CORE, e.g.  export OPENSOVD_DIR=\$HOME/OpenSOVD
+- S-CORE diagnostics: built above; rebuild with  ./setup.sh --rebuild-diag
+  Only the legacy SOVD provider (SDV_DIAG_APP=legacy) needs an OpenSOVD
+  checkout:  export OPENSOVD_DIR=<path to OpenSOVD>
 - Zenoh router: run_autoverse.py starts one in Docker (eclipse/zenoh:1.3.4)
   when nothing answers on tcp/127.0.0.1:7447.
 - Start everything:  python3 $AUTOVERSE_DIR/run_autoverse.py --enable-camera-display --vcu-zenoh

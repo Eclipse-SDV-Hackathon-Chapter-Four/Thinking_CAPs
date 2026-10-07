@@ -870,7 +870,7 @@ For real CARLA, start `just server-offscreen Low 2000` in another terminal and r
 
 ## Setup script shortcut
 
-[setup.sh](setup.sh) automates much of the provisioning above. After installing the initial host tools, cloning into `~/autoverse`, and making Docker and KVM available, run:
+[setup.sh](setup.sh) automates much of the provisioning above: host tools, Docker Engine with the Compose plugin (from Docker's Ubuntu repository, when missing, including the `docker` group; the script then continues under that group), the `/dev/kvm` check, the S-CORE build including its cruise-control diagnostics server (built in the devcontainer; `--rebuild-diag` forces a rebuild), the SOME/IP bridge and, optionally, CARLA and Cuttlefish. Virtualization must be enabled in the BIOS/UEFI; the script stops with a hint when `/dev/kvm` is missing. After cloning, run:
 
 ```bash
 cd "$HOME/autoverse"
