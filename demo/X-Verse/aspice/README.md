@@ -21,7 +21,9 @@ Serial2CAN bridge (`bridges/can/serial2can-bridge/aspice`).
 | SWE.5 Integration test | [integration-test.md](swe5-integration-test/integration-test.md) | [`tools/e2e_check.py`](tools/e2e_check.py) against the running system |
 | SWE.6 Qualification test | [qualification-test.md](swe6-qualification-test/qualification-test.md) | supervisor logs, OTA campaign records, witnessed live dry run |
 
-Open the report at [report/aspice-swe-report.html](report/aspice-swe-report.html);
+**Read the report on GitHub: [report/README.md](report/README.md)** (rendered Markdown with the
+diagrams). The same report as a single HTML page: [report/aspice-swe-report.html](report/aspice-swe-report.html)
+(download and open it in a browser);
 [report/summary.json](report/summary.json) holds the same data in machine-readable form,
 and `report/evidence/` the raw results.
 

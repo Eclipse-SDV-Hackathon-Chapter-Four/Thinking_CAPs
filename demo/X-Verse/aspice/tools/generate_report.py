@@ -6,7 +6,8 @@ Reads the work products in aspice/, renders the PlantUML views (Docker image
 plantuml/plantuml), runs the unit suites and the integration checks, evaluates the
 qualification records, computes bidirectional traceability and writes:
 
-    aspice/report/aspice-swe-report.html   aspice/report/summary.json   aspice/report/evidence/*.json
+    aspice/report/aspice-swe-report.html   aspice/report/README.md (GitHub view)
+    aspice/report/summary.json             aspice/report/evidence/*.json
 
 Run from the autoverse checkout while the system is up (run_autoverse.py):
 
@@ -488,6 +489,62 @@ def render(wp, diagrams, cases, swr_status, issues, unit, integ_note, prov, stam
             + "".join(parts) + "</body></html>")
 
 
+def render_markdown(wp, cases, swr_status, issues, unit, integ_note, prov, stamp):
+    """GitHub-renderable version of the report (report/README.md); diagrams are embedded SVGs."""
+    n_pass = sum(1 for c in cases.values() if c["status"] == "PASS")
+    n_ver = sum(1 for s in swr_status.values() if s == "VERIFIED")
+    icon = {"PASS": "✅ PASS", "VERIFIED": "✅ VERIFIED", "FAIL": "❌ FAIL", "PARTIAL": "⚠️ PARTIAL"}
+
+    def cell(text):
+        return str(text).replace("|", "\\|").replace("\n", " ")
+
+    out = [f"# ASPICE SWE.1–SWE.6 report — X-Verse end-to-end demonstration", "",
+           f"Generated {stamp} by `aspice/tools/generate_report.py` (the same data as "
+           f"[aspice-swe-report.html](aspice-swe-report.html) and [summary.json](summary.json)).", "",
+           "CARLA · virtual vehicle · Zenoh VCU · SOME/IP bridge · S-CORE ECU with DTC `CC.LostCommunication` "
+           "over SOVD (inc_diagnostics PR #16 `sovd_adapter`) · OTA vECU (certgen, EOL backend, RTCU) · Android targets.", "",
+           "## Summary", "",
+           "| Software requirements verified | Test cases passed | Unit test cases / checks | Traceability issues |",
+           "| --- | --- | --- | --- |",
+           f"| **{n_ver}/{len(swr_status)}** | **{n_pass}/{len(cases)}** | "
+           f"**{sum((u.get('tests') or 0) for u in unit.values())}** | **{len(issues)}** |", ""]
+    out += [f"- ⚠️ {i}" for i in issues] + ([""] if issues else [])
+    out += ["Demonstration work products for code quality and traceability; not an assessed capability level. "
+            "Work products: [requirements](../swe1-requirements/), [architecture](../swe2-architecture/architecture.md), "
+            "[detailed design](../swe3-detailed-design/detailed-design.md), [unit](../swe4-unit-verification/unit-verification.md), "
+            "[integration](../swe5-integration-test/integration-test.md) and "
+            "[qualification](../swe6-qualification-test/qualification-test.md) test specifications.", "",
+            "## SWE.2 Architecture", ""]
+    for name in sorted(p.stem for p in DIAGRAMS.glob("*.puml")):
+        out += [f"![{name}](../swe2-architecture/diagrams/{name}.svg)", ""]
+    out += ["## SWE.1 Software requirements", "", "| ID | Requirement | Derived from | Allocated to | Status |",
+            "| --- | --- | --- | --- | --- |"]
+    out += [f"| {r['ID']} | {cell(r['Requirement'])} | {r['Derived from']} | {cell(r['Allocated to'])} | "
+            f"{icon.get(swr_status[r['ID']], swr_status[r['ID']])} |" for r in wp["swr"]]
+    for level, title in (("UT", "SWE.4 Unit verification"), ("IT", "SWE.5 Integration test"),
+                         ("QT", "SWE.6 Qualification test")):
+        out += ["", f"## {title}", ""]
+        if level == "IT":
+            out += [f"`tools/e2e_check.py` against the running system — {integ_note}", ""]
+        out += ["| ID | Test | Verifies | Result | Detail |", "| --- | --- | --- | --- | --- |"]
+        for c, v in cases.items():
+            if v["level"] != level:
+                continue
+            result = icon.get(v["status"], v["status"]) + (" (witnessed)" if v.get("manual") else "")
+            detail = cell(v["detail"]) + (f" — {v['tests']} cases" if level == "UT" and v.get("tests") else "")
+            out.append(f"| {c} | {cell(v['title'])} | {', '.join(v['verifies'])} | {result} | {detail} |")
+    out += ["", "## Bidirectional traceability", "", "| Requirement | Unit | Integration | Qualification | Status |",
+            "| --- | --- | --- | --- | --- |"]
+    for sid in swr_status:
+        cols = [" ".join(c for c, v in cases.items() if v["level"] == lv and sid in v["verifies"]) or "—"
+                for lv in ("UT", "IT", "QT")]
+        out.append(f"| {sid} | {' | '.join(cols)} | {icon.get(swr_status[sid], swr_status[sid])} |")
+    out += ["", "## Provenance", "", "| Repository | Branch | Commit |", "| --- | --- | --- |"]
+    out += [f"| {a} | {b} | {cell(c)} |" for a, b, c in prov]
+    out += ["", "Regenerate with the system running: `python3 aspice/tools/generate_report.py --full`.", ""]
+    return "\n".join(out)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--full", action="store_true", help="also run the OTA (Maven) and S-CORE/PR16 (Bazel) suites")
@@ -506,6 +563,8 @@ def main():
     REPORT.mkdir(parents=True, exist_ok=True)
     (REPORT / "aspice-swe-report.html").write_text(render(wp, diagrams, cases, swr_status, issues, unit,
                                                           integ_note, provenance(), stamp))
+    (REPORT / "README.md").write_text(render_markdown(wp, cases, swr_status, issues, unit, integ_note,
+                                                      provenance(), stamp))
     summary = {"generated": stamp, "requirements": swr_status, "cases": cases, "traceability_issues": issues}
     (REPORT / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     failed = [c for c, v in cases.items() if v["status"] == "FAIL"]
