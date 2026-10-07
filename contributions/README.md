@@ -33,8 +33,9 @@ handoffs and this repository; add other completed work as its artifacts are reco
   signed-off patch, PR description, gate evidence); not yet submitted, no upstream issue yet.
 - [OpenBSW doipClient packet](openbsw-doip-client/README.md): prepared upstream contribution of
   a DoIP client transport layer, checked against the OpenBSW and Eclipse Foundation contribution
-  rules ([compliance](openbsw-doip-client/compliance.md)), with three related bug reports;
-  not yet submitted, no upstream issue yet.
+  rules ([compliance](openbsw-doip-client/compliance.md)); feature issue
+  [eclipse-openbsw/openbsw#663](https://github.com/eclipse-openbsw/openbsw/issues/663) open,
+  related bug reports #660–#662 filed; PR not opened yet.
 - [Submission checklist](submission/README.md) and [hackathon PR draft](submission/hackathon-pr-description.md).
 
 ## Verify the evidence

@@ -1,7 +1,8 @@
 # Prepared OpenBSW contribution: doipClient (DoIP client transport layer)
 
-Prepared on 7 October 2026. Nothing has been submitted publicly, and no maintainer
-approval or merge is claimed.
+Prepared on 7 October 2026. The feature issue is open as
+[eclipse-openbsw/openbsw#663](https://github.com/eclipse-openbsw/openbsw/issues/663); the pull
+request is not opened yet, and no maintainer approval or merge is claimed.
 
 - **Upstream:** [eclipse-openbsw/openbsw](https://github.com/eclipse-openbsw/openbsw),
   base `main` at `b0550871b7a44ae47bb9b7c68af84fb9115bfa77`.
@@ -18,7 +19,8 @@ which builds from the same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/
 | Artifact | Content |
 | --- | --- |
 | [compliance.md](compliance.md) | Every OpenBSW, Eclipse Foundation and repository rule checked, with status and evidence |
-| [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template, to open first |
+| [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template; filed as #663 |
+| [upstream-snapshot.json](upstream-snapshot.json) | State of #663 when recorded |
 | [related-issues/](related-issues/) | Three bug reports for existing OpenBSW code, with reproduction tests on `main`; filed on 7 October 2026 as [#660](https://github.com/eclipse-openbsw/openbsw/issues/660), [#661](https://github.com/eclipse-openbsw/openbsw/issues/661), [#662](https://github.com/eclipse-openbsw/openbsw/issues/662) |
 | [0001-doip-client.patch](0001-doip-client.patch) | `git format-patch` of the signed-off commit, with `Assisted-by` trailer |
 | [commit-message.txt](commit-message.txt) | Commit message (gitlint-checked) |
@@ -43,13 +45,12 @@ which builds from the same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/
 ## Before submitting (author)
 
 1. Code review: done by the author (7 October 2026).
-2. ECA: confirmed (`jnascimento6p0`, `jnsagai@gmail.com`). Still to confirm: the copyright
-   owner, and that the use of the AI assistant matches the employer's policy
-   ([compliance.md](compliance.md)).
-3. Open the issue from [ISSUE-draft.md](ISSUE-draft.md) and agree on the approach. The
-   three [related issues](related-issues/) are already filed (#660, #661, #662).
-4. Add `Resolves:` with the issue number to [commit-message.txt](commit-message.txt) and
-   regenerate the patch on the then-current `main`:
+2. ECA (`jnascimento6p0`, `jnsagai@gmail.com`), copyright owner and AI-use policy:
+   confirmed by the author ([compliance.md](compliance.md)).
+3. Issue opened: #663 (7 October 2026). Wait for the committers to agree on the approach.
+   The three [related issues](related-issues/) are filed as #660, #661, #662.
+4. The commit references #663 (`Resolves:`). Before the PR, regenerate the patch on the
+   then-current `main`:
 
    ```bash
    OBSW_BASE=<main sha> OpenBSW/scripts/doip-client-test.sh all

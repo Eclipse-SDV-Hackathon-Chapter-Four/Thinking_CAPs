@@ -14,7 +14,7 @@ All checks ran on 7 October 2026 in a git worktree of OpenBSW `main` at
 | clang-tidy | repository `.clang-tidy` on the three sources | 0 findings | [clang-tidy.txt](evidence/clang-tidy.txt) |
 | Bazel | `bazel test //libs/bsw/doipClient/... //libs/bsw/doip/...` (bazelisk 1.29.0) | 2/2 | [bazel-test.txt](evidence/bazel-test.txt) |
 | Documentation | `make html` in `doc/dev` (requirements of `doc/dev/requirements.txt`, Python 3.10, PlantUML 1.2024.7) | built, no warnings | [docs-build.log](evidence/docs-build.log) |
-| Commit message | `gitlint` with the repository `.gitlint` | ok | [gitlint.txt](evidence/gitlint.txt) |
+| Commit message (with `Resolves: #663`) | `gitlint` with the repository `.gitlint` | ok | [gitlint.txt](evidence/gitlint.txt) |
 | Patch | `git format-patch -1`; `git am` onto a fresh `b0550871` worktree | applies, identical tree | [commit.txt](evidence/commit.txt) |
 
 Tools: treefmt 2.1.0, clang-format 17.0.6, cmake-format 0.6.13, buildifier 8.5.1 (SHA-256

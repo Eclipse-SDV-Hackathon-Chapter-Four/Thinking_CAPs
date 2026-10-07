@@ -1,4 +1,6 @@
-# Issue draft — eclipse-openbsw/openbsw (feature request)
+# Issue — eclipse-openbsw/openbsw (feature request)
+
+**Filed:** 7 October 2026 as https://github.com/eclipse-openbsw/openbsw/issues/663
 
 Open this issue first and agree on the approach before the pull request
 (CONTRIBUTING.md: "talk with the team through an issue"; `pull_request.rst`: a

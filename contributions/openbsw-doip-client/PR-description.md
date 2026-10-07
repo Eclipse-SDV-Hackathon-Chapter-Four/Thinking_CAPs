@@ -7,8 +7,8 @@
 
 **Tag:** `tested_on_hw` (S32K148EVB, see Test Plan)
 
-The body below follows `.github/PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md`. Fill in
-the issue number before opening the PR.
+The body below follows `.github/PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md`. Open it
+once the committers have agreed on the approach in #663.
 
 ---
 
@@ -52,7 +52,7 @@ copyright header, and the commit carries `Assisted-by: Anthropic Claude Opus 5.5
 
 **Related Issues**
 
-Resolves #<issue number> (feature request: Add a DoIP client transport layer)
+Resolves #663 (feature request: Add a DoIP client transport layer)
 
 Found while building it, reported separately: #660 (DoIpTcpConnection empty payload
 discard), #661 (SocketCanTransceiver with the ThreadX POSIX port), #662
