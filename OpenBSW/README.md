@@ -48,14 +48,19 @@ new module (see [DoIP routes](#doip-routes-ethernet-zonal-ecus)).
 
 Open items, all of them visible in the report:
 
-- **Live campaigns not run** (QTC-12, QTC-13):
+- **Live campaigns not run** (QTC-12, QTC-13), deferred on 7 October 2026:
   - X-Verse + CARLA cruise-control regression with the gateway
-  - OpenSOVD → CDA → gateway (needs an MDD for the gateway and its nodes)
+  - OpenSOVD → CDA → gateway: blocked on the MDD files. The ODX→MDD converter needs
+    the ASAM ODX 2.2.0 schema, which upstream does not distribute.
 - The ThreadX rear lighting ECU answers through the gateway since its UDS-on-CAN
   server (branch `feature/threadx-uds-server`): QTC-14 passed 5/5
   ([evidence/qtc14-threadx](evidence/qtc14-threadx/results.json)).
-- CAN routing on the board needs a CAN peer (e.g. a USB-CAN adapter); routing
-  on the board is verified over DoIP instead.
+- CAN routing on the board waits for a CAN peer (a USB-CAN adapter is planned);
+  until then routing on the board is verified over DoIP.
+- OpenBSW findings reported upstream: [#660](https://github.com/eclipse-openbsw/openbsw/issues/660)
+  (DoIP empty-payload discard), [#661](https://github.com/eclipse-openbsw/openbsw/issues/661)
+  (SocketCAN with the ThreadX POSIX port), [#662](https://github.com/eclipse-openbsw/openbsw/issues/662)
+  (socket mock).
 
 ## Layout
 

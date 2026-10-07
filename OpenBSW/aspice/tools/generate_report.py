@@ -491,6 +491,8 @@ def qualification(wp, ws, upstream, checks, it, board, board_it, doip):
         f"clang-tidy {doip['tidy_findings']}; base {doip['base'][:12]}")
     manual = {"reviewed": ("passed", "Review recorded in the case description"),
               "not-run": ("not run", "Live campaign not executed in this slice"),
+              "deferred": ("not run", "Live campaign deferred by decision of the owner"),
+              "blocked": ("not run", "Blocked on the ASAM ODX 2.2.0 schema needed to build the CDA's MDD files"),
               "open": ("open", "Depends on an open item")}
     for case in wp["qtc"]:
         kind, _, key = case["Source"].partition(":")

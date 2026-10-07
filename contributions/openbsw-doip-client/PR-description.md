@@ -54,8 +54,8 @@ copyright header, and the commit carries `Assisted-by: Anthropic Claude Opus 5.5
 
 Resolves #<issue number> (feature request: Add a DoIP client transport layer)
 
-Found while building it, reported separately: #<n> (DoIpTcpConnection empty payload
-discard), #<n> (SocketCanTransceiver with the ThreadX POSIX port), #<n>
+Found while building it, reported separately: #660 (DoIpTcpConnection empty payload
+discard), #661 (SocketCanTransceiver with the ThreadX POSIX port), #662
 (AbstractSocketMock::inject before any read).
 
 **Breaking Changes**

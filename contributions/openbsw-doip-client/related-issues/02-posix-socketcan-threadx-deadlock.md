@@ -1,4 +1,6 @@
-# Issue draft — eclipse-openbsw/openbsw (bug report)
+# Issue — eclipse-openbsw/openbsw (bug report)
+
+**Filed:** 7 October 2026 as https://github.com/eclipse-openbsw/openbsw/issues/661
 
 **Title:** POSIX SocketCanTransceiver can deadlock the ThreadX POSIX port under load
 

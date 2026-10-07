@@ -13,10 +13,10 @@ confirm it), **open** (to do at submission).
 
 | Rule | Source | Status | Evidence / action |
 | --- | --- | --- | --- |
-| Author covered by the Eclipse Contributor Agreement, with the same email as the commits | CONTRIBUTING.md; handbook "Eclipse Contributor Agreement" | **author** | Commit author `jnsagai@gmail.com`. Check the ECA status at accounts.eclipse.org (shown top right) for this address before opening the PR. |
+| Author covered by the Eclipse Contributor Agreement, with the same email as the commits | CONTRIBUTING.md; handbook "Eclipse Contributor Agreement" | **author** (partly confirmed) | The author stated on 7 October 2026 that the ECA is signed under the Eclipse account `jnascimento6p0`. Still to confirm: the commit email `jnsagai@gmail.com` is an address of that account (the ECA check matches the email). |
 | Contributor (or employer) holds the copyright; header `Copyright (c) {year} {owner}` with a legal entity | Handbook "Copyright Headers" | **author** | Headers name `Jefferson Nascimento`, 2026. Confirm that no employer owns this work; otherwise name the employer. |
 | Disclose generative AI use | Handbook "Using Artificial Intelligence" → "Disclosure"; genai guidelines "Be transparent" | met | Every new file has an AI disclosure comment below the header; the commit has `Assisted-by: Anthropic Claude Opus 5.5`. No `Co-authored-by` for the tool, which has no ECA. |
-| Human review and verification of AI-generated content | Genai guidelines "Verify accuracy and vet output" | **author** | The disclosure says the code was reviewed and tested by the contributor. Tests and gates pass (below); the author must still read the diff before submitting, so that the statement is true. |
+| Human review and verification of AI-generated content | Genai guidelines "Verify accuracy and vet output" | met | The author stated on 7 October 2026 that they reviewed the code; tests and gates pass (below). |
 | Use of the AI platform consistent with the employer's policy and the platform's terms | Genai guidelines "Responsibilities" | **author** | Confirm. |
 | AI-generated portions: optional `CC0-1.0` dedication (`Apache-2.0 AND CC0-1.0`) | Handbook disclosure template ("could use") | open | Not applied: OpenBSW's `cr_checker` expects `SPDX-License-Identifier: Apache-2.0`. Asked in the [issue](ISSUE-draft.md); follow the committers' answer. |
 | No third-party content without IP review | Handbook "Third Party Content" | met | Only new code; dependencies are OpenBSW modules and ETL already in the repository. |

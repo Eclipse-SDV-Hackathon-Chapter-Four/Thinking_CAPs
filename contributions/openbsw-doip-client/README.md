@@ -19,7 +19,7 @@ which builds from the same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/
 | --- | --- |
 | [compliance.md](compliance.md) | Every OpenBSW, Eclipse Foundation and repository rule checked, with status and evidence |
 | [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template, to open first |
-| [related-issues/](related-issues/) | Three bug reports for existing OpenBSW code, with reproduction tests on `main` |
+| [related-issues/](related-issues/) | Three bug reports for existing OpenBSW code, with reproduction tests on `main`; filed on 7 October 2026 as [#660](https://github.com/eclipse-openbsw/openbsw/issues/660), [#661](https://github.com/eclipse-openbsw/openbsw/issues/661), [#662](https://github.com/eclipse-openbsw/openbsw/issues/662) |
 | [0001-doip-client.patch](0001-doip-client.patch) | `git format-patch` of the signed-off commit, with `Assisted-by` trailer |
 | [commit-message.txt](commit-message.txt) | Commit message (gitlint-checked) |
 | [PR-description.md](PR-description.md) | Pull request title and body in the OpenBSW template |
@@ -42,12 +42,12 @@ which builds from the same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/
 
 ## Before submitting (author)
 
-1. Read the diff ([0001-doip-client.patch](0001-doip-client.patch)). The files state that the
-   AI-generated code was reviewed by the contributor; that must be true.
-2. Confirm the ECA status of `jnsagai@gmail.com`, the copyright owner, and that the use of
-   the AI assistant matches the employer's policy ([compliance.md](compliance.md)).
+1. Code review: done by the author (7 October 2026).
+2. Confirm that `jnsagai@gmail.com` is an email of the Eclipse account `jnascimento6p0`
+   (ECA signed), the copyright owner, and that the use of the AI assistant matches the
+   employer's policy ([compliance.md](compliance.md)).
 3. Open the issue from [ISSUE-draft.md](ISSUE-draft.md) and agree on the approach. The
-   three [related issues](related-issues/) can be opened independently.
+   three [related issues](related-issues/) are already filed (#660, #661, #662).
 4. Add `Resolves:` with the issue number to [commit-message.txt](commit-message.txt) and
    regenerate the patch on the then-current `main`:
 

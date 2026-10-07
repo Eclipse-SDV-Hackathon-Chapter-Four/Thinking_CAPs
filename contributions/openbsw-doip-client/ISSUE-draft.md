@@ -69,5 +69,6 @@ ThreadX).
   expression from the Eclipse handbook template? The current OpenBSW copyright checker
   expects `SPDX-License-Identifier: Apache-2.0`.
 - While building it I found three issues in existing code, reported separately:
-  the `DoIpTcpConnection` discard continuation with an empty payload,
-  `SocketCanTransceiver` with the ThreadX POSIX port, and `AbstractSocketMock::inject`.
+  the `DoIpTcpConnection` discard continuation with an empty payload (#660),
+  `SocketCanTransceiver` with the ThreadX POSIX port (#661), and
+  `AbstractSocketMock::inject` (#662).
