@@ -1,0 +1,30 @@
+{
+  "attempt": 3,
+  "baseline": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+  "bounded_native_summary": {
+    "checks": [
+      {
+        "bounded_tail": "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~\n./score/mw/com/mocking/i_runtime.h:38:18: note: declared here\n   38 |     virtual void InitializeRuntime(const std::int32_t argc, score::cpp::span<const char*> argv) = 0;\n      |                  ^~~~~~~~~~~~~~~~~\nscore/mw/com/runtime.cpp:62:64: warning: 'score::mw::com::runtime::RuntimeConfiguration::RuntimeConfiguration(int32_t, const char**)' is deprecated: Please use RuntimeConfiguration(cpp::span<safecpp::zstring_view> command_line_arguments) for guaranteed NULL terminated arguments [-Wdeprecated-declarations]\n   62 |     const RuntimeConfiguration runtime_configuration{argc, argv};\n      |                                                                ^\nIn file included from ./score/mw/com/mocking/i_runtime.h:16:\n./score/mw/com/runtime_configuration.h:56:5: note: declared here\n   56 |     RuntimeConfiguration(const std::int32_t argc, const char* argv[]);\n      |     ^~~~~~~~~~~~~~~~~~~~\n[1,245 / 1,248] [Prepa] Linking score/mw/com/libruntime.a\nERROR: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-560-integration-5sejq8fk/workspaces/560/score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD:21:12: Compiling Rust bin subscription-state-apis (1 file) failed: (Exit 1): process_wrapper failed: error executing Rustc command (from target //score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis) bazel-out/k8-opt-exec-ST-d57f47055a04/bin/external/rules_rust+/util/process_wrapper/process_wrapper --arg-file ... (remaining 8 arguments skipped)\n\nUse --sandbox_debug to see verbose messages from the sandbox and retain the sandbox build root for debugging\nerror[E0283]: type annotations needed for `LolaRuntimeBuilderImpl<_>`\n   --> score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs:118:9\n    |\n118 |     let mut builder = LolaRuntimeBuilderImpl::new();\n    |         ^^^^^^^^^^^   ---------------------- type must be known at this point\n    |\n    = note: cannot satisfy `_: bridge_ffi_rs::FFIBridge`\nhelp: the trait `bridge_ffi_rs::FFIBridge` is implemented for `bridge_ffi_lola::LolaFFIBridge`\n   --> ./score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs:488:0\nnote: required by a bound in `LolaRuntimeBuilderImpl`\n   --> ./score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs:59:0\nhelp: consider giving `builder` an explicit type, where the type for type parameter `B` is specified\n    |\n118 |     let mut builder: LolaRuntimeBuilderImpl<B> = LolaRuntimeBuilderImpl::new();\n    |                    +++++++++++++++++++++++++++\n\nerror[E0283]: type annotations needed for `LolaRuntimeBuilderImpl<_>`\n   --> score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs:125:9\n    |\n125 |     let mut builder = LolaRuntimeBuilderImpl::new();\n    |         ^^^^^^^^^^^   ---------------------- type must be known at this point\n    |\n    = note: cannot satisfy `_: bridge_ffi_rs::FFIBridge`\nhelp: the trait `bridge_ffi_rs::FFIBridge` is implemented for `bridge_ffi_lola::LolaFFIBridge`\n   --> ./score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs:488:0\nnote: required by a bound in `LolaRuntimeBuilderImpl`\n   --> ./score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs:59:0\nhelp: consider giving `builder` an explicit type, where the type for type parameter `B` is specified\n    |\n125 |     let mut builder: LolaRuntimeBuilderImpl<B> = LolaRuntimeBuilderImpl::new();\n    |                    +++++++++++++++++++++++++++\n\nerror: aborting due to 2 previous errors\n\nFor more information about this error, try `rustc --explain E0283`.\nTarget //score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis failed to build\nUse --verbose_failures to see the command lines of failed build steps.\nINFO: Elapsed time: 604.981s, Critical Path: 121.27s\nINFO: 1248 processes: 184 internal, 1064 linux-sandbox.\nERROR: Build did NOT complete successfully\n",
+        "exit_code": 1,
+        "kind": "build",
+        "targets": [
+          "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis"
+        ],
+        "timed_out": false
+      }
+    ],
+    "infrastructure_error": null,
+    "passed": false
+  },
+  "checks": [],
+  "engineering_acceptance": "pending",
+  "exit_code": 1,
+  "issue": 560,
+  "kind": "measured_native_command",
+  "measured_subject_hashes_sha256": "839b2589fcf094031ca952cc26e5cd3f3125db31723b7d1127e23812d8e5dbb4",
+  "native_result": {
+    "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-560-integration-5sejq8fk/jobs/560/execution/check-3/native-result.json",
+    "sha256": "b466304ef8c93923bf9a8f73d45121eb1d8762de98f91a58add77a4f0cafd4ea"
+  },
+  "passed": false
+}

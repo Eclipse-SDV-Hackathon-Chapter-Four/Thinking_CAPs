@@ -1,0 +1,112 @@
+{
+  "checks": [
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ],
+      "reason": "Abstraction-layer crate (traits, Error, CommData/Reloc, interface! macro). Any accepted E2E payload-level mechanism and any Method<T>/Field<T> concepts would be declared/consumed here; compiling it proves the API surface still builds.",
+      "native_obligation": "Draft trace to Communication.FEAT_EventType@1 (existing), and to FEAT_Method@1 / FEAT_Field@1 / FEAT_SafeCommunication@1 for the not-yet-existing types; no accepted trace exists at baseline.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock"
+      ],
+      "reason": "Public re-export crate and its test-only mock twin. Compiling both confirms downstream-visible symbols and the runtime-selection surface are unaffected before any E2E wrapper is proposed.",
+      "native_obligation": "FEAT_FullyMockablePublicAPI@1 (QM) for the mock target; FEAT_BindingAgnosticPublicAPI@1 for the public crate.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+      ],
+      "reason": "LoLa runtime and the Rust<->C++ FFI bridge: the boundary where a transparent E2E layer would live under design Alternative A, and where Method/Field FFI members would be added. Builds the unsafe-FFI surface without executing behavior.",
+      "native_obligation": "FEAT_Method@1 and FEAT_Field@1 require request-driven communication with a binding; exact E2E obligation is unknown (C++ E2E API not published).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_cpp_bridge:register_interface"
+      ],
+      "reason": "C++ registration bridge. Baseline exposes only EXPORT_MW_COM_EVENT/EXPORT_MW_COM_TYPE; any Method/Field/E2E binding requires new export macros here, so this is the C++-facing alignment point.",
+      "native_obligation": "FEAT_Method@1 / FEAT_Field@1 cross-language binding; E2E wire/DataID conventions are explicitly unknown pending the C++ E2E API.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "reason": "Unit/host tests for the abstraction crate and the interface macros, including the compile_fail doctests that assert Method<T>/Field<T> are currently rejected. These bound the existing Event behavior and guard macro compatibility.",
+      "native_obligation": "FEAT_EventType@1 regression coverage; the negative Method/Field rejection must remain until #782 lands. No E2E test target exists at baseline.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "Linux-only rust_test of the LoLa runtime against the mock FFI bridge. Relevant because an E2E wrapper at the FFI boundary must keep runtime trait behavior and mock substitutability intact.",
+      "native_obligation": "FEAT_FullyMockablePublicAPI@1 and the communication-behavior verification row of native-verification.md; E2E-specific obligation unknown.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ],
+      "reason": "End-to-end producer/consumer integration tests for the existing Event Rust API. These are the closest native E2E harnesses; a future E2E increment must extend them (or add sibling targets) with corruption/reordering/repetition/loss cases.",
+      "native_obligation": "FEAT_SafeCommunication@1 and FEAT_DataCorruption/DataReordering/DataRepetition/DataLoss@1 (proposed derivation); current tests assert only normal delivery. Method/Field E2E test targets are an explicit unknown - no Rust Method/Field API or BUILD target exists.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "reason": "rustdoc example tests for the runtime and the interface macros. Needed to confirm documented API examples stay valid if a payload/wrapper type is introduced. Note: score_com_concept-macros-tests carries the `manual` tag (native-linking limitation) and is not run by a plain wildcard.",
+      "native_obligation": "Native documentation example-compilation obligation; applicability of E2E documentation is pending the accepted design.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//docs/sphinx:sphinx_doc"
+      ],
+      "reason": "Sphinx documentation build that consumes the Rust COM README/high-level design via `//score/mw/com:readme_md`; a design/requirements update (e.g. an accepted E2E section) would surface here. Linux-compatible per its target_compatible_with.",
+      "native_obligation": "Native documentation/traceability obligation if the design outcome changes requirements or design artifacts; unresolved until reviewers decide whether requirements/architecture are affected (issue template checkbox is unchecked).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"
+      ],
+      "reason": "Rust targets linted through the repository's pinned clippy policy aspect declared in quality/static_analysis/static_analysis.bazelrc (@score_rust_policies//clippy:linters.bzl%clippy_strict). Ensures any future E2E/Method/Field code meets the native lint profile rather than a generic lint list.",
+      "native_obligation": "Preserve native lint policy and pins; no lint suppression to make a check pass. Tool qualification for the selected Ferrocene target is not established by this workflow.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ],
+      "reason": "Dependency/reverse-dependency query roots to enumerate downstream Rust consumers of the public COM API and of the interface! macro before any payload/type change. Bounds the affected-consumer denominator without executing sources.",
+      "native_obligation": "FEAT_SupportForMultipleProgrammingLanguages@1 / FEAT_StablePublicApi: discover all affected API users rather than declaring them irrelevant. Exact downstream set is not measured in this run.",
+      "config": "linux_x64"
+    }
+  ]
+}

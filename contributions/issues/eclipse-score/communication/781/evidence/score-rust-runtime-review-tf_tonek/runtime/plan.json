@@ -1,0 +1,22 @@
+{
+  "checks": [
+    {
+      "kind": "doctest",
+      "targets": [
+        "//score/mw/com/impl/plumbing/rust:method_in_arg_ptr_doc_test"
+      ],
+      "reason": "Actual native Rust doctest execution was not measured before",
+      "native_obligation": "Existing native rust_doc_test rule in affected plumbing BUILD",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/impl/plumbing/rust:method_in_arg_ptr_rs"
+      ],
+      "reason": "Refresh failed Clippy command with single native rc load",
+      "native_obligation": "Native clippy_strict configuration imported by .bazelrc",
+      "config": "clippy"
+    }
+  ]
+}

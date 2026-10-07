@@ -1,0 +1,106 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/bindings/lola:subscription_state_machine_events_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 35 tests from 5 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from StateMachineSubscriptionPendingStateDeathTest
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateDeathTest.CallingStopOfferEventTerminates
+2026/10/06 12:52:09.1129256 598813495 000 ECU1 NONE lola log fatal verbose 1 Service cannot be stop-offered while in subscription pending. Terminating ElementFqId{S:52719, E:5, I:16, T:1}Subscription Pending State. 
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateDeathTest.CallingStopOfferEventTerminates (92 ms)
+[0;32m[----------] [m1 test from StateMachineSubscriptionPendingStateDeathTest (92 ms total)
+
+[0;32m[----------] [m12 tests from StateMachineNotSubscribedStateFixture
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithValidSampleTransitionsToSubscribed
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithValidSampleTransitionsToSubscribed (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWhenMaxSubscribersAlreadyReachedReturnsError
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 12:52:09.1129347 598814401 000 ECU1 NONE lola log error verbose 1 Subscribe was rejected by skeleton. Could not Register TransactionLog due to Error Subscriber count exceeded occurred with message Could not register with TransactionLogId as there are no available slots in the TransactionLogSet. This is likely because the number of subscribers has exceeded the configuration value of max_subscribers. ElementFqId{S:52719, E:5, I:16, T:1}Not Subscribed State. 
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWhenMaxSubscribersAlreadyReachedReturnsError (2 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CanRepeatedlySubscribeAndUnsubscribe
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CanRepeatedlySubscribeAndUnsubscribe (3 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithInValidSampleCountReturnsError
+2026/10/06 12:52:09.1129352 598814450 000 ECU1 NONE lola log error verbose 1 Subscribe was rejected by skeleton. Cannot complete SubscribeEvent() call due to Slot overflow ElementFqId{S:52719, E:5, I:16, T:1}Not Subscribed State. 
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithInValidSampleCountReturnsError (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingUnsubscribeDoesNothing
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingUnsubscribeDoesNothing (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithValidSamplesWillRegisterTransactionLog
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithValidSamplesWillRegisterTransactionLog (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithInvalidSamplesWillNotRegisterTransactionLog
+2026/10/06 12:52:09.1129356 598814489 000 ECU1 NONE lola log error verbose 1 Subscribe was rejected by skeleton. Cannot complete SubscribeEvent() call due to Slot overflow ElementFqId{S:52719, E:5, I:16, T:1}Not Subscribed State. 
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithInvalidSamplesWillNotRegisterTransactionLog (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithValidSamplesWillRecordSubscriptionTransaction
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithValidSamplesWillRecordSubscriptionTransaction (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithInvalidSamplesWillAbortSubscriptionTransaction
+2026/10/06 12:52:09.1129358 598814515 000 ECU1 NONE lola log error verbose 1 Subscribe was rejected by skeleton. Cannot complete SubscribeEvent() call due to Slot overflow ElementFqId{S:52719, E:5, I:16, T:1}Not Subscribed State. 
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingSubscribeWithInvalidSamplesWillAbortSubscriptionTransaction (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingStopOfferEventBeforeSubscribeWillTransitionToSubscriptionPending
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingStopOfferEventBeforeSubscribeWillTransitionToSubscriptionPending (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingReOfferEventBeforeSubscribeWillTransitionToSubscribed
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingReOfferEventBeforeSubscribeWillTransitionToSubscribed (1 ms)
+[0;32m[ RUN      ] [mStateMachineNotSubscribedStateFixture.CallingStopOfferEventThenReOfferEventBeforeSubscribeWillTransitionToSubscribed
+[0;32m[       OK ] [mStateMachineNotSubscribedStateFixture.CallingStopOfferEventThenReOfferEventBeforeSubscribeWillTransitionToSubscribed (1 ms)
+[0;32m[----------] [m12 tests from StateMachineNotSubscribedStateFixture (18 ms total)
+
+[0;32m[----------] [m7 tests from StateMachineSubscriptionPendingStateFixture
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CallingSubscribeWithSameMaxSampleCountDoesNothing
+2026/10/06 12:52:09.1129363 598814565 000 ECU1 NONE lola log warn verbose 1 Calling SubscribeEvent() while subscription is pending has no effect. ElementFqId{S:52719, E:5, I:16, T:1}Subscription Pending State. 
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CallingSubscribeWithSameMaxSampleCountDoesNothing (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CallingSubscribeWithDifferentMaxSampleCountReturnsError
+2026/10/06 12:52:09.1129365 598814578 000 ECU1 NONE lola log error verbose 1 Calling SubscribeEvent() with a different max_sample_count while subscription is pending is illegal. ElementFqId{S:52719, E:5, I:16, T:1}Subscription Pending State. 
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CallingSubscribeWithDifferentMaxSampleCountReturnsError (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CanRepeatedlySubscribeAndUnsubscribe
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CanRepeatedlySubscribeAndUnsubscribe (3 ms)
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CallingUnsubscribeTransitionsToNotSubscribed
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CallingUnsubscribeTransitionsToNotSubscribed (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CallingReOfferEventTransitionsToSubscribed
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CallingReOfferEventTransitionsToSubscribed (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CallingUnsubscribeWillUnregisterTransactionLog
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CallingUnsubscribeWillUnregisterTransactionLog (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscriptionPendingStateFixture.CallingUnsubscribeWillRecordUnsubscribeTransaction
+[0;32m[       OK ] [mStateMachineSubscriptionPendingStateFixture.CallingUnsubscribeWillRecordUnsubscribeTransaction (1 ms)
+[0;32m[----------] [m7 tests from StateMachineSubscriptionPendingStateFixture (11 ms total)
+
+[0;32m[----------] [m8 tests from StateMachineSubscribedStateFixture
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingSubscribeWithSameMaxSampleCountDoesNothing
+2026/10/06 12:52:09.1129374 598814675 000 ECU1 NONE lola log warn verbose 1 Calling SubscribeEvent() while already subscribed has no effect. ElementFqId{S:52719, E:5, I:16, T:1}Subscribed State. 
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingSubscribeWithSameMaxSampleCountDoesNothing (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingSubscribeWithDifferentMaxSampleCountReturnsError
+2026/10/06 12:52:09.1129376 598814689 000 ECU1 NONE lola log error verbose 1 Calling SubscribeEvent() while already subscribed with a different max_sample_count is illegal. ElementFqId{S:52719, E:5, I:16, T:1}Subscribed State. 
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingSubscribeWithDifferentMaxSampleCountReturnsError (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingUnsubscribeTransitionsToNotSubscribed
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingUnsubscribeTransitionsToNotSubscribed (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingStopOfferEventTransitionsToSubscriptionPending
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingStopOfferEventTransitionsToSubscriptionPending (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingStopOfferEventWillPreventReenteringSubscribedUntilReofferEventIsCalled
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingStopOfferEventWillPreventReenteringSubscribedUntilReofferEventIsCalled (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingUnsubscribeWillUnregisterTransactionLog
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingUnsubscribeWillUnregisterTransactionLog (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingUnsubscribeWillRecordUnsubscribeTransaction
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingUnsubscribeWillRecordUnsubscribeTransaction (1 ms)
+[0;32m[ RUN      ] [mStateMachineSubscribedStateFixture.CallingReOfferEventDoesNothing
+2026/10/06 12:52:09.1129383 598814762 000 ECU1 NONE lola log warn verbose 1 Service cannot be re-offered while already subscribed. ElementFqId{S:52719, E:5, I:16, T:1}Subscribed State. 
+[0;32m[       OK ] [mStateMachineSubscribedStateFixture.CallingReOfferEventDoesNothing (1 ms)
+[0;32m[----------] [m8 tests from StateMachineSubscribedStateFixture (9 ms total)
+
+[0;32m[----------] [m7 tests from StateMachineStateChangeFixture
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.CallingSetSubscriptionStateChangeHandlerSucceeds
+[0;32m[       OK ] [mStateMachineStateChangeFixture.CallingSetSubscriptionStateChangeHandlerSucceeds (1 ms)
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.CallingUnsetSubscriptionStateChangeHandlerSucceeds
+[0;32m[       OK ] [mStateMachineStateChangeFixture.CallingUnsetSubscriptionStateChangeHandlerSucceeds (1 ms)
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerGetsInvoked
+[0;32m[       OK ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerGetsInvoked (1 ms)
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerNotInvokedInCaseNoStateChange
+2026/10/06 12:52:09.1129388 598814809 000 ECU1 NONE lola log warn verbose 1 Calling SubscribeEvent() while already subscribed has no effect. ElementFqId{S:52719, E:5, I:16, T:1}Subscribed State. 
+[0;32m[       OK ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerNotInvokedInCaseNoStateChange (1 ms)
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerStaysRegisteredWhenReturningTrue
+[0;32m[       OK ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerStaysRegisteredWhenReturningTrue (1 ms)
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerGetsUnsetWhenReturningFalse
+[0;32m[       OK ] [mStateMachineStateChangeFixture.SubscriptionStateChangeHandlerGetsUnsetWhenReturningFalse (1 ms)
+[0;32m[ RUN      ] [mStateMachineStateChangeFixture.UnsetSubscriptionStateChangeHandlerWorks
+[0;32m[       OK ] [mStateMachineStateChangeFixture.UnsetSubscriptionStateChangeHandlerWorks (1 ms)
+[0;32m[----------] [m7 tests from StateMachineStateChangeFixture (8 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m35 tests from 5 test suites ran. (140 ms total)
+[0;32m[  PASSED  ] [m35 tests.

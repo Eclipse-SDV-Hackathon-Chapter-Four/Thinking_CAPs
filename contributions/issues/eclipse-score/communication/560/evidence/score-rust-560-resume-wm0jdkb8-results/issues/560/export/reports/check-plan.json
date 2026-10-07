@@ -1,0 +1,83 @@
+{
+  "checks": [
+    {
+      "config": "linux_x64",
+      "kind": "build",
+      "native_obligation": "Native verification matrix 'Rust library/API' requires the native build of the changed library; rule kind is rust_library in score/mw/com/rust/score_com_concept/BUILD. | rust_library in score/mw/com/rust/BUILD; public visibility; downstream compilation obligation for a public API change. | testonly rust_library in score/mw/com/rust/BUILD; included in the native build/test set for the mock runtime. | rust_library in com-api-runtime-lola/BUILD; native build obligation for the Rust library/API change surface. | rust_library in com-api-runtime-mock/BUILD; trait-implementor compile obligation. | rust_library in com-api-ffi-lola/BUILD; FFI boundary compile obligation (unsafe/FFI change surface). | rust_library in com-api-ffi-lola/BUILD; FFI callback ABI obligation. | rust_library in com-api-ffi-lola/BUILD; mock surface completeness for trait changes. | cc_library in com-api-ffi-lola/BUILD with COMPILER_WARNING_FEATURES; C++ FFI wrapper build obligation. | rust_binary in basic_rust_api/consumer_sync_apis/BUILD; native verification matrix requires representative downstream compilation. | rust_binary in basic_rust_api/consumer_async_apis/BUILD; downstream compilation obligation.",
+      "reason": "Abstraction-layer crate now defines SubscriptionState (#[repr(u8)], discriminants 0/1/2) and the three new Subscription trait methods; must compile under the native Linux/Ferrocene framework. | Public re-export crate now also exposes SubscriptionState so applications can name the returned state. | Test-only re-export target re-exports score_com unchanged; must still build after the public API extension. | LoLa runtime implements the three Subscription methods, the AtomicBool handler-set flag and the teardown ordering; core of the behavior change. | Mock runtime implements Subscription; the required trait methods force an update so the crate keeps compiling. | FFIBridge trait surface gains get/set/unset subscription-state methods (raw u8/bool); ABI-visible FFI contract. | extern C declarations plus the invocation trampoline and the typed box dropper for the subscription-state-change callback. | mockall MockFFIBridge and SharedMockBridge now declare/forward the new FFIBridge methods or the runtime unit tests will not build. | C++ extern C wrappers, the RustBoxedCallable<bool, SubscriptionState> specialization and the typed-dropper declaration implement the bridge side. | Downstream synchronous consumer binary compiled against the changed public API (representative downstream compilation). | Downstream asynchronous consumer binary compiled against the changed public API (async surface).",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_mock",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "test",
+      "native_obligation": "Existing rust_test target (already depends on bridge_ffi_mock + mockall); Rust library/API + concurrency/lifetime obligations from references/native-verification.md and references/issue-types.md. | rust_test in score_com_concept/BUILD; regression obligation for the abstraction layer. | rust_unit_test (unit_testing.bzl) in score_com_concept/BUILD; Linux forwarding target. | cc_unit_test in bindings/lola/BUILD; C++ middleware contract obligations O2/O3/O5/O6. | cc_unit_test in bindings/lola/BUILD; state transition obligation O1/O2. | cc_unit_test in bindings/lola/BUILD; enum-value ABI obligation. | cc_unit_test in bindings/lola/BUILD; explicitly recorded as supplementary, not proof of race absence. | cc_unit_test in bindings/lola/BUILD; ProxyEventBase contract obligation from proxy_event_base.h. | integration_test (quality/integration_testing) in basic_rust_api/consumer_sync_apis/integration_test/BUILD; communication-behavior integration obligation. | integration_test (quality/integration_testing) in basic_rust_api/consumer_async_apis/integration_test/BUILD; communication-behavior integration obligation.",
+      "reason": "Mock-bridge unit tests are the native vehicle for the new API. New cases: test_get_subscription_state_maps_raw_values (sync mapping incl. out-of-contract value), test_set_and_unset_subscription_state_change_handler (async register/unregister, unset bounded to times(1)), test_set_handler_failure_is_reported_and_box_reclaimed (failure + box reclaim), test_drop_unregisters_registered_state_handler (teardown ordering). Reentrancy remains a documented contract enforced through the existing ProxyEventManager guard. | Concept crate unit tests must keep passing after adding SubscriptionState and extending the Subscription trait. | Macro unit tests link against the changed concept crate; compile/link regression obligation. | C++ state-machine method tests cover SetSubscriptionStateChangeHandler/UnsetSubscriptionStateChangeHandler semantics (override, unset-never-called-again, false-return unregister) that the Rust bridge now calls. | C++ event-driven state transitions (subscribe/pending/subscribed/not-subscribed/stop-offer) that drive the notification callback. | C++ per-state behavior for the three SubscriptionState values mirrored by the Rust enum. | Supplementary concurrent state-transition stress coverage; a short passing run does not establish absence of races/deadlocks. | C++ ProxyEventBase Get/Set/Unset subscription-state API contract that the FFI wrappers bind to. | Existing end-to-end Rust consumer integration flow; regression coverage after extending the public API. | Existing end-to-end Rust async consumer integration flow; regression coverage after extending the public API.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_methods_test",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_events_test",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_states_test",
+        "//score/mw/com/impl/bindings/lola:subscription_state_machine_stress_test",
+        "//score/mw/com/impl/bindings/lola:proxy_event_subscription_test",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "doctest",
+      "native_obligation": "rust_doc_test in com-api-runtime-lola/BUILD; native verification matrix docs obligation. | rust_doc_test in score_com_concept/BUILD with tags=['manual']; per references/native-verification.md, manual/excluded checks must be enumerated and their exclusion tracked.",
+      "reason": "Rustdoc tests for the LoLa crates must still compile/run with the new trait methods and doc comments. | rust_doc_test for the concept crate; must be enumerated explicitly. This target is tagged manual and has a documented rules_rust native-linking limitation, so it is not assumed to run.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ]
+    },
+    {
+      "config": "clippy",
+      "kind": "lint",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc declares the clippy aspect for the Linux configuration; Rust coding guideline doc__rust_coding_guidelines applies. Exact aspect invocation is a command-stage concern outside agent authority.",
+      "reason": "Clippy (score_rust_policies clippy_strict aspect) over the changed Rust libraries; existing allow-lints and pinned policy must be preserved with no new suppressions.",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ]
+    },
+    {
+      "config": "clang-tidy",
+      "kind": "lint",
+      "native_obligation": "quality/static_analysis/static_analysis.bazelrc declares the clang-tidy aspect; COMPILER_WARNING_FEATURES on the target must remain.",
+      "reason": "clang-tidy aspect over the changed C++ FFI wrapper; do not transfer MISRA C++ policy to Rust changes.",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"
+      ]
+    },
+    {
+      "config": "linux_x64",
+      "kind": "query",
+      "native_obligation": "References/native-verification.md requires discovering aliases/generated/downstream targets from rules/query results. Exact query command is a command-stage concern outside agent authority. | Trait-compatibility obligation; unresolved target set remains open until the query result is provided by the native measurement stage.",
+      "reason": "Enumerate explicit native labels only; reverse dependencies and implementor completeness are not measured by this query | Enumerate explicit native labels only; reverse dependencies and implementor completeness are not measured by this query",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust/score_com_concept:score_com_concept"
+      ]
+    }
+  ]
+}

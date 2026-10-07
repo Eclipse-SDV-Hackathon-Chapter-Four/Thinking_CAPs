@@ -1,0 +1,25 @@
+digraph SCoreWorkflow {
+  graph [goal="Execute reviewed S-CORE obligations", max_node_visits=20, on_failure="route"];
+  rankdir=LR;
+  exit [label="Exit", type="exit"];
+  node_08d64f5a35886eab1b822dc1 [allow_partial=false, label="verify_1104", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/repair3.py verify_1104\n", selection="deterministic", timeout="14400s", type="command"];
+  node_0f6419144e708fa13aed97af [allow_partial=false, label="verify_1031", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/repair3.py verify_1031\n", selection="deterministic", timeout="14400s", type="command"];
+  node_3cdecd08faeef8cda6b234b1 [allow_partial=false, label="verify_751", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/repair3.py verify_751\n", selection="deterministic", timeout="14400s", type="command"];
+  node_ca4364a44ef9056842205c0e [allow_partial=false, label="verify_1236", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/repair3.py verify_1236\n", selection="deterministic", timeout="14400s", type="command"];
+  node_d0f1a621d0491fddf57f435c [allow_partial=false, label="apply", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/repair3.py apply\n", selection="deterministic", timeout="14400s", type="command"];
+  node_e467841993abb64aedbd4afc [allow_partial=false, label="export", max_retries=0, max_visits=1, on_failure="route", script="env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/repair3.py export\n", selection="deterministic", timeout="14400s", type="command"];
+  start [label="Start", type="start"];
+  node_d0f1a621d0491fddf57f435c -> node_ca4364a44ef9056842205c0e;
+  node_08d64f5a35886eab1b822dc1 -> node_0f6419144e708fa13aed97af [condition="outcome=failed"];
+  node_08d64f5a35886eab1b822dc1 -> node_0f6419144e708fa13aed97af;
+  node_e467841993abb64aedbd4afc -> exit [condition="outcome=failed"];
+  node_e467841993abb64aedbd4afc -> exit;
+  node_0f6419144e708fa13aed97af -> node_e467841993abb64aedbd4afc;
+  node_d0f1a621d0491fddf57f435c -> node_e467841993abb64aedbd4afc [condition="outcome=failed"];
+  start -> node_d0f1a621d0491fddf57f435c;
+  node_0f6419144e708fa13aed97af -> node_e467841993abb64aedbd4afc [condition="outcome=failed"];
+  node_ca4364a44ef9056842205c0e -> node_3cdecd08faeef8cda6b234b1 [condition="outcome=failed"];
+  node_3cdecd08faeef8cda6b234b1 -> node_08d64f5a35886eab1b822dc1 [condition="outcome=failed"];
+  node_3cdecd08faeef8cda6b234b1 -> node_08d64f5a35886eab1b822dc1;
+  node_ca4364a44ef9056842205c0e -> node_3cdecd08faeef8cda6b234b1;
+}

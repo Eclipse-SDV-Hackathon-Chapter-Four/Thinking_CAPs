@@ -1,0 +1,141 @@
+{
+  "engineering_acceptance": "pending_offline_review",
+  "execution": "Single sequential Fabro workflow; each item independent at same source pin.",
+  "items": [
+    {
+      "allowed_files": [
+        "BUILD",
+        ".github/workflows/build_and_test_host.yml",
+        ".github/workflows/_linter.yml",
+        "CONTRIBUTING.md"
+      ],
+      "allowed_prefixes": [
+        "tools/lint/buildifier/",
+        "quality/buildifier/"
+      ],
+      "depends_on": [],
+      "id": "communication-1236",
+      "issue_number": 1236,
+      "model": "deepseek-flash",
+      "native_checks": [
+        [
+          "quality-tests",
+          [
+            "test",
+            "//quality/...",
+            "--nocache_test_results"
+          ]
+        ]
+      ],
+      "query": "//tools/lint/... union //quality/...",
+      "reason": "Native formatter/CI configuration can be measured against an unused-load regression.",
+      "status": "pending",
+      "title": "Bug: buildifier setup in CI missess some issues",
+      "url": "https://github.com/eclipse-score/communication/issues/1236",
+      "workspace": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-queue-8bw5ur7n/issue-1236"
+    },
+    {
+      "allowed_files": [
+        "score/mw/com/dependability/safety_analysis/BUILD",
+        "score/mw/com/dependability/safety_analysis/README.md",
+        "quality/visibility_guard/public_targets.golden"
+      ],
+      "allowed_prefixes": [
+        "score/mw/com/dependability/safety_analysis/aou_forwarding_test/"
+      ],
+      "depends_on": [],
+      "id": "communication-1031",
+      "issue_number": 1031,
+      "model": "deepseek-flash",
+      "native_checks": [
+        [
+          "aou-artifacts",
+          [
+            "build",
+            "//score/mw/com/dependability/safety_analysis:aous"
+          ]
+        ],
+        [
+          "visibility",
+          [
+            "test",
+            "//quality/visibility_guard:visibility_guard_test",
+            "--nocache_test_results"
+          ]
+        ]
+      ],
+      "query": "//score/mw/com/dependability/safety_analysis/...",
+      "reason": "Native AoU visibility and tooling forwarding are directly relevant to portable traceability artifacts.",
+      "status": "pending",
+      "title": "Clarify AoU traceability and visibility",
+      "url": "https://github.com/eclipse-score/communication/issues/1031",
+      "workspace": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-queue-8bw5ur7n/issue-1031"
+    },
+    {
+      "allowed_files": [
+        "quality/static_analysis/BUILD",
+        "quality/static_analysis/codeql_lint.py",
+        "quality/static_analysis/codeql_lint_test.py",
+        ".github/workflows/_codeql.yml",
+        "quality/static_analysis/README.md"
+      ],
+      "allowed_prefixes": [],
+      "depends_on": [],
+      "id": "communication-751",
+      "issue_number": 751,
+      "model": "deepseek-flash",
+      "native_checks": [
+        [
+          "analysis-tests",
+          [
+            "test",
+            "//quality/static_analysis/...",
+            "--nocache_test_results"
+          ]
+        ]
+      ],
+      "query": "//quality/static_analysis/...",
+      "reason": "Production-source completeness is central to fabric analyzer evidence; the owned native CodeQL pipeline is available.",
+      "status": "pending",
+      "title": "Bug: CodeQL ignores some production source files",
+      "url": "https://github.com/eclipse-score/communication/issues/751",
+      "workspace": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-queue-8bw5ur7n/issue-751"
+    },
+    {
+      "allowed_files": [
+        "quality/static_analysis/BUILD",
+        "quality/static_analysis/codeql_lint.py",
+        "quality/static_analysis/codeql_lint_test.py",
+        "quality/static_analysis/README.md"
+      ],
+      "allowed_prefixes": [],
+      "depends_on": [],
+      "id": "communication-1104",
+      "issue_number": 1104,
+      "model": "deepseek-flash",
+      "native_checks": [
+        [
+          "analysis-tests",
+          [
+            "test",
+            "//quality/static_analysis/...",
+            "--nocache_test_results"
+          ]
+        ]
+      ],
+      "query": "//quality/static_analysis/...",
+      "reason": "The native SARIF generation/postprocessing pipeline permits bounded location-preservation regressions.",
+      "status": "pending",
+      "title": "Bug: CodeQL looses location information for some findings",
+      "url": "https://github.com/eclipse-score/communication/issues/1104",
+      "workspace": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-queue-8bw5ur7n/issue-1104"
+    }
+  ],
+  "max_total_cost_usd": 10,
+  "model": "deepseek-flash",
+  "owner": "Fabro",
+  "provider": "deepseek",
+  "queue_id": "communication-bug-queue-20261006",
+  "schema_version": 1,
+  "status": "prepared"
+}

@@ -1,0 +1,26 @@
+{
+  "url": "https://github.com/eclipse-score/communication/issues/250",
+  "issue_number": 250,
+  "state": "open",
+  "captured_on": "2026-10-07",
+  "updated_at": "2026-07-15T03:25:46Z",
+  "title": "Improvement: COM-API FindServiceSpecifier::Any support",
+  "labels": [
+    "rust-api"
+  ],
+  "assignees": [],
+  "body": "### What\n\n`COM-API` is not enabled in this case due to `LoLa` does not support find service call with `ANY`, it require specific `InstanceSpecifier`.\nBecause of this `COM-API` is added `panic!`.\n\n### How\n\nOnce `LoLa` adds the `ANY` support for find service call then we will add in rust library also.\n\n### Estimates for realization\n\n0\n\n### Category\n\n- [x] Affects Detailed Design\n\n### Requirements / Architecture\n\n- [x] Requirements / Architecture are not affected by this change?",
+  "comments": [
+    {
+      "author": "LittleHuba",
+      "created_at": "2026-03-30T10:11:00Z",
+      "body": "LoLa already supports any-semantics in the SD.\nSee https://github.com/eclipse-score/communication/blob/0216ff909d95711ae60da1150d91aa1715a8f2e5/score/mw/com/impl/bindings/lola/service_discovery/flag_file_crawler.cpp#L176"
+    },
+    {
+      "author": "bharatGoswami8",
+      "created_at": "2026-03-30T11:21:11Z",
+      "body": "Yes in case of finding service instances using `InstanceIdentifier`, `FindService` with any-semantic is there but i think with `InstanceSpecifier` it is not there.\n\nhttps://github.com/eclipse-score/communication/blob/main/score/mw/com/design/service_discovery/README.md?plain=1#L135C90-L135C108\n\nWith any-semantic support for `InstanceIdentifier` we can get list of instance of same service (`InstanceSpecifier`) . but the API which is rust the goal of that API all the available services on system should be return as a list."
+    }
+  ],
+  "source": "gh issue view (read-only), 2026-10-07"
+}

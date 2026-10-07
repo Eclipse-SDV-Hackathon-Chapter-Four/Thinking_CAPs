@@ -1,0 +1,62 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+WARNING: Duplicate rc file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/workspaces/560/quality/static_analysis/static_analysis.bazelrc is read multiple times, it is a standard rc file location but must have been unnecessarily imported earlier.
+OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.
+WARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.
+Computing main repo mapping: 
+WARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 5 packages loaded
+Analyzing: target //score/mw/com/rust:score_com (6 packages loaded, 0 targets configured)
+Analyzing: target //score/mw/com/rust:score_com (6 packages loaded, 0 targets configured)
+
+Analyzing: target //score/mw/com/rust:score_com (98 packages loaded, 9 targets configured)
+
+Analyzing: target //score/mw/com/rust:score_com (229 packages loaded, 9797 targets configured)
+
+Analyzing: target //score/mw/com/rust:score_com (357 packages loaded, 14591 targets configured)
+
+DEBUG: Rule 'score_baselibs++_repo_rules+acl-deb' indicated that a canonical reproducible form can be obtained by modifying arguments integrity = "sha256-5AjUxw54AQdOpFkYAgilQtVPVjibpIU3BDTy0A6VCYA=" and dropping ["visibility"]
+DEBUG: Repository score_baselibs++_repo_rules+acl-deb instantiated at:
+  <builtin>: in <toplevel>
+Repository rule deb defined at:
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/bazel-output/183b3bc16c4c770654f7deea3d56ffde/external/download_utils+/download/deb/repository.bzl:78:22: in <toplevel>
+INFO: Analyzed target //score/mw/com/rust:score_com (361 packages loaded, 14912 targets configured).
+[7 / 11] checking cached actions
+[49 / 237] [Prepa] Writing repo mapping manifest for @@rules_rust++crate+crate_index__libc-0.2.186//:_bs-
+[112 / 290] checking cached actions
+[221 / 290] [Prepa] ExtractCargoTomlEnvVars external/rules_rust++crate+crate_index__libc-0.2.186/cargo_toml_env_vars.env
+[279 / 290] Compiling Rust bin _bs_ (346 files) [for tool]; 1s linux-sandbox
+[282 / 290] Compiling Rust rlib libc v0.2.186 (346 files); 0s linux-sandbox
+[283 / 290] [Prepa] Compiling Rust rlib common_rs (1 file)
+[288 / 290] Compiling Rust rlib com-api-runtime-lola (4 files); 0s linux-sandbox
+ERROR: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/workspaces/560/score/mw/com/impl/rust/com-api/com-api-runtime-lola/BUILD:16:13: Compiling Rust rlib com-api-runtime-lola (4 files) failed: (Exit 1): process_wrapper failed: error executing Rustc command (from target //score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola) bazel-out/k8-opt-exec-ST-d57f47055a04/bin/external/rules_rust+/util/process_wrapper/process_wrapper --arg-file ... (remaining 66 arguments skipped)
+
+Use --sandbox_debug to see verbose messages from the sandbox and retain the sandbox build root for debugging
+error[E0596]: cannot borrow `handler` as mutable, as it is not declared as mutable
+   --> score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs:724:54
+    |
+724 |         let adapted = move |raw_state: u8| -> bool { handler(SubscriptionState::from(raw_state)) };
+    |                                                      ^^^^^^^ cannot borrow as mutable
+    |
+help: consider changing this to be mutable
+    |
+721 |         mut handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
+    |         +++
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0596`.
+Target //score/mw/com/rust:score_com failed to build
+Use --verbose_failures to see the command lines of failed build steps.
+INFO: Elapsed time: 30.666s, Critical Path: 8.57s
+INFO: 16 processes: 286 action cache hit, 6 internal, 10 linux-sandbox.
+ERROR: Build did NOT complete successfully

@@ -1,0 +1,2035 @@
+From 84075c096b835c82af1c40e0b2328fba11bc8438 Mon Sep 17 00:00:00 2001
+From: jnsagai <jnsagai@gmail.com>
+Date: Wed, 7 Oct 2026 04:54:16 +0100
+Subject: [PATCH] Rust::com: Support typed FindServiceSpecifier::Any discovery
+
+Addresses #250.
+
+Replace the panic for FindServiceSpecifier::Any with typed, same-interface
+Any discovery in the LoLa runtime. Interfaces register their LoLa wildcard
+configuration; find_service and the async discovery path resolve Any
+through native find-any (FFI find_service_any / start_find_service_any)
+and return ServiceNotFound for unmapped, concrete or malformed
+registrations. The async search stop guard is created synchronously after
+a successful start, so a never-polled or cancelled future stops the native
+search.
+
+Adds LoLa unit tests and the consumer_any_apis ITF integration test.
+
+This is typed same-interface discovery, not system-wide discovery of all
+interfaces (see #1261).
+
+Implemented with DeepSeek V4 Flash (Fabro).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .../com-api/com-api-ffi-lola/bridge_ffi.rs    |  18 +
+ .../com-api-ffi-lola/bridge_ffi_lola.rs       |  58 +++
+ .../com-api-ffi-lola/bridge_ffi_mock.rs       |  16 +
+ .../registry_bridge_macro.cpp                 | 138 ++++++
+ .../com-api-ffi-lola/registry_bridge_macro.h  |  63 +++
+ .../com-api/com-api-runtime-lola/consumer.rs  | 315 +++++++++++---
+ .../com-api/com-api-runtime-lola/runtime.rs   |  13 +-
+ score/mw/com/rust/score_com.rs                |   9 +-
+ .../mw/com/rust/score_com_concept/concept.rs  |  37 +-
+ .../basic_rust_api/bigdata_com_api_gen.cpp    |  39 +-
+ .../basic_rust_api/bigdata_com_api_gen.rs     |   8 +
+ .../basic_rust_api/consumer_any_apis/BUILD    |  57 +++
+ .../consumer_any_apis/consumer_app.rs         | 403 ++++++++++++++++++
+ .../consumer_any_apis/integration_test/BUILD  |  22 +
+ .../integration_test/com_api_any_api_test.py  |  56 +++
+ score/mw/com/test/basic_rust_api/etc/BUILD    |   5 +-
+ .../com/test/basic_rust_api/etc/config.json   |  42 ++
+ .../basic_rust_api/etc/provider_config.json   | 228 ++++++++++
+ .../producer_app/producer_app.rs              |  83 +++-
+ 19 files changed, 1544 insertions(+), 66 deletions(-)
+ create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD
+ create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs
+ create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD
+ create mode 100644 score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py
+ create mode 100644 score/mw/com/test/basic_rust_api/etc/provider_config.json
+
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
+index c9d7ebde..45b63768 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
+@@ -258,6 +258,24 @@ pub trait FFIBridge: Send + Sync + Clone + Debug + 'static + Unpin + Default {
+     /// Returns `Err(())` when the search fails or yields no container.
+     fn find_service(&self, instance_specifier: InstanceSpecifier) -> Result<HandleContainer, ()>;
+ 
++    /// Find all currently offered instances of the interface identified by `interface_id`.
++    ///
++    /// This is the typed, same-interface wildcard (`FindServiceSpecifier::Any`) path. The
++    /// interface identifier is the registry UID supplied by `Interface::INTERFACE_ID` (for
++    /// example `BigDataInterface`); the native side maps it to a configured find-any selector.
++    ///
++    /// Returns `Err(())` when the interface is unknown, has no find-any registration, the
++    /// selector cannot be resolved, or the native search fails. It never panics for an
++    /// unmapped interface.
++    fn find_service_any(&self, interface_id: &str) -> Result<HandleContainer, ()>;
++
++    /// Start an asynchronous wildcard discovery for the interface identified by `interface_id`.
++    ///
++    /// The `callback` invariant is encoded in `FindServiceCallable`. The returned handle must
++    /// eventually be passed to `stop_find_service`. Returns a null pointer when the interface is
++    /// unknown, has no find-any registration, or the search cannot be started.
++    fn start_find_service_any(&self, callback: &FindServiceCallable, interface_id: &str) -> *mut FindServiceHandle;
++
+     /// Initialize the `mw::com` subsystem.
+     ///
+     /// Optionally accepts a path to the service-instance manifest. When omitted the
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
+index 0ec941b3..d80a6f6c 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
+@@ -391,6 +391,30 @@ unsafe extern "C" {
+     /// Pointer to NativeHandleContainer containing available service instances, or nullptr if none found
+     fn mw_com_impl_find_service(instance_specifier: *mut NativeInstanceSpecifier) -> *mut NativeHandleContainer;
+ 
++    /// Find all currently offered instances of an interface via the typed find-any path.
++    ///
++    /// # Arguments
++    /// * `interface_id` - UTF-8 string view of the interface registry UID
++    ///
++    /// # Returns
++    /// Pointer to NativeHandleContainer containing available instances, or nullptr when the
++    /// interface is unmapped or the search fails.
++    fn mw_com_impl_find_service_any(interface_id: StringView) -> *mut NativeHandleContainer;
++
++    /// Start an asynchronous typed find-any search for an interface.
++    ///
++    /// # Arguments
++    /// * `callback` - FatPtr to callback function that will be called with discovery results
++    /// * `interface_id` - UTF-8 string view of the interface registry UID
++    ///
++    /// # Returns
++    /// Opaque pointer to FindServiceHandle which can be used to stop the find operation, or
++    /// nullptr when the interface is unmapped or the search cannot be started.
++    fn mw_com_start_find_service_any(
++        callback: *const FatPtr,
++        interface_id: StringView,
++    ) -> *mut FindServiceHandle;
++
+     /// Initialize the communication implementation with the provided configuration.
+     ///
+     /// # Arguments
+@@ -895,6 +919,40 @@ impl FFIBridge for LolaFFIBridge {
+         }
+     }
+ 
++    /// Wrapper around mw_com_impl_find_service_any
++    ///
++    /// # Arguments
++    /// * `interface_id` - Interface registry UID
++    ///
++    /// # Returns
++    /// Result containing a HandleContainer if the interface is mapped and instances were found,
++    /// or an error when the interface is unmapped or the search fails.
++    fn find_service_any(&self, interface_id: &str) -> Result<HandleContainer, ()> {
++        let c_uid = StringView::from(interface_id);
++        // SAFETY: c_uid is a valid UTF-8 string view; the returned container is owned by Rust.
++        let container = unsafe { mw_com_impl_find_service_any(c_uid) };
++        if container.is_null() {
++            Err(())
++        } else {
++            Ok(HandleContainer::new(container))
++        }
++    }
++
++    /// Wrapper around mw_com_start_find_service_any
++    ///
++    /// # Arguments
++    /// * `callback` - Valid find-service callable, its invariant is guaranteed by `FindServiceCallable`.
++    /// * `interface_id` - Interface registry UID
++    ///
++    /// # Returns
++    /// Opaque handle pointer for the find service operation, or nullptr on failure
++    fn start_find_service_any(&self, callback: &FindServiceCallable, interface_id: &str) -> *mut FindServiceHandle {
++        let c_uid = StringView::from(interface_id);
++        // SAFETY: FindServiceCallable guarantees that the inner FatPtr is a valid callable
++        // compatible with the find-service callback signature.
++        unsafe { mw_com_start_find_service_any(callback.as_fat_ptr(), c_uid) }
++    }
++
+     /// Initialize the Lola Runtime with provided configuration.
+     ///
+     /// # Arguments
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
+index 01c455f1..78b64909 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
+@@ -198,6 +198,14 @@ mock! {
+ 
+         fn find_service(&self, instance_specifier: InstanceSpecifier) -> Result<HandleContainer, ()>;
+ 
++        fn find_service_any(&self, interface_id: &str) -> Result<HandleContainer, ()>;
++
++        fn start_find_service_any(
++            &self,
++            callback: &FindServiceCallable,
++            interface_id: &str,
++        ) -> *mut FindServiceHandle;
++
+         fn initialize<'a>(&self, manifest_location: Option<&'a std::path::Path>);
+ }
+ }
+@@ -412,6 +420,14 @@ impl bridge_ffi_rs::FFIBridge for SharedMockBridge {
+         self.locked().find_service(instance_specifier)
+     }
+ 
++    fn find_service_any(&self, interface_id: &str) -> Result<HandleContainer, ()> {
++        self.locked().find_service_any(interface_id)
++    }
++
++    fn start_find_service_any(&self, callback: &FindServiceCallable, interface_id: &str) -> *mut FindServiceHandle {
++        self.locked().start_find_service_any(callback, interface_id)
++    }
++
+     fn initialize(&self, manifest_location: Option<&'_ std::path::Path>) {
+         self.locked().initialize(manifest_location)
+     }
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
+index e3a273a0..ef4de243 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
+@@ -22,7 +22,9 @@
+ /// - C++ side: Template-based, type-erased implementation
+ 
+ #include "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h"
++#include "score/mw/com/impl/binding_type.h"
+ #include "score/mw/com/impl/find_service_handler.h"
++#include "score/mw/com/impl/instance_identifier.h"
+ #include "score/mw/com/impl/plumbing/sample_ptr.h"
+ #include "score/mw/com/impl/proxy_base.h"
+ #include "score/mw/com/impl/proxy_event.h"
+@@ -37,11 +39,68 @@
+ #include "score/string_manipulation/arguments/arguments.h"
+ 
+ #include <limits>
++#include <optional>
+ #include <string_view>
+ 
+ namespace score::mw::com::impl::rust
+ {
+ 
++namespace
++{
++
++/// \brief Resolve an interface's registered find-any selector to a genuine wildcard identifier.
++/// \details The selector is trusted only when it resolves (through `IRuntime::resolve`) to exactly
++/// one identifier whose deployment is a supported LoLa binding and whose instance id is unset. A
++/// selector that resolves to a concrete instance id (a misconfigured registration) or to an
++/// unsupported binding is rejected here, so the typed Any path can never silently return Specific
++/// results merely because a registration string happened to name a concrete instance.
++/// \param interface_id UTF-8 interface registry UID
++/// \return The validated wildcard InstanceIdentifier, or `std::nullopt` when the interface is
++///         unmapped/malformed or the selector is concrete/ambiguous/unsupported.
++std::optional<::score::mw::com::impl::InstanceIdentifier> ResolveFindAnyIdentifier(const std::string_view interface_id)
++{
++    auto* registry = GlobalRegistryMapping::FindInterfaceRegistry(interface_id);
++    if (registry == nullptr)
++    {
++        return std::nullopt;
++    }
++
++    const std::string& any_instance_specifier = registry->GetAnyInstanceSpecifier();
++    if (any_instance_specifier.empty())
++    {
++        return std::nullopt;
++    }
++
++    auto instance_specifier_result = ::score::mw::com::InstanceSpecifier::Create(std::string{any_instance_specifier});
++    if (!instance_specifier_result.has_value())
++    {
++        return std::nullopt;
++    }
++
++    const auto instance_identifiers =
++        ::score::mw::com::impl::Runtime::getInstance().resolve(instance_specifier_result.value());
++    if (instance_identifiers.size() != 1U)
++    {
++        return std::nullopt;
++    }
++
++    const auto& instance_identifier = instance_identifiers.front();
++    ::score::mw::com::impl::InstanceIdentifierView instance_identifier_view{instance_identifier};
++    if (instance_identifier_view.GetServiceInstanceDeployment().GetBindingType() !=
++        ::score::mw::com::impl::BindingType::kLoLa)
++    {
++        return std::nullopt;
++    }
++    if (instance_identifier_view.GetServiceInstanceId().has_value())
++    {
++        return std::nullopt;
++    }
++
++    return instance_identifier;
++}
++
++}  // namespace
++
+ extern "C" {
+ 
+ /// \brief Get event pointer from proxy by event name
+@@ -524,6 +583,85 @@ void mw_com_impl_instance_specifier_delete(::score::mw::com::InstanceSpecifier*
+     }
+ }
+ 
++/// \brief Find all currently offered instances of an interface (typed find-any path)
++/// \details Resolves the interface registry UID to its explicitly registered find-any selector and
++/// validates (through `IRuntime::resolve`) that it maps to exactly one supported LoLa
++/// `InstanceIdentifier` whose instance id is unset. Only such a genuine wildcard identifier is
++/// delegated to the existing typed native FindService path. Returns nullptr when the interface is
++/// unknown, has no find-any registration, the selector is malformed or not part of the loaded
++/// configuration, resolves to a concrete instance id or an unsupported binding, is ambiguous, or
++/// the native search fails. It never terminates for an unmapped interface and never silently
++/// returns Specific results for a misconfigured concrete selector.
++/// \param interface_id UTF-8 string view of the interface registry UID
++/// \return Pointer to ServiceHandleContainer containing matching handles, or nullptr
++::score::mw::com::ServiceHandleContainer<::score::mw::com::impl::HandleType>* mw_com_impl_find_service_any(
++    StringView interface_id) noexcept
++{
++    if (interface_id.data == nullptr)
++    {
++        return nullptr;
++    }
++
++    auto id = static_cast<std::string_view>(interface_id);
++    auto instance_identifier = ResolveFindAnyIdentifier(id);
++    if (!instance_identifier.has_value())
++    {
++        return nullptr;
++    }
++
++    if (auto result = ::score::mw::com::impl::Runtime::getInstance().GetServiceDiscovery().FindService(
++            std::move(instance_identifier).value());
++        result.has_value())
++    {
++        return new ::score::mw::com::ServiceHandleContainer<::score::mw::com::impl::HandleType>{
++            std::move(result).value()};
++    }
++    else
++    {
++        return nullptr;
++    }
++}
++
++/// \brief Start asynchronous typed find-any discovery with a callback
++/// \details Resolves the interface registry UID to its explicitly registered find-any selector,
++/// validates that it maps to exactly one supported LoLa wildcard `InstanceIdentifier` (instance id
++/// unset), and only then delegates to the existing typed native StartFindService path. The callback
++/// signature is void(ServiceHandleContainer<HandleType>, FindServiceHandle). Returns nullptr when
++/// the interface is unknown, has no find-any registration, the selector is malformed or unmapped,
++/// resolves to a concrete instance id or an unsupported binding, is ambiguous, or the search
++/// cannot be started.
++/// \param callback FatPtr to Rust FnMut closure matching the FindServiceHandler signature
++/// \param interface_id UTF-8 string view of the interface registry UID
++/// \return Opaque pointer to FindServiceHandle on success, nullptr on failure
++void* mw_com_start_find_service_any(const FatPtr* callback, StringView interface_id)
++{
++    if (callback == nullptr || interface_id.data == nullptr)
++    {
++        return nullptr;
++    }
++
++    auto id = static_cast<std::string_view>(interface_id);
++    auto instance_identifier = ResolveFindAnyIdentifier(id);
++    if (!instance_identifier.has_value())
++    {
++        return nullptr;
++    }
++
++    RustFnMutCallable<RustBoxedCallable, void, ServiceHandleContainer<HandleType>, FindServiceHandle> rust_callable{
++        *callback};
++
++    if (auto result = ::score::mw::com::impl::Runtime::getInstance().GetServiceDiscovery().StartFindService(
++            std::move(rust_callable), std::move(instance_identifier).value());
++        result.has_value())
++    {
++        return new FindServiceHandle{std::move(result).value()};
++    }
++    else
++    {
++        return nullptr;
++    }
++}
++
+ /// \brief Delete a ServiceHandleContainer
+ /// \param container Pointer to the ServiceHandleContainer to delete
+ void mw_com_impl_handle_container_delete(
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
+index f4c8a3dd..270f9065 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
+@@ -77,6 +77,7 @@
+ #include <array>
+ #include <cstdint>
+ #include <memory>
++#include <string>
+ #include <string_view>
+ #include <unordered_map>
+ #include <utility>
+@@ -596,9 +597,29 @@ class InterfaceOperations
+         return nullptr;
+     }
+ 
++    /// \brief Store the configured find-any selector for this interface.
++    /// \details The selector should be an InstanceSpecifier whose configuration instance entry has
++    /// no Lola instance id, so resolving it yields the genuine per-service wildcard query. This is
++    /// not relied upon by name: the find-any FFI resolves the selector and rejects it unless it
++    /// maps to exactly one supported LoLa identifier with an unset instance id. An empty string
++    /// means find-any discovery is not registered for this interface.
++    /// \param any_instance_specifier The selector string; empty to disable find-any.
++    void SetAnyInstanceSpecifier(const std::string_view any_instance_specifier)
++    {
++        any_instance_specifier_ = std::string{any_instance_specifier};
++    }
++
++    /// \brief Get the configured find-any selector for this interface.
++    /// \return The selector string; empty when find-any is not registered.
++    const std::string& GetAnyInstanceSpecifier() const noexcept
++    {
++        return any_instance_specifier_;
++    }
++
+   private:
+     using MemberOperationMap = std::unordered_map<std::string_view, std::unique_ptr<MemberOperation>>;
+     MemberOperationMap member_operation_map_;
++    std::string any_instance_specifier_{};
+ };
+ 
+ /// \brief Template implementation of InterfaceOperations for specific Proxy and Skeleton types
+@@ -761,6 +782,48 @@ inline ::score::mw::com::impl::rust::TypeOperationImpl<T>& get_type_operations()
+         id##_InterfaceRegistrationHelper id##_interface_reg_instance;                                                  \
+         } /* namespace */
+ 
++/// \brief Macro to begin registration of interface operations with an explicit find-any selector.
++/// \details Same as BEGIN_EXPORT_MW_COM_INTERFACE but additionally registers a configured
++/// InstanceSpecifier used by the Rust `FindServiceSpecifier::Any` path. The selector's
++/// configuration instance entry must omit the Lola instance id so that resolving it produces the
++/// genuine per-service wildcard query. Passing an empty string keeps find-any disabled, which is
++/// exactly the behaviour of the 3-argument macro.
++/// \param id Interface TYPE ID that the Rust side uses to identify the interface
++/// \param proxy_type Proxy class type for the interface
++/// \param skeleton_type Skeleton class type for the interface
++/// \param any_instance_specifier Configured find-any selector (or "" to disable)
++/// \note Example usage: BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER(VehicleInterface,
++///       VehicleProxy, VehicleSkeleton, "/vehicle/any")
++#define BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER(id, proxy_type, skeleton_type, any_instance_specifier)         \
++    namespace id##_detail                                                                                              \
++    {                                                                                                                  \
++        constexpr std::string_view id_interface = #id;                                                                 \
++        /* Type aliases for event macros to use */                                                                     \
++        using ProxyType = proxy_type;                                                                                  \
++        using SkeletonType = skeleton_type;                                                                            \
++                                                                                                                       \
++        /* Registration helper struct - constructor runs at startup. Kept in an anonymous namespace so that the        \
++           struct and its instance have internal linkage (misc-use-internal-linkage). */                               \
++        namespace                                                                                                      \
++        {                                                                                                              \
++        struct id##_InterfaceRegistrationHelper                                                                        \
++        {                                                                                                              \
++            id##_InterfaceRegistrationHelper()                                                                         \
++            {                                                                                                          \
++                auto interface_event_ops =                                                                             \
++                    std::make_unique<::score::mw::com::impl::rust::InterfaceOperationImpl<ProxyType, SkeletonType>>(); \
++                interface_event_ops->SetAnyInstanceSpecifier(std::string_view{any_instance_specifier});                \
++                                                                                                                       \
++                /* Register interface factory for FFI layer */                                                         \
++                ::score::mw::com::impl::rust::GlobalRegistryMapping::RegisterInterfaceOperation(                       \
++                    id_interface, std::move(interface_event_ops));                                                     \
++            }                                                                                                          \
++        };                                                                                                             \
++                                                                                                                       \
++        /* Force instantiation at startup */                                                                           \
++        id##_InterfaceRegistrationHelper id##_interface_reg_instance;                                                  \
++        } /* namespace */
++
+ /// \brief Macro to register event member operations
+ /// \details Creates registry for event member operations for a specific interface and event name.
+ /// Uses a static struct to register MemberOperationImpl at startup/before main().
+diff --git a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
+index 3292d143..55a03f3f 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
+@@ -854,8 +854,19 @@ impl std::fmt::Debug for DiscoveryStateData {
+     }
+ }
+ 
++/// Identifies how a [`LolaConsumerDiscovery`] locates service instances.
++#[derive(Clone, Debug)]
++pub(crate) enum DiscoverySpecifier {
++    /// Discover the instances matching one concrete instance specifier.
++    Specific(InstanceSpecifier),
++    /// Typed, same-interface wildcard discovery: all currently offered instances of the
++    /// interface. This requires the interface to be registered with an explicit find-any
++    /// selector (see `BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER`).
++    Any,
++}
++
+ pub struct LolaConsumerDiscovery<I, B: FFIBridge> {
+-    pub(crate) instance_specifier: InstanceSpecifier,
++    pub(crate) instance_specifier: DiscoverySpecifier,
+     pub(crate) _interface: PhantomData<I>,
+     pub(crate) bridge: B,
+ }
+@@ -863,7 +874,7 @@ pub struct LolaConsumerDiscovery<I, B: FFIBridge> {
+ impl<I: Interface, B: FFIBridge> LolaConsumerDiscovery<I, B> {
+     pub fn new(runtime: &LolaRuntimeImpl<B>, instance_specifier: InstanceSpecifier) -> Self {
+         Self {
+-            instance_specifier,
++            instance_specifier: DiscoverySpecifier::Specific(instance_specifier),
+             _interface: PhantomData,
+             bridge: runtime.bridge.clone(),
+         }
+@@ -878,15 +889,29 @@ where
+     type ServiceEnumerator = Vec<LolaConsumerBuilder<I, B>>;
+ 
+     fn get_available_instances(&self) -> Result<Self::ServiceEnumerator> {
+-        //If ANY Support is added in Lola, then we need to return all available instances
+-        //Once FFI layer error handling is in place (SWP-253124), we should convert this error to a proper FFI error instead of using map_err here
+-        let instance_specifier_lola = bridge_ffi_rs::InstanceSpecifier::try_from(self.instance_specifier.as_ref())
+-            .map_err(|_| Error::ServiceError(ServiceFailedReason::InstanceSpecifierInvalid))?;
++        // Once FFI layer error handling is in place (SWP-253124), we should convert this error to
++        // a proper FFI error instead of using map_err here.
++        //
++        // `Specific` keeps the existing configured-instance path. `Any` uses the typed
++        // same-interface wildcard FFI path, which resolves the interface's explicitly registered
++        // find-any selector natively. An unknown/unmapped interface yields
++        // Err(ServiceNotFound) instead of panicking.
++        let service_handle = match &self.instance_specifier {
++            DiscoverySpecifier::Specific(instance_specifier) => {
++                let instance_specifier_lola = bridge_ffi_rs::InstanceSpecifier::try_from(instance_specifier.as_ref())
++                    .map_err(|_| Error::ServiceError(ServiceFailedReason::InstanceSpecifierInvalid))?;
++                self.bridge.find_service(instance_specifier_lola)
++            },
++            DiscoverySpecifier::Any => self.bridge.find_service_any(I::INTERFACE_ID),
++        }
++        .map_err(|_| Error::ServiceError(ServiceFailedReason::ServiceNotFound))?;
+ 
+-        let service_handle = self
+-            .bridge
+-            .find_service(instance_specifier_lola)
+-            .map_err(|_| Error::ServiceError(ServiceFailedReason::ServiceNotFound))?;
++        // Only the `Specific` path can truthfully name a producer instance specifier. `Any`
++        // results carry the native instance identity only and must not fabricate a specifier.
++        let producer_specifier = match &self.instance_specifier {
++            DiscoverySpecifier::Specific(instance_specifier) => Some(instance_specifier.clone()),
++            DiscoverySpecifier::Any => None,
++        };
+ 
+         let service_handle_arc = Arc::new(service_handle);
+         let available_instances = (0..service_handle_arc.len())
+@@ -899,6 +924,7 @@ where
+                 };
+                 LolaConsumerBuilder {
+                     instance_info,
++                    instance_specifier: producer_specifier.clone(),
+                     _interface: PhantomData,
+                 }
+             })
+@@ -917,10 +943,23 @@ where
+     fn get_available_instances_async(&self) -> impl Future<Output = Result<Self::ServiceEnumerator>> + Send {
+         let instance_specifier = self.instance_specifier.clone();
+ 
+-        // Convert to Lola InstanceSpecifier early
+-        //Once FFI layer error handling is in place (SWP-253124), we should convert this error to a proper FFI error instead of using map_err here
+-        let instance_specifier_lola = bridge_ffi_rs::InstanceSpecifier::try_from(instance_specifier.as_ref())
+-            .map_err(|_| Error::ServiceError(ServiceFailedReason::InstanceSpecifierInvalid));
++        // Only the `Specific` path can truthfully name a producer instance specifier. `Any`
++        // results carry native identity only and must not fabricate a specifier.
++        let producer_specifier = match &instance_specifier {
++            DiscoverySpecifier::Specific(spec) => Some(spec.clone()),
++            DiscoverySpecifier::Any => None,
++        };
++
++        // Convert to the FFI InstanceSpecifier early for the Specific path. `Any` carries no
++        // concrete specifier; the native side resolves the interface selector itself.
++        // Once FFI layer error handling is in place (SWP-253124), the error should be a proper
++        // FFI error.
++        let instance_specifier_lola = match &instance_specifier {
++            DiscoverySpecifier::Specific(spec) => bridge_ffi_rs::InstanceSpecifier::try_from(spec.as_ref())
++                .map(Some)
++                .map_err(|_| Error::ServiceError(ServiceFailedReason::InstanceSpecifierInvalid)),
++            DiscoverySpecifier::Any => Ok(None),
++        };
+ 
+         let waker_storage = Arc::new(futures::task::AtomicWaker::new());
+ 
+@@ -950,26 +989,36 @@ where
+         let callable = unsafe { FindServiceCallable::new(std::mem::transmute(dyn_callback)) };
+ 
+         let bridge = self.bridge.clone();
+-        let find_service_result = instance_specifier_lola.and_then(|spec| {
+-            // start_find_service is safe: the callback invariant is encoded in FindServiceCallable.
+-            // The returned handle is stored synchronously — before any async polling — guaranteeing
+-            // stop_find_service is always called in Drop.
+-            let raw_handle = bridge.start_find_service(&callable, spec);
++        let find_service_result: Result<FindServiceStopGuard<B>> = instance_specifier_lola.and_then(|spec| {
++            // start_find_service[_any] is safe: the callback invariant is encoded in
++            // FindServiceCallable. The returned handle is wrapped in an owning stop guard
++            // synchronously — before any async polling — so the native search is stopped exactly
++            // once even if the returned future is never polled.
++            let raw_handle = match spec {
++                Some(spec) => bridge.start_find_service(&callable, spec),
++                None => bridge.start_find_service_any(&callable, I::INTERFACE_ID),
++            };
+             if raw_handle.is_null() {
+                 Err(Error::ServiceError(ServiceFailedReason::FailedToStartDiscovery))
+             } else {
+-                // Single authoritative source of find_handle — return value only.
+-                // Callback's find_handle argument is ignored to prevent double-write.
+-                Ok(NativeFindServiceHandle::new(raw_handle))
++                Ok(FindServiceStopGuard {
++                    handle: Some(NativeFindServiceHandle::new(raw_handle)),
++                    bridge: bridge.clone(),
++                })
+             }
+         });
+         async move {
+             // Early return error if starting service discovery failed, to avoid awaiting on the
+-            // future when there is error in starting discovery
+-            let find_handle = find_service_result?;
+-            // Create and await the discovery future
++            // future when there is error in starting discovery. The owning stop guard is moved
++            // into the future, so a never-polled outer future still stops the started search when
++            // it is dropped.
++            let find_guard = find_service_result?;
++            // Create and await the discovery future. The owning stop guard is stored in the
++            // `_find_guard` field (the underscore prefix suppresses a dead-code warning because the
++            // guard is only used for its Drop side effect).
+             ServiceDiscoveryFuture {
+-                find_handle,
++                _find_guard: find_guard,
++                producer_specifier,
+                 discovery_state,
+                 waker_storage,
+                 _interface: PhantomData,
+@@ -980,34 +1029,43 @@ where
+     }
+ }
+ 
++/// RAII guard that owns an in-flight native find-service handle and stops it exactly once on drop.
++///
++/// It is created synchronously when a search is started and moved into [`ServiceDiscoveryFuture`],
++/// so an outer future that is dropped without ever being polled still stops the native search.
++struct FindServiceStopGuard<B: FFIBridge> {
++    handle: Option<NativeFindServiceHandle>,
++    bridge: B,
++}
++
++impl<B: FFIBridge> Drop for FindServiceStopGuard<B> {
++    fn drop(&mut self) {
++        if let Some(mut handle) = self.handle.take() {
++            // SAFETY: handle was returned by start_find_service[_any] and has not been stopped
++            // yet. The guard owns it exclusively (NativeFindServiceHandle is not Copy), so this is
++            // the single stop call for this search.
++            unsafe {
++                self.bridge
++                    .stop_find_service(handle.as_mut() as *mut FindServiceHandle);
++            }
++        }
++    }
++}
++
+ /// Future that waits for service discovery to complete and then returns the available instances
+ /// It polls the shared state for discovery results and uses an AtomicWaker to wake up when
+-/// results are available
+-/// It also ensures that the find service is stopped when the future is dropped to clean up
+-/// resources.
+-/// Stop find service in Drop implementation to ensure that we clean up the find service if the
+-/// future is dropped before completion
++/// results are available.
++/// It owns a [`FindServiceStopGuard`] which stops the native search exactly once on drop,
++/// covering both completion and cancellation (including an outer future that is never polled).
+ struct ServiceDiscoveryFuture<I: Interface, B: FFIBridge> {
+-    find_handle: NativeFindServiceHandle,
++    _find_guard: FindServiceStopGuard<B>,
++    producer_specifier: Option<InstanceSpecifier>,
+     discovery_state: Arc<std::sync::Mutex<DiscoveryStateData>>,
+     waker_storage: Arc<futures::task::AtomicWaker>,
+     _interface: PhantomData<I>,
+     bridge: B,
+ }
+ 
+-impl<I: Interface, B: FFIBridge> Drop for ServiceDiscoveryFuture<I, B> {
+-    fn drop(&mut self) {
+-        // SAFETY: find_handle is always valid here — it was stored synchronously
+-        // from start_find_service return value before any async polling began.
+-        // This unconditional call ensures the C++ discovery operation is always
+-        // cleaned up, even when the future is dropped before the callback fires.
+-        unsafe {
+-            self.bridge
+-                .stop_find_service(self.find_handle.as_mut() as *mut FindServiceHandle);
+-        }
+-    }
+-}
+-
+ impl<I: Interface, B: FFIBridge> Future for ServiceDiscoveryFuture<I, B> {
+     type Output = Result<Vec<LolaConsumerBuilder<I, B>>>;
+ 
+@@ -1042,6 +1100,7 @@ impl<I: Interface, B: FFIBridge> Future for ServiceDiscoveryFuture<I, B> {
+                     };
+                     LolaConsumerBuilder {
+                         instance_info,
++                        instance_specifier: self.producer_specifier.clone(),
+                         _interface: PhantomData,
+                     }
+                 })
+@@ -1065,16 +1124,27 @@ impl<I: Interface, B: FFIBridge> Builder<I::Consumer<LolaRuntimeImpl<B>>> for Lo
+ pub struct LolaConsumerBuilder<I: Interface, B: FFIBridge> {
+     pub instance_info: LolaConsumerInfo<B>,
+     pub _interface: PhantomData<I>,
++    /// The producer instance specifier for `Specific` discovery, or `None` for an `Any` result
++    /// whose producer instance is not part of the local configuration.
++    instance_specifier: Option<InstanceSpecifier>,
+ }
+ 
+ impl<I: Interface, B: FFIBridge> ConsumerDescriptor<LolaRuntimeImpl<B>> for LolaConsumerBuilder<I, B> {
+     fn get_instance_specifier(&self) -> &InstanceSpecifier {
+-        //if InstanceSpecifier::ANY support enable by lola
+-        //then this API should get InstanceSpecifier from FFI Call
+-        panic!(
+-            "InstanceSpecifier::ANY is not supported in LolaRuntimeImpl,
+-        Please use FindServiceSpecifier::Specific with a valid instance specifier."
+-        );
++        // For `Specific` this returns the caller's query alias (not an authenticated producer
++        // identity). A find-any result has no producer instance specifier known to this process.
++        // This accessor is only defined for the `Specific` path; callers handling `Any` results must
++        // use `try_get_instance_specifier`. It never fabricates a specifier.
++        self.instance_specifier.as_ref().expect(
++            "InstanceSpecifier is not available for a FindServiceSpecifier::Any discovery result; \
++             use try_get_instance_specifier() instead",
++        )
++    }
++
++    fn try_get_instance_specifier(&self) -> Result<&InstanceSpecifier> {
++        self.instance_specifier
++            .as_ref()
++            .ok_or(Error::ServiceError(ServiceFailedReason::ServiceNotFound))
+     }
+ }
+ 
+@@ -1412,4 +1482,147 @@ mod test {
+ 
+         proxy_alloc.assert_all_freed();
+     }
++
++    // --- Typed `FindServiceSpecifier::Any` discovery tests ------------------------------------
++
++    // Minimal zero-event interface used to exercise the typed find-any path. This crate does not
++    // depend on `score_com`, so the generated `interface!` macro (which references `score_com::`)
++    // cannot be used here; the required traits are implemented by hand instead.
++    struct AnyTestConsumer<R: score_com_concept::Runtime + ?Sized> {
++        _runtime: PhantomData<R>,
++    }
++
++    impl<R: score_com_concept::Runtime + ?Sized> score_com_concept::Consumer<R> for AnyTestConsumer<R> {
++        fn new(_instance_info: R::ConsumerInfo) -> Self {
++            Self { _runtime: PhantomData }
++        }
++    }
++
++    struct AnyTestProducer<R: score_com_concept::Runtime + ?Sized> {
++        _runtime: PhantomData<R>,
++    }
++
++    impl<R: score_com_concept::Runtime + ?Sized> score_com_concept::Producer<R> for AnyTestProducer<R> {
++        type Interface = AnyTestInterface;
++        type OfferedProducer = AnyTestOfferedProducer<R>;
++
++        fn offer(self) -> Result<Self::OfferedProducer> {
++            Ok(AnyTestOfferedProducer { _runtime: PhantomData })
++        }
++
++        fn new(_instance_info: R::ProviderInfo) -> Result<Self> {
++            Ok(Self { _runtime: PhantomData })
++        }
++    }
++
++    struct AnyTestOfferedProducer<R: score_com_concept::Runtime + ?Sized> {
++        _runtime: PhantomData<R>,
++    }
++
++    impl<R: score_com_concept::Runtime + ?Sized> score_com_concept::OfferedProducer<R> for AnyTestOfferedProducer<R> {
++        type Interface = AnyTestInterface;
++        type Producer = AnyTestProducer<R>;
++
++        fn unoffer(self) -> Result<Self::Producer> {
++            Ok(AnyTestProducer { _runtime: PhantomData })
++        }
++    }
++
++    struct AnyTestInterface;
++
++    impl score_com_concept::Interface for AnyTestInterface {
++        const INTERFACE_ID: &'static str = "AnyTestInterface";
++        type Consumer<R: score_com_concept::Runtime + ?Sized> = AnyTestConsumer<R>;
++        type Producer<R: score_com_concept::Runtime + ?Sized> = AnyTestProducer<R>;
++    }
++
++    fn any_discovery(bridge: SharedMockBridge) -> LolaConsumerDiscovery<AnyTestInterface, SharedMockBridge> {
++        LolaConsumerDiscovery {
++            instance_specifier: DiscoverySpecifier::Any,
++            _interface: PhantomData,
++            bridge,
++        }
++    }
++
++    /// An interface without find-any registration must produce a `ServiceNotFound` error instead
++    /// of panicking, and the FFI must receive the interface registry UID.
++    #[test]
++    fn test_any_discovery_unmapped_interface_returns_error() {
++        let mut mock = MockFFIBridge::new();
++        mock.expect_find_service_any().times(1).returning(|interface_id| {
++            assert_eq!(interface_id, "AnyTestInterface");
++            Err(())
++        });
++        let bridge = SharedMockBridge::new(mock);
++        let discovery = any_discovery(bridge);
++
++        let result = discovery.get_available_instances();
++        assert!(
++            matches!(result, Err(Error::ServiceError(ServiceFailedReason::ServiceNotFound))),
++            "unmapped Any interface must return ServiceNotFound, not panic"
++        );
++    }
++
++    /// A returned async Any discovery future that is never polled must still stop the native
++    /// search it has already started (owning stop guard created on successful start).
++    #[test]
++    fn test_any_async_never_polled_stops_native_search() {
++        let mut mock = MockFFIBridge::new();
++        let stop_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
++        let stop_count_clone = Arc::clone(&stop_count);
++
++        mock.expect_start_find_service_any().times(1).returning(|_callback, interface_id| {
++            assert_eq!(interface_id, "AnyTestInterface");
++            std::ptr::NonNull::<FindServiceHandle>::dangling().as_ptr()
++        });
++        mock.expect_stop_find_service().times(1).returning(move |_| {
++            stop_count_clone.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++        });
++
++        let bridge = SharedMockBridge::new(mock);
++        let discovery = any_discovery(bridge);
++        let future = discovery.get_available_instances_async();
++
++        // Drop without ever polling: the owning stop guard must still stop the search.
++        drop(future);
++
++        assert_eq!(
++            stop_count.load(std::sync::atomic::Ordering::SeqCst),
++            1,
++            "a never-polled Any discovery future must stop its native search exactly once"
++        );
++    }
++
++    /// Dropping a polled-pending Any discovery future must stop the native search exactly once.
++    #[test]
++    fn test_any_async_pending_cancellation_stops_native_search() {
++        let mut mock = MockFFIBridge::new();
++        let stop_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
++        let stop_count_clone = Arc::clone(&stop_count);
++
++        mock.expect_start_find_service_any()
++            .times(1)
++            .returning(|_callback, _interface_id| std::ptr::NonNull::<FindServiceHandle>::dangling().as_ptr());
++        mock.expect_stop_find_service().times(1).returning(move |_| {
++            stop_count_clone.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++        });
++
++        let bridge = SharedMockBridge::new(mock);
++        let discovery = any_discovery(bridge);
++
++        let mut future = Box::pin(discovery.get_available_instances_async());
++        let waker = futures::task::noop_waker();
++        let mut context = core::task::Context::from_waker(&waker);
++        assert!(matches!(
++            std::future::Future::poll(future.as_mut(), &mut context),
++            std::task::Poll::Pending
++        ));
++
++        drop(future);
++        assert_eq!(
++            stop_count.load(std::sync::atomic::Ordering::SeqCst),
++            1,
++            "dropping a polled-pending Any discovery future must stop its native search exactly once"
++        );
++    }
+ }
+diff --git a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs
+index 057cdf2b..f1891d75 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs
+@@ -18,6 +18,7 @@ use std::path::{Path, PathBuf};
+ use crate::{
+     LolaConsumerDiscovery, LolaConsumerInfo, LolaProducerBuilder, LolaProviderInfo, LolaPublisher, LolaSubscribableImpl,
+ };
++use crate::consumer::DiscoverySpecifier;
+ use score_com_concept::{
+     Builder, CommData, FindServiceSpecifier, InstanceSpecifier, Interface, Result, Runtime, RuntimeBuilder,
+ };
+@@ -40,11 +41,13 @@ impl<B: FFIBridge> Runtime for LolaRuntimeImpl<B> {
+     fn find_service<I: Interface + Send>(&self, instance_specifier: FindServiceSpecifier) -> Self::ServiceDiscovery<I> {
+         LolaConsumerDiscovery {
+             instance_specifier: match instance_specifier {
+-                FindServiceSpecifier::Any => panic!(
+-                    "FindServiceSpecifier::Any is not supported in LolaRuntimeImpl,
+-                Please use FindServiceSpecifier::Specific with a valid instance specifier."
+-                ),
+-                FindServiceSpecifier::Specific(spec) => spec,
++                // Typed, same-interface wildcard: the FFI resolves the interface registry UID to
++                // its explicitly registered find-any selector (a configured instance whose entry
++                // omits the Lola instance id) and returns all currently offered instances of the
++                // interface. Unknown/unmapped interfaces yield an error from discovery, never a
++                // panic.
++                FindServiceSpecifier::Any => DiscoverySpecifier::Any,
++                FindServiceSpecifier::Specific(spec) => DiscoverySpecifier::Specific(spec),
+             },
+             _interface: PhantomData,
+             bridge: self.bridge.clone(),
+diff --git a/score/mw/com/rust/score_com.rs b/score/mw/com/rust/score_com.rs
+index 4e162220..d24f10b2 100644
+--- a/score/mw/com/rust/score_com.rs
++++ b/score/mw/com/rust/score_com.rs
+@@ -46,7 +46,12 @@
+ //! - **Explicit lifetimes**: dropping an [`OfferedProducer`] withdraws the service, samples must
+ //!   not outlive their source.
+ //! - **Sample lifetimes**: samples are valid only until the subscription instance is valid.
+-//! - **LoLa note**: [`FindServiceSpecifier::Any`] is not yet supported — use `Specific` only.
++//! - **LoLa note**: [`FindServiceSpecifier::Any`] performs typed, same-interface wildcard discovery
++//!   (all currently offered instances of one interface). It requires the interface to be registered
++//!   with an explicit find-any selector; unmapped interfaces return an error, not a panic. Results
++//!   for instances that are not part of the local configuration expose no producer
++//!   [`InstanceSpecifier`]; use [`ConsumerDescriptor::try_get_instance_specifier`] there. A
++//!   system-wide, all-interface stream is a separate concern and is not provided by this call.
+ //!
+ //! # Quick Start
+ //!
+@@ -138,7 +143,7 @@ pub use score_com_concept::{
+     interface, interface_common, interface_consumer, interface_producer, Builder, CommData, Consumer, ConsumerBuilder,
+     ConsumerDescriptor, Error, FindServiceSpecifier, InstanceSpecifier, Interface, OfferedProducer, PlacementDefault,
+     Producer, ProducerBuilder, ProviderInfo, Publisher, Reloc, Result, Runtime, RuntimeBuilder, SampleContainer,
+-    SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription,
++    SampleMaybeUninit, SampleMut, ServiceDiscovery, ServiceFailedReason, Subscriber, Subscription,
+ };
+ 
+ #[doc(hidden)]
+diff --git a/score/mw/com/rust/score_com_concept/concept.rs b/score/mw/com/rust/score_com_concept/concept.rs
+index b46055c1..89bfbb46 100644
+--- a/score/mw/com/rust/score_com_concept/concept.rs
++++ b/score/mw/com/rust/score_com_concept/concept.rs
+@@ -113,8 +113,8 @@ pub trait Runtime {
+     /// the runtime's service discovery mechanism.
+     ///
+     /// # Parameters
+-    /// * `instance_specifier` - Target service instance identifier; use
+-    ///   `InstanceSpecifier::MATCH_ANY` to discover all available instances
++    /// * `instance_specifier` - Target service instance; use [`FindServiceSpecifier::Any`] to
++    ///   discover all currently offered instances of the interface
+     ///
+     /// # Returns
+     /// Service discovery handle for querying available instances
+@@ -590,8 +590,39 @@ pub trait ServiceDiscovery<I: Interface, R: Runtime + ?Sized> {
+ /// # Type Parameters
+ /// * `R` - The runtime managing this service
+ pub trait ConsumerDescriptor<R: Runtime + ?Sized> {
+-    /// Get the unique instance specifier for this service instance.
++    /// Get the instance specifier associated with this discovered service instance.
++    ///
++    /// # Identity semantics
++    ///
++    /// For a `Specific` discovery this is the **caller-supplied query alias**, echoed back by the
++    /// implementation. It is *not* an authenticated unique producer identity: a native `Specific`
++    /// query may itself reference a configured wildcard selector and yield several handles that all
++    /// carry the same alias, and concrete native instance ids stay inside the handle and are not
++    /// exposed here. Callers must not treat the returned string as proof of which remote producer
++    /// answered.
++    ///
++    /// # Important
++    ///
++    /// A service instance discovered through an `Any` (wildcard) search has no producer
++    /// instance specifier known to this process when the producer instance is not part of the
++    /// local configuration. This accessor therefore remains defined for instances for which the
++    /// COM API can name a specifier (the `Specific` discovery path); implementations are allowed
++    /// to fail/abort when no specifier exists. Callers that must handle wildcard results should
++    /// use [`ConsumerDescriptor::try_get_instance_specifier`].
+     fn get_instance_specifier(&self) -> &InstanceSpecifier;
++
++    /// Fallible variant of [`ConsumerDescriptor::get_instance_specifier`].
++    ///
++    /// Returns the instance specifier when the COM API can name one for this instance, and
++    /// `Err(Error::ServiceError(ServiceFailedReason::ServiceNotFound))` otherwise (for example a
++    /// find-any result for an instance that is not part of the local configuration).
++    ///
++    /// The provided default keeps existing implementors source-compatible by forwarding to
++    /// [`ConsumerDescriptor::get_instance_specifier`]; therefore the default does not itself
++    /// guarantee that an implementation which would abort on absence instead returns an error.
++    fn try_get_instance_specifier(&self) -> Result<&InstanceSpecifier> {
++        Ok(self.get_instance_specifier())
++    }
+ }
+ 
+ /// Constructor for consumer instances of a specific service.
+diff --git a/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.cpp b/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.cpp
+index 4d523fad..98dcd6c7 100644
+--- a/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.cpp
++++ b/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.cpp
+@@ -15,9 +15,12 @@
+ #include "score/mw/com/rust/score_com_cpp_bridge/register_interface.h"
+ 
+ // Register the BigData interface with the com-api FFI bridge.
+-BEGIN_EXPORT_MW_COM_INTERFACE(BigDataInterface,
+-                              ::score::mw::com::test::BigDataProxy,
+-                              ::score::mw::com::test::BigDataSkeleton)
++// The explicit find-any selector points at a configured instance entry without a Lola instance
++// id, enabling typed `FindServiceSpecifier::Any` discovery for BigDataInterface.
++BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER(BigDataInterface,
++                                                 ::score::mw::com::test::BigDataProxy,
++                                                 ::score::mw::com::test::BigDataSkeleton,
++                                                 "/score/cp60/MapApiLanesStampedAny")
+ EXPORT_MW_COM_EVENT(::score::mw::com::test::MapApiLanesStamped, map_api_lanes_stamped_)
+ EXPORT_MW_COM_EVENT(::score::mw::com::test::DummyDataStamped, dummy_data_stamped_)
+ END_EXPORT_MW_COM_INTERFACE()
+@@ -42,3 +45,33 @@ END_EXPORT_MW_COM_INTERFACE()
+ // Export all types
+ EXPORT_MW_COM_TYPE(MixedPrimitivesPayload, ::score::mw::com::test::MixedPrimitivesPayload)
+ EXPORT_MW_COM_TYPE(ComplexStruct, ::score::mw::com::test::ComplexStruct)
++
++// Test-only registrations used solely to prove that the typed Any path rejects selectors that do
++// not resolve to a genuine LoLa wildcard. These reuse the BigData proxy/skeleton types because the
++// rejection happens before any proxy is created; no consumer is ever built for them.
++//
++// ConcreteSelectorInterface maps to a configured instance specifier that HAS an instance id
++// (/score/cp60/MapApiLanesStamped -> instanceId 1), so a wildcard query must be rejected rather
++// than silently returning that Specific instance.
++BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER(ConcreteSelectorInterface,
++                                                 ::score::mw::com::test::BigDataProxy,
++                                                 ::score::mw::com::test::BigDataSkeleton,
++                                                 "/score/cp60/MapApiLanesStamped")
++END_EXPORT_MW_COM_INTERFACE()
++
++// MalformedSelectorInterface maps to a syntactically invalid instance specifier (consecutive
++// slashes), so creating/resolving the selector must fail and the wildcard query must be rejected.
++BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER(MalformedSelectorInterface,
++                                                 ::score::mw::com::test::BigDataProxy,
++                                                 ::score::mw::com::test::BigDataSkeleton,
++                                                 "/bad//selector")
++END_EXPORT_MW_COM_INTERFACE()
++
++// EmptySelectorInterface maps to a valid find-any selector for a service type that no provider
++// ever offers in these tests, so the documented no-offer (empty) native outcome can be asserted
++// deterministically.
++BEGIN_EXPORT_MW_COM_INTERFACE_WITH_ANY_SPECIFIER(EmptySelectorInterface,
++                                                 ::score::mw::com::test::BigDataProxy,
++                                                 ::score::mw::com::test::BigDataSkeleton,
++                                                 "/score/test/DummyAny")
++END_EXPORT_MW_COM_INTERFACE()
+diff --git a/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.rs b/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.rs
+index 66ef97b6..b0a7f1cb 100644
+--- a/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.rs
++++ b/score/mw/com/test/basic_rust_api/bigdata_com_api_gen.rs
+@@ -208,3 +208,11 @@ define_com_type!(
+ 
+ interface!(interface MixedPrimitives { Id = "MixedPrimitivesInterface", mixed_event: Event<MixedPrimitivesPayload> });
+ interface!(interface ComplexStruct { Id = "ComplexStructInterface", complex_event: Event<ComplexStruct> });
++
++// Test-only interfaces proving the typed Any path rejects selectors that do not resolve to a
++// genuine LoLa wildcard. No consumers are ever built for them; only `find_service::<...>(Any)` is
++// called. `ConcreteSelectorInterface` maps to a configured entry that has a concrete instance id;
++// `MalformedSelectorInterface` maps to a syntactically invalid selector.
++interface!(interface ConcreteSelector { Id = "ConcreteSelectorInterface", dummy_event: Event<DummyDataStamped> });
++interface!(interface MalformedSelector { Id = "MalformedSelectorInterface", dummy_event: Event<DummyDataStamped> });
++interface!(interface EmptySelector { Id = "EmptySelectorInterface", dummy_event: Event<DummyDataStamped> });
+diff --git a/score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD b/score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD
+new file mode 100644
+index 00000000..7fe8267e
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/consumer_any_apis/BUILD
+@@ -0,0 +1,57 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@rules_rust//rust:defs.bzl", "rust_binary")
++load("//score/mw/com/test:pkg_application.bzl", "pkg_application")
++
++rust_binary(
++    name = "bigdata-consumer-any",
++    srcs = ["consumer_app.rs"],
++    features = ["link_std_cpp_lib"],
++    # linux_x86_64_score_gcc_12_2_0_posix toolchain is built without --enable-default-pie, so its static C++ libs are non-PIC.
++    # When Bazel builds this binary in exec config (py_test build with rule cfg=exec), the Rust linker
++    # defaults to PIE and rejects non-PIC archives. -no-pie disables PIE; -lstdc++ is needed because
++    # the link_std_cpp_lib CC feature is not activated in exec config.
++    rustc_flags = select({
++        "@platforms//os:linux": [
++            "-Clink-arg=-no-pie",
++            "-Clink-arg=-lstdc++",
++        ],
++        "//conditions:default": [],
++    }),
++    visibility = [
++        "//score/mw/com/test/basic_rust_api:__subpackages__",
++    ],
++    deps = [
++        "//score/mw/com/rust:score_com",
++        "//score/mw/com/test/basic_rust_api:bigdata_com_api_gen_rs",
++        "@score_communication_crate_index//:clap",
++        "@score_communication_crate_index//:futures",
++    ],
++)
++
++pkg_application(
++    name = "bigdata-com-api-any-pkg",
++    app_name = "bigdata-com-api-any",
++    bin = [
++        ":bigdata-consumer-any",
++        "//score/mw/com/test/basic_rust_api/producer_app:bigdata-producer",
++    ],
++    etc = [
++        "//score/mw/com/test/basic_rust_api/etc:config",
++        "//score/mw/com/test/bigdata:logging.json",
++    ],
++    visibility = [
++        "//score/mw/com/test/basic_rust_api:__subpackages__",
++    ],
++)
+diff --git a/score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs b/score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs
+new file mode 100644
+index 00000000..30f9172f
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/consumer_any_apis/consumer_app.rs
+@@ -0,0 +1,403 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++//! bigdata-consumer-any -n <num_cycles> [-m <mode>]
++//!
++//! Dedicated regression consumer for the typed `FindServiceSpecifier::Any` path.
++//!
++//! Modes:
++//! * `positive` (default): against a real two-provider setup it asserts
++//!   - exact error reasons for unmapped, concrete-selector and malformed-selector registrations,
++//!   - a genuine readiness barrier: the offered `ComplexStructInterface` instance is positively
++//!     observed (via `Specific` discovery) *before* the wildcard exclusion is asserted, so the
++//!     exclusion cannot be vacuous under scheduling,
++//!   - the **sync** one-shot wildcard returns exactly two offered `BigDataInterface` instances
++//!     (one of which is absent from this consumer's configuration),
++//!   - BOTH returned builders are built, subscribed and actually receive samples; the producer
++//!     encodes a distinct per-provider marker in `x`, and the unordered marker sets prove two
++//!     distinct providers delivered (not the same instance twice and not an order artifact),
++//!   - `Specific` discovery compatibility,
++//!   - identity honesty (no fabricated producer specifier for `Any` results),
++//!   - proxy construction and use after the sync discovery handle is dropped, and
++//!   - the **async** typed wildcard snapshot returns exactly two results, remains usable after the
++//!     future/discovery are dropped, and both async builders likewise deliver both markers.
++//! * `empty`: asserts the documented no-offer native outcome for a service type that is never
++//!   offered (exact `Ok(empty)`, not an error).
++//!
++//! All discovery and receive waits are bounded by an explicit deadline; the surrounding integration
++//! test additionally supervises both processes with `wait_timeout`.
++
++use clap::Parser;
++use futures::executor::block_on;
++use score_com::{
++    Builder, ConsumerDescriptor, Error, FindServiceSpecifier, InstanceSpecifier, LolaRuntimeBuilderImpl, LolaRuntimeImpl,
++    Result, Runtime, RuntimeBuilder, SampleContainer, ServiceDiscovery, ServiceFailedReason, Subscriber, Subscription,
++};
++use std::collections::BTreeSet;
++use std::path::Path;
++use std::thread;
++use std::time::{Duration, Instant};
++
++use bigdata_com_api_gen::{
++    BigDataInterface, ComplexStructInterface, ConcreteSelectorInterface, EmptySelectorInterface, MalformedSelectorInterface,
++};
++
++const CONFIG_PATH: &str = "etc/config.json";
++const MAX_SAMPLES_PER_CALL: usize = 5;
++const DISCOVERY_RETRY_MS: Duration = Duration::from_millis(500);
++const RECEIVE_RETRY_MS: Duration = Duration::from_millis(100);
++/// Bound on every discovery wait so a missing provider fails fast instead of hanging.
++const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(60);
++/// Bound on the sample-receive loop, independent of the outer process supervision timeout.
++const RECEIVE_TIMEOUT: Duration = Duration::from_secs(60);
++/// Upper bound on the number of samples required from each wildcard-discovered instance.
++const MAX_SAMPLES_PER_PROVIDER: usize = 5;
++
++/// Distinct marker bases encoded by the find-any producer into `MapApiLanesStamped::x`
++/// (`x = marker * MARKER_STEP + index`); `x / MARKER_STEP` recovers the marker.
++const MARKER_FIRST: u32 = 1;
++const MARKER_SECOND: u32 = 2;
++const MARKER_STEP: u32 = 1000;
++
++#[derive(Clone, clap::ValueEnum)]
++enum Mode {
++    Positive,
++    Empty,
++}
++
++#[derive(Parser)]
++struct Args {
++    /// Number of samples to receive before exiting
++    #[arg(short = 'n', required = true)]
++    num_cycles: usize,
++    /// Consumer phase
++    #[arg(short = 'm', long, default_value = "positive")]
++    mode: Mode,
++}
++
++/// Asserts that discovery failed with the exact propagated reason, not merely any error.
++fn assert_not_found<T>(result: Result<T>, context: &str) {
++    assert!(
++        matches!(result, Err(Error::ServiceError(ServiceFailedReason::ServiceNotFound))),
++        "{context} must return ServiceError(ServiceNotFound)"
++    );
++    println!("[find-any-consumer] {context} returned ServiceNotFound as expected");
++}
++
++/// Drains up to `target` samples from each of two subscriptions in a bounded, interleaved loop and
++/// returns `(first_markers, second_markers)`, the set of per-provider marker buckets observed on
++/// each subscription.
++///
++/// Implemented as a macro because the LoLa runtime's concrete subscription type is not nameable
++/// through the public `score_com` facade; the macro keeps the per-subscription buffers and counters
++/// hygienic and lets type inference derive `SampleContainer`'s element type from `try_receive`.
++macro_rules! drain_two_subscriptions {
++    ($first_sub:ident, $second_sub:ident, $target:expr, $label:expr) => {{
++        let mut first_buf = SampleContainer::new(MAX_SAMPLES_PER_CALL);
++        let mut second_buf = SampleContainer::new(MAX_SAMPLES_PER_CALL);
++        let mut first_seen = 0usize;
++        let mut second_seen = 0usize;
++        let mut first_markers: BTreeSet<u32> = BTreeSet::new();
++        let mut second_markers: BTreeSet<u32> = BTreeSet::new();
++        let deadline = Instant::now() + RECEIVE_TIMEOUT;
++        while (first_seen < $target || second_seen < $target) && Instant::now() < deadline {
++            let mut progressed = false;
++            match $first_sub.try_receive(&mut first_buf, MAX_SAMPLES_PER_CALL) {
++                Ok(0) => {},
++                Ok(n) => {
++                    progressed = true;
++                    first_seen += n;
++                    while let Some(sample) = first_buf.pop_front() {
++                        first_markers.insert(sample.x / MARKER_STEP);
++                    }
++                },
++                Err(error) => panic!("{} first subscription receive failed: {:?}", $label, error),
++            }
++            match $second_sub.try_receive(&mut second_buf, MAX_SAMPLES_PER_CALL) {
++                Ok(0) => {},
++                Ok(n) => {
++                    progressed = true;
++                    second_seen += n;
++                    while let Some(sample) = second_buf.pop_front() {
++                        second_markers.insert(sample.x / MARKER_STEP);
++                    }
++                },
++                Err(error) => panic!("{} second subscription receive failed: {:?}", $label, error),
++            }
++            if !progressed {
++                thread::sleep(RECEIVE_RETRY_MS);
++            }
++        }
++        assert!(
++            first_seen >= $target && second_seen >= $target,
++            "{}: both wildcard-discovered instances must deliver real samples (first={}, second={})",
++            $label,
++            first_seen,
++            second_seen
++        );
++        (first_markers, second_markers)
++    }};
++}
++
++/// Asserts the unordered marker sets from the two wildcard-discovered builders: each builder must
++/// map to exactly one provider, the two must differ, and together they must cover both markers.
++/// This proves both distinct providers (including the one absent from the consumer configuration)
++/// were exercised, independently of the order in which handles were returned.
++fn assert_marker_sets(first: &BTreeSet<u32>, second: &BTreeSet<u32>, label: &str) {
++    let union: BTreeSet<u32> = first.union(second).copied().collect();
++    assert_eq!(
++        union,
++        BTreeSet::from([MARKER_FIRST, MARKER_SECOND]),
++        "{label}: the two wildcard-discovered builders must map to the two distinct providers"
++    );
++    assert_eq!(
++        first.len(),
++        1,
++        "{label}: the first builder must map to exactly one provider"
++    );
++    assert_eq!(
++        second.len(),
++        1,
++        "{label}: the second builder must map to exactly one provider"
++    );
++    assert_ne!(first, second, "{label}: the two builders must map to distinct providers");
++    println!("[find-any-consumer] {label}: observed distinct provider markers {union:?} from both instances");
++}
++
++/// No-offer phase: the selector resolves to a valid LoLa wildcard for a service type that is never
++/// offered, so the documented sync outcome is `Ok(empty)` (never an error, never a Specific result).
++fn run_empty_phase(runtime: &LolaRuntimeImpl) {
++    let discovery = runtime.find_service::<EmptySelectorInterface>(FindServiceSpecifier::Any);
++    let count = discovery
++        .get_available_instances()
++        .expect("no-offer Any discovery must return the documented Ok(empty), not an error")
++        .into_iter()
++        .count();
++    assert_eq!(count, 0, "no-offer Any discovery must return zero instances");
++    println!("[find-any-consumer] No-offer Any returned Ok(empty) with 0 instances as documented");
++}
++
++fn run_positive_phase(runtime: &LolaRuntimeImpl, num_cycles: usize) {
++    // Per-provider sample target, derived from the CLI to keep `-n` meaningful but capped so the
++    // second (async) round can still be satisfied from the same producer run.
++    let sample_target = num_cycles.clamp(1, MAX_SAMPLES_PER_PROVIDER);
++
++    // 1) Exact error propagation and selector rejection. Each case must be ServiceNotFound. These do
++    //    not depend on any offer, so they run first.
++    assert_not_found(
++        runtime
++            .find_service::<ComplexStructInterface>(FindServiceSpecifier::Any)
++            .get_available_instances(),
++        "unmapped-interface Any",
++    );
++    assert_not_found(
++        runtime
++            .find_service::<ConcreteSelectorInterface>(FindServiceSpecifier::Any)
++            .get_available_instances(),
++        "concrete-selector Any",
++    );
++    assert_not_found(
++        runtime
++            .find_service::<MalformedSelectorInterface>(FindServiceSpecifier::Any)
++            .get_available_instances(),
++        "malformed-selector Any",
++    );
++
++    // 2) Genuine readiness barrier for the *other* interface. Positively observe that the offered
++    //    ComplexStructInterface instance exists (via a real Specific discovery, not a sleep) before
++    //    asserting that the BigData wildcard excludes it, so the exclusion is not vacuous.
++    let complex_specifier =
++        InstanceSpecifier::new("/UserDefinedTest/ComplexStruct").expect("Invalid instance specifier");
++    let complex_discovery =
++        runtime.find_service::<ComplexStructInterface>(FindServiceSpecifier::Specific(complex_specifier));
++    let barrier_deadline = Instant::now() + DISCOVERY_TIMEOUT;
++    loop {
++        match complex_discovery.get_available_instances() {
++            Ok(instances) if !instances.is_empty() => {
++                println!(
++                    "[find-any-consumer] Readiness barrier: offered ComplexStructInterface observed ({} instance(s))",
++                    instances.len()
++                );
++                break;
++            },
++            Ok(_) => {
++                assert!(
++                    Instant::now() < barrier_deadline,
++                    "timed out waiting for the offered ComplexStructInterface readiness barrier"
++                );
++                thread::sleep(DISCOVERY_RETRY_MS);
++            },
++            Err(error) => {
++                assert!(
++                    Instant::now() < barrier_deadline,
++                    "ComplexStructInterface readiness barrier did not succeed: {error:?}"
++                );
++                thread::sleep(DISCOVERY_RETRY_MS);
++            },
++        }
++    }
++
++    // 3) Sync typed wildcard: wait until both offered BigData instances are discovered. Only the
++    //    first instance exists in this consumer's configuration; the second is offered solely from
++    //    the provider manifest, so returning both is only possible via a genuine native wildcard.
++    let sync_discovery = runtime.find_service::<BigDataInterface>(FindServiceSpecifier::Any);
++    let sync_deadline = Instant::now() + DISCOVERY_TIMEOUT;
++    let sync_builders = loop {
++        match sync_discovery.get_available_instances() {
++            Ok(instances) if instances.len() == 2 => break instances,
++            Ok(instances) => {
++                assert!(
++                    Instant::now() < sync_deadline,
++                    "timed out waiting for the two offered BigData instances, saw {}",
++                    instances.len()
++                );
++                println!(
++                    "[find-any-consumer] Waiting for 2 BigData instances, currently {}",
++                    instances.len()
++                );
++                thread::sleep(DISCOVERY_RETRY_MS);
++            },
++            Err(error) => {
++                assert!(
++                    Instant::now() < sync_deadline,
++                    "sync Any discovery did not become ready: {error:?}"
++                );
++                println!("[find-any-consumer] Sync Any discovery not ready yet: {error:?}");
++                thread::sleep(DISCOVERY_RETRY_MS);
++            },
++        }
++    };
++    assert_eq!(
++        sync_builders.len(),
++        2,
++        "sync typed Any must return exactly the two offered BigData instances"
++    );
++    println!("[find-any-consumer] Sync Any discovered exactly 2 BigData instances");
++    for builder in &sync_builders {
++        assert!(
++            builder.try_get_instance_specifier().is_err(),
++            "a sync Any result must not expose a producer instance specifier"
++        );
++    }
++
++    // 4) Specific compatibility: the concrete configured instance still resolves with its real
++    //    producer specifier.
++    let specific_instance =
++        InstanceSpecifier::new("/score/cp60/MapApiLanesStamped").expect("Invalid instance specifier");
++    let specific_builder = runtime
++        .find_service::<BigDataInterface>(FindServiceSpecifier::Specific(specific_instance.clone()))
++        .get_available_instances()
++        .expect("Specific BigData discovery failed")
++        .into_iter()
++        .next()
++        .expect("Specific BigData instance missing");
++    assert_eq!(
++        specific_builder
++            .try_get_instance_specifier()
++            .expect("Specific instance must expose a producer specifier")
++            .as_ref(),
++        specific_instance.as_ref()
++    );
++    println!("[find-any-consumer] Specific discovery remains compatible");
++
++    // 5) Lifetime after sync discovery drop + use BOTH wildcard-discovered builders. The
++    //    deployment owner is runtime-owned and outlives discovery, so proxies can still be built and
++    //    used after the discovery handle is dropped.
++    drop(sync_discovery);
++    let mut sync_iter = sync_builders.into_iter();
++    let sync_first_builder = sync_iter.next().expect("first sync BigData builder");
++    let sync_second_builder = sync_iter.next().expect("second sync BigData builder");
++    assert!(
++        sync_iter.next().is_none(),
++        "wildcard must not return more than the two offered instances"
++    );
++    let sync_first_consumer = sync_first_builder
++        .build()
++        .expect("Failed to build consumer from first sync Any builder");
++    let sync_second_consumer = sync_second_builder
++        .build()
++        .expect("Failed to build consumer from second sync Any builder");
++    let sync_first_sub = sync_first_consumer
++        .map_api_lanes_stamped_
++        .subscribe(MAX_SAMPLES_PER_CALL)
++        .expect("Failed to subscribe on first sync Any consumer");
++    let sync_second_sub = sync_second_consumer
++        .map_api_lanes_stamped_
++        .subscribe(MAX_SAMPLES_PER_CALL)
++        .expect("Failed to subscribe on second sync Any consumer");
++    let (sync_first_markers, sync_second_markers) =
++        drain_two_subscriptions!(sync_first_sub, sync_second_sub, sample_target, "sync Any");
++    assert_marker_sets(&sync_first_markers, &sync_second_markers, "sync Any");
++    // Release the sync subscriptions before the async phase so the per-instance sample-slot pool is
++    // not held by two subscriptions per instance at the same time.
++    drop(sync_first_sub);
++    drop(sync_second_sub);
++    drop(specific_builder);
++
++    // 6) Async typed wildcard snapshot: await the one-shot query, assert two typed results, then
++    //    drop the future/discovery and build/use BOTH async-discovered builders.
++    let async_discovery = runtime.find_service::<BigDataInterface>(FindServiceSpecifier::Any);
++    let async_builders = block_on(async_discovery.get_available_instances_async())
++        .expect("async Any discovery must complete with the offered instances");
++    assert_eq!(
++        async_builders.len(),
++        2,
++        "async typed Any snapshot must return exactly the two offered BigData instances"
++    );
++    println!("[find-any-consumer] Async Any snapshot returned exactly 2 BigData instances");
++    drop(async_discovery);
++    for builder in &async_builders {
++        assert!(
++            builder.try_get_instance_specifier().is_err(),
++            "an async Any result must not expose a producer instance specifier"
++        );
++    }
++    let mut async_iter = async_builders.into_iter();
++    let async_first_builder = async_iter.next().expect("first async BigData builder");
++    let async_second_builder = async_iter.next().expect("second async BigData builder");
++    assert!(
++        async_iter.next().is_none(),
++        "wildcard must not return more than the two offered instances"
++    );
++    let async_first_consumer = async_first_builder
++        .build()
++        .expect("Failed to build consumer from first async Any builder");
++    let async_second_consumer = async_second_builder
++        .build()
++        .expect("Failed to build consumer from second async Any builder");
++    let async_first_sub = async_first_consumer
++        .map_api_lanes_stamped_
++        .subscribe(MAX_SAMPLES_PER_CALL)
++        .expect("Failed to subscribe on first async Any consumer");
++    let async_second_sub = async_second_consumer
++        .map_api_lanes_stamped_
++        .subscribe(MAX_SAMPLES_PER_CALL)
++        .expect("Failed to subscribe on second async Any consumer");
++    let (async_first_markers, async_second_markers) =
++        drain_two_subscriptions!(async_first_sub, async_second_sub, sample_target, "async Any");
++    assert_marker_sets(&async_first_markers, &async_second_markers, "async Any");
++}
++
++fn main() {
++    let args = Args::parse();
++
++    // Initialise the Lola runtime with the consumer configuration.
++    let mut runtime_builder: LolaRuntimeBuilderImpl = LolaRuntimeBuilderImpl::new();
++    runtime_builder.load_config(Path::new(CONFIG_PATH));
++    let runtime = runtime_builder.build().expect("Failed to build Lola runtime");
++
++    match args.mode {
++        Mode::Empty => run_empty_phase(&runtime),
++        Mode::Positive => run_positive_phase(&runtime, args.num_cycles),
++    }
++}
+diff --git a/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD b/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD
+new file mode 100644
+index 00000000..37bf5dc2
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/BUILD
+@@ -0,0 +1,22 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++load("//quality/integration_testing:integration_testing.bzl", "integration_test")
++
++integration_test(
++    name = "test_com_api_any",
++    timeout = "moderate",
++    srcs = [
++        "com_api_any_api_test.py",
++    ],
++    filesystem = "//score/mw/com/test/basic_rust_api/consumer_any_apis:bigdata-com-api-any-pkg",
++)
+diff --git a/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py b/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py
+new file mode 100644
+index 00000000..d5d3cd21
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/consumer_any_apis/integration_test/com_api_any_api_test.py
+@@ -0,0 +1,56 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++
++def producer(target, num_cycles, **kwargs):
++    # The provider manifest offers two BigDataInterface instances (only one of which is present in
++    # the consumer manifest) plus one ComplexStructInterface instance, so the consumer's typed Any
++    # query is discriminating.
++    args = ["-n", str(num_cycles), "-t", "find-any", "--config", "etc/provider_config.json"]
++    return target.wrap_exec("bin/bigdata-producer", args, cwd="/opt/bigdata-com-api-any", **kwargs)
++
++
++def consumer(target, num_cycles, mode="positive", **kwargs):
++    args = ["-n", str(num_cycles), "-m", mode]
++    return target.wrap_exec(
++        "bin/bigdata-consumer-any",
++        args,
++        cwd="/opt/bigdata-com-api-any",
++        wait_on_exit=True,
++        **kwargs,
++    )
++
++
++def test_com_api_any(target):
++    """Typed find-any discovery regression.
++
++    The client asserts exact unmapped/concrete/malformed selector rejection, two same-interface
++    instances via both the sync and the async one-shot wildcard (one instance absent from its own
++    configuration), an actually-offered other interface excluded, Specific compatibility, no
++    fabricated Any specifier, and real sample reception after discovery is dropped.
++    """
++    with (
++        producer(target, num_cycles=40),
++        consumer(target, num_cycles=25, mode="positive", wait_timeout=180),
++    ):
++        pass
++
++
++def test_com_api_any_no_offer(target):
++    """Bounded no-offer phase: no provider is started.
++
++    The consumer queries a valid find-any selector for a service type that is never offered and
++    asserts the documented native outcome (`Ok(empty)` with zero instances, not an error).
++    """
++    with consumer(target, num_cycles=1, mode="empty", wait_timeout=60):
++        pass
+diff --git a/score/mw/com/test/basic_rust_api/etc/BUILD b/score/mw/com/test/basic_rust_api/etc/BUILD
+index 20645477..66837572 100644
+--- a/score/mw/com/test/basic_rust_api/etc/BUILD
++++ b/score/mw/com/test/basic_rust_api/etc/BUILD
+@@ -13,6 +13,9 @@
+ 
+ filegroup(
+     name = "config",
+-    srcs = ["config.json"],
++    srcs = [
++        "config.json",
++        "provider_config.json",
++    ],
+     visibility = ["//:__subpackages__"],
+ )
+diff --git a/score/mw/com/test/basic_rust_api/etc/config.json b/score/mw/com/test/basic_rust_api/etc/config.json
+index daf2ad1c..549ab217 100644
+--- a/score/mw/com/test/basic_rust_api/etc/config.json
++++ b/score/mw/com/test/basic_rust_api/etc/config.json
+@@ -117,6 +117,48 @@
+         }
+       ]
+     },
++    {
++      "instanceSpecifier": "/score/cp60/MapApiLanesStampedAny",
++      "serviceTypeName": "/score/adp/MapApiLanesStamped",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "instances": [
++        {
++          "asil-level": "QM",
++          "binding": "SHM",
++          "events": [
++            {
++              "eventName": "map_api_lanes_stamped",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            },
++            {
++              "eventName": "dummy_data_stamped",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            }
++          ]
++        }
++      ]
++    },
++    {
++      "instanceSpecifier": "/score/test/DummyAny",
++      "serviceTypeName": "/score/adp/DummyServiceType",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "instances": [
++        {
++          "asil-level": "QM",
++          "binding": "SHM",
++          "events": [
++          ]
++        }
++      ]
++    },
+     {
+       "instanceSpecifier": "/IntegrationTest/MixedPrimitives",
+       "serviceTypeName": "/score/test/MixedPrimitivesInterface",
+diff --git a/score/mw/com/test/basic_rust_api/etc/provider_config.json b/score/mw/com/test/basic_rust_api/etc/provider_config.json
+new file mode 100644
+index 00000000..693cc564
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/etc/provider_config.json
+@@ -0,0 +1,228 @@
++{
++  "serviceTypes": [
++    {
++      "serviceTypeName": "/score/adp/MapApiLanesStamped",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "bindings": [
++        {
++          "binding": "SHM",
++          "serviceId": 6432,
++          "events": [
++            {
++              "eventName": "map_api_lanes_stamped",
++              "eventId": 1
++            },
++            {
++              "eventName": "dummy_data_stamped",
++              "eventId": 2
++            }
++          ]
++        }
++      ]
++    },
++    {
++      "serviceTypeName": "/score/adp/DummyServiceType",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "bindings": [
++        {
++          "binding": "SHM",
++          "serviceId": 6433,
++          "events": [
++          ]
++        }
++      ]
++    },
++    {
++      "serviceTypeName": "/score/test/MixedPrimitivesInterface",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "bindings": [
++        {
++          "binding": "SHM",
++          "serviceId": 7001,
++          "events": [
++            {
++              "eventName": "mixed_event",
++              "eventId": 1
++            }
++          ]
++        }
++      ]
++    },
++    {
++      "serviceTypeName": "/score/test/ComplexStructInterface",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "bindings": [
++        {
++          "binding": "SHM",
++          "serviceId": 7013,
++          "events": [
++            {
++              "eventName": "complex_event",
++              "eventId": 1
++            }
++          ]
++        }
++      ]
++    }
++  ],
++  "serviceInstances": [
++    {
++      "instanceSpecifier": "/score/cp60/MapApiLanesStamped",
++      "serviceTypeName": "/score/adp/MapApiLanesStamped",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "instances": [
++        {
++          "instanceId": 1,
++          "allowedConsumer": {
++            "QM": [
++              4002,
++              0
++            ]
++          },
++          "allowedProvider": {
++            "QM": [
++              4001,
++              0
++            ]
++          },
++          "asil-level": "QM",
++          "binding": "SHM",
++          "events": [
++            {
++              "eventName": "map_api_lanes_stamped",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            },
++            {
++              "eventName": "dummy_data_stamped",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            }
++          ]
++        }
++      ]
++    },
++    {
++      "instanceSpecifier": "/score/cp60/MapApiLanesStampedSecond",
++      "serviceTypeName": "/score/adp/MapApiLanesStamped",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "instances": [
++        {
++          "instanceId": 2,
++          "allowedConsumer": {
++            "QM": [
++              4002,
++              0
++            ]
++          },
++          "allowedProvider": {
++            "QM": [
++              4001,
++              0
++            ]
++          },
++          "asil-level": "QM",
++          "binding": "SHM",
++          "events": [
++            {
++              "eventName": "map_api_lanes_stamped",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            },
++            {
++              "eventName": "dummy_data_stamped",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            }
++          ]
++        }
++      ]
++    },
++    {
++      "instanceSpecifier": "/IntegrationTest/MixedPrimitives",
++      "serviceTypeName": "/score/test/MixedPrimitivesInterface",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "instances": [
++        {
++          "instanceId": 1,
++          "allowedConsumer": {
++            "QM": [
++              4002,
++              0
++            ]
++          },
++          "allowedProvider": {
++            "QM": [
++              4001,
++              0
++            ]
++          },
++          "asil-level": "QM",
++          "binding": "SHM",
++          "events": [
++            {
++              "eventName": "mixed_event",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            }
++          ]
++        }
++      ]
++    },
++    {
++      "instanceSpecifier": "/UserDefinedTest/ComplexStruct",
++      "serviceTypeName": "/score/test/ComplexStructInterface",
++      "version": {
++        "major": 1,
++        "minor": 0
++      },
++      "instances": [
++        {
++          "instanceId": 13,
++          "allowedConsumer": {
++            "QM": [
++              4002,
++              0
++            ]
++          },
++          "allowedProvider": {
++            "QM": [
++              4001,
++              0
++            ]
++          },
++          "asil-level": "QM",
++          "binding": "SHM",
++          "events": [
++            {
++              "eventName": "complex_event",
++              "numberOfSampleSlots": 10,
++              "maxSubscribers": 3
++            }
++          ]
++        }
++      ]
++    }
++  ]
++}
+diff --git a/score/mw/com/test/basic_rust_api/producer_app/producer_app.rs b/score/mw/com/test/basic_rust_api/producer_app/producer_app.rs
+index 7e03aaed..4a5e8ca8 100644
+--- a/score/mw/com/test/basic_rust_api/producer_app/producer_app.rs
++++ b/score/mw/com/test/basic_rust_api/producer_app/producer_app.rs
+@@ -44,11 +44,21 @@ const DEFAULT_CYCLES: u32 = 40;
+ const SERVICE_OFFER_DELAY_MS: Duration = Duration::from_millis(2000);
+ const SEND_INTERVAL_MS: Duration = Duration::from_millis(100);
+ 
++/// Per-provider marker base encoded into `MapApiLanesStamped::x` by the find-any provider so the
++/// consumer can tell the two wildcard-discovered instances apart without relying on handle order.
++const MARKER_FIRST: u32 = 1;
++const MARKER_SECOND: u32 = 2;
++/// Separator between the two marker ranges (`x = marker * MARKER_STEP + index`).
++const MARKER_STEP: u32 = 1000;
++
+ #[derive(Clone, clap::ValueEnum)]
+ enum TestCase {
+     Bigdata,
+     MixedPrimitives,
+     ComplexStruct,
++    /// Offers two instances of `BigDataInterface` (only one of which is known to the consumer
++    /// configuration) plus one `ComplexStructInterface` instance, for typed find-any tests.
++    FindAny,
+ }
+ 
+ #[derive(Parser)]
+@@ -59,6 +69,9 @@ struct Args {
+     /// Which payload type to test
+     #[arg(short = 't', long = "test", default_value = "bigdata")]
+     test_case: TestCase,
++    /// Path to the service instance manifest
++    #[arg(short = 'c', long = "config", default_value = CONFIG_PATH)]
++    config_path: String,
+ }
+ 
+ fn run_send_loop(num_cycles: u32, mut send_one: impl FnMut(u32)) {
+@@ -189,18 +202,86 @@ fn run_complex_struct_test<R: Runtime>(runtime: &R, num_cycles: u32) {
+     });
+ }
+ 
++/// Offers two instances of `BigDataInterface` and one `ComplexStructInterface` instance.
++///
++/// Only the first BigData instance is present in the consumer configuration; the second one and
++/// the ComplexStruct instance are offered exclusively from this provider manifest. This makes the
++/// consumer's typed find-any query discriminating: a genuine native wildcard must return both
++/// BigData instances (including the one absent from the consumer configuration) and must exclude
++/// the offered ComplexStruct instance.
++fn run_find_any_test<R: Runtime>(runtime: &R, num_cycles: u32) {
++    println!(
++        "[find-any-producer] Starting find_any test with num_cycles={}",
++        num_cycles
++    );
++
++    let first_specifier =
++        InstanceSpecifier::new("/score/cp60/MapApiLanesStamped").expect("Invalid instance specifier");
++    let second_specifier =
++        InstanceSpecifier::new("/score/cp60/MapApiLanesStampedSecond").expect("Invalid instance specifier");
++    let complex_specifier =
++        InstanceSpecifier::new("/UserDefinedTest/ComplexStruct").expect("Invalid instance specifier");
++
++    // Sleep to allow the consumer to start first and observe the empty state before any offer.
++    thread::sleep(SERVICE_OFFER_DELAY_MS);
++
++    let first_offered = runtime
++        .producer_builder::<BigDataInterface>(first_specifier)
++        .build()
++        .expect("Failed to build first BigData producer")
++        .offer()
++        .expect("Failed to offer first BigData service");
++    // Kept alive for the whole test so the second same-interface instance stays offered.
++    let second_offered = runtime
++        .producer_builder::<BigDataInterface>(second_specifier)
++        .build()
++        .expect("Failed to build second BigData producer")
++        .offer()
++        .expect("Failed to offer second BigData service");
++    // A different interface offered concurrently, so the consumer can prove exclusion.
++    let _complex_offered = runtime
++        .producer_builder::<ComplexStructInterface>(complex_specifier)
++        .build()
++        .expect("Failed to build ComplexStruct producer")
++        .offer()
++        .expect("Failed to offer ComplexStruct service");
++
++    println!("[find-any-producer] Services offered, starting send loop");
++    // Both instances send, but each encodes a distinct per-provider marker in `x`
++    // (MARKER_FIRST * MARKER_STEP + i vs MARKER_SECOND * MARKER_STEP + i). The consumer builds and
++    // subscribes from BOTH wildcard-discovered builders and proves, via the marker set, that two
++    // distinct providers actually delivered - without depending on handle order.
++    for i in 1..num_cycles {
++        for (marker, offered) in [(MARKER_FIRST, &first_offered), (MARKER_SECOND, &second_offered)] {
++            let uninit = offered
++                .map_api_lanes_stamped_
++                .allocate()
++                .expect("Failed to allocate sample");
++            let sample = MapApiLanesStamped {
++                x: marker * MARKER_STEP + i,
++                ..Default::default()
++            };
++            let ready = uninit.write(sample);
++            ready.send().expect("Failed to send sample");
++        }
++        println!("[find-any-producer] Sent marked samples i={}", i);
++        thread::sleep(SEND_INTERVAL_MS);
++    }
++}
++
+ fn main() {
+     let args = Args::parse();
+     let num_cycles = args.num_cycles;
+ 
+     // Initialise the Lola runtime.
+     let mut runtime_builder: LolaRuntimeBuilderImpl = LolaRuntimeBuilderImpl::new();
+-    runtime_builder.load_config(Path::new(CONFIG_PATH));
++    runtime_builder.load_config(Path::new(&args.config_path));
+     let runtime = runtime_builder.build().expect("Failed to build Lola runtime");
+ 
+     match args.test_case {
+         TestCase::Bigdata => run_bigdata_test(&runtime, num_cycles),
+         TestCase::MixedPrimitives => run_mixed_primitives_test(&runtime, num_cycles),
+         TestCase::ComplexStruct => run_complex_struct_test(&runtime, num_cycles),
++        TestCase::FindAny => run_find_any_test(&runtime, num_cycles),
+     }
+ }
+-- 
+2.34.1
+

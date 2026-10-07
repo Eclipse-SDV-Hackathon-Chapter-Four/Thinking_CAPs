@@ -1,0 +1,41 @@
+{
+  "url": "https://github.com/eclipse-score/communication/issues/782",
+  "issue_number": 782,
+  "state": "open",
+  "captured_on": "2026-10-07",
+  "updated_at": "2026-09-08T06:56:33Z",
+  "title": "Improvement: Runtime implementation for Rust Method APIs",
+  "labels": [
+    "rust-api"
+  ],
+  "assignees": [],
+  "body": "### What\n\nRust Method APIs design https://github.com/eclipse-score/communication/pull/777/ created, as per designed interface trait implement `LoLa-Runtime` same as Event backend implementation also implement the FFI APIs as well.\n\n### How\n\n- Implement the LoLa Runtime backend following the designed interface traits.\n- Ensure the implementation is aligned with the existing Event backend implementation pattern and behavior.\n- Implement the required FFI APIs for the Rust Method APIs to enable interoperability with external runtime components.\n\n### Estimates for realization\n\n0\n\n### Category\n\n- [ ] Affects Detailed Design\n\n### Requirements / Architecture\n\n- [ ] Requirements / Architecture are not affected by this change?",
+  "comments": [
+    {
+      "author": "hskang-amelia",
+      "created_at": "2026-08-28T10:52:56Z",
+      "body": "Hi \u2014 I'd like to help with this if it's not already spoken for.\n\nI've been looking at PR #818's method design (trait/macro/type-state layer), and this issue looks like a clean, self-contained split from that: the `LolaMethodCaller`/`LolaMethodHandler` in `com-api-runtime-lola/method.rs` are currently `todo!()` placeholders, and per this issue's description the intent is to implement them following the existing Event backend's FFI pattern in the same crate.\n\nBefore I start: is anyone (e.g. @bharatGoswami8) already actively working on this piece as part of #818? Don't want to duplicate effort. If it's open, my plan is to first map the Event backend's existing FFI calls against the Method trait surface from #818's design doc, sketch how that maps onto Methods, and post that here before writing any code."
+    },
+    {
+      "author": "bharatGoswami8",
+      "created_at": "2026-08-31T03:21:51Z",
+      "body": "Hello @hskang-amelia,\n\nThanks for your interest in helping with the runtime and FFI implementation for Method.\n\nThe design proposed in https://github.com/eclipse-score/communication/pull/818 is still under review.\n\nHowever, I believe you can start from the current design. The user-facing API is also described in the PR, which should help you better visualize the overall approach and expected Method implementation.\n\nIf possible, could you please join today's (31st Aug) weekly SCORE Communication CFT meeting? We can discuss the implementation details and any questions you may have regarding the design and implementation approach.\n\nThe meeting details are available on the SDV meeting calendar.\n\nThank you."
+    },
+    {
+      "author": "hskang-amelia",
+      "created_at": "2026-09-01T03:55:23Z",
+      "body": "Hi @bharatGoswami8,\n\nSorry I missed yesterday's Communication CFT meeting \u2014 I'll make sure to join next time. I'll go through PR #818 and the design in the meantime, and bring any questions to the next weekly session (or here on the issue).\n\nThanks for the pointer!"
+    },
+    {
+      "author": "hskang-amelia",
+      "created_at": "2026-09-07T13:50:16Z",
+      "body": "@bharatGoswami8 @LittleHuba \n\nI\u2019ll leave the rest as comments on the issue. But I want to clarify two things right now:\n\nFirst \u2014 on the sync/async bridge strategy: For milestone 1, can we just wrap the synchronous LoLa call in an already-resolved future? Or do you want real async dispatch from the start? Because issue 767 might actually go away if we do real async instead of blocking a thread.\n\nAnd second \u2014 on scope: Is E2E protection for Rust Methods and Fields part of 782\u2019s first milestone, or should that be a separate issue? I searched the repo and there\u2019s no E2E issue at all right now."
+    },
+    {
+      "author": "bharatGoswami8",
+      "created_at": "2026-09-08T06:56:33Z",
+      "body": "Hello @hskang-amelia ,\n\n> First \u2014 on the sync/async bridge strategy: For milestone 1, can we just wrap the synchronous LoLa call in an already-resolved future? Or do you want real async dispatch from the start? Because issue 767 might actually go away if we do real async instead of blocking a thread.\n\nIssue 767 is related to the C++ side implementation, or more specifically, the concrete backend implementation. Ideally, the issue should be addressed in the underlying implementation first, and then we can introduce the appropriate API or bridge-layer changes on top of that. Resolving it only at the Rust layer would not address the actual root cause.\n\nIn the current Rust library design, we have a runtime layer that is backend-specific. This runtime layer invokes the bridge APIs, where the FFI calls map directly to the corresponding C++ implementations.\n\n> And second \u2014 on scope: Is E2E protection for Rust Methods and Fields part of 782\u2019s first milestone, or should that be a separate issue? I searched the repo and there\u2019s no E2E issue at all right now.\n\nRegarding E2E protection, we have not considered it so far, even for the existing Event implementation in rust side. it is something we should enable eventually. Since there is currently no tracking item for this work, it would be good to create a separate improvement ticket scoped to the Rust APIs."
+    }
+  ],
+  "source": "gh issue view (read-only), 2026-10-07"
+}

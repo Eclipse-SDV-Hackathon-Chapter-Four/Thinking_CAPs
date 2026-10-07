@@ -1,0 +1,47 @@
+{
+  "issue": 250,
+  "baseline": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+  "model": "deepseek-flash",
+  "provider": "deepseek",
+  "fallbacks": [],
+  "before_source_corrections_used": 1,
+  "source_corrections_max": 3,
+  "source_fix_nodes_this_run": 1,
+  "allowed_prefixes": [
+    "score/mw/com/impl/rust/com-api/",
+    "score/mw/com/rust/score_com_concept/",
+    "score/mw/com/test/basic_rust_api/",
+    "score/mw/com/rust/design/",
+    "score/mw/com/design/service_discovery/"
+  ],
+  "allowed_files": [
+    "score/mw/com/impl/runtime.h",
+    "score/mw/com/impl/runtime.cpp",
+    "score/mw/com/impl/i_runtime.h",
+    "score/mw/com/impl/runtime_test.cpp",
+    "score/mw/com/impl/BUILD",
+    "score/mw/com/impl/test/runtime_mock.h",
+    "score/mw/com/impl/test/runtime_mock.cpp",
+    "score/mw/com/rust/score_com.rs"
+  ],
+  "protected_names": [
+    "MODULE.bazel",
+    "MODULE.bazel.lock",
+    "Cargo.lock",
+    "LICENSE",
+    "NOTICE",
+    ".bazelrc"
+  ],
+  "engineering_acceptance": "pending_offline",
+  "source_editor": "DeepSeek Flash only; Codex read-only review and operator preparation",
+  "issue1261_source_corrections_used": 1,
+  "issue1261_source_corrections_max": 3,
+  "mandatory_lifetime_refinement": "Native wildcard results copy query InstanceIdentifier non-owning deployment pointers into HandleType. Ownership must outlive ALL returned builders and proxies, even after discovery is dropped. Keep stable runtime-owned deployments or propagate shared owner through every emitted handle, builder and created proxy. Retaining only a synchronous call/async StopFindService owner is insufficient. Add a positive real proxy-use-after-discovery-drop regression. Sources known_instances_container.cpp84-85,handle_type.cpp52-53,instance_identifier.h179-181.",
+  "mandatory_api_and_async_refinements": [
+    "Preserve existing ConsumerDescriptor get_instance_specifier signature; use additive provided fallible accessor for absent producer specifier, preserve legacy Any limitation explicitly; never invent producer names.",
+    "Existing async query is one-shot initial snapshot: first empty callback returns Ready, await drops/stops; cannot be claimed as live continuously updating stream. New searches after later offers must be tested separately; heterogeneous stream remains1261.",
+    "Baseline starts native search before returned outer async block first poll; dropping never-polled future can leak search because NativeFindServiceHandle has no Drop and inner ServiceDiscoveryFuture owns stop only after first poll. Establish owning stop guard immediately on successful start, or defer start until polling with immediate ownership; test never-polled drop and polled-pending cancellation.",
+    "Runtime stable cache lifetime must extend through retained builders/proxies; allocation occurs at first query unless explicitly initialized. New virtual method changes vtable ABI; do not assert additive binary compatibility."
+  ],
+  "mandatory_discriminating_regression": "At least one offered same-interface instance MUST be absent from consumer configuration (separate provider config acceptable); two configured Specific instances cannot distinguish a genuine native wildcard. Exclusion test must actually offer other interface, not merely list it in config. Runtime must choose compatible binding/version/quality deterministically or return explicit error, not silently first incompatible record."
+}

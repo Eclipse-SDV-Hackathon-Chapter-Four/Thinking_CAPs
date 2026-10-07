@@ -1,0 +1,88 @@
+diff --git a/quality/static_analysis/BUILD b/quality/static_analysis/BUILD
+--- a/quality/static_analysis/BUILD
++++ b/quality/static_analysis/BUILD
+@@ -43,6 +43,7 @@
+         "codeql_lint_test.py",
+     ],
+     imports = ["."],
++    tags = ["local"],
+     target_compatible_with = ["@platforms//os:linux"],
+ )
+ 
+diff --git a/quality/static_analysis/codeql_lint.py b/quality/static_analysis/codeql_lint.py
+--- a/quality/static_analysis/codeql_lint.py
++++ b/quality/static_analysis/codeql_lint.py
+@@ -110,11 +110,7 @@
+         label = label.strip()
+         if not label.startswith("//"):
+             continue
+-        if ":" in label:
+-            pkg = label[2:].split(":", 1)[0]
+-        else:
+-            pkg = label[2:]
+-        patterns.append(f"//{pkg}/...")
++        patterns.append(label)
+     if not patterns:
+         raise RuntimeError(
+             "No main-repository targets found in the supplied target list; cannot derive production targets."
+@@ -124,12 +120,12 @@
+ 
+ def _parse_production_targets(cquery_stdout):
+     labels = [line.split()[0] for line in cquery_stdout.splitlines() if line.strip()]
+-    return [label for label in labels if label.startswith("//")]
++    return sorted({label for label in labels if label.startswith("//")})
+ 
+ 
+ def _compute_production_targets(source_root, build_configs, target_spec):
+     patterns = _production_target_patterns(target_spec)
+-    query_expr = f'attr("testonly", "0", kind("cc_library|cc_binary", {" + ".join(patterns)}))'
++    query_expr = f'attr("testonly", "0", kind("cc_library|cc_binary", deps(set({" ".join(patterns)}))))'
+     cquery_cmd = "bazel cquery --config=codeql"
+     for extra_config in build_configs or []:
+         cquery_cmd += f" --config={extra_config}"
+@@ -581,9 +577,9 @@
+     parser.add_argument(
+         "--production-targets",
+         action="store_true",
+-        help="When set, explicitly build all non-test C/C++ library and binary "
+-        "targets under the supplied native scopes, including implementation_deps "
+-        "that would otherwise be built lazily.",
++        help="Build main-repository C/C++ library and binary targets not marked "
++        "test-only from the dependency closure of the supplied roots, including "
++        "implementation_deps that would otherwise be built lazily.",
+     )
+ 
+     args = parser.parse_args()
+diff --git a/quality/static_analysis/codeql_lint_test.py b/quality/static_analysis/codeql_lint_test.py
+--- a/quality/static_analysis/codeql_lint_test.py
++++ b/quality/static_analysis/codeql_lint_test.py
+@@ -97,14 +97,26 @@
+ 
+ 
+ class ProductionTargetTest(unittest.TestCase):
+-    def test_production_target_patterns_expand_package_roots(self):
++    def test_production_target_patterns_preserve_requested_roots(self):
+         patterns = codeql_lint._production_target_patterns("//score/message_passing //score/mw/com")
+         self.assertEqual(
+             patterns,
+             [
+-                "//score/message_passing/...",
+-                "//score/mw/com/...",
++                "//score/message_passing",
++                "//score/mw/com",
+             ],
++        )
++
++    def test_production_target_patterns_preserve_explicit_selectors(self):
++        self.assertEqual(
++            codeql_lint._production_target_patterns("//score/mw/com:com //score/message_passing/... //:api"),
++            ["//score/mw/com:com", "//score/message_passing/...", "//:api"],
++        )
++
++    def test_parse_production_targets_deduplicates_configured_labels(self):
++        self.assertEqual(
++            codeql_lint._parse_production_targets("//score/mw/com:com (aaa)\n//score/mw/com:com (bbb)\n"),
++            ["//score/mw/com:com"],
+         )
+ 
+     def test_production_target_patterns_reject_empty(self):

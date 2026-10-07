@@ -1,0 +1,63 @@
+{
+  "issue": 1261,
+  "authority": {
+    "source": "user instruction in Claude Code session on 2026-10-07: 'fix them by yourself', given directly after the review that stated R1-R7 require explicit new #1261 authority naming the editor",
+    "interpretation": "new #1261-only source-correction allowance for editor Claude (claude-opus-5-5) outside Fabro, applying review repairs R1-R7 with the review's recommended options for D2 (coalescing), D4 (vtable append) and D5 (lock + invalidate)",
+    "limit": "max 3 Claude corrections, mirroring the user's standing three-correction limit; not inferred from any generic go/resume",
+    "not_granted": [
+      "other issues",
+      "#560 Codex allowance",
+      "#173 original slot",
+      "#250",
+      "Fabro or DeepSeek runs",
+      "commit/push/PR/publication",
+      "human engineering decisions D1, D3, D6 or acceptance"
+    ]
+  },
+  "prior_counters_unchanged": {
+    "1261_original": "3/3",
+    "250_original": "3/3",
+    "original_queue": "35/36",
+    "codex560_extra": "1/3"
+  },
+  "base": {
+    "baseline": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+    "candidate_patch_sha256": "7edc862099fd116711f419a98c02bfc71c0654dabe2d43f55f608e3105d7155a",
+    "candidate_subjects_verified": 2889,
+    "mismatches": 0
+  },
+  "attempts": [
+    {
+      "attempt": 1,
+      "editor": "Claude",
+      "started_at": "2026-10-07T03:20:48Z",
+      "state": "failed",
+      "result": "group 1 passed (5/5 targets); group 2 failed to build: E0599 consumer_app.rs:176 Builder trait not in scope; 0/4 integration tests executed; groups 3-4 unexecuted",
+      "evidence": "execution/attempt-1"
+    },
+    {
+      "attempt": 2,
+      "editor": "Claude",
+      "started_at": "2026-10-07T03:29:45.542484+00:00",
+      "change": "import score_com::Builder in consumer_app.rs (compiler-suggested)",
+      "state": "failed",
+      "result": "group 1 passed (5/5); group 2 failed to build: E0283 consumer_app.rs:176 type annotations needed for LolaRuntimeBuilderImpl<_>; 0/4 integration tests executed; groups 3-4 unexecuted",
+      "evidence": "execution/attempt-2"
+    },
+    {
+      "attempt": 3,
+      "editor": "Claude",
+      "final": true,
+      "started_at": "2026-10-07T03:31:13.061287+00:00",
+      "change": "explicit LolaRuntimeBuilderImpl type (default FFI bridge) in consumer_app.rs and provider_app.rs, matching baseline producer_app/consumer apps; other app API uses statically checked against baseline",
+      "state": "verified_pass",
+      "finished_at": "2026-10-07T03:34:31.186187+00:00",
+      "result": "all 4 selected Linux groups exit 0: 5/5 unit targets, 4/4 integration targets incl. dedicated phased stream test, GCC15 macro doctest, 5-library Clippy (4 warnings: 3 baseline lines, 1 new service_stream.rs:234 transmute without annotations)",
+      "evidence": "execution/attempt-3"
+    }
+  ],
+  "used": 3,
+  "max": 3,
+  "remaining": 0,
+  "status": "STOP: Claude #1261 allowance exhausted"
+}

@@ -29,3 +29,17 @@ provenance; inspect the relative artifact layout and run the portable verifier
 without recreating those paths. Native reruns require a disposable baseline checkout,
 the patch and pinned tools. If rebasing changes the candidate, capture new affected
 verification without overwriting the historical results.
+
+
+## Consolidated evidence import — 2026-10-07
+
+The consolidated evidence on `main` retains 24 issue records, including the
+four newly imported communication bug records and updated #1167 publication history.
+This inventory includes draft assessments and incomplete scopes; it does not increase
+the accepted/completed-fix count by treating records as successful implementations.
+See [the contribution index](../README.md) and
+[import audit](../audits/2026-10-07-import-record.json).
+
+Run `python3 scripts/verify_missing_contributions.py` in addition to the global
+registry verifier. Native review, remaining checks and the actual event submission
+requirements still need their recorded decisions.

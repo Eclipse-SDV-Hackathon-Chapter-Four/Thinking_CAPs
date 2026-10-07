@@ -1,0 +1,31 @@
+{
+  "url": "https://github.com/eclipse-score/communication/issues/1062",
+  "issue_number": 1062,
+  "state": "open",
+  "captured_on": "2026-10-07",
+  "updated_at": "2026-09-11T14:36:07Z",
+  "title": "Improvement: E2E protection for Rust Method/Field APIs",
+  "labels": [
+    "rust-api"
+  ],
+  "assignees": [],
+  "body": "## What\nAdd E2E (End-to-End) protection for Rust `Method<T>`/`Field<T>` APIs (and, by extension, `Event`). Split out of #782 at @bharatGoswami8's request: https://github.com/eclipse-score/communication/issues/782#issuecomment-5580666403 \u2014 out of #782's milestone-1 scope, and no tracking issue existed for it.\n\n## How\nNot designed yet. Per the linked comment, E2E protection hasn't been considered so far even for the existing Rust Event implementation, so this needs a design discussion (aligning with whatever E2E mechanism exists on the C++ side, if any) before implementation.\n\n## Estimates for realization\nTBD, pending the design discussion above.\n\n## Requirements / Architecture\n- [ ] Requirements / Architecture are not affected by this change?",
+  "comments": [
+    {
+      "author": "bharatGoswami8",
+      "created_at": "2026-09-09T11:53:41Z",
+      "body": "I think, this should be implemented at the Rust API payload level and enabled E2E, independent of the communication type, whether it's an Event, Field, Method, or any other mode of communication."
+    },
+    {
+      "author": "hskang-amelia",
+      "created_at": "2026-09-11T10:00:58Z",
+      "body": "@bharatGoswami8 \nBefore writing any implementation, I did some research against the actual AUTOSAR specs (FO_RS_E2E, FO_PRS_E2EProtocol, CP_SWS_E2ETransformer) and built a small fork-only prototype. Sharing the findings here to align on design before writing code.\n\nWhat the specs say\n- FO_RS_E2E still leaves Adaptive Platform E2E use cases as an open/unelaborated area \u2014 this isn't \"port CP's existing answer,\" it's genuinely open design space.\n- FO_PRS_E2EProtocol defines a separate method-specific profile family (\"Xm\": 4m/7m/8m/44m), distinct from the plain Event/Field profiles \u2014 Xm adds Message Type/Result/Source ID fields. So the wrap/unwrap mechanism can be shared across Event/Field/Method, but Method's wire format needs strictly more fields than Event/Field's would \u2014 worth flagging since \"independent of communication type\" could otherwise read as \"identical wire format.\"\n- CP_SWS_E2ETransformer shows the architecture pattern worth mirroring: E2E applied transparently between the RTE and the network binding, config-driven. In this codebase the equivalent boundary is the Rust\u2194C++ FFI bridge.\n\nA concrete Rust-side complication found while prototyping\nFor Method<T>, the in-args/return-value buffers are fixed-size and pre-computed by the C++ side from Args/Return's own layout (not a free-form byte stream). An E2E header can't be added on the Rust side alone \u2014 the buffer-size computation has to grow in lockstep on both the C++ side (CreateDataTypeSizeInfoFromTypes) and the Rust side (MethodArgsCodec::layout()).\n\nWhat I prototyped (fork-only, not proposing this code)\n\"Verified a Profile 4m CRC-32/AUTOSAR protect/check implementation against the public CRC-32/AUTOSAR catalog check value (0x1697d06a for \"123456789\"), which pins the parameters E2EProtocol defers to a separate CRC library document, then wired a generic E2E<T> wrapper through the real Method call path (mocked FFI), confirming application code never has to name E2E<_>. Happy to share the branch as reference, but it's a spike \u2014 no C++ side, and it skips the E2E state machine (counter-delta tolerance, consecutive-failure count) the spec calls for.\n\nQuestions before writing a real implementation PR\n1. Should the header be a field of the user's own wire type (what I prototyped), or should the C++ binding transparently grow the buffer so Rust interface! users never see the header?\n2. Is there existing/planned C++-side E2E support to align wire-format/profile/DataID conventions with, or is Rust free to define its own?\n3. Should a first increment be Method-only, or should Event/Field/Method share one config schema from the start (sized for Method's wider field set)?\n4. Is the server-side \"decide whether to apply the call based on E2E results\" state machine in scope for an MVP, or can a first pass defer to CRC+DataID checking only?"
+    },
+    {
+      "author": "LittleHuba",
+      "created_at": "2026-09-11T12:35:18Z",
+      "body": "Hi @hskang-amelia,\nplease be aware that we cannot directly provide E2E funtionality based on the AUTOSAR spec in S-CORE due to licensing restrictions.\nWe are currently designing an E2E protection/verification API for the C++ side of things. We will likely share this within the near future once all the details are clarified.\nMaybe it makes sense to wait for this, since Rust would need to derive its API from what we design in C++.\nMeaning, while you can freely design the API mechanics, the error classes will be restricted to what C++ provides.\n\nI would further recommend that you focus on event mechanics first and implement method mechanics afterwards."
+    }
+  ],
+  "source": "gh issue view (read-only), 2026-10-07"
+}

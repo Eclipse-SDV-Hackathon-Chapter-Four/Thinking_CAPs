@@ -1,0 +1,15 @@
+# Finished additional #751 handoff
+
+Verified 2026-10-06T21:37:16.267529+00:00. Native run `01M49GDJJ4DN4GV2Q07RQF4WRX` is terminal: `succeeded`. Export and independently checked offline package completed; engineering acceptance remains pending. [Latest review](additional-751/REVIEW.md), [full native dump](phases/additional-751/terminal-native-dump/), [review index](additional-751/offline-review-index.json).
+
+The one authorized extra correction changed only the expected sorted-label order in `quality/static_analysis/codeql_lint_test.py`. Original source and failed 501-pass/1-fail evidence remain preserved. All additional measurements are fresh and bound to the isolated candidate's source, native Git discovery and full log hashes. Executed 502 out of 508 tests: 502 tests pass and 6 were skipped. Targeted checks: `passed`; overall checks: `failed_or_missing_checks`. Failed fresh checks: copyright. The cumulative patch passes pristine-baseline applicability checks.
+
+Source root: `/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/additional-751/issue-751`. Storage remains bound to `/dev/loop1`, ext4 UUID `11c42dee-73a3-4c2b-ab42-a0440011d9e0`, backed by the existing Lexar image; stop on disconnection without relocation. Tool/fabric/source pins, immutable authority and controls remain recorded. The kernel unchecked-filesystem warning remains unresolved; no filesystem health clearance is implied. All build caches are retained.
+
+CodeQL's required proxy implementation is present. The fresh archive has 1,658 entries; comparison against the old 1,659-entry archive identifies one external `thread_local_guard.cpp` member absent. No candidate source member was lost. Cause and complete external dependency coverage remain unproven; see the bound comparison record. Native CodeQL database, generated engineering products, patch, changed source, logs and PR draft are exported under `additional-751/` at the explicit contribution destination.
+
+Authority is exhausted: original ledger remains3/3, separate extra ledger1/1; hashes are bound in the review index. Added paid calls0 and model tokens0. The total cap remains$10; conservative prior audit bound$8.839842, actual provider invoice unknown, original historical reservations unchanged. No further source correction, paid call, publishing, push, PR, merge or issue closure is authorized. Human review remains offline.
+
+Remaining queue obligations: existing copyright findings; #1236's 27 baseline-identical native buildifier warnings; #1104's external extraction script failure and unknown location paths; #1031's unmeasured real production Config Management/FMEA/LOBSTER integration; QNX, contributor identity/ECA and engineering acceptance. No failed or missing evidence is waived. Prior complete handoff: [RESUME-before-additional-751.md](RESUME-before-additional-751.md).
+
+Next action: offline human review of the latest #751 package and remaining queue obligations. Phone dashboard: `http://192.168.13.204:8787` (last verified on the same Wi-Fi).
