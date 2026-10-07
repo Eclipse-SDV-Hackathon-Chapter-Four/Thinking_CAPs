@@ -122,6 +122,39 @@ def verify(packet):
     if binding["base_commit"] != pr["head"]["sha"]:
         raise ValueError("Native supplement PR base mismatch")
 
+    preparation = packet / "upstream-preparation"
+    if preparation.exists():
+        report = load(preparation / "verification-report.json")
+        envelope = load(preparation / "task-envelope.json")
+        commit = load(preparation / "native-commit.json")
+        if report["native_baseline"] != envelope["native_baseline"] or commit["baseline"] != report["native_baseline"]:
+            raise ValueError("Current native baseline mismatch")
+        if digest(preparation / "DR-010-infra.rst") != report["changed_file_sha256"]:
+            raise ValueError("Current native candidate mismatch")
+        if report["source_hashes"] != envelope["source_hashes"]:
+            raise ValueError("Current native input binding mismatch")
+        exports = []
+        for name in ("baseline-needs.json", "candidate-final-needs.json"):
+            data = load(preparation / name)
+            exports.append(data["versions"][data["current_version"]]["needs"])
+        original, candidate = exports
+        delta = report["needs_delta"]
+        if len(original) != delta["baseline_count"] or len(candidate) != delta["candidate_count"]:
+            raise ValueError("Native export count mismatch")
+        if set(candidate) - set(original) != {envelope["native_id"]} or set(original) - set(candidate):
+            raise ValueError("Native export identity delta mismatch")
+        if any(original[key] != candidate[key] for key in original):
+            raise ValueError("Existing native need changed")
+        if (preparation / "baseline-warnings.txt").read_bytes() != (preparation / "candidate-final-warnings.txt").read_bytes():
+            raise ValueError("Native baseline/candidate diagnostics differ")
+        for label in ("baseline-docs-check", "candidate-docs-check", "candidate-final-docs-check", "candidate-html", "candidate-copyright"):
+            check = load(preparation / (label + ".json"))
+            if digest(preparation / (label + ".log")) != check["log_sha256"]:
+                raise ValueError("Native raw log mismatch: " + label)
+            if "changed_file_sha256" in check and label != "candidate-docs-check":
+                if check["changed_file_sha256"] != report["changed_file_sha256"]:
+                    raise ValueError("Native check subject mismatch: " + label)
+
     repo = packet.parents[4]
     references = load(packet / "evidence/native-contributions.json")
     native_counts = {}
