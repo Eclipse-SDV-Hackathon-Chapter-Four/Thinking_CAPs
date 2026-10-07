@@ -21,3 +21,12 @@ The consolidated branch retains the twelve additional Rust queue records and
 #2850/#3115 proposals. The consolidated evidence is included on `main`. Broader native engineering
 acceptance remains pending. Competition eligibility and required submission format remain
 unevaluated. Source integrity verification is separate from these decisions.
+
+## Compliance follow-up
+
+CDA issue #543 is published as native PR #601; diagnostics issue #16 as native
+PR #40. Their submitted heads differ from the recovered historical patches.
+Both fail the actual author's ECA check; diagnostics also lacks native DCO
+sign-offs. Anthropic Claude Opus 5.5 authoring assistance was confirmed by
+Jefferson; corrected PR/commit drafts are prepared locally. Public PRs remain
+unchanged. See the [current compliance record](compliance/2026-10-07/README.md).

@@ -1,0 +1,1042 @@
+From 4342d577970bddcf5879d9a4de119275719addb3 Mon Sep 17 00:00:00 2001
+From: Purushotham Erupuri <erupuripurushotham1@gmail.com>
+Date: Tue, 22 Sep 2026 15:43:48 +0200
+Subject: [PATCH 4/5] feat(sovd_adapter): serve diag_api DataResources as an
+ opensovd DataProvider
+
+DataResourceRegistry keeps each resource next to its metadata; SovdDataProvider
+implements opensovd_core::DataProvider over it:
+
+- list/categories/groups from DataResourceMetadata, with category/group/tag filters
+- read/write await ReadValueHandle/WriteValueHandle (ready, future, closure)
+- resources sit behind a Mutex (write takes &mut self); the lock is never held
+  across an await
+- per-resource PayloadFormat so the binary-only uds adapters are served as hex
+  without extra code
+- diag_api errors and NRCs map to DataError; read-only writes are rejected
+
+Refs #16
+
+---
+ score/mw/diag/sovd_adapter/BUILD       |  54 +++++
+ score/mw/diag/sovd_adapter/convert.rs  | 260 ++++++++++++++++++++
+ score/mw/diag/sovd_adapter/handle.rs   |  95 ++++++++
+ score/mw/diag/sovd_adapter/lib.rs      |  36 +++
+ score/mw/diag/sovd_adapter/provider.rs | 321 +++++++++++++++++++++++++
+ score/mw/diag/sovd_adapter/registry.rs | 203 ++++++++++++++++
+ 6 files changed, 969 insertions(+)
+ create mode 100644 score/mw/diag/sovd_adapter/BUILD
+ create mode 100644 score/mw/diag/sovd_adapter/convert.rs
+ create mode 100644 score/mw/diag/sovd_adapter/handle.rs
+ create mode 100644 score/mw/diag/sovd_adapter/lib.rs
+ create mode 100644 score/mw/diag/sovd_adapter/provider.rs
+ create mode 100644 score/mw/diag/sovd_adapter/registry.rs
+
+diff --git a/score/mw/diag/sovd_adapter/BUILD b/score/mw/diag/sovd_adapter/BUILD
+new file mode 100644
+index 0000000..0493114
+--- /dev/null
++++ b/score/mw/diag/sovd_adapter/BUILD
+@@ -0,0 +1,54 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
++
++# Serves diag_api::sovd::DataResource instances through opensovd_core::DataProvider,
++# so the OpenSOVD gateway can expose real S-CORE diagnostic data.
++rust_library(
++    name = "sovd_adapter",
++    srcs = [
++        "convert.rs",
++        "handle.rs",
++        "lib.rs",
++        "provider.rs",
++        "registry.rs",
++    ],
++    # diag_api and opensovd_core come from different crate universes, so each
++    # side has its own serde_json; the diag_api one is renamed to diag_json.
++    aliases = {
++        "@score_crate_index//:serde_json": "diag_json",
++    },
++    crate_root = "lib.rs",
++    edition = "2021",
++    proc_macro_deps = [
++        "@score_crate_index//:async-trait",
++    ],
++    visibility = ["//score:__subpackages__"],
++    deps = [
++        "//score/mw/diag/api",
++        "@opensovd_core//:opensovd-core",
++        "@opensovd_core//:serde_json",
++        "@score_crate_index//:indexmap",
++        "@score_crate_index//:serde_json",
++    ],
++)
++
++rust_test(
++    name = "sovd_adapter_test",
++    crate = ":sovd_adapter",
++    edition = "2021",
++    deps = [
++        "@score_crate_index//:tokio",
++    ],
++)
+diff --git a/score/mw/diag/sovd_adapter/convert.rs b/score/mw/diag/sovd_adapter/convert.rs
+new file mode 100644
+index 0000000..0c1cc25
+--- /dev/null
++++ b/score/mw/diag/sovd_adapter/convert.rs
+@@ -0,0 +1,260 @@
++// *******************************************************************************
++// Copyright (c) 2026 Contributors to the Eclipse Foundation
++//
++// See the NOTICE file(s) distributed with this work for additional
++// information regarding copyright ownership.
++//
++// This program and the accompanying materials are made available under the
++// terms of the Apache License Version 2.0 which is available at
++// <https://www.apache.org/licenses/LICENSE-2.0>
++//
++// SPDX-License-Identifier: Apache-2.0
++// *******************************************************************************
++
++//! Conversions between `diag_api` types and `opensovd_core` data types.
++//!
++//! The two sides are built against different `serde_json` crates (S-CORE's crate
++//! index and opensovd-core's own), so their `Value` types are distinct and JSON is
++//! converted explicitly at this boundary.
++
++use crate::registry::PayloadFormat;
++use diag_api::sovd::data_resource::DataResourceMetadata;
++use diag_api::sovd::DataError as DiagDataError;
++use diag_api::{ErrorCode, JsonSchemaRequired, ReplyMessageEncoding, ReplyMessagePayload, RequestMessagePayload};
++use opensovd_core::{DataError, Metadata};
++use serde_json::Value;
++
++pub(crate) fn metadata(meta: &DataResourceMetadata) -> Metadata {
++    Metadata {
++        id: meta.id.clone(),
++        name: meta.name.clone(),
++        // Both sides use the ISO 17978-3 spellings: identData, currentData, ...
++        category: meta.category.to_string(),
++        translation_id: meta.translation_id.clone(),
++        groups: meta.groups.clone().unwrap_or_default(),
++        // DataResourceMetadata has no tags.
++        tags: Vec::new(),
++        // A diag_api resource only hands out its schema with a read reply.
++        schema: None,
++        is_readable: true,
++        is_writable: !meta.read_only,
++    }
++}
++
++pub(crate) fn reply_encoding(format: PayloadFormat, include_schema: bool) -> ReplyMessageEncoding {
++    match format {
++        PayloadFormat::Json if include_schema => ReplyMessageEncoding::JSON(JsonSchemaRequired::Yes),
++        PayloadFormat::Json => ReplyMessageEncoding::JSON(JsonSchemaRequired::No),
++        PayloadFormat::Utf8 => ReplyMessageEncoding::UTF8,
++        PayloadFormat::Binary => ReplyMessageEncoding::Binary,
++    }
++}
++
++/// Converts a `diag_api` JSON value into an `opensovd_core` one.
++pub(crate) fn to_sovd_json(value: &diag_json::Value) -> Result<Value, DataError> {
++    serde_json::from_str(&value.to_string())
++        .map_err(|e| DataError::Internal(format!("invalid JSON from resource: {e}")))
++}
++
++/// Converts an `opensovd_core` JSON value into a `diag_api` one.
++pub(crate) fn to_diag_json(value: &Value) -> Result<diag_json::Value, DataError> {
++    diag_json::from_str(&value.to_string()).map_err(|e| DataError::Internal(format!("invalid JSON for resource: {e}")))
++}
++
++/// Splits a reply payload into the JSON value and the schema, if one came with it.
++pub(crate) fn reply_value(payload: ReplyMessagePayload) -> Result<(Value, Option<Value>), DataError> {
++    Ok(match payload {
++        ReplyMessagePayload::JSON(value, schema) => {
++            (to_sovd_json(&value)?, schema.as_ref().map(to_sovd_json).transpose()?)
++        },
++        ReplyMessagePayload::UTF8(text) => (Value::String(text), None),
++        ReplyMessagePayload::Binary(bytes) => (Value::String(to_hex(&bytes)), None),
++    })
++}
++
++/// Builds the request payload a resource of `format` expects from a JSON body.
++pub(crate) fn request_payload(value: Value, format: PayloadFormat) -> Result<RequestMessagePayload, DataError> {
++    match format {
++        PayloadFormat::Json => Ok(RequestMessagePayload::JSON(to_diag_json(&value)?)),
++        PayloadFormat::Utf8 => match value {
++            Value::String(text) => Ok(RequestMessagePayload::UTF8(text)),
++            other => Err(DataError::Internal(format!("expected a JSON string, got {other}"))),
++        },
++        PayloadFormat::Binary => match value {
++            Value::String(hex) => from_hex(&hex)
++                .map(RequestMessagePayload::Binary)
++                .ok_or_else(|| DataError::Internal(format!("expected an even-length hex string, got {hex:?}"))),
++            other => Err(DataError::Internal(format!("expected a hex string, got {other}"))),
++        },
++    }
++}
++
++pub(crate) fn read_error(err: diag_api::Error) -> DataError {
++    DataError::Internal(match err.code {
++        ErrorCode::SOVD(generic) => format!("{}: {}", generic.sovd_error, generic.message_text),
++        ErrorCode::UDS(nrc) => format!("UDS negative response 0x{:02X}", u8::from(nrc)),
++    })
++}
++
++pub(crate) fn write_error(err: DiagDataError) -> DataError {
++    DataError::Internal(match err.error {
++        Some(generic) => format!("{}: {}", generic.sovd_error, generic.message_text),
++        None => format!("write failed at '{}'", err.path),
++    })
++}
++
++/// Joins the per-element errors of a read reply into one message.
++pub(crate) fn reply_errors(errors: &[DiagDataError]) -> String {
++    errors
++        .iter()
++        .map(|e| match &e.error {
++            Some(generic) => format!("{} {}: {}", e.path, generic.sovd_error, generic.message_text),
++            None => e.path.clone(),
++        })
++        .collect::<Vec<_>>()
++        .join("; ")
++}
++
++fn to_hex(bytes: &[u8]) -> String {
++    bytes.iter().map(|b| format!("{b:02X}")).collect()
++}
++
++fn from_hex(hex: &str) -> Option<Vec<u8>> {
++    if hex.len() % 2 != 0 {
++        return None;
++    }
++    (0..hex.len())
++        .step_by(2)
++        .map(|i| hex.get(i..i + 2).and_then(|pair| u8::from_str_radix(pair, 16).ok()))
++        .collect()
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use diag_api::sovd::data_resource::DataCategory;
++    use diag_api::sovd::{ErrorCode as SovdCode, GenericError};
++    use diag_api::uds::NegativeResponseCode;
++    use serde_json::json;
++
++    #[test]
++    fn metadata_maps_every_field() {
++        let meta = DataResourceMetadata {
++            id: "cabin_temp".to_string(),
++            name: "Cabin temperature".to_string(),
++            translation_id: Some("t-1".to_string()),
++            read_only: false,
++            category: DataCategory::CurrentData,
++            groups: Some(vec!["hvac".to_string()]),
++        };
++        let m = metadata(&meta);
++        assert_eq!(m.id, "cabin_temp");
++        assert_eq!(m.name, "Cabin temperature");
++        assert_eq!(m.category, "currentData");
++        assert_eq!(m.translation_id.as_deref(), Some("t-1"));
++        assert_eq!(m.groups, ["hvac"]);
++        assert!(m.tags.is_empty());
++        assert!(m.is_readable && m.is_writable);
++    }
++
++    #[test]
++    fn metadata_read_only_and_no_groups() {
++        let meta = DataResourceMetadata {
++            id: "vin".to_string(),
++            name: "VIN".to_string(),
++            translation_id: None,
++            read_only: true,
++            category: DataCategory::Custom("x-score-demo".to_string()),
++            groups: None,
++        };
++        let m = metadata(&meta);
++        assert_eq!(m.category, "x-score-demo");
++        assert!(m.groups.is_empty());
++        assert!(!m.is_writable);
++    }
++
++    #[test]
++    fn encoding_follows_format_and_schema_flag() {
++        assert_eq!(
++            reply_encoding(PayloadFormat::Json, true),
++            ReplyMessageEncoding::JSON(JsonSchemaRequired::Yes)
++        );
++        assert_eq!(
++            reply_encoding(PayloadFormat::Json, false),
++            ReplyMessageEncoding::JSON(JsonSchemaRequired::No)
++        );
++        assert_eq!(reply_encoding(PayloadFormat::Utf8, true), ReplyMessageEncoding::UTF8);
++        assert_eq!(
++            reply_encoding(PayloadFormat::Binary, true),
++            ReplyMessageEncoding::Binary
++        );
++    }
++
++    #[test]
++    fn reply_value_per_payload_kind() {
++        let schema = json!({"type": "number"});
++        assert_eq!(
++            reply_value(ReplyMessagePayload::from_json(
++                diag_json::json!(21.5),
++                Some(diag_json::json!({"type": "number"}))
++            ))
++            .unwrap(),
++            (json!(21.5), Some(schema))
++        );
++        assert_eq!(
++            reply_value(ReplyMessagePayload::from_string("ok".to_string())).unwrap(),
++            (json!("ok"), None)
++        );
++        assert_eq!(
++            reply_value(ReplyMessagePayload::from_byte_vector(vec![0x0A, 0xFF])).unwrap(),
++            (json!("0AFF"), None)
++        );
++    }
++
++    #[test]
++    fn request_payload_per_format() {
++        assert_eq!(
++            request_payload(json!({"a": 1}), PayloadFormat::Json).unwrap(),
++            RequestMessagePayload::JSON(diag_json::json!({"a": 1}))
++        );
++        assert_eq!(
++            request_payload(json!("hi"), PayloadFormat::Utf8).unwrap(),
++            RequestMessagePayload::UTF8("hi".to_string())
++        );
++        assert_eq!(
++            request_payload(json!("0aFF"), PayloadFormat::Binary).unwrap(),
++            RequestMessagePayload::Binary(vec![0x0A, 0xFF])
++        );
++    }
++
++    #[test]
++    fn request_payload_rejects_wrong_shapes() {
++        assert!(request_payload(json!(1), PayloadFormat::Utf8).is_err());
++        assert!(request_payload(json!(1), PayloadFormat::Binary).is_err());
++        assert!(request_payload(json!("ABC"), PayloadFormat::Binary).is_err());
++        assert!(request_payload(json!("ZZ"), PayloadFormat::Binary).is_err());
++    }
++
++    #[test]
++    fn read_error_formats_sovd_and_uds() {
++        let sovd = diag_api::Error::from_error(GenericError::from_code(
++            SovdCode::NotResponding,
++            "ECU silent".to_string(),
++        ));
++        assert!(read_error(sovd).to_string().contains("ECU silent"));
++        let uds = diag_api::Error::from_nrc(NegativeResponseCode::RequestOutOfRange);
++        assert!(read_error(uds).to_string().contains("0x31"));
++    }
++
++    #[test]
++    fn write_error_with_and_without_detail() {
++        let detailed = DiagDataError::from_error(GenericError::from_code(
++            SovdCode::IncompleteRequest,
++            "binary only".to_string(),
++        ));
++        assert!(write_error(detailed).to_string().contains("binary only"));
++        assert!(write_error(DiagDataError::new("/value".to_string()))
++            .to_string()
++            .contains("/value"));
++    }
++}
+diff --git a/score/mw/diag/sovd_adapter/handle.rs b/score/mw/diag/sovd_adapter/handle.rs
+new file mode 100644
+index 0000000..361a0d4
+--- /dev/null
++++ b/score/mw/diag/sovd_adapter/handle.rs
+@@ -0,0 +1,95 @@
++// *******************************************************************************
++// Copyright (c) 2026 Contributors to the Eclipse Foundation
++//
++// See the NOTICE file(s) distributed with this work for additional
++// information regarding copyright ownership.
++//
++// This program and the accompanying materials are made available under the
++// terms of the Apache License Version 2.0 which is available at
++// <https://www.apache.org/licenses/LICENSE-2.0>
++//
++// SPDX-License-Identifier: Apache-2.0
++// *******************************************************************************
++
++//! Turns the `diag_api` read/write handles into values an `async fn` can return.
++//!
++//! A handle is either `Ready` (the resource answered synchronously) or `Pending`
++//! (a boxed `Send` future, also used for closures). Both resolve by `.await`.
++
++use diag_api::sovd::data_resource::{ReadValueHandle, ReadValueReply, WriteValueHandle};
++use diag_api::sovd::DataError as DiagDataError;
++use diag_api::Result as DiagResult;
++
++pub(crate) async fn resolve_read(handle: ReadValueHandle) -> DiagResult<ReadValueReply> {
++    match handle {
++        ReadValueHandle::Ready(result) => result,
++        ReadValueHandle::Pending(future) => future.await,
++    }
++}
++
++pub(crate) async fn resolve_write(handle: WriteValueHandle) -> Result<(), DiagDataError> {
++    match handle {
++        WriteValueHandle::Ready(result) => result,
++        WriteValueHandle::Pending(future) => future.await,
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use diag_api::sovd::{ErrorCode, GenericError};
++    use diag_api::ReplyMessagePayload;
++
++    fn reply(text: &str) -> ReadValueReply {
++        ReadValueReply {
++            data: ReplyMessagePayload::from_string(text.to_string()),
++            errors: None,
++        }
++    }
++
++    fn data_error() -> DiagDataError {
++        DiagDataError::from_error(GenericError::from_code(ErrorCode::ErrorResponse, "no".to_string()))
++    }
++
++    #[tokio::test]
++    async fn read_ready() {
++        let got = resolve_read(ReadValueHandle::ready(reply("r"))).await.unwrap();
++        assert_eq!(got.data, ReplyMessagePayload::from_string("r".to_string()));
++    }
++
++    #[tokio::test]
++    async fn read_future() {
++        let handle = ReadValueHandle::from_future(async { Ok(reply("f")) });
++        let got = resolve_read(handle).await.unwrap();
++        assert_eq!(got.data, ReplyMessagePayload::from_string("f".to_string()));
++    }
++
++    #[tokio::test]
++    async fn read_closure() {
++        let handle = ReadValueHandle::from_closure(|| Ok(reply("c")));
++        let got = resolve_read(handle).await.unwrap();
++        assert_eq!(got.data, ReplyMessagePayload::from_string("c".to_string()));
++    }
++
++    #[tokio::test]
++    async fn read_error() {
++        let err = diag_api::Error::from_error(GenericError::from_code(ErrorCode::NotResponding, "x".to_string()));
++        assert_eq!(
++            resolve_read(ReadValueHandle::from_error(err.clone()))
++                .await
++                .unwrap_err(),
++            err
++        );
++    }
++
++    #[tokio::test]
++    async fn write_ready_future_closure() {
++        assert!(resolve_write(WriteValueHandle::ready()).await.is_ok());
++        assert!(resolve_write(WriteValueHandle::from_future(async { Ok(()) }))
++            .await
++            .is_ok());
++        assert!(resolve_write(WriteValueHandle::from_closure(|| Err(data_error())))
++            .await
++            .is_err());
++    }
++}
+diff --git a/score/mw/diag/sovd_adapter/lib.rs b/score/mw/diag/sovd_adapter/lib.rs
+new file mode 100644
+index 0000000..aed5e2f
+--- /dev/null
++++ b/score/mw/diag/sovd_adapter/lib.rs
+@@ -0,0 +1,36 @@
++// *******************************************************************************
++// Copyright (c) 2026 Contributors to the Eclipse Foundation
++//
++// See the NOTICE file(s) distributed with this work for additional
++// information regarding copyright ownership.
++//
++// This program and the accompanying materials are made available under the
++// terms of the Apache License Version 2.0 which is available at
++// <https://www.apache.org/licenses/LICENSE-2.0>
++//
++// SPDX-License-Identifier: Apache-2.0
++// *******************************************************************************
++
++//! Serves S-CORE [`diag_api::sovd::DataResource`]s through the OpenSOVD gateway.
++//!
++//! [`SovdDataProvider`] implements [`opensovd_core::DataProvider`] on top of a
++//! [`DataResourceRegistry`], so a gateway component can expose real diagnostic
++//! resources instead of demo constants:
++//!
++//! ```ignore
++//! let mut registry = DataResourceRegistry::new();
++//! registry.register(metadata, my_resource)?;
++//! let component = Component::new("hvac", "HVAC").with_data_provider(SovdDataProvider::new(registry));
++//! ```
++//!
++//! The adapter is in-process Rust, no FFI. Note that `diag_api` and
++//! `opensovd_providers` both define a trait called `DataResource`; this crate only
++//! uses the `diag_api` one.
++
++mod convert;
++mod handle;
++mod provider;
++mod registry;
++
++pub use provider::SovdDataProvider;
++pub use registry::{DataResourceRegistry, PayloadFormat, RegistrationError};
+diff --git a/score/mw/diag/sovd_adapter/provider.rs b/score/mw/diag/sovd_adapter/provider.rs
+new file mode 100644
+index 0000000..fb0f6a5
+--- /dev/null
++++ b/score/mw/diag/sovd_adapter/provider.rs
+@@ -0,0 +1,321 @@
++// *******************************************************************************
++// Copyright (c) 2026 Contributors to the Eclipse Foundation
++//
++// See the NOTICE file(s) distributed with this work for additional
++// information regarding copyright ownership.
++//
++// This program and the accompanying materials are made available under the
++// terms of the Apache License Version 2.0 which is available at
++// <https://www.apache.org/licenses/LICENSE-2.0>
++//
++// SPDX-License-Identifier: Apache-2.0
++// *******************************************************************************
++
++use crate::registry::{DataResourceRegistry, Entry};
++use crate::{convert, handle};
++use async_trait::async_trait;
++use diag_api::sovd::data_resource::{ReadValueArgs, WriteValueArgs};
++use opensovd_core::{Data, DataError, DataFilter, DataProvider, Metadata};
++use serde_json::Value;
++
++type Result<T> = std::result::Result<T, DataError>;
++
++/// An `opensovd_core::DataProvider` serving the resources of a [`DataResourceRegistry`].
++pub struct SovdDataProvider {
++    registry: DataResourceRegistry,
++}
++
++impl SovdDataProvider {
++    #[must_use]
++    pub fn new(registry: DataResourceRegistry) -> Self {
++        Self { registry }
++    }
++
++    fn entry(&self, data_id: &str) -> Result<&Entry> {
++        self.registry
++            .get(data_id)
++            .ok_or_else(|| DataError::NotFound(data_id.to_string()))
++    }
++}
++
++impl From<DataResourceRegistry> for SovdDataProvider {
++    fn from(registry: DataResourceRegistry) -> Self {
++        Self::new(registry)
++    }
++}
++
++fn matches(meta: &Metadata, filter: &DataFilter) -> bool {
++    let category_ok = filter.categories.is_empty() || filter.categories.contains(&meta.category);
++    let group_ok = filter.groups.is_empty() || filter.groups.iter().any(|g| meta.groups.contains(g));
++    let tag_ok = filter.tags.is_empty() || filter.tags.iter().any(|t| meta.tags.contains(t));
++    category_ok && group_ok && tag_ok
++}
++
++#[async_trait]
++impl DataProvider for SovdDataProvider {
++    async fn list(&self, filter: DataFilter) -> Result<Vec<Metadata>> {
++        Ok(self
++            .registry
++            .entries()
++            .map(|e| convert::metadata(&e.metadata))
++            .filter(|m| matches(m, &filter))
++            .collect())
++    }
++
++    async fn read(&self, data_id: &str, include_schema: bool) -> Result<Data> {
++        let entry = self.entry(data_id)?;
++        let args = ReadValueArgs::new(convert::reply_encoding(entry.format, include_schema));
++        // Create the handle under the lock, await it without.
++        let pending = {
++            let resource = entry
++                .resource
++                .lock()
++                .map_err(|_| DataError::Internal(format!("resource '{data_id}' is poisoned")))?;
++            resource.read(args)
++        };
++        let reply = handle::resolve_read(pending).await.map_err(convert::read_error)?;
++
++        let (data, schema) = convert::reply_value(reply.data)?;
++        if let Some(errors) = reply.errors.filter(|e| !e.is_empty()) {
++            // opensovd_core::Data has no error list; a reply with errors and no value is a failure.
++            if data.is_null() {
++                return Err(DataError::Internal(convert::reply_errors(&errors)));
++            }
++        }
++        Ok(Data {
++            data,
++            schema: schema.filter(|_| include_schema),
++        })
++    }
++
++    async fn write(&self, data_id: &str, value: Value) -> Result<()> {
++        let entry = self.entry(data_id)?;
++        if entry.metadata.read_only {
++            return Err(DataError::ReadOnly);
++        }
++        let args = WriteValueArgs {
++            user_data: Some(convert::request_payload(value, entry.format)?),
++            ..WriteValueArgs::default()
++        };
++        let pending = {
++            let mut resource = entry
++                .resource
++                .lock()
++                .map_err(|_| DataError::Internal(format!("resource '{data_id}' is poisoned")))?;
++            resource.write(args)
++        };
++        handle::resolve_write(pending).await.map_err(convert::write_error)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use crate::registry::PayloadFormat;
++    use diag_api::sovd::data_resource::{
++        DataCategory, DataResourceMetadata, ReadValueHandle, ReadValueReply, WriteValueHandle,
++    };
++    use diag_api::sovd::{DataError as DiagDataError, DataResource, ErrorCode, GenericError};
++    use diag_api::uds::{DataResourceAdapter, ReadDataByIdentifier, WriteDataByIdentifier};
++    use diag_api::{JsonSchemaRequired, ReplyMessageEncoding, ReplyMessagePayload, RequestMessagePayload};
++    use serde_json::json;
++    use std::sync::{Arc, Mutex};
++
++    fn meta(id: &str, category: DataCategory, read_only: bool, groups: &[&str]) -> DataResourceMetadata {
++        DataResourceMetadata {
++            id: id.to_string(),
++            name: id.to_string(),
++            translation_id: None,
++            read_only,
++            category,
++            groups: (!groups.is_empty()).then(|| groups.iter().map(|g| (*g).to_string()).collect()),
++        }
++    }
++
++    /// A JSON resource whose value lives behind a shared cell, answering asynchronously.
++    struct Cell(Arc<Mutex<diag_json::Value>>);
++
++    impl DataResource for Cell {
++        fn read(&self, input: ReadValueArgs) -> ReadValueHandle {
++            let value = self.0.lock().unwrap().clone();
++            let schema = (input.reply_encoding == ReplyMessageEncoding::JSON(JsonSchemaRequired::Yes))
++                .then(|| diag_json::json!({"type": "number"}));
++            ReadValueHandle::from_future(async move {
++                Ok(ReadValueReply {
++                    data: ReplyMessagePayload::from_json(value, schema),
++                    errors: None,
++                })
++            })
++        }
++
++        fn write(&mut self, input: WriteValueArgs) -> WriteValueHandle {
++            match input.user_data {
++                Some(RequestMessagePayload::JSON(v)) => {
++                    *self.0.lock().unwrap() = v;
++                    WriteValueHandle::ready()
++                },
++                _ => WriteValueHandle::from_error(DiagDataError::from_error(GenericError::from_code(
++                    ErrorCode::IncompleteRequest,
++                    "json only".to_string(),
++                ))),
++            }
++        }
++    }
++
++    struct Failing;
++
++    impl DataResource for Failing {
++        fn read(&self, _input: ReadValueArgs) -> ReadValueHandle {
++            ReadValueHandle::from_error(diag_api::Error::from_error(GenericError::from_code(
++                ErrorCode::NotResponding,
++                "sensor offline".to_string(),
++            )))
++        }
++    }
++
++    struct Rdbi(Vec<u8>);
++
++    impl ReadDataByIdentifier for Rdbi {
++        fn read(&self) -> diag_api::Result<Vec<u8>> {
++            Ok(self.0.clone())
++        }
++    }
++
++    struct Wdbi(Arc<Mutex<Vec<u8>>>);
++
++    impl WriteDataByIdentifier for Wdbi {
++        fn write(&mut self, input: &[u8]) -> diag_api::Result<()> {
++            *self.0.lock().unwrap() = input.to_vec();
++            Ok(())
++        }
++    }
++
++    fn provider() -> (SovdDataProvider, Arc<Mutex<diag_json::Value>>) {
++        let cell = Arc::new(Mutex::new(diag_json::json!(21.5)));
++        let mut registry = DataResourceRegistry::new();
++        registry
++            .register(
++                meta("cabin_temp", DataCategory::CurrentData, false, &["hvac"]),
++                Cell(cell.clone()),
++            )
++            .unwrap();
++        registry
++            .register(meta("broken", DataCategory::SysInfo, true, &[]), Failing)
++            .unwrap();
++        (SovdDataProvider::new(registry), cell)
++    }
++
++    #[tokio::test]
++    async fn list_all_in_registration_order() {
++        let (p, _) = provider();
++        let ids: Vec<_> = p
++            .list(DataFilter::default())
++            .await
++            .unwrap()
++            .into_iter()
++            .map(|m| m.id)
++            .collect();
++        assert_eq!(ids, ["cabin_temp", "broken"]);
++    }
++
++    #[tokio::test]
++    async fn list_filters_by_category_and_group() {
++        let (p, _) = provider();
++        let by_cat = DataFilter {
++            categories: vec!["sysInfo".to_string()],
++            ..DataFilter::default()
++        };
++        assert_eq!(p.list(by_cat).await.unwrap()[0].id, "broken");
++        let by_group = DataFilter {
++            groups: vec!["hvac".to_string()],
++            ..DataFilter::default()
++        };
++        assert_eq!(p.list(by_group).await.unwrap()[0].id, "cabin_temp");
++        let none = DataFilter {
++            tags: vec!["t".to_string()],
++            ..DataFilter::default()
++        };
++        assert!(p.list(none).await.unwrap().is_empty());
++    }
++
++    #[tokio::test]
++    async fn categories_and_groups_come_from_metadata() {
++        let (p, _) = provider();
++        let cats: Vec<_> = p.categories().await.unwrap().into_iter().map(|c| c.category).collect();
++        assert_eq!(cats, ["currentData", "sysInfo"]);
++        let groups: Vec<_> = p.groups(None).await.unwrap().into_iter().map(|g| g.id).collect();
++        assert_eq!(groups, ["hvac"]);
++    }
++
++    #[tokio::test]
++    async fn read_value_and_schema_on_request() {
++        let (p, _) = provider();
++        let plain = p.read("cabin_temp", false).await.unwrap();
++        assert_eq!(plain.data, json!(21.5));
++        assert!(plain.schema.is_none());
++        let with_schema = p.read("cabin_temp", true).await.unwrap();
++        assert_eq!(with_schema.schema, Some(json!({"type": "number"})));
++    }
++
++    #[tokio::test]
++    async fn read_unknown_id_is_not_found() {
++        let (p, _) = provider();
++        assert!(matches!(p.read("nope", false).await, Err(DataError::NotFound(id)) if id == "nope"));
++    }
++
++    #[tokio::test]
++    async fn read_error_is_internal_with_message() {
++        let (p, _) = provider();
++        let err = p.read("broken", false).await.unwrap_err();
++        assert!(matches!(&err, DataError::Internal(m) if m.contains("sensor offline")));
++    }
++
++    #[tokio::test]
++    async fn write_reaches_the_resource() {
++        let (p, cell) = provider();
++        p.write("cabin_temp", json!(19.0)).await.unwrap();
++        assert_eq!(*cell.lock().unwrap(), diag_json::json!(19.0));
++        assert_eq!(p.read("cabin_temp", false).await.unwrap().data, json!(19.0));
++    }
++
++    #[tokio::test]
++    async fn write_read_only_is_rejected_before_the_resource() {
++        let (p, _) = provider();
++        assert!(matches!(p.write("broken", json!(1)).await, Err(DataError::ReadOnly)));
++        assert!(matches!(p.write("nope", json!(1)).await, Err(DataError::NotFound(_))));
++    }
++
++    #[tokio::test]
++    async fn uds_adapter_served_without_extra_code() {
++        let written = Arc::new(Mutex::new(Vec::new()));
++        let uds = DataResourceAdapter::new()
++            .with_rdbi(Rdbi(vec![0x12, 0xAB]))
++            .with_wdbi(Wdbi(written.clone()));
++        let mut registry = DataResourceRegistry::new();
++        registry
++            .register_with_format(
++                meta("did_f190", DataCategory::IdentData, false, &[]),
++                PayloadFormat::Binary,
++                uds,
++            )
++            .unwrap();
++        let p = SovdDataProvider::from(registry);
++
++        assert_eq!(p.read("did_f190", false).await.unwrap().data, json!("12AB"));
++        p.write("did_f190", json!("C0FFEE")).await.unwrap();
++        assert_eq!(*written.lock().unwrap(), vec![0xC0, 0xFF, 0xEE]);
++    }
++
++    #[tokio::test]
++    async fn uds_adapter_registered_as_json_reports_the_mismatch() {
++        let mut registry = DataResourceRegistry::new();
++        registry
++            .register(
++                meta("did", DataCategory::IdentData, true, &[]),
++                DataResourceAdapter::new().with_rdbi(Rdbi(vec![1])),
++            )
++            .unwrap();
++        let err = SovdDataProvider::new(registry).read("did", false).await.unwrap_err();
++        assert!(matches!(&err, DataError::Internal(m) if m.contains("binary")));
++    }
++}
+diff --git a/score/mw/diag/sovd_adapter/registry.rs b/score/mw/diag/sovd_adapter/registry.rs
+new file mode 100644
+index 0000000..f7bffb2
+--- /dev/null
++++ b/score/mw/diag/sovd_adapter/registry.rs
+@@ -0,0 +1,203 @@
++// *******************************************************************************
++// Copyright (c) 2026 Contributors to the Eclipse Foundation
++//
++// See the NOTICE file(s) distributed with this work for additional
++// information regarding copyright ownership.
++//
++// This program and the accompanying materials are made available under the
++// terms of the Apache License Version 2.0 which is available at
++// <https://www.apache.org/licenses/LICENSE-2.0>
++//
++// SPDX-License-Identifier: Apache-2.0
++// *******************************************************************************
++
++use diag_api::sovd::data_resource::DataResourceMetadata;
++use diag_api::sovd::DataResource;
++use indexmap::IndexMap;
++use std::sync::Mutex;
++
++/// Wire format a resource produces and accepts.
++///
++/// `diag_api` resources choose their own encoding: the UDS adapters in
++/// `diag_api::uds` only speak [`PayloadFormat::Binary`], application resources
++/// usually speak JSON. The provider asks each resource for its own format.
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub enum PayloadFormat {
++    /// Values are JSON; the resource can also supply a JSON schema.
++    #[default]
++    Json,
++    /// Values are UTF-8 text, served as a JSON string.
++    Utf8,
++    /// Values are raw bytes, served as an upper-case hex string (`"0A1B"`).
++    Binary,
++}
++
++/// Why a resource could not be registered.
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub enum RegistrationError {
++    /// A resource with this id is already registered.
++    DuplicateId(String),
++    /// The id is empty.
++    EmptyId,
++}
++
++impl std::fmt::Display for RegistrationError {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        match self {
++            Self::DuplicateId(id) => write!(f, "data resource '{id}' is already registered"),
++            Self::EmptyId => write!(f, "data resource id must not be empty"),
++        }
++    }
++}
++
++impl std::error::Error for RegistrationError {}
++
++/// One registered resource.
++///
++/// `DataResource::write` takes `&mut self` while `DataProvider` methods take
++/// `&self`, so the resource sits behind a `Mutex`. The lock is only held while a
++/// read/write *handle* is created, never across an `.await`.
++pub(crate) struct Entry {
++    pub(crate) metadata: DataResourceMetadata,
++    pub(crate) format: PayloadFormat,
++    pub(crate) resource: Mutex<Box<dyn DataResource + Send>>,
++}
++
++/// Owns the `diag_api` resources a gateway component serves, keyed by id.
++///
++/// `DataResource` cannot enumerate itself, so the registry keeps each resource
++/// next to its metadata. Registration order is preserved in listings.
++#[derive(Default)]
++pub struct DataResourceRegistry {
++    entries: IndexMap<String, Entry>,
++}
++
++impl DataResourceRegistry {
++    #[must_use]
++    pub fn new() -> Self {
++        Self::default()
++    }
++
++    /// Register a resource that reads and writes JSON.
++    ///
++    /// # Errors
++    /// [`RegistrationError`] if the id is empty or already taken.
++    pub fn register(
++        &mut self,
++        metadata: DataResourceMetadata,
++        resource: impl DataResource + Send + 'static,
++    ) -> Result<(), RegistrationError> {
++        self.register_with_format(metadata, PayloadFormat::Json, resource)
++    }
++
++    /// Register a resource with an explicit payload format, e.g.
++    /// [`PayloadFormat::Binary`] for a `diag_api::uds::DataResourceAdapter`.
++    ///
++    /// # Errors
++    /// [`RegistrationError`] if the id is empty or already taken.
++    pub fn register_with_format(
++        &mut self,
++        metadata: DataResourceMetadata,
++        format: PayloadFormat,
++        resource: impl DataResource + Send + 'static,
++    ) -> Result<(), RegistrationError> {
++        if metadata.id.is_empty() {
++            return Err(RegistrationError::EmptyId);
++        }
++        if self.entries.contains_key(&metadata.id) {
++            return Err(RegistrationError::DuplicateId(metadata.id));
++        }
++        self.entries.insert(
++            metadata.id.clone(),
++            Entry {
++                metadata,
++                format,
++                resource: Mutex::new(Box::new(resource)),
++            },
++        );
++        Ok(())
++    }
++
++    #[must_use]
++    pub fn len(&self) -> usize {
++        self.entries.len()
++    }
++
++    #[must_use]
++    pub fn is_empty(&self) -> bool {
++        self.entries.is_empty()
++    }
++
++    pub(crate) fn get(&self, id: &str) -> Option<&Entry> {
++        self.entries.get(id)
++    }
++
++    pub(crate) fn entries(&self) -> impl Iterator<Item = &Entry> {
++        self.entries.values()
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use diag_api::sovd::data_resource::{DataCategory, ReadValueArgs, ReadValueHandle};
++
++    struct Dummy;
++
++    impl DataResource for Dummy {
++        fn read(&self, _input: ReadValueArgs) -> ReadValueHandle {
++            unreachable!("not read in registry tests")
++        }
++    }
++
++    fn meta(id: &str) -> DataResourceMetadata {
++        DataResourceMetadata {
++            id: id.to_string(),
++            name: id.to_string(),
++            translation_id: None,
++            read_only: true,
++            category: DataCategory::CurrentData,
++            groups: None,
++        }
++    }
++
++    #[test]
++    fn register_keeps_insertion_order() {
++        let mut registry = DataResourceRegistry::new();
++        registry.register(meta("b"), Dummy).unwrap();
++        registry.register(meta("a"), Dummy).unwrap();
++        let ids: Vec<_> = registry.entries().map(|e| e.metadata.id.as_str()).collect();
++        assert_eq!(ids, ["b", "a"]);
++        assert_eq!(registry.len(), 2);
++    }
++
++    #[test]
++    fn register_rejects_duplicate_id() {
++        let mut registry = DataResourceRegistry::new();
++        registry.register(meta("x"), Dummy).unwrap();
++        assert_eq!(
++            registry.register(meta("x"), Dummy),
++            Err(RegistrationError::DuplicateId("x".to_string()))
++        );
++        assert_eq!(registry.len(), 1);
++    }
++
++    #[test]
++    fn register_rejects_empty_id() {
++        let mut registry = DataResourceRegistry::new();
++        assert_eq!(registry.register(meta(""), Dummy), Err(RegistrationError::EmptyId));
++        assert!(registry.is_empty());
++    }
++
++    #[test]
++    fn default_format_is_json() {
++        let mut registry = DataResourceRegistry::new();
++        registry.register(meta("j"), Dummy).unwrap();
++        registry
++            .register_with_format(meta("b"), PayloadFormat::Binary, Dummy)
++            .unwrap();
++        assert_eq!(registry.get("j").unwrap().format, PayloadFormat::Json);
++        assert_eq!(registry.get("b").unwrap().format, PayloadFormat::Binary);
++        assert!(registry.get("missing").is_none());
++    }
++}
+-- 
+2.53.0
+

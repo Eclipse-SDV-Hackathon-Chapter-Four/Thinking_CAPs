@@ -164,4 +164,4 @@ EcuManagerFailed { ecu: String, reason: String }
 ---
 
 *Plan prepared for Eclipse SDV Hackathon 2026*
-*This is PRE-WORK planning only - no code written*
+*This document is a pre-event plan. Pre-existing implementation patches and September measurements are retained; see the corrected prework declaration.*

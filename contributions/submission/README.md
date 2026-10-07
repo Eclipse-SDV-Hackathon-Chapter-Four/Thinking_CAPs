@@ -2,7 +2,8 @@
 
 Current evidence supports **two completed local contributions**: a scoped SOME/IP
 registration fix and lifecycle configuration deduplication. Diagnostics #16 and
-Classic Diagnostic Adapter references still need evidence recovery.
+Classic Diagnostic Adapter patches have been recovered; their distinct published
+PRs #40/#601 remain blocked by actual contributor ECA and review gates.
 
 [Assembly verification](verification.json) records the 2026-10-04 integrity checks,
 clean SOME/IP patch application and retained lifecycle XML counts.
@@ -43,3 +44,10 @@ See [the contribution index](../README.md) and
 Run `python3 scripts/verify_missing_contributions.py` in addition to the global
 registry verifier. Native review, remaining checks and the actual event submission
 requirements still need their recorded decisions.
+
+## Compliance before submission
+
+Use [the current compliance packet](../compliance/2026-10-07/README.md) and its
+prepared PR bodies. Prior drafts remain retained evidence. All current registry
+candidate flags are false while native legal/review/IP/check dispositions remain
+unresolved. This does not erase the two scoped local implementation results.

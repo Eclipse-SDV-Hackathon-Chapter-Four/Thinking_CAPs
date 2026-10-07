@@ -1,0 +1,27 @@
+From 5feb748b9214611bfa1562726dba55bfe64ef7ab Mon Sep 17 00:00:00 2001
+From: Purushotham Erupuri <erupuripurushotham1@gmail.com>
+Date: Tue, 22 Sep 2026 15:43:48 +0200
+Subject: [PATCH 3/5] feat(diag_api): re-export JsonSchemaRequired
+
+ReplyMessageEncoding::JSON takes a JsonSchemaRequired, which was not reachable
+through the diag_api facade.
+
+---
+ score/mw/diag/api/diag_api.rs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/score/mw/diag/api/diag_api.rs b/score/mw/diag/api/diag_api.rs
+index df52b04..fb18eec 100644
+--- a/score/mw/diag/api/diag_api.rs
++++ b/score/mw/diag/api/diag_api.rs
+@@ -13,6 +13,7 @@
+ 
+ pub type KeyValueAttributes = ::common::KeyValueAttributes;
+ pub type ReplyMessageEncoding = ::common::ReplyMessageEncoding;
++pub type JsonSchemaRequired = ::common::JsonSchemaRequired;
+ pub type ReplyMessagePayload = ::common::ReplyMessagePayload;
+ pub type RequestMessagePayload = ::common::RequestMessagePayload;
+ pub type DiagnosticReply = ::common::DiagnosticReply;
+-- 
+2.53.0
+

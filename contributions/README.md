@@ -7,12 +7,12 @@ Eclipse SDV Hackathon submission. Inventory initially captured on **2026-10-04**
 | --- | --- | --- | --- |
 | [SOME/IP #84](issues/eclipse-score/inc_someip_gateway/84/README.md) | Reject duplicate SOCom servers across minor versions | Scoped fix verified; local user approval recorded; patch and full portable evidence retained | Issue open; prepared upstream PR body; broader identifier/discovery work remains |
 | [Lifecycle #704](issues/eclipse-score/lifecycle/704/README.md) | Generate three communication configurations from shared definitions | Fabro/DeepSeek Flash patch verified; 113 native cases pass; scoped local owner approval recorded | Issue open; upstream-template PR body and title prepared; upstream review/CI pending |
-| [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Five patches recovered; native validation pending | Issue open; verify baseline/build/tests before submission |
+| [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Five patches recovered; native validation pending | [Native PR #40](https://github.com/eclipse-score/inc_diagnostics/pull/40) open; actual ECA check fails; author DCO, IP disposition and native validation pending |
 | [Communication #1265](issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch; six Linux integration cases passed; agent engineering review complete, retain pastey0.2.3 recommended | Issue open; exact compiler qualification/adoption and human acceptance pending; historical evidence preserved |
 | [Communication #1167](communication-1167/README.md) | Dedicated COM API idempotency integration test | Agent review complete; 503 full-suite tests pass, 6 skipped; 204 inherited copyright findings retained | Issue open; original hackathon-source branch push recorded; native PR and formal acceptance pending |
 | [S-CORE #3115](issues/eclipse-score/score/3115/README.md) | AI SDLC / SpecKit tooling evaluation using `s-core_sw_fabric` experience | Current native DR prepared; 925 existing needs unchanged; fresh checks retain one inherited docs failure | Issue open; draft PR #3307 offered for PR #3140; assignee review requested; docs CI, comparative pilots and acceptance pending |
 | [S-CORE #2850](issues/eclipse-score/score/2850/README.md) | Documentation chatbot retrieval/provenance foundation | Current source, design records, fresh deterministic checks and historical release evidence retained | Issue open; scoped proposal only; native harness adapter and maintainer agreement pending |
-| [CDA #543](issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md) | Replace Option error paths with Result | Patch recovered; snapshot and manifest bound; native testing pending | Issue open; native validation and upstream submission pending |
+| [CDA #543](issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md) | Replace Option error paths with Result | Patch recovered; snapshot and manifest bound; native testing pending | [Native PR #601](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601) open; actual ECA check fails; review and current-revision verification pending |
 | [Communication #1236](issues/eclipse-score/communication/1236/README.md) | Buildifier CI enforcement | Original draft/recovery retained; 27 baseline-identical lint findings remain | Imported; human review and native lint cleanup pending |
 | [Communication #1031](issues/eclipse-score/communication/1031/README.md) | AoU visibility and traceability | Historical scoped checks retained | Imported; production Config Management/FMEA integration and review pending |
 | [Communication #751](issues/eclipse-score/communication/751/README.md) | CodeQL production-source completeness | Latest correction: 502 tests pass, 6 skipped; failures/history retained | Imported; copyright, full query analysis, QNX, coverage and review pending |
@@ -20,7 +20,7 @@ Eclipse SDV Hackathon submission. Inventory initially captured on **2026-10-04**
 
 The first two rows are completed local implementations with retained measurements.
 Upstream review, merge and issue closure have their own statuses. The diagnostics row
-is a recovery item and is excluded from the submission's completed-fix count.
+retains historical recovered patches alongside a distinct published revision and is excluded from the submission's completed-fix count.
 The communication assessment was added on **2026-10-06** and is excluded from completed/accepted fix counts.
 The tooling evaluation packet was added on **2026-10-07** and is a proposed assessment,
 excluded from completed/accepted fix counts. Its scoped offline verifier checks the new
@@ -110,3 +110,13 @@ python3 scripts/verify_contributions.py --json
 
 These checks verify retained artifacts; they rerun no native tests or provider calls
 and supply no engineering acceptance. The consolidated contribution branch has been merged into `main`.
+
+## Current Eclipse compliance — 2026-10-07
+
+Use the [current remediation record](compliance/2026-10-07/README.md) and each
+registry entry's `prepared_pr_draft` for new submissions. Sealed issue packets and
+the initial audit remain historical. All unresolved submissions are marked
+`submission_candidate=false`; earlier candidate flags are retained separately.
+The verifier checks recovered patch series and separately recorded submitted
+heads. It also verifies the restored [OpenBSW transportRouter packet](openbsw-transport-router/README.md)
+and native fault-storage packet. Neither is claimed merged or accepted.
