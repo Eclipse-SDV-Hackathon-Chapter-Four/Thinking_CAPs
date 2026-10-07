@@ -9,7 +9,7 @@ peer, the container writes its results to `/results` and creates
 
 | File | What it is |
 |---|---|
-| `Dockerfile` | Image `sdv-demo-runner`: `demo/run-demo.sh` unchanged, plus the results contract |
+| `Dockerfile` | Image `sdv-demo-runner`: `dashboard/run-demo.sh` unchanged, plus the results contract |
 | `executor-entrypoint.sh` | Runs one demo run into `/results/run`, writes `exit-code`, touches `.results_ready` |
 | `peer.yaml` | CLEO `PeerDescriptor` (devices `hvac-ecu`, `flxc1000`, the executor) + `ClusterDescriptor` |
 
@@ -25,8 +25,8 @@ peer, the container writes its results to `/results` and creates
 ## Build the executor image
 
 ```bash
-docker build -t sdv-demo-runner:local -f demo/opendut/Dockerfile demo
-# check it without openDuT (services from demo/start.sh must be up):
+docker build -t sdv-demo-runner:local -f dashboard/opendut/Dockerfile demo
+# check it without openDuT (services from dashboard/start.sh must be up):
 docker run --rm --network host -v "$PWD/evidence/opendut:/results" sdv-demo-runner:local
 ```
 
@@ -44,9 +44,9 @@ From the openDuT repository (`upstream/opendut`, release v0.10.2), following
    `target/ci/distribution/x86_64-unknown-linux-gnu/` — or build them with `cargo ci distribution`.
 3. `cargo theo testenv start`, then `cargo theo testenv cluster start` (starts EDGAR peers).
 4. Replace `DEMO_HOST` in `peer.yaml` with an address the EDGAR peers can reach, then
-   `opendut-cleo apply demo/opendut/peer.yaml` and deploy `sdv-demo-cluster`.
+   `opendut-cleo apply dashboard/opendut/peer.yaml` and deploy `sdv-demo-cluster`.
 5. Results appear as a ZIP under `http://nginx-webdav/sdv-demo/`; `run/verdict.md` inside
-   is the same verdict `demo/run-demo.sh` prints.
+   is the same verdict `dashboard/run-demo.sh` prints.
 
 ## Known gaps
 

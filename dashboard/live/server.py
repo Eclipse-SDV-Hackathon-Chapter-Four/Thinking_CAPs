@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Live demo console: serves demo/live/index.html and forwards its calls to the
+"""Live demo console: serves dashboard/live/index.html and forwards its calls to the
 running services, so the browser needs no CORS and the CDA token stays here.
 
     /api/gw/<path>    -> OpenSOVD gateway   http://127.0.0.1:7690/sovd/v1/<path>
@@ -9,13 +9,13 @@ running services, so the browser needs no CORS and the CDA token stays here.
     /api/health       -> reachability of all three
     /api/topology     -> live state of the whole architecture: SOVD gateway, the S-CORE
                          containers (processes), cruise_bridge and cruise ECU counters
-    /api/run          -> POST starts demo/run-demo.sh, GET returns its output
+    /api/run          -> POST starts dashboard/run-demo.sh, GET returns its output
 
 Every forwarded call except the page's background polls is printed to stdout,
 so a terminal next to the browser shows the real traffic.
 
-    demo/live/server.py            # http://127.0.0.1:8080
-    LIVE_PORT=9000 demo/live/server.py
+    dashboard/live/server.py            # http://127.0.0.1:8080
+    LIVE_PORT=9000 dashboard/live/server.py
 """
 
 import json
@@ -45,7 +45,7 @@ _token = {"value": None}
 _token_lock = threading.Lock()
 _run = {"proc": None, "lines": [], "exit": None, "started": None}
 _run_lock = threading.Lock()
-SCORE_RUN = ROOT / "demo" / "score" / "run"
+SCORE_RUN = ROOT / "dashboard" / "score" / "run"
 _counts = {"gw": 0, "cda": 0, "sim": 0}  # forwarded calls per upstream, polls included
 _topo = {"at": 0.0, "value": None}
 _topo_lock = threading.Lock()
@@ -187,8 +187,8 @@ class Handler(BaseHTTPRequestHandler):
         with _run_lock:
             running = _run["proc"] is not None and _run["exit"] is None
             if method == "POST" and not running:
-                print(f"[{time.strftime('%H:%M:%S')}] starting demo/run-demo.sh", flush=True)
-                proc = subprocess.Popen([str(ROOT / "demo" / "run-demo.sh")], cwd=ROOT, text=True,
+                print(f"[{time.strftime('%H:%M:%S')}] starting dashboard/run-demo.sh", flush=True)
+                proc = subprocess.Popen([str(ROOT / "dashboard" / "run-demo.sh")], cwd=ROOT, text=True,
                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
                 _run.update(proc=proc, lines=[], exit=None, started=time.time())
                 threading.Thread(target=pump, args=(proc,), daemon=True).start()

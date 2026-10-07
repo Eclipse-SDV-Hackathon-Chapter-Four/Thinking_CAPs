@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Builds the S-CORE side of the cruise control demo with Bazel and stages it in
-# demo/score/out/ for the two containers (docker-compose.yml):
+# dashboard/score/out/ for the two containers (docker-compose.yml):
 #   gatewayd, someipd              eclipse-score/inc_someip_gateway, unmodified
-#   cruise_bridge, cruise_ecu      ours, demo/score/sdv_cruise/, built inside that workspace
+#   cruise_bridge, cruise_ecu      ours, dashboard/score/sdv_cruise/, built inside that workspace
 #                                  so they use the same pinned mw::com as gatewayd
 #
 # On Apple Silicon (arm64), the build runs inside a --platform linux/amd64 Docker
@@ -14,7 +14,7 @@
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
-HERE=$ROOT/demo/score
+HERE=$ROOT/dashboard/score
 GW=$ROOT/upstream/inc_someip_gateway
 GW_COMMIT=f8a196c3
 OUT=$HERE/out
@@ -23,7 +23,7 @@ if [[ ! -d $GW ]]; then
     git clone https://github.com/eclipse-score/inc_someip_gateway.git "$GW"
     git -C "$GW" checkout -q "$GW_COMMIT"
 fi
-ln -sfn ../../demo/score/sdv_cruise "$GW/sdv_cruise"
+ln -sfn ../../dashboard/score/sdv_cruise "$GW/sdv_cruise"
 grep -q "sdv_cruise overlay" "$GW/MODULE.bazel" || cat "$HERE/MODULE.overlay.bazel" >> "$GW/MODULE.bazel"
 
 # Detect if we're on arm64 and need to use Docker for x86_64 build

@@ -5,8 +5,8 @@
 Embeds the run's timeline, assertions and raw responses into template.html,
 so the page shows only what the run actually observed.
 
-    demo/replay/build.py                 # latest run in evidence/runs/
-    demo/replay/build.py 20260922T134533Z
+    dashboard/replay/build.py                 # latest run in evidence/runs/
+    dashboard/replay/build.py 20260922T134533Z
 """
 
 import json

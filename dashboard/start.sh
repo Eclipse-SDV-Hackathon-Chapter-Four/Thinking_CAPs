@@ -8,11 +8,11 @@
 #           DEMO=cruise cruise diag + the stand-in cruise control app, in process
 #           DEMO=score  the full architecture: cruise diag -> cruise_bridge (mw::com) ->
 #                       gatewayd -> someipd -> SOME/IP -> cruise ECU, in two containers
-#                       (demo/score/, built with Bazel by demo/score/build.sh on first use)
-#   live console (:8080): demo/live/server.py, the page for presenting
+#                       (dashboard/score/, built with Bazel by dashboard/score/build.sh on first use)
+#   live console (:8080): dashboard/live/server.py, the page for presenting
 #
-#   demo/start.sh          start both (DEMO=cruise demo/start.sh for cruise control)
-#   demo/start.sh stop     stop both
+#   dashboard/start.sh          start both (DEMO=cruise dashboard/start.sh for cruise control)
+#   dashboard/start.sh stop     stop both
 
 set -euo pipefail
 
@@ -24,11 +24,11 @@ case $DEMO in
     cruise|score) GATEWAY_CRATE=cruise-gateway ;;
     *) echo "DEMO must be hvac, cruise or score, not '$DEMO'" >&2; exit 2 ;;
 esac
-GATEWAY_BIN=$ROOT/demo/gateway/target/debug/$GATEWAY_CRATE
-PIDFILE=$ROOT/demo/.gateway.pid
-LOG=$ROOT/demo/.gateway.log
-LIVE_PIDFILE=$ROOT/demo/.live.pid
-LIVE_LOG=$ROOT/demo/.live.log
+GATEWAY_BIN=$ROOT/dashboard/gateway/target/debug/$GATEWAY_CRATE
+PIDFILE=$ROOT/dashboard/.gateway.pid
+LOG=$ROOT/dashboard/.gateway.log
+LIVE_PIDFILE=$ROOT/dashboard/.live.pid
+LIVE_LOG=$ROOT/dashboard/.live.log
 LIVE_PORT=${LIVE_PORT:-8080}
 
 stop() {
@@ -37,7 +37,7 @@ stop() {
     if [[ -f $LIVE_PIDFILE ]] && kill "$(cat "$LIVE_PIDFILE")" 2>/dev/null; then echo "live console stopped"; fi
     rm -f "$LIVE_PIDFILE"
     $COMPOSE down
-    docker compose -f "$ROOT/demo/score/docker-compose.yml" down 2>/dev/null || true
+    docker compose -f "$ROOT/dashboard/score/docker-compose.yml" down 2>/dev/null || true
 }
 
 wait_for() {
@@ -65,17 +65,17 @@ wait_for "CDA" http://127.0.0.1:20002/health/ready
 
 if [[ $DEMO == score ]]; then
     echo "S-CORE nodes: vehicle computer + cruise ECU"
-    [[ -x $ROOT/demo/score/out/bin/cruise_bridge ]] || "$ROOT/demo/score/build.sh"
+    [[ -x $ROOT/dashboard/score/out/bin/cruise_bridge ]] || "$ROOT/dashboard/score/build.sh"
     # always fresh containers: a stale LoLa state trips gatewayd (evidence/cruise-stage2/FINDINGS.md)
     started=$(date +%s)
-    docker compose -f "$ROOT/demo/score/docker-compose.yml" up -d --force-recreate
-    stats=$ROOT/demo/score/run/bridge.json
+    docker compose -f "$ROOT/dashboard/score/docker-compose.yml" up -d --force-recreate
+    stats=$ROOT/dashboard/score/run/bridge.json
     subscribed() {  # written by this run's bridge, and subscribed
         [[ -f $stats && $(stat -c %Y "$stats") -ge $started ]] && grep -q '"subscribed":true' "$stats"
     }
     for _ in $(seq 1 30); do subscribed && break; sleep 1; done
     subscribed && echo "  cruise_bridge subscribed to the cruise ECU over SOME/IP" \
-        || { echo "  cruise_bridge did not see the cruise ECU; see demo/score/run/*.log" >&2; exit 1; }
+        || { echo "  cruise_bridge did not see the cruise ECU; see dashboard/score/run/*.log" >&2; exit 1; }
     export CRUISE_LINK=bridge
 fi
 
@@ -83,7 +83,7 @@ echo "path A: demo gateway ($DEMO)"
 if [[ -f $PIDFILE ]] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
     echo "  already running (pid $(cat "$PIDFILE"))"
 else
-    [[ -x $GATEWAY_BIN ]] || (cd "$ROOT/demo/gateway" && cargo build --bin "$GATEWAY_CRATE")
+    [[ -x $GATEWAY_BIN ]] || (cd "$ROOT/dashboard/gateway" && cargo build --bin "$GATEWAY_CRATE")
     HVAC_DEBOUNCE_FAILED_MS=${HVAC_DEBOUNCE_FAILED_MS:-5000} nohup "$GATEWAY_BIN" > "$LOG" 2>&1 &
     echo $! > "$PIDFILE"
 fi
@@ -93,11 +93,11 @@ echo "live console"
 if [[ -f $LIVE_PIDFILE ]] && kill -0 "$(cat "$LIVE_PIDFILE")" 2>/dev/null; then
     echo "  already running (pid $(cat "$LIVE_PIDFILE"))"
 else
-    LIVE_PORT=$LIVE_PORT nohup python3 "$ROOT/demo/live/server.py" > "$LIVE_LOG" 2>&1 &
+    LIVE_PORT=$LIVE_PORT nohup python3 "$ROOT/dashboard/live/server.py" > "$LIVE_LOG" 2>&1 &
     echo $! > "$LIVE_PIDFILE"
 fi
 wait_for "live console" "http://127.0.0.1:$LIVE_PORT/"
 
 echo
-echo "ready - open http://127.0.0.1:$LIVE_PORT/  (traffic: tail -f demo/.live.log)"
-echo "        or run: demo/run-demo.sh"
+echo "ready - open http://127.0.0.1:$LIVE_PORT/  (traffic: tail -f dashboard/.live.log)"
+echo "        or run: dashboard/run-demo.sh"

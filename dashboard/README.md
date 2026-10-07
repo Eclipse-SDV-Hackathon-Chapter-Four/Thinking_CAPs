@@ -16,13 +16,13 @@ Two paths, both real, checked in one run (see `docs/architecture/`):
   CDA SOVD API `:20002`
 
 ```bash
-demo/setup.sh      # once: clone upstream at pinned commits, apply contrib/ patches, build
-demo/start.sh      # start CDA + simulator (Docker), the gateway and the live console
-DEMO=cruise demo/start.sh   # same, with the cruise control gateway (stop the other one first)
-DEMO=score demo/start.sh    # the full S-CORE architecture; first use builds it with Bazel (~10 min)
-demo/run-demo.sh   # 12 (HVAC) or 13 (cruise) assertions -> evidence/runs/<run-id>/{verdict.md,run.json,raw/}
+dashboard/setup.sh      # once: clone upstream at pinned commits, apply contrib/ patches, build
+dashboard/start.sh      # start CDA + simulator (Docker), the gateway and the live console
+DEMO=cruise dashboard/start.sh   # same, with the cruise control gateway (stop the other one first)
+DEMO=score dashboard/start.sh    # the full S-CORE architecture; first use builds it with Bazel (~10 min)
+dashboard/run-demo.sh   # 12 (HVAC) or 13 (cruise) assertions -> evidence/runs/<run-id>/{verdict.md,run.json,raw/}
                    # (or press "Run the checks" in the live console; both follow the running gateway)
-demo/start.sh stop
+dashboard/start.sh stop
 ```
 
 | Path | What lives there |
@@ -30,7 +30,7 @@ demo/start.sh stop
 | `gateway/` | Cargo workspace that compiles the upstream inc_diagnostics sources (with our patches) in place. Bazel cannot build the gateway binary yet — `evidence/pr6-gateway/FINDINGS.md` |
 | `gateway/crates/cruise_diag`, `cruise_sim`, `cruise-gateway` | Cruise control, stage 1: cruise diag resources behind a `CruiseLink`, the stand-in cruise control app, and the gateway binary serving both. The stand-in's behaviour is our assumption, to confirm with the other team |
 | `score/` | The S-CORE side of the full architecture: `sdv_cruise/` (our `cruise_bridge` in Rust + mw::com, `cruise_ecu` stand-in in C++ + vsomeip, configs), built inside `eclipse-score/inc_someip_gateway` by `build.sh`; `docker-compose.yml` runs the vehicle computer and the cruise ECU. Findings: `evidence/cruise-stage2/FINDINGS.md` |
-| `live/` | Live console on `:8080`, with a **live architecture** panel (every process, link and message rate): freeze the sensor, inject/clear a DTC, watch both paths and run the checks. `server.py` forwards to the services and prints every request (`demo/.live.log`) |
+| `live/` | Live console on `:8080`, with a **live architecture** panel (every process, link and message rate): freeze the sensor, inject/clear a DTC, watch both paths and run the checks. `server.py` forwards to the services and prints every request (`dashboard/.live.log`) |
 | `replay/` | Offline replay of a recorded run (`build.py <run-id>` -> `index.html`), a fallback when the stack cannot run |
 | `run-demo.sh` | The runner: expected values fixed up front, deterministic PASS/FAIL per assertion |
 | `opendut/` | The runner as an openDuT container executor, plus the CLEO descriptor |

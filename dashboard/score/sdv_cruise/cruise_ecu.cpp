@@ -6,7 +6,7 @@
 //   offers   0x4300.0001  event 0x8001 cruise_status (eventgroup 0x8001), every 100 ms
 //   consumes 0x4301.0001  event 0x8001 inject_fault  (eventgroup 0x8001), from the vehicle computer
 //
-// Behaviour is our assumption, to confirm with the other team (same as demo/gateway/crates/cruise_sim):
+// Behaviour is our assumption, to confirm with the other team (same as dashboard/gateway/crates/cruise_sim):
 // holds 100 km/h; while inject_fault is 1 the speed signal freezes; after FAULT_MS of frozen
 // signal the cruise control becomes unavailable; after release it waits in standby and the
 // simulated driver resumes it RESUME_MS later (0 = never).

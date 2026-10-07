@@ -8,7 +8,7 @@
 # Path A follows whatever the gateway serves: the HVAC example (12 assertions)
 # or the cruise control with the stand-in app (13 assertions, DEMO=cruise).
 #
-# Needs: the CDA stack (demo/start.sh) and the gateway on :7690.
+# Needs: the CDA stack (dashboard/start.sh) and the gateway on :7690.
 # Exit code: 0 only if every assertion passed.
 
 set -uo pipefail

@@ -3,7 +3,7 @@
 //! cruise diag → CruiseLink. The link is either
 //!   CRUISE_LINK=sim     (default) the stand-in cruise control app in process, or
 //!   CRUISE_LINK=bridge  the S-CORE path: cruise_bridge (mw::com) → gatewayd → someipd →
-//!                       SOME/IP → cruise control ECU, see demo/score/.
+//!                       SOME/IP → cruise control ECU, see dashboard/score/.
 //!
 //! Environment:
 //!   SCORE_GATEWAY_ADDRESS        listen address, default 127.0.0.1:7690

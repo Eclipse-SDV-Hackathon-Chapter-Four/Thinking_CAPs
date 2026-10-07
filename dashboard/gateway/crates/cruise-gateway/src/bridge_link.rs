@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-//! `CruiseLink` over the S-CORE path: talks to `cruise_bridge` (demo/score), which
+//! `CruiseLink` over the S-CORE path: talks to `cruise_bridge` (dashboard/score), which
 //! holds the mw::com side of link ④. The bridge is built with S-CORE's Bazel
 //! toolchain, this gateway with Cargo, so they meet over a local TCP line protocol:
 //!   bridge → us   {"type":"status","speed":99.8,"set_speed":100.0,"state":"active","seq":7}

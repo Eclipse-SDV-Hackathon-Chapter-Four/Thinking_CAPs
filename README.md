@@ -357,7 +357,8 @@ The software-factory and engineering-assistant work is documented in the
 | [AutoSD/](AutoSD/README.md) | VM provisioning and workload deployment, service configuration, managed-network support and lighting-integration evidence. |
 | [score/](score/README.md) | Earlier S-CORE cruise-control ECU/bridge integration, Docker configuration and build scripts. The native campaign's external S-CORE checkout is selected through its configuration. |
 | [integration/dashboard/](integration/dashboard/) | Current Vehicle Lab Python service and browser UI (`web/`). Launch it with `scripts/run_dashboard.py`. |
-| [demo/](demo/README.md) and [dashboard/](dashboard/README.md) | Gateway/CDA demonstration stacks, earlier live consoles and replay assets. `demo/X-Verse/` is the main interactive vehicle workspace; `integration/dashboard/` is the current Vehicle Lab service. |
+| [demo/X-Verse/](demo/X-Verse/README.md) | The end-to-end demo: the synced X-Verse workspace (`run_autoverse.py`), including the hackathon ECUs in `external_hackathon_ecus/` (ThreadX, OpenSOVD vECU, SOVD Adapter Console, Demo Console v1). |
+| [dashboard/](dashboard/README.md) | Earlier Gateway/CDA demonstration stack: live console, replay assets and openDuT runner. `integration/dashboard/` is the current Vehicle Lab service. |
 
 Components generally keep their own `scripts/`, `tests/`, `config/`, `docs/`,
 `specs/` and `evidence/` or `artifacts/` directories. Follow each component README
