@@ -1,4 +1,18 @@
 #!/usr/bin/env python3
+
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
 """Verify this packet offline without extracting or executing archived source."""
 
 import hashlib
@@ -30,8 +44,14 @@ def main():
     for name, expected in packet['files'].items():
         if digest(contained(ROOT, name)) != expected:
             raise ValueError(f'Packet hash mismatch: {name}')
+    independent = packet.get('independent_packets_not_bound', [])
+    for name in independent:
+        parts = PurePosixPath(name).parts
+        if len(parts) != 1 or parts[0] in ('.', '..'):
+            raise ValueError('Independent artifact must be one named sibling entry')
     actual_files = {p.relative_to(ROOT).as_posix() for p in ROOT.rglob('*')
-                    if p.is_file() and p.name != 'artifact-manifest.json'}
+                    if p.is_file() and p.name != 'artifact-manifest.json'
+                    and p.relative_to(ROOT).parts[0] not in independent}
     if actual_files != set(packet['files']):
         raise ValueError('Packet contains missing or unmanifested files')
     source = json.loads((ROOT / 'evidence/source/source-manifest.json').read_text())

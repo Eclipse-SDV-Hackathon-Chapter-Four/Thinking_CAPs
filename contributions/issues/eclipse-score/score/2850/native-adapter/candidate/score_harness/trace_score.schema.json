@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "context_sha256": {
+      "type": "string"
+    },
+    "coverage_delta": {
+      "type": "object"
+    },
+    "executor": {
+      "type": "string"
+    },
+    "expected_verdict": {
+      "type": "string"
+    },
+    "gate_passed": {
+      "type": "boolean"
+    },
+    "gate_verdict_correct": {
+      "type": "boolean"
+    },
+    "impacts_correct": {
+      "type": "boolean"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "after_sha256": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "before_sha256": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "environment_hash": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "escalation_role": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "execution_timestamp": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "gate_script_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "python_version": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "responsible_role": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "task_spec_sha256": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "waiver_authority": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "execution_timestamp",
+        "python_version",
+        "environment_hash",
+        "gate_script_version",
+        "task_spec_sha256",
+        "before_sha256",
+        "after_sha256",
+        "responsible_role",
+        "escalation_role",
+        "waiver_authority"
+      ],
+      "type": "object"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "verdict_correct": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "task_id",
+    "gate_passed",
+    "expected_verdict",
+    "gate_verdict_correct",
+    "impacts_correct",
+    "verdict_correct",
+    "coverage_delta",
+    "provenance",
+    "executor",
+    "context_sha256"
+  ],
+  "title": "Lane A task score",
+  "type": "object"
+}

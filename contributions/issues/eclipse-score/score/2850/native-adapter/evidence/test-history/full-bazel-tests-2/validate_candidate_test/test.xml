@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="3" time="11.414" timestamp="2026-10-07T14:41:01.746408+00:00" hostname="master"><testcase classname="score_harness.tests.validate_candidate_test" name="test_validate_harness_baseline" file="score_harness/tests/validate_candidate_test.py" line="30" time="4.400"><failure message="AssertionError: assert 'failed' == 'ok'&#10;  &#10;  - ok&#10;  + failed">def test_validate_harness_baseline():
+        """Test that baseline harness passes validation."""
+    
+        harness_path = _MY_PATH.parent / "harness" / "base_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+&gt;       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:43: AssertionError</failure></testcase><testcase classname="score_harness.tests.validate_candidate_test" name="test_validate_harness_rule_retrieval" file="score_harness/tests/validate_candidate_test.py" line="47" time="6.555"><failure message="AssertionError: assert 'failed' == 'ok'&#10;  &#10;  - ok&#10;  + failed">def test_validate_harness_rule_retrieval():
+        """Test that rule_retrieval harness passes validation."""
+        harness_path = _MY_PATH.parent / "harness" / "rule_retrieval_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+&gt;       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:59: AssertionError</failure></testcase><testcase classname="score_harness.tests.validate_candidate_test" name="test_task_spec_schema" file="score_harness/tests/validate_candidate_test.py" line="63" time="0.008" /></testsuite></testsuites>

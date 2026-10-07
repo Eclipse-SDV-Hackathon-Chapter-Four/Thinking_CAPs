@@ -1,0 +1,121 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+Starting local Bazel server (8.4.2) and connecting to it...
+... still trying to connect to local Bazel server (2550039) after 10 seconds ...
+... still trying to connect to local Bazel server (2550039) after 20 seconds ...
+INFO: Invocation ID: ecdc46e7-ab7e-4484-a017-a2b6f7faa868
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+    currently loading: score_harness/tests
+Loading: 0 packages loaded
+    currently loading: score_harness/tests
+Analyzing: target //score_harness/tests:validate_candidate_test (1 packages loaded)
+Analyzing: target //score_harness/tests:validate_candidate_test (1 packages loaded, 0 targets configured)
+Analyzing: target //score_harness/tests:validate_candidate_test (1 packages loaded, 0 targets configured)
+
+Analyzing: target //score_harness/tests:validate_candidate_test (55 packages loaded, 10 targets configured)
+
+Analyzing: target //score_harness/tests:validate_candidate_test (178 packages loaded, 663 targets configured)
+
+Analyzing: target //score_harness/tests:validate_candidate_test (194 packages loaded, 2608 targets configured)
+
+Analyzing: target //score_harness/tests:validate_candidate_test (223 packages loaded, 4897 targets configured)
+
+Analyzing: target //score_harness/tests:validate_candidate_test (283 packages loaded, 21629 targets configured)
+
+Analyzing: target //score_harness/tests:validate_candidate_test (288 packages loaded, 21669 targets configured)
+
+INFO: Analyzed target //score_harness/tests:validate_candidate_test (288 packages loaded, 21669 targets configured).
+[10 / 49] checking cached actions
+[49 / 50] [Prepa] Testing //score_harness/tests:validate_candidate_test
+[49 / 50] Testing //score_harness/tests:validate_candidate_test; 0s disk-cache
+[49 / 50] Testing //score_harness/tests:validate_candidate_test; 1s disk-cache, linux-sandbox
+[49 / 50] Testing //score_harness/tests:validate_candidate_test; 3s disk-cache, linux-sandbox
+FAIL: //score_harness/tests:validate_candidate_test (Exit 1) (see /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.log)
+[49 / 50] 1 / 1 tests, 1 failed; Testing //score_harness/tests:validate_candidate_test; 27s disk-cache, linux-sandbox
+INFO: From Testing //score_harness/tests:validate_candidate_test:
+==================== Test output for //score_harness/tests:validate_candidate_test:
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collected 3 items
+
+score_harness/tests/validate_candidate_test.py::test_validate_harness_baseline FAILED [ 33%]
+score_harness/tests/validate_candidate_test.py::test_validate_harness_rule_retrieval FAILED [ 66%]
+score_harness/tests/validate_candidate_test.py::test_task_spec_schema PASSED [100%]
+
+=================================== FAILURES ===================================
+________________________ test_validate_harness_baseline ________________________
+
+    def test_validate_harness_baseline():
+        """Test that baseline harness passes validation."""
+    
+        harness_path = _MY_PATH.parent / "harness" / "base_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+>       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+harness_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-b...out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main/score_harness/harness/base_harness.py')
+result     = {'candidate': 'base_harness', 'failures': [{'failure_type': 'type_error', 'fix': 'Fix type errors reported by basedpyr...reportMissingTypeArgument)\n0 errors, 5 warnings, 0 notes'}], 'status': 'failed', 'task_id': 'task_002_threshold_fail'}
+task_spec_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-b...tbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main/score_harness/spec/task_002_threshold_fail.json')
+
+score_harness/tests/validate_candidate_test.py:43: AssertionError
+_____________________ test_validate_harness_rule_retrieval _____________________
+
+    def test_validate_harness_rule_retrieval():
+        """Test that rule_retrieval harness passes validation."""
+        harness_path = _MY_PATH.parent / "harness" / "rule_retrieval_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+>       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+harness_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-b...tbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main/score_harness/harness/rule_retrieval_harness.py')
+result     = {'candidate': 'rule_retrieval_harness', 'failures': [{'failure_type': 'type_error', 'fix': 'Fix type errors reported b...reportUnknownVariableType)\n0 errors, 8 warnings, 0 notes'}], 'status': 'failed', 'task_id': 'task_002_threshold_fail'}
+task_spec_path = PosixPath('/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-b...tbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main/score_harness/spec/task_002_threshold_fail.json')
+
+score_harness/tests/validate_candidate_test.py:59: AssertionError
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/1/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.xml -
+=========================== short test summary info ============================
+FAILED score_harness/tests/validate_candidate_test.py::test_validate_harness_baseline
+FAILED score_harness/tests/validate_candidate_test.py::test_validate_harness_rule_retrieval
+========================= 2 failed, 1 passed in 12.04s =========================
+================================================================================
+INFO: Found 1 test target...
+[50 / 50] 1 / 1 tests, 1 failed; no actions running
+Target //score_harness/tests:validate_candidate_test up-to-date:
+  bazel-bin/score_harness/tests/validate_candidate_test
+INFO: Elapsed time: 122.483s, Critical Path: 33.52s
+INFO: 2 processes: 49 action cache hit, 1 internal, 1 linux-sandbox.
+INFO: Build completed, 1 test FAILED, 2 total actions
+//score_harness/tests:validate_candidate_test                            FAILED in 23.7s
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.log
+
+Executed 1 out of 1 test: 1 fails locally.

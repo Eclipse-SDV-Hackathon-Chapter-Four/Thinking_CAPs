@@ -1,0 +1,112 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+Starting local Bazel server (8.4.2) and connecting to it...
+... still trying to connect to local Bazel server (2518407) after 10 seconds ...
+INFO: Invocation ID: cd90ba5e-ad5a-4e6d-b91c-ad8e8d246e88
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Loading: 0 packages loaded
+    currently loading: scripts_bazel/tests ... (2 packages)
+Analyzing: 4 targets (2 packages loaded)
+Analyzing: 4 targets (2 packages loaded, 0 targets configured)
+Analyzing: 4 targets (2 packages loaded, 0 targets configured)
+
+Analyzing: 4 targets (67 packages loaded, 10 targets configured)
+
+Analyzing: 4 targets (196 packages loaded, 704 targets configured)
+
+Analyzing: 4 targets (284 packages loaded, 11711 targets configured)
+
+Analyzing: 4 targets (285 packages loaded, 21638 targets configured)
+
+INFO: Analyzed 4 targets (290 packages loaded, 21684 targets configured).
+[13 / 42] checking cached actions
+[36 / 65] [Prepa] Creating runfiles tree bazel-out/k8-fastbuild/bin/scripts_bazel/tests/traceability_gate_test.runfiles
+[58 / 65] Creating runfiles tree bazel-out/k8-fastbuild/bin/score_harness/tests/common_test.runfiles; 1s local ... (4 actions, 3 running)
+[67 / 72] Creating runfiles tree bazel-out/k8-fastbuild/bin/score_harness/tests/common_test.runfiles; 2s local ... (3 actions running)
+[68 / 72] Creating runfiles tree bazel-out/k8-fastbuild/bin/score_harness/tests/common_test.runfiles; 3s local ... (4 actions running)
+[68 / 72] Creating runfiles tree bazel-out/k8-fastbuild/bin/score_harness/tests/common_test.runfiles; 14s local ... (4 actions running)
+[68 / 72] Creating runfiles tree bazel-out/k8-fastbuild/bin/score_harness/tests/common_test.runfiles; 44s local ... (4 actions running)
+[69 / 73] Creating runfiles tree bazel-out/k8-fastbuild/bin/score_harness/tests/common_test.runfiles; 78s local ... (4 actions, 3 running)
+[72 / 76] Testing //scripts_bazel/tests:traceability_gate_test; 0s linux-sandbox, disk-cache ... (4 actions, 3 running)
+[72 / 76] Testing //scripts_bazel/tests:traceability_gate_test; 1s linux-sandbox, disk-cache ... (4 actions running)
+[72 / 76] Testing //scripts_bazel/tests:traceability_gate_test; 10s linux-sandbox, disk-cache ... (4 actions running)
+[72 / 76] 1 / 4 tests; Testing //scripts_bazel/tests:traceability_gate_test; 18s linux-sandbox, disk-cache ... (4 actions running)
+[75 / 76] 3 / 4 tests; Testing //score_harness/tests:validate_candidate_test; 20s linux-sandbox, disk-cache
+FAIL: //score_harness/tests:validate_candidate_test (Exit 1) (see /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.log)
+INFO: From Testing //score_harness/tests:validate_candidate_test:
+==================== Test output for //score_harness/tests:validate_candidate_test:
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/43/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collected 3 items
+
+score_harness/tests/validate_candidate_test.py::test_validate_harness_baseline FAILED [ 33%]
+score_harness/tests/validate_candidate_test.py::test_validate_harness_rule_retrieval FAILED [ 66%]
+score_harness/tests/validate_candidate_test.py::test_task_spec_schema PASSED [100%]
+
+=================================== FAILURES ===================================
+________________________ test_validate_harness_baseline ________________________
+
+    def test_validate_harness_baseline():
+        """Test that baseline harness passes validation."""
+    
+        harness_path = _MY_PATH.parent / "harness" / "base_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+>       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:43: AssertionError
+_____________________ test_validate_harness_rule_retrieval _____________________
+
+    def test_validate_harness_rule_retrieval():
+        """Test that rule_retrieval harness passes validation."""
+        harness_path = _MY_PATH.parent / "harness" / "rule_retrieval_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+>       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:59: AssertionError
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/43/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.xml -
+=========================== short test summary info ============================
+FAILED score_harness/tests/validate_candidate_test.py::test_validate_harness_baseline
+FAILED score_harness/tests/validate_candidate_test.py::test_validate_harness_rule_retrieval
+========================= 2 failed, 1 passed in 3.56s ==========================
+================================================================================
+INFO: Found 4 test targets...
+INFO: Elapsed time: 133.858s, Critical Path: 99.35s
+INFO: 48 processes: 31 action cache hit, 5 internal, 43 linux-sandbox.
+INFO: Build completed, 1 test FAILED, 48 total actions
+//score_harness/tests:common_test                                        PASSED in 4.8s
+//score_harness/tests:pinned_context_harness_test                        PASSED in 15.7s
+//scripts_bazel/tests:traceability_gate_test                             PASSED in 6.3s
+//score_harness/tests:validate_candidate_test                            FAILED in 11.9s
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.log
+
+Executed 4 out of 4 tests: 3 tests pass and 1 fails locally.
+There were tests whose specified size is too big. Use the --test_verbose_timeout_warnings command line option to see which ones these are.

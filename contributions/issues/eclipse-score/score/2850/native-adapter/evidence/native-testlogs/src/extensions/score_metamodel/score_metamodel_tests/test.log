@@ -1,0 +1,140 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //src/extensions/score_metamodel:score_metamodel_tests
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/_main
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+
+----------------------------- live log collection ------------------------------
+[2026-10-07 14:53:38.184] [DEBUG] [sphinx.score_metamodel] new local_check: <function check_options at 0x71f543fa0d60>
+[2026-10-07 14:53:38.184] [DEBUG] [sphinx.score_metamodel] new local_check: <function check_extra_options at 0x71f543fa0f40>
+[2026-10-07 14:53:38.184] [DEBUG] [sphinx.score_metamodel] new local_check: <function check_validity_consistency at 0x71f543fa0fe0>
+collected 64 items
+
+src/extensions/score_metamodel/tests/test_check_options.py::TestCheckOptions::test_unknown_directive PASSED [  1%]
+src/extensions/score_metamodel/tests/test_check_options.py::TestCheckOptions::test_unknown_option_present_in_neither_req_opt_neither_opt_opt PASSED [  3%]
+src/extensions/score_metamodel/tests/test_check_options.py::test_milestone_parsing PASSED [  4%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_empty_list PASSED [  6%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_single_entry_with_path 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:38.344] [DEBUG] [sphinx.score_metamodel.external_needs] Parsing external needs sources: ["@repo//foo/bar:baz"]
+[2026-10-07 14:53:38.345] [DEBUG] [sphinx.score_metamodel.external_needs] Parsed external needs sources: []
+PASSED                                                                   [  7%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_single_entry_no_path 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:38.346] [DEBUG] [sphinx.score_metamodel.external_needs] Parsing external needs sources: ["@repo//:target"]
+[2026-10-07 14:53:38.346] [DEBUG] [sphinx.score_metamodel.external_needs] Parsed external needs sources: []
+PASSED                                                                   [  9%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_single_entry_json_no_path 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:38.347] [DEBUG] [sphinx.score_metamodel.external_needs] Parsing external needs sources: ["@repo//:needs_json"]
+[2026-10-07 14:53:38.348] [DEBUG] [sphinx.score_metamodel.external_needs] Parsed external needs sources: [ExternalNeedsSource(bazel_module='repo', path_to_target='', target='needs_json')]
+PASSED                                                                   [ 10%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_multiple_entries 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:38.349] [DEBUG] [sphinx.score_metamodel.external_needs] Parsing external needs sources: ["@repo1//:needs_json", "@repo2//:needs_json"]
+[2026-10-07 14:53:38.349] [DEBUG] [sphinx.score_metamodel.external_needs] Parsed external needs sources: [ExternalNeedsSource(bazel_module='repo1', path_to_target='', target='needs_json'), ExternalNeedsSource(bazel_module='repo2', path_to_target='', target='needs_json')]
+PASSED                                                                   [ 12%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_multiple_entries_2 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:38.350] [DEBUG] [sphinx.score_metamodel.external_needs] Parsing external needs sources: ["@repo1//:needs_json", "@repo2//path:needs_json"]
+[2026-10-07 14:53:38.350] [DEBUG] [sphinx.score_metamodel.external_needs] Parsed external needs sources: [ExternalNeedsSource(bazel_module='repo1', path_to_target='', target='needs_json')]
+PASSED                                                                   [ 14%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_invalid_entry 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:38.352] [DEBUG] [sphinx.score_metamodel.external_needs] Parsing external needs sources: ["@not_a_valid_string"]
+PASSED                                                                   [ 15%]
+src/extensions/score_metamodel/tests/test_external_needs.py::test_parser PASSED [ 17%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::test_returns_empty_list_when_filter_is_empty PASSED [ 18%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::test_returns_valid_checks PASSED [ 20%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::test_strips_whitespace PASSED [ 21%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::test_raises_assertion_for_invalid_check PASSED [ 23%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::TestNeedHelper::test_default_values PASSED [ 25%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::TestNeedHelper::test_custom_values_override_defaults PASSED [ 26%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::TestNeedHelper::test_link_fields_extracted PASSED [ 28%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::TestNeedHelper::test_extra_fields_in_extras PASSED [ 29%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::TestNeedHelper::test_empty_links_not_in_kwargs PASSED [ 31%]
+src/extensions/score_metamodel/tests/test_metamodel__init__.py::TestNeedHelper::test_combined_core_links_and_extras PASSED [ 32%]
+src/extensions/score_metamodel/tests/test_metamodel_load.py::test_load_metamodel_data PASSED [ 34%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[graph/test_metamodel_graph.rst] PASSED [ 35%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[id_contains_feature/test_id_contains_feature.rst] PASSED [ 37%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[architecture/architecture_tests.rst] PASSED [ 39%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[options/gd_req_comp.rst] PASSED [ 40%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[options/test_options_extra_option.rst] PASSED [ 42%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[options/wp_comp.rst] PASSED [ 43%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[options/test_options_options.rst] PASSED [ 45%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[attributes/test_attributes_format_id_format.rst] PASSED [ 46%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[attributes/test_validity.rst] PASSED [ 48%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[attributes/test_attributes_format_id_length.rst] PASSED [ 50%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[attributes/test_attributes_external_prefix.rst] PASSED [ 51%]
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[attributes/test_prohibited_words.rst] PASSED [ 53%]
+src/extensions/score_metamodel/tests/test_sphinx_filters.py::test_generic_pie_linked_items_matches_source_by_id_prefix PASSED [ 54%]
+src/extensions/score_metamodel/tests/test_sphinx_filters.py::test_generic_pie_items_by_tag_matches_source_by_id_prefix PASSED [ 56%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_my_pie_linked_standard_requirements PASSED [ 57%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_my_pie_linked_standard_workproducts PASSED [ 59%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_my_pie_workproducts_contained_in_exactly_one_workflow PASSED [ 60%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_get_standards_needs PASSED [ 62%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_get_standards_workproducts PASSED [ 64%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_get_compliance_req_needs PASSED [ 65%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_get_compliance_wp_needs PASSED [ 67%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_get_workflows PASSED [ 68%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_get_workproducts PASSED [ 70%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_positive_case_mixed_linked_and_unlinked PASSED [ 71%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_negative_case_no_needs_with_tag PASSED [ 73%]
+src/extensions/score_metamodel/tests/test_standards.py::TestStandards::test_assert_multiple_kwargs PASSED [ 75%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_dashboard_defaults_to_local_only PASSED [ 76%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_dashboard_can_include_external_via_default_flag PASSED [ 78%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_dashboard_filter_arg_can_override_default PASSED [ 79%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_requirements_with_test_links_default_local_only PASSED [ 81%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_requirements_with_test_links_can_override_include_external PASSED [ 82%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_requirements_with_test_links_parses_multiple_types PASSED [ 84%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_requirements_fully_linked_uses_shared_summary PASSED [ 85%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_requirements_fully_linked_can_include_external PASSED [ 87%]
+src/extensions/score_metamodel/tests/test_traceability_dashboard.py::test_process_requirements_linked_uses_stream_a_process_requirement_totals PASSED [ 89%]
+src/extensions/score_metamodel/tests/test_traceability_metrics.py::test_filter_requirements_defaults_to_local_only PASSED [ 90%]
+src/extensions/score_metamodel/tests/test_traceability_metrics.py::test_filter_requirements_can_include_external_needs PASSED [ 92%]
+src/extensions/score_metamodel/tests/test_traceability_metrics.py::test_compute_traceability_summary_propagates_include_external PASSED [ 93%]
+src/extensions/score_metamodel/tests/test_traceability_metrics.py::test_compute_traceability_summary_process_requirements_summary PASSED [ 95%]
+src/extensions/score_metamodel/tests/test_traceability_metrics.py::test_compute_traceability_summary_process_requirements_respects_include_external PASSED [ 96%]
+src/extensions/score_metamodel/tests/test_traceability_metrics_json_generation.py::test_write_metrics_json_defaults_to_local_only PASSED [ 98%]
+src/extensions/score_metamodel/tests/test_traceability_metrics_json_generation.py::test_write_metrics_json_can_include_external PASSED [100%]
+
+=============================== warnings summary ===============================
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 12 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/data.py:923: RemovedInSphinx11Warning: 'sphinx.environment.BuildEnvironment.app' is deprecated. Check CHANGES for Sphinx API modifications.
+    return self.env.app._needs_services
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 24 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/data.py:925: RemovedInSphinx11Warning: 'sphinx.environment.BuildEnvironment.app' is deprecated. Check CHANGES for Sphinx API modifications.
+    self.env.app._needs_services = ServiceManager(self.env.app)
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 12 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/data.py:926: RemovedInSphinx11Warning: 'sphinx.environment.BuildEnvironment.app' is deprecated. Check CHANGES for Sphinx API modifications.
+    return self.env.app._needs_services
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 132 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/directives/need.py:171: RemovedInSphinx11Warning: 'sphinx.environment.BuildEnvironment.app' is deprecated. Check CHANGES for Sphinx API modifications.
+    app=self.env.app,
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 131 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/roles/need_part.py:94: RemovedInSphinx11Warning: 'sphinx.environment.BuildEnvironment.app' is deprecated. Check CHANGES for Sphinx API modifications.
+    app = env.app
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 12 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/data.py:883: RemovedInSphinx11Warning: 'sphinx.environment.BuildEnvironment.app' is deprecated. Check CHANGES for Sphinx API modifications.
+    post_process_needs_data(self.env.app)
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py::test_rst_files[graph/test_metamodel_graph.rst]
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/bin/src/extensions/score_metamodel/score_metamodel_tests.runfiles/rules_python++pip+docs_as_code_hub_env_312_sphinx_needs/site-packages/sphinx_needs/layout.py:84: DeprecationWarning: The frontend.OptionParser class will be replaced by a subclass of argparse.ArgumentParser in Docutils 2.0 or later.
+    To get default settings, use frontend.get_default_settings().
+    doc_settings = OptionParser(components=(Parser,)).get_default_values()
+
+src/extensions/score_metamodel/tests/test_rules_file_based.py: 72 warnings
+  /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/external/rules_python++python+python_3_12_x86_64-unknown-linux-gnu/lib/python3.12/optparse.py:1000: DeprecationWarning: The frontend.Option class will be removed in Docutils 2.0 or later.
+    option = self.option_class(*args, **kwargs)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/13/execroot/_main/bazel-out/k8-fastbuild/testlogs/src/extensions/score_metamodel/score_metamodel_tests/test.xml -
+====================== 64 passed, 396 warnings in 14.41s =======================

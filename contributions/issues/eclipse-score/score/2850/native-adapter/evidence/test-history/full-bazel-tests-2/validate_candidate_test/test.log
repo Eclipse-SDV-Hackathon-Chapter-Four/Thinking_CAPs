@@ -1,0 +1,63 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score_harness/tests:validate_candidate_test
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/4/execroot/_main/bazel-out/k8-fastbuild/bin/score_harness/tests/validate_candidate_test.runfiles/_main
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collected 3 items
+
+score_harness/tests/validate_candidate_test.py::test_validate_harness_baseline FAILED [ 33%]
+score_harness/tests/validate_candidate_test.py::test_validate_harness_rule_retrieval FAILED [ 66%]
+score_harness/tests/validate_candidate_test.py::test_task_spec_schema PASSED [100%]
+
+=================================== FAILURES ===================================
+________________________ test_validate_harness_baseline ________________________
+
+    def test_validate_harness_baseline():
+        """Test that baseline harness passes validation."""
+    
+        harness_path = _MY_PATH.parent / "harness" / "base_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+>       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:43: AssertionError
+_____________________ test_validate_harness_rule_retrieval _____________________
+
+    def test_validate_harness_rule_retrieval():
+        """Test that rule_retrieval harness passes validation."""
+        harness_path = _MY_PATH.parent / "harness" / "rule_retrieval_harness.py"
+        assert harness_path.exists(), f"Harness not found: {harness_path}"
+    
+        # Use a minimal task spec for validation
+        task_spec_path = _MY_PATH.parent / "spec" / "task_002_threshold_fail.json"
+        assert task_spec_path.exists(), f"Task spec not found: {task_spec_path}"
+    
+        # Should not raise
+        result = validate_candidate_module.validate_candidate(harness_path, task_spec_path)
+        assert isinstance(result, dict)
+>       assert result.get("status") == "ok"
+E       AssertionError: assert 'failed' == 'ok'
+E         
+E         - ok
+E         + failed
+
+score_harness/tests/validate_candidate_test.py:59: AssertionError
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/4/execroot/_main/bazel-out/k8-fastbuild/testlogs/score_harness/tests/validate_candidate_test/test.xml -
+=========================== short test summary info ============================
+FAILED score_harness/tests/validate_candidate_test.py::test_validate_harness_baseline
+FAILED score_harness/tests/validate_candidate_test.py::test_validate_harness_rule_retrieval
+========================= 2 failed, 1 passed in 11.41s =========================
