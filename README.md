@@ -87,6 +87,105 @@ the consolidated `main` branch.
 | AAOS / OTA / Jakarta | Extend the existing IVI and update assets | **OTA implemented and verified; Jakarta planned.** Java EOL backend and RTCU deliver the cluster APK over mutual TLS to Cuttlefish and a Raspberry Pi 4; successful campaigns on both targets and a cleanly failed campaign for an unreachable target are recorded. Jakarta adaptation remains planned. | [ASPICE evidence](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/aspice/report/README.md) |
 | Safety Evaluation Kit | Propose safety-impact, evidence and approval gates for the factory | **Concept.** Implementation remains part of the best-effort extension scope. | [Scope](#safety-evaluation-kit) |
 
+## Run and Verify the End-to-End Demonstration
+
+The end-to-end demonstration is the X-Verse vehicle simulation in [`demo/X-Verse`](demo/X-Verse):
+CARLA and the virtual vehicle → Zenoh VCU → Zenoh–SOME/IP bridge → Eclipse S-CORE
+cruise-control ECU, which detects a lost vehicle-speed signal, cancels cruise control and
+reports DTC `CC.LostCommunication` over SOVD (Eclipse inc_diagnostics PR #16
+`sovd_adapter`) → OTA vECU (certgen, EOL backend, RTCU) updating the instrument cluster
+on Android Automotive (Cuttlefish, optionally a Raspberry Pi 4). One command starts and
+stops everything.
+
+### Verify Without Running It
+
+The [ASPICE SWE.1–SWE.6 report](demo/X-Verse/aspice/report/README.md) contains the
+requirements, the architecture (PlantUML), the unit, integration and qualification
+results and the traceability matrix, with every result recorded in the report itself:
+11/11 software requirements verified, 24/24 test cases pass, no traceability gaps.
+This needs no access to the X-Verse component repositories.
+
+### Where the End-to-End Tests Reside
+
+| What | Location (after step 2) | Run with |
+| --- | --- | --- |
+| ASPICE package: requirements, architecture, design, test specifications, report | [`demo/X-Verse/aspice/`](demo/X-Verse/aspice/README.md) | `python3 aspice/tools/generate_report.py --full` |
+| End-to-end integration checks (13, read-only, against the running system) | [`demo/X-Verse/aspice/tools/e2e_check.py`](demo/X-Verse/aspice/tools/e2e_check.py) | `python3 aspice/tools/e2e_check.py` |
+| Recorded results of the last run | [`demo/X-Verse/aspice/report/evidence/`](demo/X-Verse/aspice/report/evidence) | — |
+| Launcher tests | [`demo/X-Verse/tests/`](demo/X-Verse/tests) | `python3 -m unittest tests.test_run_autoverse` |
+| S-CORE cruise control and signal-loss guard (gtest) | `demo/X-Verse/vecu/s-core/cc_s-core/score/cruise_control/tests/` | Bazel in the S-CORE devcontainer (run by `--full`) |
+| PR #16 `sovd_adapter` | `demo/X-Verse/vecu/s-core/third_party/inc_diagnostics` | Bazel in the S-CORE devcontainer (run by `--full`) |
+| SOME/IP payload conversion | `demo/X-Verse/bridges/someip/zenoh-someip-bridge/tests/` | `build/test_convert` |
+| OTA backend (JUnit) and live OTA cycle | `demo/X-Verse/vecu/ota/backend/java/src/test/`, `demo/X-Verse/vecu/ota/e2e/` | Maven container (run by `--full`) |
+
+### Step by Step: Clone, Run and Verify
+
+**Prerequisites.** Ubuntu 22.04 on x86-64 with a graphical desktop, an NVIDIA GPU for
+CARLA, virtualization enabled in the BIOS/UEFI (`/dev/kvm`, for Android Cuttlefish),
+internet access, plenty of free disk space (CARLA, Android images and container builds),
+and a GitHub SSH key with read access to the The-Xverse repositories: the components are
+imported from there.
+
+1. **Clone.**
+
+   ```bash
+   git clone git@github.com:Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs.git
+   cd Thinking_CAPs/demo/X-Verse
+   ```
+
+2. **Set up** (one time; it takes a while). Installs the host tools and Docker, checks
+   KVM, imports every component with `vcs import` (each from its X-Verse repository,
+   branch `dev/sdv-hackathon-2026`), builds S-CORE with its diagnostics server and the
+   SOME/IP bridge, and installs CARLA and Cuttlefish. Add `--threadx` when an MXChip AZ3166
+   board is used.
+
+   ```bash
+   ./setup.sh --carla --cuttlefish
+   ```
+
+3. **Start the demonstration.**
+
+   ```bash
+   python3 run_autoverse.py --enable-camera-display --vcu-zenoh
+   ```
+
+   It starts a Zenoh router if none is running, CARLA, the VCU, the SOME/IP bridge,
+   S-CORE, the OTA stack, Vehicle Manual Control, the virtual vehicle and Cuttlefish. The
+   EOL console opens at `https://localhost:9444`; Android is at `https://localhost:8443`
+   (self-signed certificates: accept the warning).
+
+4. **Install the cluster app over the air** (one time). In the EOL console, upload
+   `aaos_digital_cluster/cuttlefish_emulator/apk/digital-cluster-app-debug.apk` with a
+   version and **Push update** to `PC-CUTTLEFISH-01`; the campaign shows
+   `downloading → installing → success`. Open the cluster app from Android's app menu.
+
+5. **Drive.** Focus the **Vehicle Manual Control** window: `W` accelerate, `S` brake,
+   `A`/`D` steer, `C` cruise control (from 10 km/h), `Z`/`X` set speed, `Q` reverse.
+
+6. **Lose the speed signal and diagnose it.** With cruise control engaged, press `I`:
+   after about 1.1 s S-CORE cancels cruise control and the VCU disengages. Read the DTC
+   over SOVD:
+
+   ```bash
+   curl -s http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/cc_lost_communication
+   ```
+
+   Press `I` again to restore the signal.
+
+7. **Verify the end-to-end chain** while the system runs:
+
+   ```bash
+   python3 aspice/tools/e2e_check.py                # 13 integration checks, expect "13/13 passed"
+   python3 aspice/tools/generate_report.py --full   # all suites + report in aspice/report/
+   ```
+
+8. **Stop** with **Ctrl+C** in the terminal of step 3; every component it started is
+   stopped.
+
+Optional hardware, detailed troubleshooting and every launcher option are described in the
+[X-Verse README](demo/X-Verse/README.md): the Raspberry Pi 4 as second OTA target (step
+10) and the ThreadX AZ3166 lighting ECU (step 12).
+
 ## Responsibilities
 
 Roles are assigned by work package, but the team maintains collective responsibility for integration and demonstration readiness.
