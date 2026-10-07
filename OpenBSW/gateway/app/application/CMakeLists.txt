@@ -25,6 +25,14 @@ add_executable(
 
 set_target_properties(openbsw-zonal-gw PROPERTIES SUFFIX ".elf")
 
+# embedded targets: link with the board's generated linker script
+if (TARGET startUp)
+    get_target_property(LINKER_SCRIPT startUp PROP_LINKER_SCRIPT)
+    if (DEFINED LINKER_SCRIPT)
+        target_link_options(openbsw-zonal-gw PRIVATE -T ${LINKER_SCRIPT})
+    endif ()
+endif ()
+
 target_include_directories(openbsw-zonal-gw PRIVATE include)
 
 target_link_libraries(

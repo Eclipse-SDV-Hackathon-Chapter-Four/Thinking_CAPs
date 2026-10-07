@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import dataclass, field
 
@@ -13,7 +14,8 @@ from doipclient.messages import (
     DiagnosticMessagePositiveAcknowledgement,
 )
 
-GATEWAY_IP = "192.168.0.201"
+# PC simulation 192.168.0.201; S32K148EVB 192.168.0.200 (ZGW_IP)
+GATEWAY_IP = os.environ.get("ZGW_IP", "192.168.0.201")
 GATEWAY = 0x1010
 REAR = 0x1020
 FRONT = 0x1030

@@ -5,6 +5,8 @@
 # CMakeLists.txt for the referenceApp build with our own application in app/.
 #
 #   cmake -S OpenBSW/gateway -B <build> -G Ninja -DOPENBSW_DIR=<openbsw checkout>
+#   S32K148EVB: add -DBUILD_TARGET_PLATFORM=S32K148EVB
+#               -DCMAKE_TOOLCHAIN_FILE=<openbsw>/cmake/toolchains/ArmNoneEabi.cmake
 cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
 
 set(CMAKE_CXX_SCAN_FOR_MODULES FALSE)
@@ -28,8 +30,10 @@ set(BUILD_EXECUTABLE
 
 string(TOLOWER "${BUILD_TARGET_PLATFORM}" OPENBSW_TARGET)
 set(OPENBSW_APP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/app")
-set(OPENBSW_PLATFORM_DIR "${OPENBSW_DIR}/platforms/${OPENBSW_TARGET}")
+# Options.cmake of the board sets OPENBSW_PLATFORM (posix, s32k1xx), the OpenBSW
+# platform folder; the board folder in app/platforms is the lower-case target name.
 include(${OPENBSW_APP_DIR}/platforms/${OPENBSW_TARGET}/Options.cmake)
+set(OPENBSW_PLATFORM_DIR "${OPENBSW_DIR}/platforms/${OPENBSW_PLATFORM}")
 
 if (BUILD_TARGET_RTOS STREQUAL "FREERTOS")
     add_compile_definitions(SUPPORT_FREERTOS)
@@ -66,6 +70,14 @@ add_subdirectory(${OPENBSW_DIR}/platforms ${CMAKE_BINARY_DIR}/openbsw/platforms
 add_subdirectory(${OPENBSW_DIR}/libs ${CMAKE_BINARY_DIR}/openbsw/libs
                  EXCLUDE_FROM_ALL)
 target_include_directories(etl BEFORE INTERFACE app/etl_profile)
+
+# OpenBSW platforms/s32k1xx/bsp/bspMcu adds CMSIS relative to CMAKE_SOURCE_DIR,
+# which is only right when OpenBSW is the top-level project; add the real paths.
+if (TARGET bspMcu)
+    target_include_directories(
+        bspMcu PUBLIC ${OPENBSW_DIR}/libs/3rdparty/cmsis
+                      ${OPENBSW_DIR}/libs/3rdparty/cmsis/m-profile)
+endif ()
 
 # The upstream contribution libs/bsw/transportRouter is built from OpenBSW/contrib, so the
 # gateway runs exactly the code proposed to OpenBSW.

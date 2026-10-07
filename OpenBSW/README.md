@@ -154,6 +154,25 @@ profile comes back on its own afterwards.
 
 Evidence and manifest are in [evidence/board-baseline](evidence/board-baseline/).
 
+**Gateway on the board (7 October 2026):**
+
+- The zonal gateway builds for the S32K148EVB from the same sources. Its
+  platform folder is `gateway/app/platforms/s32k148evb`, taken from the
+  reference app.
+- Flash 197,584 B. RAM (data + bss) 100,448 B; MainRAM is at 66 %, against
+  87 % for the reference app.
+- `scripts/board-it.sh` flashes the board and runs `gateway/tests/test_board.py`.
+  Result: **10/10**.
+  - DoIP: announcement with the configured VIN, identification, activation
+    rules, node type gateway.
+  - The gateway's own UDS server and its NACKs.
+  - Functional TesterPresent.
+  - Without a CAN peer, a routed request leaves the route busy (NACK `0x05`).
+    The unacknowledged CAN transmission then fails after about 1 s, the route
+    is freed, and the third failure on `0x1030` sets U0141.
+- Local UDS round trip: p95 3.1 ms.
+- Evidence is in [evidence/board-gateway-it](evidence/board-gateway-it/).
+
 ## Dependencies on other items
 
 - **ThreadX rear lighting ECU:** it needs a minimal UDS-on-CAN server (`0x7E1`/`0x7E9`) before end-to-end routing can be shown. That is a separate change to [ThreadX](../ThreadX/README.md).
