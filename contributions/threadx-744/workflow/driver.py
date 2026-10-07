@@ -178,7 +178,9 @@ def agent(role):
         result = subprocess.run(argv, input=prompt, text=True, stdout=out, stderr=err,
                                 env=env, timeout=1800)
     write("agents/" + stem + ".invocation.json", {"role": role, "argv": argv,
-          "model": MODEL, "reasoning_effort": EFFORT, "exit_code": result.returncode})
+          "model": MODEL, "reasoning_effort": EFFORT, "exit_code": result.returncode,
+          "driver_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+          "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()})
     if result.returncode:
         raise RuntimeError(f"Codex {role} failed; inspect {stem} logs")
     if readonly:
@@ -227,6 +229,7 @@ def verify():
     if frozen["patch_sha256"] != patch_hash():
         raise RuntimeError("Verification input differs from frozen patch")
     result = {"status": "fail", "patch_sha256": patch_hash(), "checks": [], "limitations": []}
+    result["driver_sha256"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
     write("verification.json", result)
     # A new patch gets fresh counters, CTest XML and gcovr output, including repairs.
     for path in [EVIDENCE / "build", EVIDENCE / "verification"]:
@@ -329,6 +332,12 @@ def review_gate():
 
 def publish():
     review_gate()
+    attestation_path = EVIDENCE / "human-review.json"
+    if not attestation_path.exists():
+        raise RuntimeError("ThreadX CONTRIBUTING.md requires human provenance review before submission; tested patch and PR text await contributor review")
+    attestation = read("human-review.json")
+    if attestation.get("patch_sha256") != patch_hash() or attestation.get("confirmed") is not True:
+        raise RuntimeError("Human provenance review is absent or belongs to another patch")
     title = (EVIDENCE / "pr-title.txt").read_text().strip()
     if len(title) > 72 or not title.startswith(("Fixed ", "Preserved ", "Corrected ")):
         raise RuntimeError("PR title must be a past-tense statement within 72 characters")
@@ -385,6 +394,8 @@ def monitor():
     for c in checks:
         if c.get("conclusion") in ["FAILURE", "CANCELLED", "TIMED_OUT", "ACTION_REQUIRED"] or c.get("state") in ["FAILURE", "ERROR"]:
             blockers.append("Applicable check failed or needs action: " + c.get("name", c.get("context", "unknown")))
+        elif c.get("status", "COMPLETED") != "COMPLETED" or c.get("state") in ["PENDING", "EXPECTED"]:
+            blockers.append("Applicable check is still pending: " + c.get("name", c.get("context", "unknown")))
     if pr["isDraft"]:
         blockers.append("Draft awaits human contributor provenance review")
     if pr["reviewDecision"] != "APPROVED":
@@ -404,6 +415,7 @@ def export():
              "contribution.patch", "verification.json", "technical-review.json", "process-review.json",
              "review-gate.json", "pr-title.txt", "pr-body.md", "commit-message.txt", "publication.json",
              "pr-status.json", "readiness.json", "last-error.json", "upstream-rules.json", "eca-verification.json"]
+    names += ["implementation-plan.md", "implementation-notes.md", "human-review.json"]
     for name in names:
         if (EVIDENCE / name).exists():
             shutil.copy2(EVIDENCE / name, REPO_ARTIFACTS / name)
