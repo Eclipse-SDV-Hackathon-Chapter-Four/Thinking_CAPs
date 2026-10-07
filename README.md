@@ -2,6 +2,132 @@
 
 > **Open-Source at the Core. Cyber-Physical by Design. AI-Powered. Software-Defined.**
 
+## Contributions
+
+This inventory groups **45 contribution entries** by Eclipse project: upstream
+fixes and proposals, dependency assessments, implemented integrations and planned
+extensions. It includes the original 42 entries plus the documentation-assistant
+pilot, repository code-header cleanup and end-to-end ASPICE evidence. Contribution names link to their records
+or upstream proposals.
+
+**PR status checked: 7 October 2026.** There are **11 distinct published upstream
+PRs: one merged, six open and four draft**. Local verification describes retained
+evidence; upstream acceptance is shown by the PR status. **Not submitted** means
+no published team PR was found; **N/A** marks integration, assessment or concept
+work without a standalone upstream PR.
+
+Cross-project work appears under its primary project, with partner components
+named in the module column. X-Verse, X-COM, CARLA, AAOS, the dashboard and the
+software factory are supporting assets or team implementations. Detailed evidence
+and remaining review requirements are in the [contribution index](contributions/README.md)
+and [registry](contributions/registry.json).
+
+### Eclipse S-CORE
+
+[Eclipse Safe Open Vehicle Core](https://projects.eclipse.org/projects/automotive.score)
+includes the Communication, SOME/IP Gateway, Lifecycle and Diagnostics modules.
+Communication middleware is also called LoLa or `mw::com`.
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [SOME/IP #84 — service identity and duplicate registration](https://github.com/eclipse-score/inc_someip_gateway/issues/84) | SOME/IP Gateway: SOCom identifiers, registration and discovery | Locally verified; native requirements and maintainer review pending | Not submitted |
+| [Lifecycle #704 — shared communication configuration](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/lifecycle/704/README.md) | Launch Manager: daemon/control-client configuration generation | Draft PR | [Lifecycle #762](https://github.com/eclipse-score/lifecycle/pull/762) |
+| [Diagnostics #16 — diagnostic resource provider](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/inc_diagnostics/16/README.md) | `diag_api` / `sovd_adapter`: `DataResource` to OpenSOVD `DataProvider` | Open PR; native review pending | [Diagnostics #40](https://github.com/eclipse-score/inc_diagnostics/pull/40) |
+| [Communication #1167 — COM API idempotency tests](contributions/communication-1167/README.md) | LoLa public COM-API integration tests | Open PR; Linux checks retained; native CI/review pending | [Communication #1335](https://github.com/eclipse-score/communication/pull/1335) |
+| [Communication #1261 — stream available services](contributions/issues/eclipse-score/communication/1261/README.md) | Rust COM-API LoLa runtime: service discovery and FFI | Linux checks passed; review pending | Not submitted |
+| [Communication #250 — typed find-any discovery](contributions/issues/eclipse-score/communication/250/README.md) | Rust COM-API: `FindServiceSpecifier::Any` | Linux checks passed; review pending | Not submitted |
+| [Communication #560 — subscription-state handlers](contributions/issues/eclipse-score/communication/560/README.md) | Rust COM-API proxy events and FFI | Linux checks passed; review pending | Not submitted |
+| [Communication #781 — method argument ownership](contributions/issues/eclipse-score/communication/781/README.md) | Rust method plumbing: `MethodInArgPtr<T>` | Draft PR; Linux checks passed | [Communication #1339](https://github.com/eclipse-score/communication/pull/1339) |
+| [Communication #490 — in-process mock runtime](contributions/issues/eclipse-score/communication/490/README.md) | Rust `com-api-runtime-mock` | Draft PR; Linux checks passed | [Communication #1340](https://github.com/eclipse-score/communication/pull/1340) |
+| [Communication #1265 — identifier-pasting dependency](contributions/issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Rust COM-API: `pastey` qualification/adoption | Assessment; native qualification and adoption pending | N/A — assessment |
+| [Communication #173 — external crate inventory](contributions/issues/eclipse-score/communication/173/README.md) | Rust COM-API dependency qualification | Assessment; dependency decisions pending | N/A — assessment |
+| [Communication #1264 — error-handling dependency](contributions/issues/eclipse-score/communication/1264/README.md) | Rust COM-API: `thiserror` | Assessment; native acceptance pending | N/A — assessment |
+| [Communication #1263 — async dependency](contributions/issues/eclipse-score/communication/1263/README.md) | Rust COM-API: `futures` | Assessment; native acceptance pending | N/A — assessment |
+| [Communication #794 — Rust test registration](contributions/issues/eclipse-score/communication/794/README.md) | Rust Bazel targets and manual tags | Tracked upstream work; no team patch | N/A — upstream-owned work |
+| [Communication #782 — Method API runtime](contributions/issues/eclipse-score/communication/782/README.md) | Rust COM-API method backend | Assessment; another contributor active | N/A — assessment |
+| [Communication #1062 — end-to-end protection](contributions/issues/eclipse-score/communication/1062/README.md) | Rust Method/Field API integrity protection | Design assessment; implementation pending | N/A — assessment |
+| [Communication #741 — sample/tutorial relocation](contributions/issues/eclipse-score/communication/741/README.md) | Rust COM example application and tutorial | Tracked opportunity; not implemented | Not submitted |
+| [Communication #1236 — buildifier enforcement](contributions/issues/eclipse-score/communication/1236/README.md) | Communication Bazel lint tooling and CI | Local fix verified; native CI/review pending | Not submitted |
+| [Communication #1031 — assumptions-of-use traceability](contributions/issues/eclipse-score/communication/1031/README.md) | Communication safety analysis; companion Configuration Management provider integration | Public API/provider checks retained; consumer safety decisions pending | Not submitted |
+| [Communication #751 — production CodeQL coverage](contributions/issues/eclipse-score/communication/751/README.md) | Communication static-analysis extraction/build pipeline | Current-source analysis retained; broader CI/review pending | Not submitted |
+| [Communication #1104 — CodeQL finding locations](contributions/issues/eclipse-score/communication/1104/README.md) | Communication CodeQL query overrides and reporting | Native location fix verified; review pending | Not submitted |
+| [Repository code-header cleanup](https://github.com/eclipse-score/communication/pull/1341) | Communication implementation, build helpers, fixtures and generated code | Open PR; code-header checks passed; non-code findings remain | [Communication #1341](https://github.com/eclipse-score/communication/pull/1341) |
+| [S-CORE #3115 — AI SDLC tooling evaluation](contributions/issues/eclipse-score/score/3115/README.md) | Infrastructure: AI-tool evaluation and decision records | Open PR; native CI/adoption/review pending | [S-CORE #3307](https://github.com/eclipse-score/score/pull/3307) |
+| [S-CORE #2850 — native assurance harness](https://github.com/eclipse-score/docs-as-code/pull/926) | `docs-as-code`: assurance evaluation, native gates and structured traces | Draft PR; integration and qualification review pending | [docs-as-code #926](https://github.com/eclipse-score/docs-as-code/pull/926) |
+| [Cruise control, receiver observations and fault injection](docs/reproduction.md) | S-CORE application integration; SOME/IP and Zenoh vehicle-data bridges | Integrated and exercised on the recorded bench | N/A — integration |
+| [S-CORE Software Factory](contributions/issues/eclipse-score/score/3115/README.md) | Team engineering automation: development, verification, review and evidence; Hephaestus workflow pilot | Implementation and pilot evidence retained; native adoption pending | Related: [S-CORE #3307](https://github.com/eclipse-score/score/pull/3307), [Hephaestus #14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) |
+| [Safety Evaluation Kit](#safety-evaluation-kit) | Safety/dependability workflow: impact, traceability and evidence/review gates | Concept; best-effort extension | N/A — concept |
+
+### Eclipse OpenSOVD
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [CDA #543 — diagnostic loading errors](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/issues/543) | Classic Diagnostic Adapter: `cda-main/src/mdd.rs` | **Merged upstream** | [CDA #601](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601) |
+| [OpenSOVD #156 — FaultProvider prototype](docs/hackathon/FAULT_PROVIDER_DESIGN.md) | Core fault-provider API and `/faults` resources | Legacy prototype; native completion pending | Not submitted |
+| [Write-through fault storage](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/compliance/2026-10-07/original/fault-storage-write-through/README.md) | fault-lib: Diagnostic Fault Manager / `SovdFaultStorage` persistence | Locally verified; native review/CI pending | Not submitted |
+| [Native receiver diagnosis and fault lifecycle](OpenSOVD/README.md) | App `DataProvider`; fault-lib Reporter, Diagnostic Fault Manager and query APIs | Integrated and exercised; native `/faults` routing remains conditional | N/A — integration |
+| [Vehicle Lab dashboard](docs/dashboard.md) | Team Diagnosis and Test Manager UI; OpenSOVD diagnostic APIs and openDuT lifecycle | Implemented and browser-checked | N/A — integration |
+
+The S-CORE Diagnostics adapter above also contributes to the OpenSOVD integration
+through [Diagnostics PR #40](https://github.com/eclipse-score/inc_diagnostics/pull/40).
+
+### Eclipse ThreadX
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [ThreadX #744 — stack-address width](contributions/threadx-744/README.md) | Kernel `_tx_thread_create`, stack initialization and MISRA alignment helpers | Fix and regression evidence retained; final review pending | Not submitted |
+| [Linux zonal lighting controller](ThreadX/README.md) | GNU/Linux simulation port; threads, queues, timers and event flags; CAN/Zenoh application integration | Implemented and tested | N/A — integration |
+| [MXChip AZ3166 lighting ECU](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/ThreadX/az3166/README.md) | Cortex-M4 / STM32F412 board integration; UART/SLCAN lighting firmware | Hardware and live CARLA checks retained | N/A — integration |
+
+### Eclipse OpenBSW
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [Diagnostic transport-router patch](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/openbsw-transport-router/validation.md) | `libs/bsw/transportRouter`: routing, route observers and statistics | Locally verified; maintainer agreement/review pending | Not submitted |
+| [Linux / S32K148EVB zonal gateway](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/OpenBSW/README.md) | DoIP/lwIP, DoCAN/ISO-TP, UDS, `transportRouter`, async and ThreadX board/RTOS binding | Integration checks retained; bus-load failure and qualification gaps remain | N/A — integration |
+
+### Eclipse Zenoh
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [X-Verse / CARLA blueprint and repeatable startup](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/README.md) | Team simulation/startup integration using Zenoh routing, S-CORE, OpenSOVD and openDuT | Drive, disturbance, diagnosis and recovery demonstrated on the recorded host | N/A — integration |
+| [X-Verse end-to-end ASPICE evidence](demo/X-Verse/aspice/report/README.md) | Cross-project simulation, S-CORE cruise control, OpenSOVD diagnostics and AAOS OTA verification | Recorded evidence: 11/11 software requirements, 24/24 test cases and traceability | N/A — integration evidence |
+| [X-COM Serial2CAN bridge](https://github.com/The-Xverse/zenoh2can_bridge/blob/dev/sdv-hackathon-2026/serial2can-bridge/README.md) | Team SLCAN-to-CAN bridge; Zenoh2CAN and ThreadX ECU transport | Implemented and tested; hardware/live CARLA evidence retained | N/A — integration |
+
+Zenoh also supplies the vehicle-data transport in the S-CORE cruise-control and
+ThreadX/AutoSD lighting integrations listed under those projects.
+
+### Eclipse openDuT
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [Two-peer testbench and loss/recovery campaigns](OpenDut/README.md) | CARL coordination, EDGAR peers and CLEO management; team campaign runners | Deployment, disturbance, recovery and cleanup exercised | N/A — integration |
+
+### Eclipse SDV Hephaestus
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [Software-factory workflow pilot, related to #11](contributions/issues/eclipse-hephaestus/hephaestus/11/README.md) | Engineering tooling catalog and workflow documentation | Open proposal; pilot adoption/review pending | [Hephaestus #14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) |
+| [S-CORE Docs Assistant pilot, related to #11](https://github.com/eclipse-hephaestus/hephaestus/pull/15) | Documentation tooling catalog; assistant retrieval/provenance pilot | Open proposal; Hephaestus corpus integration/adoption pending | [Hephaestus #15](https://github.com/eclipse-hephaestus/hephaestus/pull/15) |
+
+### Eclipse Automotive Integration for AutoSD
+
+The [Eclipse integration project](https://projects.eclipse.org/projects/automotive.autosd)
+uses the AutoSD distribution from the CentOS Automotive SIG. Our work is a team
+deployment integration in this ecosystem.
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [AutoSD vehicle-computer VM](AutoSD/README.md) | VM/workload provisioning; ThreadX simulation, Zenoh2CAN, OpenSOVD lighting provider and optional openDuT network | Integrated and exercised; reboot and recovery evidence retained | N/A — integration |
+
+### Jakarta EE
+
+| Contribution | Module / subsystem | Current status | Upstream PR |
+| --- | --- | --- | --- |
+| [AAOS / OTA backend extension](demo/X-Verse/aspice/report/README.md) | Java EOL backend and RTCU deployment; Jakarta specification/module not yet selected or implemented | OTA implemented and verified; Jakarta adaptation planned | N/A — planned extension |
+
+## Overview
+
 This repository brings together vehicle simulation, S-CORE applications,
 OpenSOVD diagnostics, openDuT testing, ECU integrations and upstream contribution
 records. Use the guide below to find the part you need; the full PR inventory,
@@ -47,7 +173,7 @@ for the distinction between the starting baseline and the planned event work.
 | Your goal | Where to go |
 | --- | --- |
 | Identify what was available before the event | [Pre-Work](#pre-work-what-existed-before-the-event) |
-| Find a PR, patch or contribution status | [Contribution Status](#contribution-status) and [contribution records](contributions/README.md) |
+| Find a PR, patch or contribution status | [Contributions](#contributions) and [contribution records](contributions/README.md) |
 | Understand the folders and find source code | [Repository Structure](#repository-structure) |
 | Understand the integrated system | [How the Pieces Fit Together](#how-the-pieces-fit-together) and [architecture documents](docs/architecture/README.md) |
 | Drive the vehicle and try instrument-cluster OTA | [Run and Verify the End-to-End Demonstration](#run-and-verify-the-end-to-end-demonstration) |
@@ -80,67 +206,6 @@ Our goal is to show how open-source SDV projects, simulation assets, physical pl
 | Yasser | Software Engineer | [yasser](https://github.com/yasser2026-spec)  | OpenSOVD; automated AI code review; solution documentation |
 | Puru | Software Engineer | [puru](https://github.com/EP1991)  | OpenSOVD; CDA; diagnostics dashboard |
 | Siva | Test Engineer | [siva](https://github.com/siveshvar) | openDuT; OpenSOVD |
-
-## Contribution Status
-
-**Last reviewed: 7 October 2026.** This inventory covers upstream issue work,
-prepared patches, team integrations, assessments and planned extensions. Local
-verification and merging into Thinking CAPs `main` are recorded separately from
-acceptance by an upstream Eclipse project. Local results below are retained
-measurements, not tests rerun for this README.
-
-The 24 registered issue records, Hephaestus #11, ThreadX #744 and OpenSOVD #156
-were checked against GitHub and remain open. Diagnostics #40, CDA #601,
-S-CORE #3307 and Hephaestus #14 remain open and unmerged. The table uses the
-[consolidated registry](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/registry.json),
-linked contribution records and current PR checks. Evidence links point to
-the consolidated `main` branch.
-
-| Project / issue | Contribution | Current status and next step | Evidence / PR |
-| --- | --- | --- | --- |
-| [SOME/IP #84](https://github.com/eclipse-score/inc_someip_gateway/issues/84) | Reject duplicate SOCom servers across minor versions | **Locally verified.** Scoped fix and earlier owner review retained; amended contribution review and native submission pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/inc_someip_gateway/84/README.md) |
-| [Lifecycle #704](https://github.com/eclipse-score/lifecycle/issues/704) | Generate three communication configurations from shared definitions | **Locally verified.** 113 native tests passed; native PR, CI and maintainer review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/lifecycle/704/README.md) |
-| [Diagnostics #16](https://github.com/eclipse-score/inc_diagnostics/issues/16) | Expose diagnostic API resources through an OpenSOVD provider | **Submitted.** PR #40 open; documentation/license checks pass; ECA fails; native validation and review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/inc_diagnostics/16/README.md); [PR #40](https://github.com/eclipse-score/inc_diagnostics/pull/40) |
-| [CDA #543](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/issues/543) | Return `Result` instead of `Option` for diagnostic loading errors | **Submitted.** PR #601 open; ECA fails; maintainer review and verification of the published revision pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md); [PR #601](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601) |
-| [Communication #1265](https://github.com/eclipse-score/communication/issues/1265) | Assess the Rust COM identifier-pasting dependency | **Assessment.** Six Linux integration cases passed; retaining locked `pastey` 0.2.3 recommended; qualification and human acceptance pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) |
-| [Communication #1167](https://github.com/eclipse-score/communication/issues/1167) | Add COM API idempotency integration tests | **Locally verified.** 503 tests passed, six skipped; inherited copyright findings retained; native PR and human acceptance pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/communication-1167/README.md) |
-| [Communication #1261](https://github.com/eclipse-score/communication/issues/1261) | Stream newly available services with `find_all_services()` | **Linux checks passed.** Proposed fix retained; human review, broader CI and native PR pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1261/README.md) |
-| [Communication #250](https://github.com/eclipse-score/communication/issues/250) | Support typed `FindServiceSpecifier::Any` discovery | **Linux checks passed.** Proposed fix retained; human review, broader CI and native PR pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/250/README.md) |
-| [Communication #560](https://github.com/eclipse-score/communication/issues/560) | Expose event subscription state and change handlers | **Linux checks passed.** Proposed fix retained; human review, broader CI and native PR pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/560/README.md) |
-| [Communication #781](https://github.com/eclipse-score/communication/issues/781) | Implement Rust `MethodInArgPtr<T>` plumbing | **Draft.** Partially verified; implementation completion and native verification pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/781/README.md) |
-| [Communication #490](https://github.com/eclipse-score/communication/issues/490) | Provide an in-process Rust COM mock runtime | **Draft.** Unverified; native testing and review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/490/README.md) |
-| [Communication #173](https://github.com/eclipse-score/communication/issues/173) | Assess external crates used by the COM API | **Assessment only.** No source change proposed; dependency disposition and human review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/173/README.md) |
-| [Communication #1264](https://github.com/eclipse-score/communication/issues/1264) | Assess `thiserror` usage | **Assessment only.** No source change proposed; human review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1264/README.md) |
-| [Communication #1263](https://github.com/eclipse-score/communication/issues/1263) | Assess `futures` usage | **Assessment only.** No source change proposed; human review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1263/README.md) |
-| [Communication #794](https://github.com/eclipse-score/communication/issues/794) | Remove manual tags from Rust test targets | **Tracked opportunity.** Being handled upstream; no team patch retained. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/794/README.md) |
-| [Communication #782](https://github.com/eclipse-score/communication/issues/782) | Assess Rust Method API runtime implementation | **Assessment only.** Another contributor is active; no team implementation retained. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/782/README.md) |
-| [Communication #1062](https://github.com/eclipse-score/communication/issues/1062) | Assess end-to-end protection for Rust Method/Field APIs | **Design assessment.** Implementation and native verification pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1062/README.md) |
-| [Communication #741](https://github.com/eclipse-score/communication/issues/741) | Move the Rust sample application into the tutorial | **Not implemented.** Tracked opportunity only. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/741/README.md) |
-| [S-CORE tooling #3115](https://github.com/eclipse-score/score/issues/3115) | Evaluate AI SDLC / SpecKit using software-factory pilot evidence | **Draft PR.** PR #3307 open; ECA passes; inherited local documentation failure retained; comparative pilots, CI and acceptance pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/score/3115/README.md); [PR #3307](https://github.com/eclipse-score/score/pull/3307) |
-| [S-CORE assistant #2850](https://github.com/eclipse-score/score/issues/2850) | Propose chatbot retrieval and provenance for the docs-as-code harness | **Proposal.** Source and deterministic evidence retained; native harness adapter and maintainer agreement pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/score/2850/README.md) |
-| [Communication #1236](https://github.com/eclipse-score/communication/issues/1236) | Enforce buildifier consistently in CI | **Draft / blocked.** 27 baseline-identical lint findings remain; cleanup and review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1236/README.md) |
-| [Communication #1031](https://github.com/eclipse-score/communication/issues/1031) | Improve assumptions-of-use visibility and traceability | **Draft.** Scoped checks retained; production configuration/FMEA integration and review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1031/README.md) |
-| [Communication #751](https://github.com/eclipse-score/communication/issues/751) | Include production sources in CodeQL analysis | **Draft.** 502 tests passed, six skipped; copyright, full CodeQL analysis, QNX and coverage gaps remain. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/751/README.md) |
-| [Communication #1104](https://github.com/eclipse-score/communication/issues/1104) | Restore locations for CodeQL findings | **Root cause reproduced.** Draft normalizer hides placeholders; restoring actual locations and native review remain pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/communication/1104/README.md) |
-| [Hephaestus #11](https://github.com/eclipse-hephaestus/hephaestus/issues/11) | Propose a software-factory engineering workflow pilot | **Submitted proposal.** PR #14 open; local Hugo/Sphinx builds and ECA pass; pilot adoption and review pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-hephaestus/hephaestus/11/README.md); [PR #14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) |
-| [ThreadX #744](https://github.com/eclipse-threadx/threadx/issues/744) | Preserve stack pointer width under MISRA and stack checking | **In progress (last recorded).** Exploratory reproduction and retry evidence retained; native verification, human review and upstream PR pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/threadx-744/README.md) |
-| [OpenSOVD #156](https://github.com/eclipse-opensovd/opensovd-core/issues/156) | Develop a FaultProvider prototype for the faults resource | **Legacy prototype.** Local HTTP/provider implementation retained; native upstream faults support and full vehicle integration remain pending. | [Design](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/docs/hackathon/FAULT_PROVIDER_DESIGN.md) |
-| OpenBSW | Prepare the `transportRouter` upstream module | **Locally verified / unpublished.** 46 unit tests and two Bazel tests passed; maintainer issue agreement, human review and full CI pending. | [Validation](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/openbsw-transport-router/validation.md) |
-| OpenSOVD fault-lib | Add explicit write-through fault storage | **Locally verified / unpublished.** Process-restart regression evidence retained; human reproduction/review and native CI pending. | [Record](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/compliance/2026-10-07/original/fault-storage-write-through/README.md) |
-| X-Verse / CARLA | Integrate the cyber-physical vehicle blueprint and repeatable startup | **Implemented on the recorded host.** Drive, disturbance, diagnosis, recovery and verification demonstrated; fresh-machine/operator reproduction remains separate. | [Setup and scope](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/README.md) |
-| X-Verse end-to-end ASPICE evidence | Show that the full demonstration (CARLA, VCU, SOME/IP bridge, S-CORE ECU with DTC over SOVD via PR #16, OTA with certgen, EOL backend and RTCU) complies with ASPICE SWE.1–SWE.6 | **11/11 software requirements verified, 24/24 test cases pass, no traceability gaps.** Requirements, PlantUML architecture, detailed design, unit suites (launcher, SOME/IP, S-CORE cruise control, PR #16 `sovd_adapter`, OTA backend), 13 integration checks against the running system and qualification scenarios. | [Report](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/aspice/report/README.md) · [HTML](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/aspice/report/aspice-swe-report.html) · [Work products](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/aspice/README.md) |
-| S-CORE / Zenoh / SOME/IP | Connect cruise control, receiver observations and fault injection | **Integrated and exercised.** Real receiver traffic and return actuation captured; fault monitoring and recovery use the managed campaign. | [Campaign evidence](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/docs/reproduction.md) |
-| OpenSOVD | Expose native receiver diagnosis and fault lifecycle | **Integrated and exercised.** App data resources, reporter/DFM, process restart and recovery retained; native `/faults` routing remains conditional. | [Integration](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/OpenSOVD/README.md) |
-| openDuT | Manage a two-peer testbench and communication-loss/recovery campaigns | **Integrated and exercised.** Matched 0.10.2 deployment, disturbance, recovery and owned cleanup evidence retained. | [Testbench](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/OpenDut/README.md) |
-| Vehicle Lab dashboard | Provide Diagnosis and Test Manager with evidence replay | **Implemented and browser-checked.** Native diagnosis, run admission, cancellation, recovery and artifact-integrity checks retained. | [UI and checks](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/docs/dashboard.md) |
-| ThreadX / Linux | Implement the zonal brake/reverse lighting controller | **Implemented and tested.** Actual ThreadX GNU simulation port, CAN protocol and CARLA lighting integration exercised. | [Controller](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/ThreadX/README.md) |
-| ThreadX / MXChip AZ3166 | Deploy the zonal lighting ECU on physical hardware | **Hardware and live CARLA checks retained.** UART/SLCAN transport, LEDs/OLED and SWE.1–SWE.6 work products available. | [Board and evidence](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/ThreadX/az3166/README.md) |
-| AutoSD | Run ThreadX lighting, Zenoh2CAN and native OpenSOVD in a vehicle-computer VM | **Integrated and exercised.** QEMU/KVM guest, managed openDuT path, disturbance/recovery and reboot evidence retained. | [Measured evidence](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/AutoSD/artifacts/README.md) |
-| X-COM / Serial2CAN | Connect serial-attached ECUs to the X-Verse CAN bus | **Implemented and tested.** Multiple ports, filtering, reconnect and bounded queues; AZ3166 hardware/live CARLA evidence retained. | [Bridge](https://github.com/The-Xverse/zenoh2can_bridge/blob/dev/sdv-hackathon-2026/serial2can-bridge/README.md) |
-| OpenBSW / ThreadX | Implement a DoIP-to-CAN zonal gateway on Linux and S32K148EVB | **Integration tests passed.** 28 host and 10 board tests; ASPICE report retains a bus-load failure and remaining qualification gaps. | [Gateway and report](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/OpenBSW/README.md) |
-| S-CORE Software Factory | Provide automated development, verification, review and evidence workflows | **Implementation and pilot evidence retained.** Eclipse tooling evaluation and Hephaestus proposals submitted; native adoption remains pending. | [Pilot](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/score/3115/README.md) |
-| AAOS / OTA / Jakarta | Extend the existing IVI and update assets | **OTA implemented and verified; Jakarta planned.** Java EOL backend and RTCU deliver the cluster APK over mutual TLS to Cuttlefish and a Raspberry Pi 4; successful campaigns on both targets and a cleanly failed campaign for an unreachable target are recorded. Jakarta adaptation remains planned. | [ASPICE evidence](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/aspice/report/README.md) |
-| Safety Evaluation Kit | Propose safety-impact, evidence and approval gates for the factory | **Concept.** Implementation remains part of the best-effort extension scope. | [Scope](#safety-evaluation-kit) |
 
 ## Run and Verify the End-to-End Demonstration
 
@@ -442,7 +507,7 @@ The primary demonstration will use a fault-aware cruise-control scenario in whic
 
 This extends the previously agreed S-CORE, OpenSOVD, X-Verse, and fault-injection demonstration.
 
-See the [contribution status table](#contribution-status) for the diagnostics and
+See the [contribution status table](#contributions) for the diagnostics and
 CDA issue records, current upstream pull requests and remaining review gates.
 
 #### Dark Software Factory and Local Engineering Assistant
