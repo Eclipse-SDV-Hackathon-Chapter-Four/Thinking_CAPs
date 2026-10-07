@@ -1,5 +1,7 @@
 # Complete native evaluation and merge review packet
 
+> Current native head: see [license-header correction and direct checks](../license-review/README.md). The original source/commit and results below are preserved.
+
 Read [the native decision record](DR-010-infra.rst), [comparison](comparison.md), [acceptance mapping](../acceptance-mapping.md) and [merge readiness](merge-readiness.md). [Source binding](source-binding.json) identifies the exact candidate commit, native ID/status/version and patch scope. [Verification report](verification-report.json) links every applicable check to commands, inputs and complete raw logs. Native exports and the rendered page are retained; the page is a rendering artifact, not a standalone site.
 
 [rules.json](rules.json) and [ruleset.json](ruleset.json) capture the public main rules. Native contribution/template/CI inputs are copied under `native-guidance/`. [Publication](publication.json) records the final PR, ECA, hosted workflows and delivered review requests. The packet's outer SHA-256 manifest covers all these bytes; its detailed inventory records paths, sizes and hashes.

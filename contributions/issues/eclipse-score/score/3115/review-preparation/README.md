@@ -1,5 +1,7 @@
 # Documentation failure resolved; review preparation
 
+> Current native head: see [license-header correction and direct checks](../license-review/README.md). The original source/commit and results below are preserved.
+
 > Historical native candidate: use [version 3 completion and validation](../completion/README.md) for the current PR. The original source, bindings and results below remain preserved.
 
 PR [#3307](https://github.com/eclipse-score/score/pull/3307) now targets native main `f42e760912e5f99e0db993de717155cc85679f6c` through a merge of current main. Upstream commit [6122462](https://github.com/eclipse-score/score/commit/612246278900b74218e099d4549600f9f8f16be2) corrects the Report Running interface's `fulfils` relation. The change is carried from upstream, and the PR diff contains only the proposed decision record.

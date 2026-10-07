@@ -11,7 +11,8 @@
 | Real native experience and limitations | Original fabric/native packets; historical failures and measured proxies | Retained with source bindings; no fresh qualification or comparative execution claim |
 | Native format, identity, license and impact | `dec_rec__infra__ai_sdlc_tooling`, proposed, version 3; Apache-2.0; current infrastructure path | Candidate checked against native tooling; changes only the new DR; no requirement/design/interface/safety assumption edits |
 | Reconcile #3140 | Native Reconciliation and Implementation Handoff | Merge one same-ID representation; supersede the other PR, or transfer this source into #3140; no other contributor branch modified |
-| Native documentation validation | [Current report](completion/verification-report.json) | Final candidate results bound to version 3; previous inherited failure was fixed upstream by `6122462` and retained as history |
+| Native documentation validation | [Current report](license-review/verification-report.json) | Final candidate results bound to version 3; previous inherited failure was fixed upstream by `6122462` and retained as history |
+| License headers and notices | Exact native RST/Python templates, direct file-path checks, authored utility audit and retained native NOTICE/LICENSE | Pass; decision body and utility behavior unchanged; original captures preserve their licenses |
 | Contribution identity | Signed-off commits and live ECA status in publication | DCO signed; ECA reported for the exact final native commit |
 | Branch merge rules | `completion/rules.json`, ruleset 2965247 | Require one approving review, code-owner coverage and ECA; approvals absent at initial capture |
 | Configured CI | `completion/native-guidance`, common reusable CI and local check records | Record each executed, carried, conditional or hosted-pending check; local success is separate from GitHub execution |

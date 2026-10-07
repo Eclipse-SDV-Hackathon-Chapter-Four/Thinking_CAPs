@@ -1,5 +1,7 @@
 # Project merge and issue acceptance packet
 
+> Current native header-corrected source, commit and direct-file audit: [license review](../license-review/README.md). The current complete inventory is [license-review/artifact-inventory.json](../license-review/artifact-inventory.json). This report retains the original evaluation subject and applicable project obligations.
+
 Native subject `0dc49aad690c1fb15fb1ff3fee825cf05dbb910b` on main `f42e760912e5f99e0db993de717155cc85679f6c` changes only `docs/design_decisions/infrastructure/DR-010-infra.rst`. It preserves `dec_rec__infra__ai_sdlc_tooling`, proposed, version 3. The [patch](native-proposal.patch), [source](DR-010-infra.rst), [comparison](comparison.md), [acceptance mapping](../acceptance-mapping.md) and [verification report](verification-report.json) form the review package.
 
 ## Native obligations and actual disposition

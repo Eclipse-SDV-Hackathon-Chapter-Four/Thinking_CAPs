@@ -4,7 +4,9 @@
 
 The recommendation is APM for packaging, Spec Kit for integration development and Harbor for comparative evaluation. Lola is a fallback; Syspilot is the preferred subsequent native-context prototype; BMAD remains an alternative; OKIT is limited to isolated prototyping; the archived Pharaoh repository contributes reviewed concepts. Native S-CORE artifacts and human accountability remain authoritative.
 
-Start with the [complete review packet](completion/README.md), [native source](completion/DR-010-infra.rst), [comparison](completion/comparison.md), [acceptance mapping](acceptance-mapping.md) and [merge readiness](completion/merge-readiness.md). Exact current check results are in [verification-report.json](completion/verification-report.json); published PR, ECA, CI and reviewer state are in [publication.json](completion/publication.json).
+Start with the [complete review packet](completion/README.md), [native source](license-review/DR-010-infra.rst), [comparison](completion/comparison.md), [acceptance mapping](acceptance-mapping.md) and [merge readiness](completion/merge-readiness.md). Exact current check results are in [verification-report.json](license-review/verification-report.json); published PR, ECA, CI and reviewer state are in [publication.json](license-review/publication.json).
+
+[License-header audit and corrected current source](license-review/README.md) supplies direct source-path checks alongside the full comparison and merge packet.
 
 ## Artifact identity and history
 
