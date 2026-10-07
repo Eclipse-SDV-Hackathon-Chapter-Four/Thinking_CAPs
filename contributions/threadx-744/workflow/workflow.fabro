@@ -1,0 +1,31 @@
+digraph ThreadXContribution744 {
+    graph [goal="Resolve ThreadX #744 with verified contribution evidence and accurate PR readiness", on_failure="exit", max_node_visits=5, default_fidelity="summary:high"]
+    rankdir=LR
+    start [shape=Mdiamond, label="Start"]
+    exit [shape=Msquare, label="Exit"]
+
+    admit [shape=parallelogram, label="Admission and upstream policy", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py admit", max_retries=0, max_visits=1, timeout="5m"]
+    planner [shape=parallelogram, label="Issue and dependency planner", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py agent planner", timeout="10m", max_visits=1, max_retries=0]
+    implement [shape=parallelogram, label="Kernel and regression implementer", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py agent implement", timeout="20m", max_visits=1, max_retries=0]
+    freeze [shape=parallelogram, label="Freeze review snapshot", on_failure="route", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py freeze", max_retries=0, max_visits=4, timeout="2m"]
+    verify [shape=parallelogram, label="Native verification", on_failure="route", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py verify", max_retries=0, max_visits=4, timeout="40m"]
+    technical [shape=parallelogram, label="Independent technical reviewer", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py agent technical-review", max_visits=4, timeout="15m", max_retries=0]
+    process [shape=parallelogram, label="Eclipse process and IP reviewer", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py agent process-review", max_visits=4, timeout="10m", max_retries=0]
+    review_gate [shape=parallelogram, label="Review and snapshot gate", on_failure="route", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py review-gate", max_retries=0, max_visits=4, timeout="2m"]
+    repair [shape=parallelogram, label="Bounded repair", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py agent repair", max_visits=3, timeout="20m", max_retries=0]
+    pr_writer [shape=parallelogram, label="Pull request writer", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py agent pr-writer", max_visits=1, timeout="10m", max_retries=0]
+    publish [shape=parallelogram, label="Publish verified draft", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py publish", max_retries=0, max_visits=1, timeout="5m"]
+    monitor [shape=parallelogram, label="Eclipse PR checks and blockers", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py monitor", max_retries=0, max_visits=1, timeout="20m", on_failure="route"]
+    export [shape=parallelogram, label="Export contribution artifacts", script="python3 /home/jefferson/Thinking_CAPs/contributions/threadx-744/workflow/driver.py export", max_retries=0, max_visits=1, timeout="2m"]
+
+    start -> admit -> planner -> implement -> freeze
+    freeze -> verify [condition="outcome=succeeded"]
+    freeze -> repair
+    verify -> technical [condition="outcome=succeeded"]
+    verify -> repair
+    technical -> process -> review_gate
+    review_gate -> pr_writer [condition="outcome=succeeded"]
+    review_gate -> repair
+    repair -> freeze
+    pr_writer -> publish -> monitor -> export -> exit
+}

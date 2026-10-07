@@ -1,27 +1,23 @@
-# Evidence recovery
+# Evidence and acceptance gaps — refreshed 2026-10-07
 
-## Diagnostics #16
+The [original completeness audit](audits/2026-10-07-completeness.json) records the
+state before import. The [import record](audits/2026-10-07-import-record.json)
+records the subsequent additions and corrections; the earlier audit is historical.
 
-The original [patch README](issues/eclipse-score/inc_diagnostics/16/evidence/original-patch-readme.md)
-lists five patch patterns but `patches/inc_diagnostics/` contains only that README.
-GitHub identifies [#16](https://github.com/eclipse-score/inc_diagnostics/issues/16)
-as an open **issue**, not a PR, as observed on 2026-10-04.
+Diagnostics #16's five patches and CDA #543's patch are present. Their native
+baseline/application/build/tests and acceptance remain pending. The former
+missing-patch description has been superseded by recovery, not by validation.
 
-Recover the original checkout/commits, the five patches, exact upstream baseline,
-native Bazel and REST integration commands/results, and any actual PR URL. The
-repository-wide claim of 13 passing demo assertions has no underlying test artifacts
-in this checkout and cannot establish this adapter's completion.
+The four communication bug records #1236, #1031, #751 and #1104 and their full
+original portable queue evidence have been imported. The large archive parts
+restore exact original bytes. Failed, missing and inherited checks remain open;
+see each issue's record and the captured queue's latest handoff/diagnosis.
 
-## Classic Diagnostic Adapter
+Communication #1167 now includes the original hackathon-source branch push receipt,
+updated status metadata and preserved earlier versions. This is not a native Eclipse
+communication PR, merge or engineering acceptance.
 
-[Existing directory](../patches/classic-diagnostic-adapter/README.md) advertises
-patch application, but contains no patches, issue number, baseline or validation
-records. Identify the actual upstream repository and issue before creating a
-contribution entry. Recover the implementation and checks before counting it as solved.
-
-## Other completed issues
-
-No further identifiable completed upstream issues were found in the inspected
-factory handoffs/specification evidence. This is a local inventory, not an audit
-of every repository or every contributor's unpublished work. Import additional
-work with its original issue identity and artifacts.
+The consolidated branch retains the twelve additional Rust queue records and
+#2850/#3115 proposals. Main integration and broader native engineering acceptance
+remain pending. Competition eligibility and required submission format remain
+unevaluated. Source integrity verification is separate from these decisions.

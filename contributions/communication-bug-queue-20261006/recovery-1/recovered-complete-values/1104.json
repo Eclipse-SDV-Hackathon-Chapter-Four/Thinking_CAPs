@@ -1,0 +1,12 @@
+{
+  "issue": 1104,
+  "files": [
+    {
+      "path": "quality/static_analysis/BUILD",
+      "content": "# *******************************************************************************\n# Copyright (c) 2026 Contributors to the Eclipse Foundation\n#\n# See the NOTICE file(s) distributed with this work for additional\n# information regarding copyright ownership.\n#\n# This program and the accompanying materials are made available under the\n# terms of the Apache License Version 2.0 which is available at\n# https://www.apache.org/licenses/LICENSE-2.0\n#\n# SPDX-License-Identifier: Apache-2.0\n# *******************************************************************************\n\nload(\"@rules_python//python:defs.bzl\", \"py_binary\", \"py_library\", \"py_test\")\n\npy_library(\n    name = \"codeql_lint_lib\",\n    srcs = [\"codeql_lint.py\"],\n    deps = [\"@rules_python//python/runfiles\"],\n)\n\npy_binary(\n    name = \"codeql_lint\",\n    main = \"codeql_lint.py\",\n    args = [\n        \"--codeql_path=$(location @codeql_bundle//:codeql_cli)\",\n        \"--config_path=$(location :config)\",\n        \"--analysis_report_path=$(location @codeql_coding_standards//:analysis_report)\",\n        \"--guideline_recategorize_path=$(location @codeql_coding_standards//:guideline_recategorize)\",\n    ],\n    data = [\n        \":config\",\n        \"@codeql_bundle//:codeql_cli\",\n        \"@codeql_coding_standards//:analysis_report\",\n        \"@codeql_coding_standards//:guideline_recategorize\",\n        \"@codeql_coding_standards//:process_coding_standards_config\",\n        \"@codeql_coding_standards_compiled//:pack\",\n    ],\n    tags = [\"local\"],\n    target_compatible_with = [\"@platforms//os:linux\"],\n    deps = [\":codeql_lint_lib\"],\n)\n\npy_test(\n    name = \"codeql_lint_test\",\n    srcs = [\"codeql_lint_test.py\"],\n    tags = [\"local\"],\n    target_compatible_with = [\"@platforms//os:linux\"],\n    deps = [\":codeql_lint_lib\"],\n)\n\nfilegroup(\n    name = \"config\",\n    srcs = [\"config.yaml\"],\n)\n"
+    }
+  ],
+  "metadata_complete": false,
+  "applied_to_native_source": false,
+  "status": "complete JSON source values only; incomplete values rejected; original response retained"
+}

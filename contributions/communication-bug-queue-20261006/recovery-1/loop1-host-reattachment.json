@@ -1,0 +1,52 @@
+{
+  "at": "2026-10-06T20:23:04.484254+00:00",
+  "records": [
+    {
+      "command": [
+        "docker",
+        "run",
+        "--rm",
+        "--pull",
+        "never",
+        "--network",
+        "none",
+        "--read-only",
+        "--pid",
+        "host",
+        "--cap-drop",
+        "ALL",
+        "--cap-add",
+        "SYS_ADMIN",
+        "--cap-add",
+        "SYS_CHROOT",
+        "--cap-add",
+        "SYS_PTRACE",
+        "--cap-add",
+        "DAC_OVERRIDE",
+        "--security-opt",
+        "no-new-privileges",
+        "--device",
+        "/dev/loop1",
+        "--device",
+        "/dev/loop-control",
+        "--entrypoint",
+        "nsenter",
+        "sha256:8332c7a66af3f1cfdb04ce803ce4b7711a976fb2bcbdda3cdae598c96c11fa88",
+        "--target",
+        "1",
+        "--mount",
+        "--root",
+        "--wd",
+        "--",
+        "/usr/sbin/losetup",
+        "--detach",
+        "/dev/loop1"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "nsenter: cannot open /proc/1/ns/mnt: Permission denied\n"
+    }
+  ],
+  "formatted": false,
+  "filesystem_repair_invoked": false
+}

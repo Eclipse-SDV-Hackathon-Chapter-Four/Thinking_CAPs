@@ -1,0 +1,86 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl:unit_test_runtime_single_exec
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 17 tests from 3 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m2 tests from RuntimeInitializationDeathTest
+[0;32m[ RUN      ] [mRuntimeInitializationDeathTest.InitializationFailsIfNoAppConfigurationHasBeenLoadedYet
+2026/10/06 20:47:47.9667203 876468529 000 ECU1 NONE lola log warn verbose 1 Add-on configuration contains global configuration data that will be ignored. Please remove global configuration from add-on configuration. 
+2026/10/06 20:47:47.9667203 876468530 000 ECU1 NONE lola log fatal verbose 7 Parsing config file ./etc/mw_com_config.json failed with error: An error occurred during parsing. :  Failed to open file  . Terminating. 
+[0;32m[       OK ] [mRuntimeInitializationDeathTest.InitializationFailsIfNoAppConfigurationHasBeenLoadedYet (99 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationDeathTest.AddOnConfigurationInitializationFailsIfMergingTheConfigurationFails
+2026/10/06 20:47:47.9667301 876469507 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667301 876469507 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+2026/10/06 20:47:47.9667303 876469523 000 ECU1 NONE lola log warn verbose 1 Add-on configuration contains global configuration data that will be ignored. Please remove global configuration from add-on configuration. 
+2026/10/06 20:47:47.9667303 876469524 000 ECU1 NONE lola log error verbose 3 Error  Duplicate service type was found during configuration merge. Merge aborted.  occurred 
+[0;32m[       OK ] [mRuntimeInitializationDeathTest.AddOnConfigurationInitializationFailsIfMergingTheConfigurationFails (131 ms)
+[0;32m[----------] [m2 tests from RuntimeInitializationDeathTest (231 ms total)
+
+[0;32m[----------] [m8 tests from RuntimeInitializationTest
+[0;32m[ RUN      ] [mRuntimeInitializationTest.ConstructorRegistersItsOwnConfigurationWithInstanceIdentifier
+2026/10/06 20:47:47.9667434 876470837 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667434 876470837 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.ConstructorRegistersItsOwnConfigurationWithInstanceIdentifier (25 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.ImplicitInitializationAlsoRegistersConfigurationWithInstanceIdentifier
+2026/10/06 20:47:47.9667459 876471088 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667459 876471089 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.ImplicitInitializationAlsoRegistersConfigurationWithInstanceIdentifier (13 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.InitializationLoadsCorrectConfiguration
+2026/10/06 20:47:47.9667472 876471223 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667473 876471223 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.InitializationLoadsCorrectConfiguration (25 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.SecondInitializationUpdatesRuntimeIfRuntimeHasNotYetBeenUsed
+2026/10/06 20:47:47.9667497 876471473 000 ECU1 NONE lola log warn verbose 1 score::mw::com::impl::Runtime is already initialized! Redundant call to a Runtime::Initialize() overload within production code needs to be checked. 
+2026/10/06 20:47:47.9667499 876471483 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667499 876471483 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.SecondInitializationUpdatesRuntimeIfRuntimeHasNotYetBeenUsed (23 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.SecondInitializationDoesNotUpdateRuntimeIfRuntimeHasAlreadyBeenUsed
+2026/10/06 20:47:47.9667521 876471712 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667521 876471712 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+2026/10/06 20:47:47.9667522 876471720 000 ECU1 NONE lola log error verbose 1 score::mw::com::impl::Runtime is already initialized and locked! Redundant call to a Runtime::Initialize() overload without effect within production code needs to be checked. 
+[0;32m[       OK ] [mRuntimeInitializationTest.SecondInitializationDoesNotUpdateRuntimeIfRuntimeHasAlreadyBeenUsed (22 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.ImplicitInitializationLoadsCorrectConfiguration
+2026/10/06 20:47:47.9667544 876471938 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667544 876471938 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.ImplicitInitializationLoadsCorrectConfiguration (22 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.ConfigurationGetsMergedAndLoadedIfInitialConfigurationHasBeenLoadedEarlier
+2026/10/06 20:47:47.9667565 876472152 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667565 876472152 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.ConfigurationGetsMergedAndLoadedIfInitialConfigurationHasBeenLoadedEarlier (20 ms)
+[0;32m[ RUN      ] [mRuntimeInitializationTest.ConcurrentAddonConfigurationInitializationSucceeds
+2026/10/06 20:47:47.9667588 876472379 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667588 876472379 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeInitializationTest.ConcurrentAddonConfigurationInitializationSucceeds (23 ms)
+[0;32m[----------] [m8 tests from RuntimeInitializationTest (177 ms total)
+
+[0;32m[----------] [m7 tests from RuntimeTest
+[0;32m[ RUN      ] [mRuntimeTest.CannotResolveUnknownInstanceSpecifier
+2026/10/06 20:47:47.9667610 876472600 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667610 876472601 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeTest.CannotResolveUnknownInstanceSpecifier (21 ms)
+[0;32m[ RUN      ] [mRuntimeTest.CanRetrieveConfiguredBinding
+2026/10/06 20:47:47.9667631 876472806 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667631 876472807 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeTest.CanRetrieveConfiguredBinding (9 ms)
+[0;32m[ RUN      ] [mRuntimeTest.CannotRetrieveUnconfiguredBinding
+2026/10/06 20:47:47.9667641 876472904 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667641 876472905 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeTest.CannotRetrieveUnconfiguredBinding (20 ms)
+[0;32m[ RUN      ] [mRuntimeTest.HandleTypeContainsEventsSpecifiedInConfiguration
+2026/10/06 20:47:47.9667663 876473132 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./mw_com_trace_filter.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667664 876473133 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeTest.HandleTypeContainsEventsSpecifiedInConfiguration (22 ms)
+[0;32m[ RUN      ] [mRuntimeTest.TracingIsDisabledWhenTraceFilterConfigPathIsInvalid
+2026/10/06 20:47:47.9667686 876473358 000 ECU1 NONE lola log fatal verbose 7 Parsing trace filter config file ./some_invalid_path.json failed with error: An error occurred during parsing. :  Failed to open file  . 
+2026/10/06 20:47:47.9667686 876473359 000 ECU1 NONE lola log error verbose 6 Parsing tracing config failed with error:  Error  json config parsing error  occurred  with message  Failed to open file 
+[0;32m[       OK ] [mRuntimeTest.TracingIsDisabledWhenTraceFilterConfigPathIsInvalid (22 ms)
+[0;32m[ RUN      ] [mRuntimeTest.TracingRuntimeIsDisabledWhenTracingDisabledInConfig
+[0;32m[       OK ] [mRuntimeTest.TracingRuntimeIsDisabledWhenTracingDisabledInConfig (21 ms)
+[0;32m[ RUN      ] [mRuntimeTest.TracingRuntimeIsCreatedIfConfiguredCorrectly
+[0;32m[       OK ] [mRuntimeTest.TracingRuntimeIsCreatedIfConfiguredCorrectly (28 ms)
+[0;32m[----------] [m7 tests from RuntimeTest (149 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m17 tests from 3 test suites ran. (557 ms total)
+[0;32m[  PASSED  ] [m17 tests.

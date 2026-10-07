@@ -1,0 +1,39 @@
+{
+ "revision": 4,
+ "at": "2026-10-07T10:22:48.117675+00:00",
+ "previous_controls": "recovery-1/control-history/revision-3",
+ "decision": "User instruction 2026-10-07: 'keep as loop4' (after second Lexar USB disconnection; image remounted by the user as /dev/loop4)",
+ "reason": "Rebind this recovery workspace to the same ext4 image (UUID 11c42dee-73a3-4c2b-ab42-a0440011d9e0, backing exFAT 002B-CE31, same mount path) now attached as /dev/loop4 (st_dev 1796, was 1793 = loop1). Not a relocation; no data moved.",
+ "changes": {
+  "configuration.json": "required_device /dev/loop1 -> /dev/loop4",
+  "native_measure.py": "guard reads required_device from configuration.json instead of hardcoded /dev/loop1",
+  "workspace storage-selection.json": "mount_device 1793 -> 1796",
+  "frozen-inputs.json": "hashes of configuration.json and native_measure.py updated"
+ },
+ "unchanged": [
+  "stable fabric code",
+  "authority, budget and repair ledgers",
+  "source trees",
+  "recovery-1/storage-selection.json (queue copy, not consumed by guard)"
+ ],
+ "hashes_before": {
+  "configuration.json": "da4d5faf49beab7d769c6cc1d20fff0d798470ee2f5433c1e7c45157c84ad1d1",
+  "native_measure.py": "f18a58c42c2af2908919fd92c4ad4289911eae6b370a3244df4a967fe22b08cd",
+  "frozen-inputs.json": "9906ba484a4fbb3ddd0c5ac82f0a3e8b62b501b3fa58ccef1550b1bd5c95c7b5",
+  "workspace storage-selection.json": "5ee9ec260bb5ebd6b7f4054ce311bf2d6301f359bc68a0ea9ad5daf44612f1f2"
+ },
+ "hashes_after": {
+  "configuration.json": "1b05df08a5dd5a3e5e0b6b80a4a303734b9c7fcfbdc37609a5f1e92b0a4c5cdd",
+  "native_measure.py": "997e594994028296cddca0ccc89fd196507c1ffb636e75e646c71901abbefec2",
+  "frozen-inputs.json": "44ab304e42c6659491013b9a327085803716052eb97a9bce4a6d2977d395a8f4",
+  "workspace storage-selection.json": "3d56bbb221b8d1ff0c092f3ff0f35a8ba833a55097cce2d6122b53239a72b843"
+ },
+ "open": [
+  "stale /dev/loop1 remains attached to the vanished pre-disconnect file; detaching it needs sudo",
+  "e2fsck -n status of the image before this mount is unknown; 10 writes were lost at 11:00:56",
+  "loop device numbers can change on each reattachment; a further rebind would need another decision",
+  "another workload (openbsw-sil) is using the same volume"
+ ],
+ "paid_calls": 0,
+ "engineering_acceptance": "pending_offline_review"
+}

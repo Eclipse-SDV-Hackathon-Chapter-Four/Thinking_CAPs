@@ -1,0 +1,46 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:memory_resource_proxy_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 10 tests from 5 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from MemoryResourceManagerDeathTest
+[0;32m[ RUN      ] [mMemoryResourceManagerDeathTest.ProperHandleNonExistingMemoryResource
+2026/10/06 12:50:40.1040572 597926649 000 ECU1 NONE shm log error verbose 5 PerformBoundsCheck 85 MemoryResourceProxy's memory identifier: 12 could not be found in MemoryResourceRegistry 
+[0;32m[       OK ] [mMemoryResourceManagerDeathTest.ProperHandleNonExistingMemoryResource (77 ms)
+[0;32m[----------] [m1 test from MemoryResourceManagerDeathTest (77 ms total)
+
+[0;32m[----------] [m1 test from BoundCheckedMemoryResourceManagerDeathTest
+[0;32m[ RUN      ] [mBoundCheckedMemoryResourceManagerDeathTest.AllocationTerminatesWhenProxyOutOfBounds
+2026/10/06 12:50:40.1040649 597927418 000 ECU1 NONE shm log error verbose 9 PerformBoundsCheck 94 MemoryResourceProxy at 140721981266800 is out of memory bounds: [ 110298570137664 : 110298570137880 ] 
+[0;32m[       OK ] [mBoundCheckedMemoryResourceManagerDeathTest.AllocationTerminatesWhenProxyOutOfBounds (72 ms)
+[0;32m[----------] [m1 test from BoundCheckedMemoryResourceManagerDeathTest (72 ms total)
+
+[0;32m[----------] [m2 tests from MemoryResourceProxyComparisonTest
+[0;32m[ RUN      ] [mMemoryResourceProxyComparisonTest.MemoryResourceProxiesWithSameIdsComparisonOperators
+[0;32m[       OK ] [mMemoryResourceProxyComparisonTest.MemoryResourceProxiesWithSameIdsComparisonOperators (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceProxyComparisonTest.MemoryResourceProxiesWithDifferentIdsComparisonOperators
+[0;32m[       OK ] [mMemoryResourceProxyComparisonTest.MemoryResourceProxiesWithDifferentIdsComparisonOperators (0 ms)
+[0;32m[----------] [m2 tests from MemoryResourceProxyComparisonTest (0 ms total)
+
+[0;32m[----------] [m4 tests from MemoryResourceProxyTest
+[0;32m[ RUN      ] [mMemoryResourceProxyTest.ForwardsAllocateRequestToCorrectMemoryResource
+[0;32m[       OK ] [mMemoryResourceProxyTest.ForwardsAllocateRequestToCorrectMemoryResource (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceProxyTest.ProperHandleIfNoAllocationIsPossible
+[0;32m[       OK ] [mMemoryResourceProxyTest.ProperHandleIfNoAllocationIsPossible (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceProxyTest.ForwardsDeAllocateRequestToCorrectMemoryResource
+[0;32m[       OK ] [mMemoryResourceProxyTest.ForwardsDeAllocateRequestToCorrectMemoryResource (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceProxyTest.DeallocationRequestToNonExistingResourceIsIgnored
+[0;32m[       OK ] [mMemoryResourceProxyTest.DeallocationRequestToNonExistingResourceIsIgnored (0 ms)
+[0;32m[----------] [m4 tests from MemoryResourceProxyTest (0 ms total)
+
+[0;32m[----------] [m2 tests from BoundCheckedMemoryResourceProxyTest
+[0;32m[ RUN      ] [mBoundCheckedMemoryResourceProxyTest.AllocationIsPossibleWhenProxyInBounds
+[0;32m[       OK ] [mBoundCheckedMemoryResourceProxyTest.AllocationIsPossibleWhenProxyInBounds (0 ms)
+[0;32m[ RUN      ] [mBoundCheckedMemoryResourceProxyTest.OutOfBoundsAllocationSucceedsWhenBoudscheckingDisabled
+[0;32m[       OK ] [mBoundCheckedMemoryResourceProxyTest.OutOfBoundsAllocationSucceedsWhenBoudscheckingDisabled (0 ms)
+[0;32m[----------] [m2 tests from BoundCheckedMemoryResourceProxyTest (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m10 tests from 5 test suites ran. (150 ms total)
+[0;32m[  PASSED  ] [m10 tests.

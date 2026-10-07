@@ -1,0 +1,88 @@
+{
+ "recorded_at": "2026-10-07",
+ "kind": "storage_disconnection_incident",
+ "observed": {
+  "kernel": [
+   "07:44:01 sd [sdb] Synchronize Cache(10) failed: hostbyte=DID_ERROR",
+   "07:44:01 Buffer I/O error on dev loop1, logical block 1073",
+   "07:44:02 usb 2-1 Lexar ES3 re-enumerated (serial 522460007260311A); disk now sda, sda1",
+   "07:45:09 exFAT-fs (sda1): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.",
+   "07:45:09 I/O error, dev loop1 sector 0 WRITE; sector 8584 READ"
+  ],
+  "loop1_backing_file_now": "/.s-core-build/build-volume-v1.ext4 (stale handle to the pre-disconnect exFAT mount)",
+  "loop1_ext4_mount": "still listed rw,errors=remount-ro at /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0; reads/writes fail with EIO",
+  "lexar_mount": "/dev/sda1 at /media/jefferson/Lexar (exFAT)"
+ },
+ "affected_measurement": {
+  "record": "recovery-1/evidence4-results/evidence/baseline-codeql-analyze-impl-rerun.json",
+  "exit_code": 135,
+  "meaning": "128+SIGBUS",
+  "stop_reason": "[Errno 5] Input/output error on tools/bazel-8.7.0 during guard()",
+  "started": "05:35:38",
+  "finished": "07:44:01",
+  "elapsed_s": 7703,
+  "timeout_s": 7200,
+  "stderr_sha256": "68c0315bc8fb19d82f44128620fb334265639899fa0cee3adb170953180d6ffd",
+  "progress": "2 of 3 remaining queries done by 06:24; RULE-8-7-1/PointerArithmeticFormsAnInvalidPointer unfinished; no SARIF produced",
+  "previous_attempt": "baseline-codeql-analyze-impl.json exit 137 (own 3600 s bound at 215/218)"
+ },
+ "actions_taken": [
+  "stopped all execution",
+  "no relocation, reattachment, unmount, fsck or repair performed",
+  "no data copied off the volume"
+ ],
+ "unknown": [
+  "cause of the USB disconnect",
+  "integrity of the exFAT volume, the ext4 image, the CodeQL database/cache and Bazel caches after the event"
+ ],
+ "requires_user_authority": [
+  "physical reconnection/inspection of the Lexar drive",
+  "any exFAT or ext4 check/repair",
+  "loop1 unmount and reattachment (prior procedure: recovery-1/restore-loop1.sh, needs sudo)"
+ ],
+ "paid_calls": 0,
+ "source_changed": false,
+ "engineering_acceptance": "pending_offline_review",
+ "restoration": {
+  "user_actions": [
+   "ran recovery-1/restore-loop1.sh (loop1 reattached 08:12:43 to /media/jefferson/Lexar/.s-core-build/build-volume-v1.ext4)",
+   "mounted the image via a new loop4 at 08:16:30"
+  ],
+  "claude_actions_on_user_instruction_fix_it": [
+   "confirmed no process used the loop4 mount",
+   "udisksctl unmount -b /dev/loop4 (09:00:25)",
+   "udisksctl loop-delete -b /dev/loop4 was refused (polkit), loop4 already auto-cleared",
+   "udisksctl mount -b /dev/loop1 (09:00:27, clean mount, no errors)"
+  ],
+  "verified": [
+   "only /dev/loop1 attached, backed by Lexar image",
+   "ext4 UUID 11c42dee-73a3-4c2b-ab42-a0440011d9e0 rw",
+   "native_measure.guard passed (device, UUID, frozen inputs, pinned tools)",
+   "impl-no-build-error DB: 217 bqrs, 82,494 files listable, db-cpp relations (excluding cache) fully readable, no new kernel I/O errors"
+  ],
+  "not_done": [
+   "no fsck/e2fsck run; exFAT 'not properly unmounted' warning unresolved",
+   "exhaustive filesystem health not established"
+  ]
+ },
+ "second_disconnection": {
+  "at": "2026-10-07 11:00:56",
+  "kernel": "sd 0:0:0:0 [sda] Synchronizing SCSI cache; tag FAILED hostbyte=DID_NO_CONNECT; I/O error dev sda WRITE",
+  "failed_sda_writes_logged": 10,
+  "lexar_now": "/dev/sdb1 exFAT 002B-CE31",
+  "loop1_backing_now": "/.s-core-build/build-volume-v1.ext4 (stale)",
+  "affected_measurement": {
+   "record": "recovery-1/evidence4-results/evidence/baseline-codeql-analyze-impl-rerun-2.json",
+   "exit_code": 137,
+   "stop_reason": "[Errno 5] Input/output error on tools/bazel-8.7.0 during guard()",
+   "started": "09:01:09",
+   "finished": "11:00:56",
+   "stderr_sha256": "d99e38a72cc9eead8dc39844aefe546fff0e892cfcd472e462bb19710625c748",
+   "progress": "RULE-8-7-1 still evaluating; no SARIF"
+  },
+  "assessment": "Second drop under sustained load within ~2 h of reattachment; writes to the image were lost at disconnect. Image/ext4 integrity unknown.",
+  "actions_taken": [
+   "stopped; no reattachment, unmount, fsck or repair"
+  ]
+ }
+}
