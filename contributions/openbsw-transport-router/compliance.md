@@ -25,12 +25,12 @@ confirm it), **open** (to do at submission).
 
 | Rule | Source | Status | Evidence / action |
 | --- | --- | --- | --- |
-| Discuss a new feature in an issue before the PR | CONTRIBUTING.md; `pull_request.rst` ("adding a completely new feature" must be discussed) | open (in progress) | Issue #664 opened on 7 October 2026; open the PR after the committers agree. |
-| Fork, branch, commit, push, open PR | CONTRIBUTING.md | open | Steps in [README.md](README.md). |
+| Discuss a new feature in an issue before the PR | CONTRIBUTING.md; `pull_request.rst` ("adding a completely new feature" must be discussed) | partly met | Issue #664 opened on 7 October 2026; the author opened PR #665 the same day, before a committer replied. |
+| Fork, branch, commit, push, open PR | CONTRIBUTING.md | met | PR #665 from `jnsagai/openbsw:feature/transport-router` |
 | Commit message: subject ≤ 72, capital, imperative, no period; body ≤ 72; what and why | `commit_message.rst`, `.gitlint` | met | [evidence/gitlint.txt](evidence/gitlint.txt) |
 | Reference the ticket in the commit body | `commit_message.rst` "Reference Tickets" | met | `Resolves: #664` in the commit; [evidence/gitlint.txt](evidence/gitlint.txt) |
 | PR description follows the template; one commit → may equal the commit message | `pull_request.rst`, PR template | met | [PR-description.md](PR-description.md) |
-| `tested_on_hw` or `no_hw_test_required` tag | `pull_request.rst` "Tags" | met (to set) | Tested on the S32K148EVB through the gateway (16 board tests); tag `tested_on_hw`. |
+| `tested_on_hw` or `no_hw_test_required` tag | `pull_request.rst` "Tags" | open | Tested on the S32K148EVB through the gateway (16 board tests). The author cannot set labels; PR #665 asks a committer to set `tested_on_hw`. |
 | Module structure: `include/`, `src/` by namespace, `doc/index.rst`, `test/`, `mock/gmock/include`, `module.spec`, `CMakeLists.txt` | `module.rst` | met | Patch file list; `module.spec` as `transportRouterSimple` |
 | `BUILD.bazel` with standard rules | `module.rst` "BUILD.bazel" | met | [evidence/bazel-test.txt](evidence/bazel-test.txt): `transport_router_test` and `transport_router_simple_test` pass |
 | Module documentation with introduction, features, integration, configuration, API, example | `documentation/*.rst` | met | `doc/index.rst`; Sphinx build without warnings ([evidence/docs-build.log](evidence/docs-build.log)) |

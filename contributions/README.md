@@ -32,8 +32,8 @@ handoffs and this repository; add other completed work as its artifacts are reco
   contribution of a diagnostic gateway router module for Eclipse OpenBSW, checked against the
   OpenBSW and Eclipse Foundation contribution rules ([compliance](openbsw-transport-router/compliance.md))
   on current upstream `main`; feature issue
-  [#664](https://github.com/eclipse-openbsw/openbsw/issues/664) open, pull request after the
-  committers agree.
+  [#664](https://github.com/eclipse-openbsw/openbsw/issues/664) open, pull request
+  [#665](https://github.com/eclipse-openbsw/openbsw/pull/665) open.
 - [OpenBSW doipClient packet](openbsw-doip-client/README.md): prepared upstream contribution of
   a DoIP client transport layer, checked against the OpenBSW and Eclipse Foundation contribution
   rules ([compliance](openbsw-doip-client/compliance.md)); feature issue

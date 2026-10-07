@@ -7,8 +7,8 @@
 
 **Tag:** `tested_on_hw` (S32K148EVB, see Test Plan)
 
-The body below follows `.github/PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md`. Open it
-once the committers have agreed on the approach in #664.
+**Opened:** 7 October 2026 as https://github.com/eclipse-openbsw/openbsw/pull/665. The posted body is the text below the line, with a
+request to a committer to set `tested_on_hw` and the Claude Code attribution line.
 
 ---
 

@@ -2,8 +2,9 @@
 
 Prepared on 6 October 2026 and brought up to the OpenBSW and Eclipse Foundation rules on
 7 October 2026. The feature issue is open as
-[eclipse-openbsw/openbsw#664](https://github.com/eclipse-openbsw/openbsw/issues/664); the pull
-request is not opened yet, and no maintainer approval or merge is claimed.
+[eclipse-openbsw/openbsw#664](https://github.com/eclipse-openbsw/openbsw/issues/664), and the pull
+request as [#665](https://github.com/eclipse-openbsw/openbsw/pull/665) (opened on 7 October 2026 at the author's request, before a
+committer replied on #664). No maintainer approval or merge is claimed.
 
 - **Upstream:** [eclipse-openbsw/openbsw](https://github.com/eclipse-openbsw/openbsw),
   base `main` at `b0550871b7a44ae47bb9b7c68af84fb9115bfa77`.
@@ -48,17 +49,17 @@ same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRout
 
 1. Review: approved by the author on 7 October 2026. ECA (`jnascimento6p0`,
    `jnsagai@gmail.com`), copyright owner and AI-use policy are confirmed.
-2. Issue opened: #664 (7 October 2026). Wait for the committers to agree on the approach.
-3. The commit references #664 (`Resolves:`). Before the PR, regenerate the patch on the
-   then-current `main`:
+2. Issue opened: #664 (7 October 2026).
+3. PR opened: [#665](https://github.com/eclipse-openbsw/openbsw/pull/665) from `jnsagai/openbsw:feature/transport-router`, commit
+   `2fb03107` (the patch in this folder) on `main` `b0550871`. The ECA check passed. The
+   CI workflows wait for a maintainer's approval (first contribution). The
+   `tested_on_hw` label cannot be set by the author, so the PR asks a committer to set it.
+4. Follow the review. If `main` moves or changes are requested, regenerate and force-push
+   the branch:
 
    ```bash
    OBSW_BASE=<main sha> OpenBSW/scripts/openbsw-pr.sh all
    ```
-
-4. Fork, apply the patch (`git am 0001-transport-router.patch`), push, and open the PR
-   with [PR-description.md](PR-description.md) and the tag `tested_on_hw`.
-5. Record the issue and PR URLs here and add an entry to [registry.json](../registry.json).
 
 To verify the integrity of this folder:
 
