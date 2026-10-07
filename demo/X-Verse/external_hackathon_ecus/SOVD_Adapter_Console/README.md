@@ -39,7 +39,7 @@ switch body, review finding CR-04). `SOVD_URL` switches the console between them
 ## Quick start (Ubuntu / WSL)
 
 ```bash
-cd demo-console-zenoh && ./run.sh                 # stand-in + console, http://localhost:8080
+cd external_hackathon_ecus/SOVD_Adapter_Console && ./run.sh   # stand-in + console, http://localhost:8080
 ./run.sh vehicle                                  # test vehicle (second window) when no real vehicle publishes
 GATEWAY_BIN=~/sdv/review/cargo-pr40/target/debug/opensovd-gateway ./run.sh rust   # the real Rust gateway + console
 ./run.sh docker                                   # gateway + this console + CDA as containers (= ../OpenSOVD/ctl.sh up)
