@@ -1,0 +1,32 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock-tests
+-----------------------------------------------------------------------------
+
+running 4 tests
+test tests::manually_injected_data_is_received ... ok
+test tests::offer_publish_discover_receive_roundtrip ... ok
+test tests::regression_consumers_must_not_steal_samples ... FAILED
+test tests::regression_independent_runtimes_do_not_discover_each_other ... FAILED
+
+failures:
+
+---- tests::regression_consumers_must_not_steal_samples stdout ----
+
+thread 'tests::regression_consumers_must_not_steal_samples' (18) panicked at score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs:785:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- tests::regression_independent_runtimes_do_not_discover_each_other stdout ----
+
+thread 'tests::regression_independent_runtimes_do_not_discover_each_other' (19) panicked at score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs:773:9:
+assertion failed: b.find_service::<TestInterface>(FindServiceSpecifier::Specific(spec)).get_available_instances().unwrap().is_empty()
+
+
+failures:
+    tests::regression_consumers_must_not_steal_samples
+    tests::regression_independent_runtimes_do_not_discover_each_other
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
