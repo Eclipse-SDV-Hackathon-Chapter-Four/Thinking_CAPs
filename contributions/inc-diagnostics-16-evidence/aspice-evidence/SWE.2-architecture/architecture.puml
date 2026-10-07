@@ -1,0 +1,68 @@
+@startuml
+title sovd_adapter Architecture - Issue #16
+
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+package "OpenSOVD Gateway" {
+    component [opensovd-server] as server
+    component [opensovd-core] as core
+}
+
+package "sovd_adapter" {
+    component [SovdDataProvider] as provider
+    component [DataResourceRegistry] as registry
+    component [convert] as conv
+    component [handle] as handle
+}
+
+package "diag_api" {
+    interface "DataResource" as dr_trait
+    component [DataResourceMetadata] as metadata
+}
+
+package "Cruise Control" {
+    component [CruiseDiag] as cruise
+    component [VehicleSpeed] as speed
+    component [CruiseState] as state
+    component [FaultStatus] as fault
+    component [StuckInjection] as stuck
+}
+
+server --> core : uses
+core --> provider : DataProvider trait
+provider --> registry : queries
+provider --> conv : type conversion
+provider --> handle : async resolution
+registry --> dr_trait : stores
+registry --> metadata : stores
+
+cruise --> speed : creates
+cruise --> state : creates
+cruise --> fault : creates
+cruise --> stuck : creates
+speed ..|> dr_trait
+state ..|> dr_trait
+fault ..|> dr_trait
+stuck ..|> dr_trait
+
+note right of provider
+  Implements opensovd_core::DataProvider
+  - list() / categories() / groups()
+  - read(data_id, include_schema)
+  - write(data_id, value)
+end note
+
+note right of registry
+  - Stores resources with metadata
+  - Preserves registration order
+  - Rejects duplicates
+end note
+
+note right of conv
+  - diag_api Value <-> serde_json Value
+  - Error mapping
+  - Payload format conversion
+end note
+
+@enduml

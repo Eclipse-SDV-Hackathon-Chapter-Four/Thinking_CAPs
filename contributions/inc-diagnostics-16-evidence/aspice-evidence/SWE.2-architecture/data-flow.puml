@@ -1,0 +1,35 @@
+@startuml
+title sovd_adapter Data Flow - Read Operation
+
+actor Client
+participant "opensovd-server" as Server
+participant "SovdDataProvider" as Provider
+participant "DataResourceRegistry" as Registry
+participant "DataResource" as Resource
+participant "convert" as Conv
+participant "handle" as Handle
+
+Client -> Server : GET /sovd/v1/components/cruise/data/vehicle_speed
+Server -> Provider : read("vehicle_speed", false)
+Provider -> Registry : get("vehicle_speed")
+Registry --> Provider : Entry { metadata, format, resource }
+
+Provider -> Provider : Check read-only (allow)
+Provider -> Resource : read(args)
+Resource --> Provider : ReadValueHandle
+
+alt Ready
+    Provider -> Handle : resolve_read(Ready(result))
+    Handle --> Provider : ReadValueReply
+else Pending (Future)
+    Provider -> Handle : resolve_read(Pending(future))
+    Handle -> Handle : future.await
+    Handle --> Provider : ReadValueReply
+end
+
+Provider -> Conv : reply_value(payload)
+Conv --> Provider : (Value, Option<Schema>)
+Provider --> Server : Data { data, schema }
+Server --> Client : 200 OK { "value": 99.8, "unit": "km/h" }
+
+@enduml

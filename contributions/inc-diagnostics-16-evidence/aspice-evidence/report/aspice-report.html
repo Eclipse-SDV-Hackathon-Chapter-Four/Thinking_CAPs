@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASPICE Evidence Report - Issue #16 sovd_adapter</title>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --success: #34a853;
+            --warning: #fbbc04;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #202124;
+            --border: #dadce0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            background: linear-gradient(135deg, var(--primary), #1557b0);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        header p { opacity: 0.9; }
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .meta-item {
+            background: rgba(255,255,255,0.15);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+        .meta-item label { font-size: 0.75rem; opacity: 0.8; display: block; }
+        .meta-item span { font-weight: 600; }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+        }
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        .card h3 { font-size: 1rem; margin: 1rem 0 0.5rem; color: #5f6368; }
+        table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th { background: var(--bg); font-weight: 600; font-size: 0.875rem; }
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .status.done { background: #e6f4ea; color: #1e8e3e; }
+        .status.pass { background: #e6f4ea; color: #1e8e3e; }
+        .status.verified { background: #e8f0fe; color: #1a73e8; }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        .summary-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+        .summary-item .number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .summary-item.success .number { color: var(--success); }
+        .summary-item label { font-size: 0.875rem; color: #5f6368; }
+        .architecture-img {
+            max-width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        code {
+            background: #f1f3f4;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+        .progress-bar {
+            height: 8px;
+            background: #e8eaed;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-bar .fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 4px;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #5f6368;
+            font-size: 0.875rem;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--success);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ASPICE Evidence Report</h1>
+            <p>Issue #16: sovd_adapter - S-CORE to OpenSOVD DataProvider Bridge</p>
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <label>Issue</label>
+                    <span>#16</span>
+                </div>
+                <div class="meta-item">
+                    <label>PR</label>
+                    <span>#40</span>
+                </div>
+                <div class="meta-item">
+                    <label>Contributor</label>
+                    <span>EP1991 / Thinking_CAPs</span>
+                </div>
+                <div class="meta-item">
+                    <label>Date</label>
+                    <span>2026-10-07</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2>Executive Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item success">
+                    <div class="number">32</div>
+                    <label>Unit Tests Passed</label>
+                </div>
+                <div class="summary-item success">
+                    <div class="number">3</div>
+                    <label>Integration Tests</label>
+                </div>
+                <div class="summary-item success">
+                    <div class="number">20</div>
+                    <label>Requirements Verified</label>
+                </div>
+                <div class="summary-item success">
+                    <div class="number">969</div>
+                    <label>Lines of Code</label>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <span class="badge">QUALIFICATION: PASSED</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>SWE.1 - Requirements</h2>
+            <h3>Functional Requirements</h3>
+            <table>
+                <tr><th>Category</th><th>Count</th><th>Status</th></tr>
+                <tr><td>Resource Registration (REQ-REG)</td><td>4</td><td><span class="status verified">VERIFIED</span></td></tr>
+                <tr><td>DataProvider Implementation (REQ-PROV)</td><td>7</td><td><span class="status verified">VERIFIED</span></td></tr>
+                <tr><td>Payload Format Support (REQ-FMT)</td><td>4</td><td><span class="status verified">VERIFIED</span></td></tr>
+                <tr><td>Error Handling (REQ-ERR)</td><td>2</td><td><span class="status verified">VERIFIED</span></td></tr>
+                <tr><td>Async Handle Resolution (REQ-ASYNC)</td><td>3</td><td><span class="status verified">VERIFIED</span></td></tr>
+            </table>
+            <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+            <p style="text-align: right; font-size: 0.875rem; margin-top: 0.5rem;">20/20 requirements verified (100%)</p>
+        </div>
+
+        <div class="card">
+            <h2>SWE.2 - Architecture</h2>
+            <h3>Component Diagram</h3>
+            <img src="../SWE.2-architecture/architecture.png" alt="Architecture Diagram" class="architecture-img">
+            <h3>Key Components</h3>
+            <table>
+                <tr><th>Component</th><th>Purpose</th><th>Lines</th></tr>
+                <tr><td><code>SovdDataProvider</code></td><td>Implements opensovd_core::DataProvider</td><td>321</td></tr>
+                <tr><td><code>DataResourceRegistry</code></td><td>Resource storage and lookup</td><td>203</td></tr>
+                <tr><td><code>convert</code></td><td>Type conversions between crates</td><td>260</td></tr>
+                <tr><td><code>handle</code></td><td>Async handle resolution</td><td>95</td></tr>
+                <tr><td><code>cruise</code></td><td>Cruise control example resources</td><td>380</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>SWE.3 - Detailed Design</h2>
+            <h3>Key Design Decisions</h3>
+            <table>
+                <tr><th>Decision</th><th>Rationale</th></tr>
+                <tr><td>Mutex for resources</td><td>DataResource::write() requires &mut self, DataProvider methods take &self</td></tr>
+                <tr><td>IndexMap for registry</td><td>Preserve registration order for predictable listings</td></tr>
+                <tr><td>JSON string roundtrip</td><td>Different serde_json versions in diag_api and opensovd_core</td></tr>
+                <tr><td>Lock released before await</td><td>Prevent deadlocks in async context</td></tr>
+            </table>
+            <h3>Cruise Control Resources</h3>
+            <table>
+                <tr><th>Resource</th><th>Category</th><th>Access</th></tr>
+                <tr><td>vehicle_speed</td><td>currentData</td><td>read</td></tr>
+                <tr><td>cruise_state</td><td>currentData</td><td>read</td></tr>
+                <tr><td>speed_sensor_fault_status</td><td>currentData</td><td>read</td></tr>
+                <tr><td>speed_sensor_stuck</td><td>storedData</td><td>read/write</td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>SWE.4 - Unit Tests</h2>
+            <table>
+                <tr><th>Module</th><th>Tests</th><th>Status</th></tr>
+                <tr><td>registry.rs</td><td>4</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>convert.rs</td><td>8</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>handle.rs</td><td>5</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>provider.rs</td><td>10</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>cruise.rs</td><td>5</td><td><span class="status pass">PASS</span></td></tr>
+            </table>
+            <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+            <p style="text-align: right; font-size: 0.875rem; margin-top: 0.5rem;">32/32 tests passed (100%)</p>
+        </div>
+
+        <div class="card">
+            <h2>SWE.5 - Integration Tests</h2>
+            <table>
+                <tr><th>Test</th><th>Description</th><th>Status</th></tr>
+                <tr>
+                    <td>serves_diag_api_resources_not_demo_data</td>
+                    <td>Verify cruise component and resources are served</td>
+                    <td><span class="status pass">PASS</span></td>
+                </tr>
+                <tr>
+                    <td>injected_fault_is_debounced_then_reported</td>
+                    <td>Verify fault injection with debounce timing</td>
+                    <td><span class="status pass">PASS</span></td>
+                </tr>
+                <tr>
+                    <td>read_only_resource_rejects_writes</td>
+                    <td>Verify read-only enforcement</td>
+                    <td><span class="status pass">PASS</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>SWE.6 - Qualification</h2>
+            <h3>Acceptance Criteria (Issue #16)</h3>
+            <table>
+                <tr><th>Criteria</th><th>Status</th></tr>
+                <tr>
+                    <td>DataResource readable/writable over SOVD/REST via gateway</td>
+                    <td><span class="status done">DONE</span></td>
+                </tr>
+                <tr>
+                    <td>UDS-backed resources served without extra code</td>
+                    <td><span class="status done">DONE</span></td>
+                </tr>
+                <tr>
+                    <td>Categories/groups/tags reflect DataResourceMetadata</td>
+                    <td><span class="status done">DONE</span></td>
+                </tr>
+                <tr>
+                    <td>Tests green in CI (Bazel score_diag_x86_64_linux)</td>
+                    <td><span class="status done">DONE</span></td>
+                </tr>
+            </table>
+            <h3>Build Verification</h3>
+            <table>
+                <tr><th>Check</th><th>Result</th></tr>
+                <tr><td>Bazel build</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>Rust 2021 edition</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>SPDX headers</td><td><span class="status pass">PASS</span></td></tr>
+                <tr><td>Conventional commits</td><td><span class="status pass">PASS</span></td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Submission Reference</h2>
+            <table>
+                <tr><th>Field</th><th>Value</th></tr>
+                <tr><td>Upstream Repository</td><td>eclipse-score/inc_diagnostics</td></tr>
+                <tr><td>Issue</td><td><a href="https://github.com/eclipse-score/inc_diagnostics/issues/16">#16</a></td></tr>
+                <tr><td>Pull Request</td><td><a href="https://github.com/eclipse-score/inc_diagnostics/pull/40">#40</a></td></tr>
+                <tr><td>Fork</td><td>EP1991/inc_diagnostics</td></tr>
+                <tr><td>Branch</td><td>feature/16-sovd-adapter-dataprovider</td></tr>
+                <tr><td>Base Branch</td><td>gateway_cda_int (PR #6)</td></tr>
+            </table>
+        </div>
+
+        <footer>
+            <p>Prepared by: EP1991 | Thinking_CAPs | Eclipse SDV Hackathon Chapter 4 2026</p>
+            <p>Generated: 2026-10-07</p>
+        </footer>
+    </div>
+</body>
+</html>
