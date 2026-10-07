@@ -17,4 +17,5 @@ public identifier/discovery design remains under #84. Link this tracking issue t
 the eventual draft PR; do not automatically close #84 for the scoped fix.
 
 Historical implementation and this preparation were assisted by OpenAI Codex.
-Human review, actual author DCO, project IP disposition and native CI remain required.
+The user-authorized DCO sign-off is prepared on local native commit `28b0d84c`.
+Human review, project IP disposition and native CI remain required.

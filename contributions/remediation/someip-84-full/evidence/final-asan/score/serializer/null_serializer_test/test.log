@@ -1,0 +1,69 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/serializer:null_serializer_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[==========] Running 26 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 26 tests from NullSerializer_test
+[ RUN      ] NullSerializer_test.init_with_nonexistent_file_fails
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/07 15:58:45.8725739 1509639786 000 ECU1 NONE DFLT log error verbose 2 Error: Could not open config file  /nonexistent/path.bin 
+[       OK ] NullSerializer_test.init_with_nonexistent_file_fails (0 ms)
+[ RUN      ] NullSerializer_test.init_with_empty_file_fails
+2026/10/07 15:58:45.8725739 1509639790 000 ECU1 NONE DFLT log error verbose 2 Error: Invalid config file size:  0 
+[       OK ] NullSerializer_test.init_with_empty_file_fails (0 ms)
+[ RUN      ] NullSerializer_test.get_event_serializer_succeeds
+[       OK ] NullSerializer_test.get_event_serializer_succeeds (0 ms)
+[ RUN      ] NullSerializer_test.get_method_call_serializer_succeeds
+[       OK ] NullSerializer_test.get_method_call_serializer_succeeds (0 ms)
+[ RUN      ] NullSerializer_test.get_method_response_serializer_succeeds
+[       OK ] NullSerializer_test.get_method_response_serializer_succeeds (0 ms)
+[ RUN      ] NullSerializer_test.get_with_unknown_service_type_fails
+2026/10/07 15:58:45.8725740 1509639795 000 ECU1 NONE DFLT log error verbose 4 Error: No serialization config found for service_type= nonexistent_service  element= test_event 
+[       OK ] NullSerializer_test.get_with_unknown_service_type_fails (0 ms)
+[ RUN      ] NullSerializer_test.get_with_unknown_element_name_fails
+2026/10/07 15:58:45.8725740 1509639796 000 ECU1 NONE DFLT log error verbose 4 Error: No serialization config found for service_type= test_service  element= nonexistent_event 
+[       OK ] NullSerializer_test.get_with_unknown_element_name_fails (0 ms)
+[ RUN      ] NullSerializer_test.get_with_null_serializer_output_fails
+[       OK ] NullSerializer_test.get_with_null_serializer_output_fails (0 ms)
+[ RUN      ] NullSerializer_test.get_max_serialized_size_returns_configured_value_for_event
+[       OK ] NullSerializer_test.get_max_serialized_size_returns_configured_value_for_event (0 ms)
+[ RUN      ] NullSerializer_test.get_max_serialized_size_returns_configured_value_for_method_call
+[       OK ] NullSerializer_test.get_max_serialized_size_returns_configured_value_for_method_call (0 ms)
+[ RUN      ] NullSerializer_test.get_max_serialized_size_returns_configured_value_for_method_response
+[       OK ] NullSerializer_test.get_max_serialized_size_returns_configured_value_for_method_response (0 ms)
+[ RUN      ] NullSerializer_test.get_max_serialized_size_returns_zero_for_null
+[       OK ] NullSerializer_test.get_max_serialized_size_returns_zero_for_null (0 ms)
+[ RUN      ] NullSerializer_test.get_sizeof_object_returns_expected_size
+[       OK ] NullSerializer_test.get_sizeof_object_returns_expected_size (0 ms)
+[ RUN      ] NullSerializer_test.get_sizeof_object_returns_zero_for_null
+[       OK ] NullSerializer_test.get_sizeof_object_returns_zero_for_null (0 ms)
+[ RUN      ] NullSerializer_test.get_alignof_object_returns_preserialized_alignment
+[       OK ] NullSerializer_test.get_alignof_object_returns_preserialized_alignment (0 ms)
+[ RUN      ] NullSerializer_test.serialize_copies_data_to_buffer
+[       OK ] NullSerializer_test.serialize_copies_data_to_buffer (0 ms)
+[ RUN      ] NullSerializer_test.serialize_with_null_buffer_fails
+[       OK ] NullSerializer_test.serialize_with_null_buffer_fails (0 ms)
+[ RUN      ] NullSerializer_test.serialize_with_null_object_fails
+[       OK ] NullSerializer_test.serialize_with_null_object_fails (0 ms)
+[ RUN      ] NullSerializer_test.serialize_with_insufficient_buffer_fails
+[       OK ] NullSerializer_test.serialize_with_insufficient_buffer_fails (0 ms)
+[ RUN      ] NullSerializer_test.serialize_with_null_written_bytes_succeeds
+[       OK ] NullSerializer_test.serialize_with_null_written_bytes_succeeds (0 ms)
+[ RUN      ] NullSerializer_test.deserialize_copies_buffer_to_object
+[       OK ] NullSerializer_test.deserialize_copies_buffer_to_object (0 ms)
+[ RUN      ] NullSerializer_test.deserialize_with_oversized_buffer_fails
+[       OK ] NullSerializer_test.deserialize_with_oversized_buffer_fails (0 ms)
+[ RUN      ] NullSerializer_test.deserialize_with_null_serializer_fails
+[       OK ] NullSerializer_test.deserialize_with_null_serializer_fails (0 ms)
+[ RUN      ] NullSerializer_test.deserialize_with_null_buffer_fails
+[       OK ] NullSerializer_test.deserialize_with_null_buffer_fails (0 ms)
+[ RUN      ] NullSerializer_test.deserialize_with_null_object_fails
+[       OK ] NullSerializer_test.deserialize_with_null_object_fails (0 ms)
+[ RUN      ] NullSerializer_test.serialize_then_deserialize_preserves_data
+[       OK ] NullSerializer_test.serialize_then_deserialize_preserves_data (0 ms)
+[----------] 26 tests from NullSerializer_test (4 ms total)
+
+[----------] Global test environment tear-down
+[==========] 26 tests from 1 test suite ran. (4 ms total)
+[  PASSED  ] 26 tests.

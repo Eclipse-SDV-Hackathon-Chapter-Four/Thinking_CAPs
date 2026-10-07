@@ -1,0 +1,46 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/socom/test/stress:socom_stress_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[==========] Running 14 tests from 3 test suites.
+[----------] Global test environment set-up.
+[----------] 5 tests from ClientMultiThreadingTest
+[ RUN      ] ClientMultiThreadingTest.SubscribeEventIsCalledByTwoThreadsWithoutRaceConditions
+[       OK ] ClientMultiThreadingTest.SubscribeEventIsCalledByTwoThreadsWithoutRaceConditions (6 ms)
+[ RUN      ] ClientMultiThreadingTest.UnsubscribeEventIsCalledByTwoThreadsWithoutRaceConditions
+[       OK ] ClientMultiThreadingTest.UnsubscribeEventIsCalledByTwoThreadsWithoutRaceConditions (2 ms)
+[ RUN      ] ClientMultiThreadingTest.RequestEventUpdateIsCalledByTwoThreadsWithoutRaceConditions
+[       OK ] ClientMultiThreadingTest.RequestEventUpdateIsCalledByTwoThreadsWithoutRaceConditions (10 ms)
+[ RUN      ] ClientMultiThreadingTest.CallMethodIsCalledByTwoThreadsWithoutRaceConditions
+[       OK ] ClientMultiThreadingTest.CallMethodIsCalledByTwoThreadsWithoutRaceConditions (7 ms)
+[ RUN      ] ClientMultiThreadingTest.GetPeerCredentialsIsCalledByTwoThreadsWithoutRaceConditions
+[       OK ] ClientMultiThreadingTest.GetPeerCredentialsIsCalledByTwoThreadsWithoutRaceConditions (2 ms)
+[----------] 5 tests from ClientMultiThreadingTest (29 ms total)
+
+[----------] 5 tests from ConnectionMultiThreadingTest
+[ RUN      ] ConnectionMultiThreadingTest.ClientSubscribesEventsAndCallsMethodsInStateChangeCallbackWithoutRace
+[       OK ] ConnectionMultiThreadingTest.ClientSubscribesEventsAndCallsMethodsInStateChangeCallbackWithoutRace (290 ms)
+[ RUN      ] ConnectionMultiThreadingTest.ClientSubscribesEventsServerThreadAndCallsMethodsInOwnThread
+[       OK ] ConnectionMultiThreadingTest.ClientSubscribesEventsServerThreadAndCallsMethodsInOwnThread (208 ms)
+[ RUN      ] ConnectionMultiThreadingTest.ClientCallsMethodsInServerThreadAndSubscribesEventsInOwnThreadWithoutRace
+[       OK ] ConnectionMultiThreadingTest.ClientCallsMethodsInServerThreadAndSubscribesEventsInOwnThreadWithoutRace (217 ms)
+[ RUN      ] ConnectionMultiThreadingTest.ClientCallsMethodsAndSubscribesEventsInOwnThreadWithoutRace
+[       OK ] ConnectionMultiThreadingTest.ClientCallsMethodsAndSubscribesEventsInOwnThreadWithoutRace (661 ms)
+[ RUN      ] ConnectionMultiThreadingTest.ServerConnectsToClientWhileClientDtorIsRunningWithoutDeadlock
+[       OK ] ConnectionMultiThreadingTest.ServerConnectsToClientWhileClientDtorIsRunningWithoutDeadlock (221 ms)
+[----------] 5 tests from ConnectionMultiThreadingTest (1601 ms total)
+
+[----------] 4 tests from RuntimeMultiThreadingTest
+[ RUN      ] RuntimeMultiThreadingTest.CreationOfServerAndClientConnectorsHasNoRaceCondition
+[       OK ] RuntimeMultiThreadingTest.CreationOfServerAndClientConnectorsHasNoRaceCondition (6 ms)
+[ RUN      ] RuntimeMultiThreadingTest.CreationOfServerAndClientConnectorsCallsCallbacksInCorrectOrder
+[       OK ] RuntimeMultiThreadingTest.CreationOfServerAndClientConnectorsCallsCallbacksInCorrectOrder (8 ms)
+[ RUN      ] RuntimeMultiThreadingTest.BridgesWhichCreateServerConnectorsAndClientConnectorsHaveNoRaceCondition
+[       OK ] RuntimeMultiThreadingTest.BridgesWhichCreateServerConnectorsAndClientConnectorsHaveNoRaceCondition (5004 ms)
+[ RUN      ] RuntimeMultiThreadingTest.BridgesAndClientConnectorsHaveNoRaceCondition
+[       OK ] RuntimeMultiThreadingTest.BridgesAndClientConnectorsHaveNoRaceCondition (4 ms)
+[----------] 4 tests from RuntimeMultiThreadingTest (5025 ms total)
+
+[----------] Global test environment tear-down
+[==========] 14 tests from 3 test suites ran. (6655 ms total)
+[  PASSED  ] 14 tests.

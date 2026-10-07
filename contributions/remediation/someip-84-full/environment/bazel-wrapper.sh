@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-tools-0ptca_j_/bin/bazel --output_user_root=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/bazel-output "$@"

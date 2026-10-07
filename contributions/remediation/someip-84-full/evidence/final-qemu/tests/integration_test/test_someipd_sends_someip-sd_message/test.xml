@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="ITF" errors="0" failures="1" skipped="0" tests="1" time="28.458" timestamp="2026-10-07T16:22:16.544192+00:00" hostname="master"><testcase classname="" name="test_start_someipd_and_gatewayd" file="../_main/tests/integration_test/someipd_sends_someip-sd_message.py" line="21" time="0.202"><failure message="RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2&#10;tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted">gatewayd_with_someipd = &lt;score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x74c60ffcd4c0&gt;
+
+    def test_start_someipd_and_gatewayd(gatewayd_with_someipd: Target) -&gt; None:
+        """Same as above but with more complex test fixture"""
+&gt;       with tcpdump_capture("udp port 30490", packet_count=1) as tcpdump_process:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration_test/someipd_sends_someip-sd_message.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+filter_expression = 'udp port 30490', packet_count = 1, output_file = None
+
+    def tcpdump_capture(
+        filter_expression: str,
+        packet_count: int | None = None,
+        output_file: str | None = None,
+    ) -&gt; CaptureProcess:
+        """Start tcpdump on the host and return a CaptureProcess context manager.
+    
+        Args:
+            filter_expression: BPF filter string.
+            packet_count: Exit after this many packets; omit when using stop_capture.
+            output_file: Move the completed pcap to this path after capture stops;
+                         None streams text to stdout.
+    
+        Raises:
+            RuntimeError: tcpdump exited immediately (missing binary or CAP_NET_RAW).
+        """
+        # -Z &lt;current_user&gt;: avoids tcpdump dropping to its default user, which fails without CAP_SETUID in CI (even as root).
+        try:
+            _z_user = pwd.getpwuid(os.getuid()).pw_name
+        except KeyError:
+            # uid has no /etc/passwd entry (minimal container); use numeric fallback
+            _z_user = str(os.getuid())
+    
+        args = ["/usr/bin/tcpdump", "-n", "-i", "any", "-Z", _z_user]
+    
+        # Write pcap to /tmp, which is writable in all sandbox configurations.
+        # CaptureProcess.__exit__ moves it to output_file after capture stops.
+        text_mode = output_file is None
+        tmp_pcap: str | None = None
+        if output_file is not None:
+            tmp_pcap = f"/tmp/tcpdump_{os.urandom(8).hex()}.pcap"
+            args.extend(["-U", "-w", tmp_pcap])  # -U: packet-buffered
+        else:
+            args.append("-l")  # line-buffered output for text mode
+    
+        if packet_count is not None:
+            args.extend(["-c", str(packet_count)])
+        if filter_expression:
+            args.append(filter_expression)
+    
+        try:
+            proc = subprocess.Popen(
+                args,
+                stdout=subprocess.PIPE if output_file is None else subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"Failed to start tcpdump ({exc}). Check that /usr/bin/tcpdump exists and "
+                f"the process has CAP_NET_RAW capability."
+            ) from exc
+    
+        # tcpdump exits within milliseconds if CAP_NET_RAW is missing or binary absent.
+        time.sleep(0.2)
+        if proc.poll() is not None and proc.returncode != 0:
+            stderr_text = _get_content_of_file_object(proc.stderr)
+&gt;           raise RuntimeError(
+                f"tcpdump failed to start (exit code {proc.returncode}). "
+                f"Check that /usr/bin/tcpdump exists and the process has "
+                f"CAP_NET_RAW capability. stderr: {stderr_text}"
+            )
+E           RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2
+E           tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted
+
+tests/common/capture.py:281: RuntimeError</failure></testcase></testsuite></testsuites>
