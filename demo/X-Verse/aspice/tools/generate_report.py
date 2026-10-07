@@ -185,14 +185,26 @@ def bazel(cid, workdir, args, name, label):
     out = r.stdout
     targets = re.findall(r"^(//\S+)\s+(?:\(cached\) )?(PASSED|FAILED)", out, re.M)
     failed = len(re.findall(r"FAILED in|FAILED TO BUILD|NO STATUS", out))
-    # Count the individual test cases from each target's JUnit test.xml (bazel-testlogs).
+    # Count the individual test cases of each target from its test log (gtest / Rust
+    # libtest summaries); fall back to the JUnit test.xml of the target.
     cases = case_failures = 0
     for target, _ in targets:
         pkg, tname = target[2:].split(":")
-        xml = run(["docker", "exec", "-w", workdir, cid, "bash", "-lc",
-                   f'cat "$(bazel info bazel-testlogs 2>/dev/null)/{pkg}/{tname}/test.xml"'], timeout=300).stdout
-        cases += len(re.findall(r"<testcase ", xml))
-        case_failures += len(re.findall(r"<failure", xml))
+        logs = f"bazel-testlogs/{pkg}/{tname}"
+        log = run(["docker", "exec", "-w", workdir, cid, "bash", "-c", f"cat {logs}/test.log"], timeout=120).stdout
+        rust = re.findall(r"test result: \w+\. (\d+) passed; (\d+) failed", log)
+        gtest_pass = re.findall(r"\[  PASSED  \] (\d+) tests?", log)
+        gtest_fail = re.findall(r"\[  FAILED  \] (\d+) tests?", log)
+        if rust:
+            cases += sum(int(p) + int(f) for p, f in rust)
+            case_failures += sum(int(f) for _, f in rust)
+        elif gtest_pass or gtest_fail:
+            cases += sum(map(int, gtest_pass)) + sum(map(int, gtest_fail))
+            case_failures += sum(map(int, gtest_fail))
+        else:
+            xml = run(["docker", "exec", "-w", workdir, cid, "bash", "-c", f"cat {logs}/test.xml"], timeout=120).stdout
+            cases += len(re.findall(r"<testcase ", xml))
+            case_failures += len(re.findall(r"<failure", xml))
     tests = cases or len(targets)
     ok = r.returncode == 0 and failed == 0 and case_failures == 0 and targets
     summary = [l.strip() for l in out.splitlines() if re.search(r"Executed \d+ out of", l)]
@@ -208,10 +220,10 @@ def unit_results(full):
         res["UT-OTA"] = ut_ota()
         cid = devcontainer()
         if cid:
-            res["UT-SCORE"] = bazel(cid, "/workspaces/s-core/cc_s-core", "--test_output=errors //score/cruise_control/...",
+            res["UT-SCORE"] = bazel(cid, "/workspaces/s-core/cc_s-core", "--nocache_test_results --test_output=errors //score/cruise_control/...",
                                     "ut-score", "bazel test //score/cruise_control/...")
             res["UT-PR16"] = bazel(cid, "/workspaces/s-core/third_party/inc_diagnostics",
-                                   "--config=score_diag_x86_64_linux --lockfile_mode=update --test_output=errors "
+                                   "--config=score_diag_x86_64_linux --lockfile_mode=update --nocache_test_results --test_output=errors "
                                    "//score/mw/diag/sovd_adapter:all", "ut-pr16",
                                    "bazel test //score/mw/diag/sovd_adapter:all")
     for key, name in (("UT-OTA", "ut-ota"), ("UT-SCORE", "ut-score"), ("UT-PR16", "ut-pr16")):

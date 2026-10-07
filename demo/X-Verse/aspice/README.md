@@ -47,8 +47,9 @@ the container suites keep their last recorded results, marked as such in the rep
 ## Current status
 
 - 11 of 11 software requirements verified, 24 of 24 test cases pass, no traceability gaps
-- Unit: launcher 15 tests, SOME/IP payload conversion 213 checks, S-CORE cruise control
-  15 gtest cases, PR #16 `sovd_adapter` test target, OTA backend 70 JUnit tests
+- Unit (all executed on every `--full` run, no cached results): launcher 15 tests, SOME/IP
+  payload conversion 213 checks, S-CORE cruise control 15 gtest cases, PR #16
+  `sovd_adapter` 27 Rust tests, OTA backend 70 JUnit tests
 - Integration: 13 of 13 checks against the running system (Zenoh, SOME/IP → S-CORE,
   SOVD/DTC, certgen PKI, mutual TLS, RTCU targets, campaigns, CARLA, Android)
 - Qualification: one-command start/stop and OTA campaigns (Cuttlefish, Raspberry Pi,

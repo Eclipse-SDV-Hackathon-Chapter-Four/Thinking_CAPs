@@ -1,6 +1,6 @@
 # ASPICE SWE.1–SWE.6 report — X-Verse end-to-end demonstration
 
-Generated 2026-10-07 15:50:32 by `aspice/tools/generate_report.py` (the same data as [aspice-swe-report.html](aspice-swe-report.html) and [summary.json](summary.json)).
+Generated 2026-10-07 16:03:52 by `aspice/tools/generate_report.py` (the same data as [aspice-swe-report.html](aspice-swe-report.html) and [summary.json](summary.json)).
 
 CARLA · virtual vehicle · Zenoh VCU · SOME/IP bridge · S-CORE ECU with DTC `CC.LostCommunication` over SOVD (inc_diagnostics PR #16 `sovd_adapter`) · OTA vECU (certgen, EOL backend, RTCU) · Android targets.
 
@@ -8,7 +8,7 @@ CARLA · virtual vehicle · Zenoh VCU · SOME/IP bridge · S-CORE ECU with DTC `
 
 | Software requirements verified | Test cases passed | Unit test cases / checks | Traceability issues |
 | --- | --- | --- | --- |
-| **11/11** | **24/24** | **314** | **0** |
+| **11/11** | **24/24** | **340** | **0** |
 
 Demonstration work products for code quality and traceability; not an assessed capability level. Work products: [requirements](../swe1-requirements/), [architecture](../swe2-architecture/architecture.md), [detailed design](../swe3-detailed-design/detailed-design.md), [unit](../swe4-unit-verification/unit-verification.md), [integration](../swe5-integration-test/integration-test.md) and [qualification](../swe6-qualification-test/qualification-test.md) test specifications.
 
@@ -44,13 +44,13 @@ Demonstration work products for code quality and traceability; not an assessed c
 | --- | --- | --- | --- | --- |
 | UT-LAUNCHER | `tests/test_run_autoverse.py` (Python unittest) | SWR-01 | ✅ PASS | OK — 15 cases |
 | UT-SOMEIP | `tests/payload/test_convert.cpp` (`test_convert`) | SWR-05 | ✅ PASS | checks=213 failures=0 (build/test_convert) — 213 cases |
-| UT-SCORE | `score/cruise_control/tests/cruise_control_test.cpp` (gtest) | SWR-06 | ✅ PASS | bazel test //score/cruise_control/...: 1 target(s), 15 test cases — Executed 0 out of 1 test: 1 test passes. — 15 cases |
-| UT-PR16 | `//score/mw/diag/sovd_adapter:all` (inc_diagnostics, PR #16) | SWR-07 | ✅ PASS | bazel test //score/mw/diag/sovd_adapter:all: 1 target(s), 1 test cases — Executed 0 out of 1 test: 1 test passes. — 1 cases |
+| UT-SCORE | `score/cruise_control/tests/cruise_control_test.cpp` (gtest) | SWR-06 | ✅ PASS | bazel test //score/cruise_control/...: 1 target(s), 15 test cases — Executed 1 out of 1 test: 1 test passes. — 15 cases |
+| UT-PR16 | `//score/mw/diag/sovd_adapter:all` (inc_diagnostics, PR #16) | SWR-07 | ✅ PASS | bazel test //score/mw/diag/sovd_adapter:all: 1 target(s), 27 test cases — Executed 1 out of 1 test: 1 test passes. — 27 cases |
 | UT-OTA | `backend/java/src/test` (JUnit 5, Spring Boot) | SWR-09 | ✅ PASS | 12 JUnit suites (mvn test) — 70 cases |
 
 ## SWE.5 Integration test
 
-`tools/e2e_check.py` against the running system — run now (2026-10-07T15:50:41+0100)
+`tools/e2e_check.py` against the running system — run now (2026-10-07T16:05:36+0100)
 
 | ID | Test | Verifies | Result | Detail |
 | --- | --- | --- | --- | --- |
@@ -58,12 +58,12 @@ Demonstration work products for code quality and traceability; not an assessed c
 | ITC-02 | Supervised containers running | SWR-01 | ✅ PASS | all running |
 | ITC-03 | Vehicle state and driver requests on Zenoh | SWR-02, SWR-03 | ✅ PASS | received 3/3 |
 | ITC-04 | VCU commands on Zenoh | SWR-04 | ✅ PASS | received 2/2 |
-| ITC-05 | Speed reaches the S-CORE ECU over SOME/IP | SWR-05, SWR-07 | ✅ PASS | vehicle_speed 0.0 km/h, age 48 ms |
+| ITC-05 | Speed reaches the S-CORE ECU over SOME/IP | SWR-05, SWR-07 | ✅ PASS | vehicle_speed 0.0 km/h, age 22 ms |
 | ITC-06 | Cruise-control state exposed | SWR-06 | ✅ PASS | state standby, identity sha256:ae275d890718… |
 | ITC-07 | DTC served through PR #16 `sovd_adapter` | SWR-07 | ✅ PASS | components ['cruise_control'], DTC CC.LostCommunication status passed |
 | ITC-08 | certgen PKI | SWR-08 | ✅ PASS | verified against ca.crt: server.crt, client-PC-CUTTLEFISH-01.crt, client-PI-ANDROID-15.crt |
 | ITC-09 | Device API requires mutual TLS | SWR-09 | ✅ PASS | without client cert: rejected; with client cert: HTTP/1.1 400 Bad Request |
-| ITC-10 | RTCU registered and targets reported | SWR-09, SWR-10 | ✅ PASS | PC-CUTTLEFISH-01 reachable, PI-ANDROID-15 reachable; last seen 1 s ago |
+| ITC-10 | RTCU registered and targets reported | SWR-09, SWR-10 | ✅ PASS | PC-CUTTLEFISH-01 reachable, PI-ANDROID-15 reachable; last seen 7 s ago |
 | ITC-11 | Campaign outcomes recorded per target | SWR-10 | ✅ PASS | success: PC-CUTTLEFISH-01 #17, PI-ANDROID-15 #19; unreachable target closed as failed: #8 |
 | ITC-12 | CARLA ego vehicle present | SWR-02 | ✅ PASS | ego_vehicle vehicle.audi.etron (id 24) |
 | ITC-13 | Android target ready with the cluster app | SWR-11 | ✅ PASS | boot_completed=1, cluster app installed |
@@ -99,7 +99,7 @@ Demonstration work products for code quality and traceability; not an assessed c
 
 | Repository | Branch | Commit |
 | --- | --- | --- |
-| autoverse | dev/sdv-hackathon-2026 | 2f13c56 Add ASPICE SWE.1-SWE.6 evidence for the end-to-end demonstration (local changes) |
+| autoverse | dev/sdv-hackathon-2026 | 8debc43 ASPICE report: add a GitHub-renderable Markdown version (local changes) |
 | bridges/carla | dev/sdv-hackathon-2026 | 3dc7e8e PRE-WORK: fault-simulation proposal to withhold the ego speed signal |
 | bridges/someip | dev/sdv-hackathon-2026 | 3db6b78 Map S-CORE cruise-control cancel request to Zenoh |
 | bridges/can | dev/sdv-hackathon-2026 | 33b52ca Point serial2can-bridge docs at its new location; list both bridges |
