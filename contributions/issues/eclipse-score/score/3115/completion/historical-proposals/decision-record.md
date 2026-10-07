@@ -1,5 +1,3 @@
-> Historical authored draft, superseded by native version 3. Use [the current decision record](completion/DR-010-infra.rst), [comparison](completion/comparison.md) and [acceptance mapping](acceptance-mapping.md). The original bytes are retained in `completion/historical-proposals/`.
-
 # Proposed decision-record supplement: AI tooling within the S-CORE process
 
 Status: **proposed for maintainer review**. Relates to

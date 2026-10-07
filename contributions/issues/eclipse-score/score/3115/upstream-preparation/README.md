@@ -1,5 +1,7 @@
 # Current native proposal and measured verification
 
+> Historical native candidate: use [version 3 completion and validation](../completion/README.md) for the current PR. The original source, bindings and results below remain preserved.
+
 > Historical preparation: the inherited failure below is resolved on the updated PR by upstream commit `6122462`. See [fresh passing verification](../review-preparation/README.md). These original failed runs remain unchanged.
 
 The current candidate is [DR-010-infra.rst](DR-010-infra.rst), placed at
