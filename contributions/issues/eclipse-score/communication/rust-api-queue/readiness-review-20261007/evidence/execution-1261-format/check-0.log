@@ -1,0 +1,260 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.
+WARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+WARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 5 packages loaded
+Analyzing: target //tools/lint:rustfmt_with_config (6 packages loaded)
+Analyzing: target //tools/lint:rustfmt_with_config (6 packages loaded)
+Analyzing: target //tools/lint:rustfmt_with_config (6 packages loaded, 0 targets configured)
+Analyzing: target //tools/lint:rustfmt_with_config (6 packages loaded, 0 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (10 packages loaded, 0 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (31 packages loaded, 7 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (96 packages loaded, 7 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (159 packages loaded, 3159 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (178 packages loaded, 12532 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (181 packages loaded, 12616 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (181 packages loaded, 12619 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (181 packages loaded, 12619 targets configured)
+
+Analyzing: target //tools/lint:rustfmt_with_config (182 packages loaded, 12699 targets configured)
+
+INFO: Analyzed target //tools/lint:rustfmt_with_config (182 packages loaded, 12699 targets configured).
+[4 / 11] Creating runfiles tree bazel-out/k8-fastbuild/bin/tools/lint/rustfmt_with_config.runfiles; 0s local
+[10 / 17] checking cached actions
+[79 / 111] [Prepa] Expanding template tools/lint/rustfmt_wrapper.sh
+[81 / 111] checking cached actions
+[109 / 111] [Prepa] Compiling Rust rlib runfiles (1 file)
+[109 / 111] Compiling Rust rlib runfiles (1 file); 1s linux-sandbox
+[110 / 111] [Prepa] Compiling Rust bin rustfmt (1 file)
+[110 / 111] Compiling Rust bin rustfmt (1 file); 1s linux-sandbox
+[111 / 111] no actions running
+INFO: Found 1 target...
+Target //tools/lint:rustfmt_with_config up-to-date:
+  bazel-bin/tools/lint/rustfmt_wrapper.sh
+  bazel-bin/tools/lint/rustfmt_with_config
+INFO: Elapsed time: 113.463s, Critical Path: 8.92s
+INFO: 8 processes: 105 action cache hit, 6 internal, 2 linux-sandbox.
+INFO: Build completed successfully, 8 total actions
+INFO: Running command line: bazel-bin/tools/lint/rustfmt_with_config <args omitted>
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:49:
+ use futures::task::AtomicWaker;
+ 
+ use bridge_ffi_rs::{
+-    FatPtr, FFIBridge, FindServiceCallable, FindServiceHandle, HandleContainer, NativeFindServiceHandle,
++    FFIBridge, FatPtr, FindServiceCallable, FindServiceHandle, HandleContainer, NativeFindServiceHandle,
+     NativeServiceIdentity,
+ };
+ use score_com_concept::{Error, Result, ServiceDescriptor, ServiceFailedReason, ServiceVersion};
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:155:
+         }
+         let key = IdentityKey::from_identity(identity);
+         current.insert(key.clone());
+-        descriptors.entry(key).or_insert_with(|| descriptor_from_identity(identity));
++        descriptors
++            .entry(key)
++            .or_insert_with(|| descriptor_from_identity(identity));
+     }
+ 
+     let became_available = {
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:162:
+         let mut guard = state.members.lock().expect("stream membership poisoned");
+         let members = &mut *guard;
+-        let previous = members.per_watch.insert(watch_slot, current.clone()).unwrap_or_default();
++        let previous = members
++            .per_watch
++            .insert(watch_slot, current.clone())
++            .unwrap_or_default();
+ 
+         for removed in previous.difference(&current) {
+             if let HashMapEntry::Occupied(mut entry) = members.refcount.entry(removed.clone()) {
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:234:
+         let fat_ptr: FatPtr = unsafe { std::mem::transmute(dyn_callback) };
+         let callable = unsafe { FindServiceCallable::new(fat_ptr) };
+ 
+-        let raw_handle = bridge.start_find_service_any(
+-            &service_type.name,
+-            service_type.major,
+-            service_type.minor,
+-            &callable,
+-        );
++        let raw_handle =
++            bridge.start_find_service_any(&service_type.name, service_type.major, service_type.minor, &callable);
+         if raw_handle.is_null() {
+             // Partial start failure: stop every watch that was already started, in reverse order, before returning.
+             for mut watch in started.drain(..).rev() {
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:246:
+                 // SAFETY: this handle was returned by start_find_service_any and has not been stopped yet.
+-                unsafe { watch.bridge.stop_find_service(watch.handle.as_mut() as *mut FindServiceHandle) };
++                unsafe {
++                    watch
++                        .bridge
++                        .stop_find_service(watch.handle.as_mut() as *mut FindServiceHandle)
++                };
+             }
+             return Err(Error::ServiceError(ServiceFailedReason::FailedToStartDiscovery));
+         }
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:302:
+         };
+         for mut watch in watches {
+             // SAFETY: this handle was returned by start_find_service_any and has not been stopped yet.
+-            unsafe { watch.bridge.stop_find_service(watch.handle.as_mut() as *mut FindServiceHandle) };
++            unsafe {
++                watch
++                    .bridge
++                    .stop_find_service(watch.handle.as_mut() as *mut FindServiceHandle)
++            };
+         }
+     }
+ }
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:336:
+     }
+ 
+     fn drain<B: FFIBridge>(state: &Arc<StreamState<B>>) -> Vec<Result<ServiceDescriptor>> {
+-        state.members.lock().unwrap().pending.drain(..).map(|(_, descriptor)| Ok(descriptor)).collect()
++        state
++            .members
++            .lock()
++            .unwrap()
++            .pending
++            .drain(..)
++            .map(|(_, descriptor)| Ok(descriptor))
++            .collect()
+     }
+ 
+     fn pending_len<B: FFIBridge>(state: &Arc<StreamState<B>>) -> usize {
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:367:
+ 
+         // Withdrawal of instance 2 produces no availability item.
+         apply_snapshot(&state, 0, &[identity("/svc/A", 1)]);
+-        assert!(drain(&state).is_empty(), "withdrawal must not yield an availability item");
++        assert!(
++            drain(&state).is_empty(),
++            "withdrawal must not yield an availability item"
++        );
+ 
+         // Re-offering the same identity emits it again.
+         apply_snapshot(&state, 0, &[identity("/svc/A", 1), identity("/svc/A", 2)]);
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:415:
+         let state = new_stream_state::<SharedMockBridge>();
+         apply_snapshot(&state, 0, &[identity("/svc/A", 7), identity("/svc/B", 7)]);
+         let items = drain(&state);
+-        assert_eq!(items.len(), 2, "same numeric instance id on different interfaces must not be deduplicated");
++        assert_eq!(
++            items.len(),
++            2,
++            "same numeric instance id on different interfaces must not be deduplicated"
++        );
+     }
+ 
+     #[test]
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:473:
+     #[test]
+     fn empty_universe_stream_is_pending_not_one_shot() {
+         let mut mock = MockFFIBridge::new();
+-        mock.expect_enumerate_service_types().returning(Vec::<NativeServiceType>::new);
++        mock.expect_enumerate_service_types()
++            .returning(Vec::<NativeServiceType>::new);
+         mock.expect_start_find_service_any().never();
+ 
+         let bridge = SharedMockBridge::new(mock);
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:496:
+             apply_snapshot(&state, 0, &[identity("/svc/A", 1)]);
+             apply_snapshot(&state, 0, &[]);
+         }
+-        assert_eq!(pending_len(&state), 0, "withdrawn identities must not leave pending items behind");
++        assert_eq!(
++            pending_len(&state),
++            0,
++            "withdrawn identities must not leave pending items behind"
++        );
+ 
+         for _ in 0..1000 {
+             apply_snapshot(&state, 0, &[identity("/svc/A", 1)]);
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:503:
+             apply_snapshot(&state, 0, &[]);
+         }
+         apply_snapshot(&state, 0, &[identity("/svc/A", 1)]);
+-        assert_eq!(pending_len(&state), 1, "the latest availability state is reported exactly once");
++        assert_eq!(
++            pending_len(&state),
++            1,
++            "the latest availability state is reported exactly once"
++        );
+         let items = drain(&state);
+         assert_eq!(items[0].as_ref().unwrap().instance_id(), 1);
+     }
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:511:
+     #[test]
+     fn pending_items_never_exceed_currently_offered_identities() {
+         let state = new_stream_state::<SharedMockBridge>();
+-        apply_snapshot(&state, 0, &[identity("/svc/A", 1), identity("/svc/A", 2), identity("/svc/A", 3)]);
++        apply_snapshot(
++            &state,
++            0,
++            &[identity("/svc/A", 1), identity("/svc/A", 2), identity("/svc/A", 3)],
++        );
+         apply_snapshot(&state, 1, &[identity("/svc/B", 1)]);
+         assert_eq!(pending_len(&state), 4);
+ 
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:527:
+         remaining.sort();
+         assert_eq!(
+             remaining,
+-            vec![("/svc/A".to_string(), 1), ("/svc/A".to_string(), 3), ("/svc/B".to_string(), 1)]
++            vec![
++                ("/svc/A".to_string(), 1),
++                ("/svc/A".to_string(), 3),
++                ("/svc/B".to_string(), 1)
++            ]
+         );
+     }
+ 
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:547:
+ 
+         let bridge = SharedMockBridge::new(mock);
+         let stream = build_all_services_stream(&bridge).expect("stream creation must succeed");
+-        assert_eq!(Arc::strong_count(&stream.state), 1, "callbacks must not hold strong references");
+-        assert_eq!(Arc::weak_count(&stream.state), 2, "one weak reference per started watch");
++        assert_eq!(
++            Arc::strong_count(&stream.state),
++            1,
++            "callbacks must not hold strong references"
++        );
++        assert_eq!(
++            Arc::weak_count(&stream.state),
++            2,
++            "one weak reference per started watch"
++        );
+ 
+         let weak = Arc::downgrade(&stream.state);
+         drop(stream);
+Diff in /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-review-pb5v82w4/workspaces/1261/score/mw/com/impl/rust/com-api/com-api-runtime-lola/service_stream.rs:555:
+-        assert!(weak.upgrade().is_none(), "stream state must be freed when the stream is dropped");
++        assert!(
++            weak.upgrade().is_none(),
++            "stream state must be freed when the stream is dropped"
++        );
+         handle_alloc.assert_all_freed();
+     }
+ }

@@ -1,0 +1,19 @@
+{
+  "checks": [
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "flags": [
+        "--aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect",
+        "--output_groups=clippy_checks,clippy_output",
+        "--@rules_rust//rust/settings:clippy.toml=@score_rust_policies//clippy/strict:clippy.toml",
+        "--@rules_rust//rust/settings:clippy_output_diagnostics=True"
+      ],
+      "reason": "Analyze cfg(test) through pinned crate-info aspect, strict native policy and default deny warnings; no output capture cap"
+    }
+  ]
+}

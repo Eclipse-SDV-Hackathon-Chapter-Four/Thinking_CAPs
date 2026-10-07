@@ -41,6 +41,13 @@ the accepted/completed-fix count by treating records as successful implementatio
 See [the contribution index](../README.md) and
 [import audit](../audits/2026-10-07-import-record.json).
 
+The [assessment decision packet](../assessment-decisions-20261007/README.md) records
+the remaining qualification/adoption decisions and required human acceptance for
+Communication #1265 and the assessment-only entries. Retain their assessment statuses
+and exclude them from completed-fix counts, including after documentation-only acceptance.
+The user [accepted the prepared packet](../assessment-decisions-20261007-acceptance.json)
+on 2026-10-07; native qualification/adoption decisions remain pending.
+
 Run `python3 scripts/verify_missing_contributions.py` in addition to the global
 registry verifier. Native review, remaining checks and the actual event submission
 requirements still need their recorded decisions.

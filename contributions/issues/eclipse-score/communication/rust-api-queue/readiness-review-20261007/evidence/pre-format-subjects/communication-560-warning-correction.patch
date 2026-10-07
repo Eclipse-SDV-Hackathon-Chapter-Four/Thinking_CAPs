@@ -1,0 +1,38 @@
+--- a/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs
++++ b/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs
+@@ -244,7 +244,7 @@
+         i16_val: i16::try_from(marker).unwrap_or(i16::MAX),
+         u8_val: u8::try_from(marker).unwrap_or(u8::MAX),
+         i8_val: i8::try_from(marker).unwrap_or(i8::MAX),
+-        flag: marker % 2 == 0,
++        flag: marker.is_multiple_of(2),
+     }
+ }
+ 
+@@ -563,12 +563,11 @@
+     }
+ }
+ 
+-/// A single handler invocation, tagged with the originating handler ID and an ordered counter.
++/// A single handler invocation, tagged with the originating handler ID.
+ #[derive(Debug)]
+ struct Observation {
+     handler_id: u32,
+     state: SubscriptionState,
+-    invocation: usize,
+ }
+ 
+ /// Resources captured by a subscription-state handler. Dropping this value records exactly one
+@@ -619,11 +618,10 @@
+     let handler = move |state: SubscriptionState| -> bool {
+         // Referencing the probe keeps it owned by, and disposed with, this callable.
+         let _ = probe.handler_id();
+-        let invocation = invocations_counter.fetch_add(1, Ordering::SeqCst) + 1;
++        invocations_counter.fetch_add(1, Ordering::SeqCst);
+         let observation = Observation {
+             handler_id: id,
+             state,
+-            invocation,
+         };
+         if sender.send(observation).is_err() {
+             send_failures_counter.fetch_add(1, Ordering::SeqCst);

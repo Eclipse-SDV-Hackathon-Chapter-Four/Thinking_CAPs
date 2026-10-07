@@ -1,0 +1,54 @@
+' *******************************************************************************
+' Copyright (c) 2026 Contributors to the Eclipse Foundation
+'
+' See the NOTICE file(s) distributed with this work for additional
+' information regarding copyright ownership.
+'
+' This program and the accompanying materials are made available under the
+' terms of the Apache License Version 2.0 which is available at
+' https://www.apache.org/licenses/LICENSE-2.0
+'
+' SPDX-License-Identifier: Apache-2.0
+' *******************************************************************************
+
+@startuml
+
+!startsub IInternalConfigProviderService
+namespace score::config_management::config_daemon {
+abstract class IInternalConfigProviderService{
+    + {abstract} SetInitialQualifierState(initial_qualifier_state : const InitialQualifierState) : void
+    + {abstract} SendLastUpdatedParameterSet(parameter_set_name : const std::string_view) : bool
+    --
+    Responsibility: This class is responsible to hold the latest InitialQualifierState as well
+    sending the last updated parameter set.
+}
+}
+!endsub
+
+!startsub InternalConfigProviderService
+namespace score::config_management::config_daemon {
+class InternalConfigProviderService{
+    + InternalConfigProviderService(\n\
+    internal_config_provider_service_reactor : std::shared_ptr<InternalConfigProviderServiceReactor>,\n\
+    token : InternalConfigProviderSkeleton::ConstructionToken&&)
+
+    + SetInitialQualifierState(initial_qualifier_state : const config_daemon::InitialQualifierState) : void
+    + SendLastUpdatedParameterSet(parameter_set_name : const std::string_view) : bool
+    + GetParameterSet(parameter_set_name : const ::mw::diag::string&) : ::mw::core::Future<GetParameterSetOutput>
+
+    + StartService() : void
+    + StopService() : void
+    --
+    - internal_config_provider_service_reactor_ : const std::shared_ptr<InternalConfigProviderServiceReactor>
+    - initial_qualifier_state_ : config_daemon::InitialQualifierState
+    --
+    Responsibility: Implementing the internal config provider service skeleton.
+}
+}
+!endsub
+
+IInternalConfigProviderService <|-- InternalConfigProviderService
+InternalConfigProviderSkeleton <|-- InternalConfigProviderService
+ProvidedServiceContainer *-- IInternalConfigProviderService
+
+@enduml

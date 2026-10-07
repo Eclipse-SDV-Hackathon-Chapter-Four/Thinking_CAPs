@@ -26,6 +26,11 @@ completed-contribution count. CDA #543 is published as native PR #601. Both nati
 PRs currently fail their actual contributor's ECA check, and diagnostics needs
 that author's DCO sign-offs. Jefferson confirmed Claude Opus 5.5 assistance on both.
 
+[Communication #1265 and the assessment-only entries](../assessment-decisions-20261007/README.md)
+retain their assessments with proposed qualification/adoption dispositions and required
+human acceptance. They supply no completed-fix claim; the packet records the remaining
+evidence, reviewer roles and separate acceptance-record requirements.
+
 Before submitting, add the confirmed competition entry details and actual upstream
 PR statuses. Local verification, upstream acceptance and full issue closure are recorded
 separately. Use [the submission checklist](README.md) to finalize this draft.

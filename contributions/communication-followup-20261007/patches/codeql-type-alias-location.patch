@@ -1,0 +1,249 @@
+diff --git a/quality/static_analysis/query_overrides/LICENSE.md b/quality/static_analysis/query_overrides/LICENSE.md
+new file mode 100644
+index 0000000..32c3074
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/LICENSE.md
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) 2022 GitHub
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+\ No newline at end of file
+diff --git a/quality/static_analysis/query_overrides/README.md b/quality/static_analysis/query_overrides/README.md
+new file mode 100644
+index 0000000..5af3fc4
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/README.md
+@@ -0,0 +1,25 @@
++# Pinned MISRA location query override
++
++This pack imports the native MISRA C++ 2.62.0 default suite, excludes only
++`cpp/misra/type-aliases-declaration`, and adds the corrected query with the same
++ID. The effective suite remains 218 queries. CodeQL 2.21.4 and the locked library
++versions remain unchanged.
++
++`TypeAliasesDeclaration.ql` is derived from the corresponding upstream file in
++[codeql-coding-standards v2.62.0](https://github.com/github/codeql-coding-standards/blob/v2.62.0/cpp/misra/src/rules/RULE-6-9-1/TypeAliasesDeclaration.ql).
++Its upstream MIT license is retained in `LICENSE.md`. Primary finding selection
++and rule predicates are unchanged. A located alias links to its definition; a
++locationless template alias instance links to the actual type-name use selected
++by the original query. No inferred definition location or SARIF deletion is used.
++
++The helper is inline and bound to the alias/use pair already selected by the
++query. The analyzer resolves locked dependencies from the native compiled pack's
++`.codeql/libraries` directory explicitly, including qtil and the common pack.
++Adding a second copy of the common pack introduces ambiguous pack resolution.
++
++The exact-scope retained database comparison preserves 501 findings and removes
++281 empty URI occurrences. All primary locations/fingerprints and original located
++related links are retained. Two merged messages expand as restored locations
++distinguish link targets. A fresh production database also passes all 218 queries
++and contains no empty file URI locations. These measurements do not establish
++safety acceptance or tool qualification.
+diff --git a/quality/static_analysis/query_overrides/TypeAliasesDeclaration.ql b/quality/static_analysis/query_overrides/TypeAliasesDeclaration.ql
+new file mode 100644
+index 0000000..76e4757
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/TypeAliasesDeclaration.ql
+@@ -0,0 +1,69 @@
++/**
++ * MIT License
++ *
++ * Copyright (c) 2022 GitHub
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to deal
++ * in the Software without restriction, including without limitation the rights
++ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++ * copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in all
++ * copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++ * SOFTWARE.
++ *
++ * Modified in 2026 by Contributors to the Eclipse Foundation.
++ * SPDX-License-Identifier: MIT
++ *
++ * @id cpp/misra/type-aliases-declaration
++ * @name RULE-6-9-1: The same type aliases shall be used in all declarations of the same entity
++ * @description Using different type aliases on redeclarations can make code hard to understand and
++ *              maintain.
++ * @kind problem
++ * @precision very-high
++ * @problem.severity warning
++ * @tags external/misra/id/rule-6-9-1
++ *       maintainability
++ *       readability
++ *       scope/single-translation-unit
++ *       external/misra/enforcement/decidable
++ *       external/misra/obligation/required
++ */
++
++import cpp
++import codingstandards.cpp.misra
++
++// Some alias-template instances have no declaration location in the extracted
++// database. Link their actual type-name use, retaining the alias name, rather
++// than emitting a root-only URI. Located alias declarations remain unchanged.
++pragma[inline]
++bindingset[t, use]
++Element typeAliasLink(TypedefType t, DeclarationEntry use) {
++  if t.getLocation().getFile().getAbsolutePath() != ""
++  then result = t
++  else result = use
++}
++
++from DeclarationEntry decl1, DeclarationEntry decl2, TypedefType t
++where
++  not isExcluded(decl1, Declarations5Package::typeAliasesDeclarationQuery()) and
++  not isExcluded(decl2, Declarations5Package::typeAliasesDeclarationQuery()) and
++  not decl1 = decl2 and
++  decl1.getDeclaration() = decl2.getDeclaration() and
++  t.getATypeNameUse() = decl1 and
++  not t.getATypeNameUse() = decl2 and
++  //exception cases - we dont want to disallow struct typedef name use
++  not t.getBaseType() instanceof Struct and
++  not t.getBaseType() instanceof Enum
++select decl1,
++  "Declaration entry has a different type alias than $@ where the type alias used is '$@'.", decl2,
++  decl2.getName(), typeAliasLink(t, decl1), t.getName()
+diff --git a/quality/static_analysis/query_overrides/base-minus-location-query.qls b/quality/static_analysis/query_overrides/base-minus-location-query.qls
+new file mode 100644
+index 0000000..98cc447
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/base-minus-location-query.qls
+@@ -0,0 +1,18 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++- import: codeql-suites/misra-cpp-default.qls
++  from: codeql/misra-cpp-coding-standards
++  version: 2.62.0
++- exclude:
++    id: cpp/misra/type-aliases-declaration
+diff --git a/quality/static_analysis/query_overrides/codeql-pack.lock.yml b/quality/static_analysis/query_overrides/codeql-pack.lock.yml
+new file mode 100644
+index 0000000..d5affee
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/codeql-pack.lock.yml
+@@ -0,0 +1,42 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++---
++lockVersion: 1.0.0
++dependencies:
++  codeql/misra-cpp-coding-standards:
++    version: 2.62.0
++  advanced-security/qtil:
++    version: 0.0.3
++  codeql/cpp-all:
++    version: 5.0.0
++  codeql/dataflow:
++    version: 2.0.8
++  codeql/mad:
++    version: 1.0.24
++  codeql/quantum:
++    version: 0.0.2
++  codeql/rangeanalysis:
++    version: 1.0.24
++  codeql/ssa:
++    version: 2.0.0
++  codeql/tutorial:
++    version: 1.0.24
++  codeql/typeflow:
++    version: 1.0.24
++  codeql/typetracking:
++    version: 2.0.8
++  codeql/util:
++    version: 2.0.11
++  codeql/xml:
++    version: 1.0.24
++compiled: false
+diff --git a/quality/static_analysis/query_overrides/communication-default.qls b/quality/static_analysis/query_overrides/communication-default.qls
+new file mode 100644
+index 0000000..b71bbcb
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/communication-default.qls
+@@ -0,0 +1,15 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++- import: base-minus-location-query.qls
++- query: TypeAliasesDeclaration.ql
+diff --git a/quality/static_analysis/query_overrides/qlpack.yml b/quality/static_analysis/query_overrides/qlpack.yml
+new file mode 100644
+index 0000000..ae2d7e8
+--- /dev/null
++++ b/quality/static_analysis/query_overrides/qlpack.yml
+@@ -0,0 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++name: score/communication-query-overrides
++version: 0.0.1
++dependencies:
++  codeql/misra-cpp-coding-standards: 2.62.0

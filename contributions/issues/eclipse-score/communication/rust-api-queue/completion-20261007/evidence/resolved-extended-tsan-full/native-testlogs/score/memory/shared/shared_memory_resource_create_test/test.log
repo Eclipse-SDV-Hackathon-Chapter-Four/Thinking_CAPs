@@ -1,0 +1,195 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:shared_memory_resource_create_test
+-----------------------------------------------------------------------------
+==12==WARNING: ThreadSanitizer: memory layout is incompatible, possibly due to high-entropy ASLR.
+Re-execing with fixed virtual address space.
+N.B. reducing ASLR entropy is preferable.
+==12==Installed the sigaction for signal 11
+==12==Installed the sigaction for signal 7
+==12==Installed the sigaction for signal 8
+ThreadSanitizer: reading suppressions file at /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/3100/execroot/_main/bazel-out/k8-fastbuild-tsan/bin/score/memory/shared/shared_memory_resource_create_test.runfiles/score_cpp_policies+/sanitizers/suppressions/tsan.supp
+***** Running under ThreadSanitizer v3 (pid 12) *****
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 14 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m2 tests from SharedMemoryResourceCreateDeathTest
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateDeathTest.CreateSharedMemoryTerminatesIfCreationReturnsUnexpectedError
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000a20 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7fffffffb980 pointing to "/proc/self/exe", 0x728400000000 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-AA 68-F4 FF-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/07 19:31:45.1505025 1637432649 000 ECU1 NONE shm log fatal verbose 5 Unexpected error while opening shared-memory Resource using file: /my_shm with errno An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mSharedMemoryResourceCreateDeathTest.CreateSharedMemoryTerminatesIfCreationReturnsUnexpectedError (6 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateDeathTest.UnableToTruncateSharedMemoryCausesTermination
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000be0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7fffffffb730 pointing to "/proc/self/exe", 0x728400000000 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/07 19:31:45.1505032 1637432718 000 ECU1 NONE shm log fatal verbose 9 reserveSharedMemory 935 Could not ftruncate file to size 65551 for file: /my_shm with error An OS error has occurred with error code:  Success 
+[0;32m[       OK ] [mSharedMemoryResourceCreateDeathTest.UnableToTruncateSharedMemoryCausesTermination (6 ms)
+[0;32m[----------] [m2 tests from SharedMemoryResourceCreateDeathTest (13 ms total)
+
+[0;32m[----------] [m12 tests from SharedMemoryResourceCreateTest
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.CreatingSharedMemoryInitializesCorrectly
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7208000007c0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7fffffffb760 pointing to "/proc/self/exe", 0x728400000000 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.CreatingSharedMemoryInitializesCorrectly (1 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryFreesResourcesOnDestruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000d00 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryFreesResourcesOnDestruction (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryReturnsAnErrorWhenSomebodyElseGotTheLock
+2026/10/07 19:31:45.1505037 1637432763 000 ECU1 NONE shm log error verbose 4 LockFile::Create failed to open file:  /tmp/my_shm_lock  | Error:  An OS error has occurred with error code: File exists 
+2026/10/07 19:31:45.1505037 1637432764 000 ECU1 NONE shm log warn verbose 5 CreateLockFileForNamedSharedMemory 1023 Unexpected error while creating Shared Memory Resource with file: /my_shm . The lock file is already locked indicating that the shared memory region is already being created. 
+2026/10/07 19:31:45.1505037 1637432764 000 ECU1 NONE shm log error verbose 3 Unexpected error while creating Shared Memory Resource with errno An OS error has occurred with error code:  Device or resource busy 
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryReturnsAnErrorWhenSomebodyElseGotTheLock (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.SetsMapPermissionsCorrectly
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000d20 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.SetsMapPermissionsCorrectly (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryWithAllocateNamedTypedMemoryFails
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000d80 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/07 19:31:45.1505038 1637432777 000 ECU1 NONE shm log warn verbose 7 AllocateInTypedMemory 1049 Unexpected error while trying to allocate shared-memory in typed memory using  file: /my_shm Reason:  An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryWithAllocateNamedTypedMemoryFails (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryWithAllocateNamedTypedMemoryDoesNotApplyUserPermission
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000680 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.CreateSharedMemoryWithAllocateNamedTypedMemoryDoesNotApplyUserPermission (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.SetsWorldReadablePermissionsCorrectly
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000a40 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.SetsWorldReadablePermissionsCorrectly (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.SetsWorldWritablePermissionsCorrectly
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7208000005c0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.SetsWorldWritablePermissionsCorrectly (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.FailingToCompensateUmaskWillNotCrash
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7208000005c0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/07 19:31:45.1505040 1637432799 000 ECU1 NONE shm log warn verbose 5 Unable to fchmod on shm-object file: /my_shm :  An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.FailingToCompensateUmaskWillNotCrash (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.SettingPermissionsErrorDoesNotCrash
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000920 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/07 19:31:45.1505041 1637432804 000 ECU1 NONE shm log error verbose 5 Unable to set ACLs for user  42 :  An OS error has occurred with error code:  No such file or directory 
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.SettingPermissionsErrorDoesNotCrash (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.CreatingSharedMemoryFillsRegistryKnownRegions
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000c60 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.CreatingSharedMemoryFillsRegistryKnownRegions (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceCreateTest.UnableToOverwriteSharedMemorySegment
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x720800000d00 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <00-00 00-00 00-00 00-00 01-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/07 19:31:45.1505042 1637432813 000 ECU1 NONE shm log error verbose 1 Error while opening shared-memory Resource: ObjectExists 
+2026/10/07 19:31:45.1505042 1637432814 000 ECU1 NONE shm log error verbose 3 Unexpected error while creating Shared Memory Resource with errno An OS error has occurred with error code:  File exists 
+[0;32m[       OK ] [mSharedMemoryResourceCreateTest.UnableToOverwriteSharedMemorySegment (0 ms)
+[0;32m[----------] [m12 tests from SharedMemoryResourceCreateTest (7 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m14 tests from 2 test suites ran. (21 ms total)
+[0;32m[  PASSED  ] [m14 tests.
+Stats: SizeClassAllocator64: 14M mapped (0M rss) in 3001 allocations; remains 3001
+  01 (    16): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks   16256 avail:  16384 rss:      4K releases:      0 last released:      0K region: 0x720400000000
+  02 (    32): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    8064 avail:   8192 rss:      4K releases:      0 last released:      0K region: 0x720800000000
+  03 (    48): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    5333 avail:   5461 rss:      4K releases:      0 last released:      0K region: 0x720c00000000
+  04 (    64): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    3968 avail:   4096 rss:      4K releases:      0 last released:      0K region: 0x721000000000
+  05 (    80): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    3148 avail:   3276 rss:      4K releases:      0 last released:      0K region: 0x721400000000
+  06 (    96): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    2602 avail:   2730 rss:      4K releases:      0 last released:      0K region: 0x721800000000
+  07 (   112): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    2212 avail:   2340 rss:      4K releases:      0 last released:      0K region: 0x721c00000000
+  08 (   128): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1920 avail:   2048 rss:      4K releases:      0 last released:      0K region: 0x722000000000
+  09 (   144): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1692 avail:   1820 rss:      4K releases:      0 last released:      0K region: 0x722400000000
+  10 (   160): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1510 avail:   1638 rss:      4K releases:      0 last released:      0K region: 0x722800000000
+  11 (   176): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1361 avail:   1489 rss:      4K releases:      0 last released:      0K region: 0x722c00000000
+  12 (   192): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1237 avail:   1365 rss:      4K releases:      0 last released:      0K region: 0x723000000000
+  14 (   224): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks    1042 avail:   1170 rss:      4K releases:      0 last released:      0K region: 0x723800000000
+  15 (   240): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     964 avail:   1092 rss:      4K releases:      0 last released:      0K region: 0x723c00000000
+  16 (   256): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     896 avail:   1024 rss:      4K releases:      0 last released:      0K region: 0x724000000000
+  17 (   320): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     691 avail:    819 rss:      8K releases:      0 last released:      0K region: 0x724400000000
+  18 (   384): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     554 avail:    682 rss:      4K releases:      0 last released:      0K region: 0x724800000000
+  19 (   448): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     457 avail:    585 rss:      4K releases:      0 last released:      0K region: 0x724c00000000
+  20 (   512): mapped:    256K allocs:     128 frees:       0 inuse:    128 num_freed_chunks     384 avail:    512 rss:      4K releases:      0 last released:      0K region: 0x725000000000
+  21 (   640): mapped:    256K allocs:     102 frees:       0 inuse:    102 num_freed_chunks     307 avail:    409 rss:      4K releases:      0 last released:      0K region: 0x725400000000
+  22 (   768): mapped:    256K allocs:      85 frees:       0 inuse:     85 num_freed_chunks     256 avail:    341 rss:      4K releases:      0 last released:      0K region: 0x725800000000
+  23 (   896): mapped:    256K allocs:      73 frees:       0 inuse:     73 num_freed_chunks     219 avail:    292 rss:      4K releases:      0 last released:      0K region: 0x725c00000000
+  24 (  1024): mapped:    256K allocs:      64 frees:       0 inuse:     64 num_freed_chunks     192 avail:    256 rss:      4K releases:      0 last released:      0K region: 0x726000000000
+  25 (  1280): mapped:    256K allocs:      51 frees:       0 inuse:     51 num_freed_chunks     153 avail:    204 rss:     12K releases:      0 last released:      0K region: 0x726400000000
+  28 (  2048): mapped:    256K allocs:      32 frees:       0 inuse:     32 num_freed_chunks      96 avail:    128 rss:     20K releases:      0 last released:      0K region: 0x727000000000
+  29 (  2560): mapped:    256K allocs:      25 frees:       0 inuse:     25 num_freed_chunks      77 avail:    102 rss:      4K releases:      0 last released:      0K region: 0x727400000000
+  32 (  4096): mapped:    256K allocs:      16 frees:       0 inuse:     16 num_freed_chunks      48 avail:     64 rss:     12K releases:      0 last released:      0K region: 0x728000000000
+  33 (  5120): mapped:    256K allocs:      12 frees:       0 inuse:     12 num_freed_chunks      39 avail:     51 rss:      8K releases:      0 last released:      0K region: 0x728400000000
+  34 (  6144): mapped:    256K allocs:      10 frees:       0 inuse:     10 num_freed_chunks      32 avail:     42 rss:      8K releases:      0 last released:      0K region: 0x728800000000
+  36 (  8192): mapped:    256K allocs:       8 frees:       0 inuse:      8 num_freed_chunks      24 avail:     32 rss:      4K releases:      0 last released:      0K region: 0x729000000000
+  37 ( 10240): mapped:    256K allocs:       6 frees:       0 inuse:      6 num_freed_chunks      19 avail:     25 rss:      8K releases:      0 last released:      0K region: 0x729400000000
+  38 ( 12288): mapped:    256K allocs:       5 frees:       0 inuse:      5 num_freed_chunks      16 avail:     21 rss:      8K releases:      0 last released:      0K region: 0x729800000000
+  43 ( 28672): mapped:    256K allocs:       2 frees:       0 inuse:      2 num_freed_chunks       7 avail:      9 rss:      8K releases:      0 last released:      0K region: 0x72ac00000000
+  44 ( 32768): mapped:    256K allocs:       2 frees:       0 inuse:      2 num_freed_chunks       6 avail:      8 rss:     32K releases:      0 last released:      0K region: 0x72b000000000
+  49 ( 81920): mapped:   6144K allocs:      76 frees:       0 inuse:     76 num_freed_chunks       0 avail:     76 rss:    304K releases:      0 last released:      0K region: 0x72c400000000
+Stats: LargeMmapAllocator: allocated 0 times, remains 0 (0 K) max 0 M; by size logs: 

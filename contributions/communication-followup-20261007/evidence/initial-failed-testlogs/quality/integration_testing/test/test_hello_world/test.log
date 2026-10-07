@@ -1,0 +1,110 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //quality/integration_testing/test:test_hello_world
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-followup-pivi6gt7/bazel-output/4b9334f3199c06dc7413ff31e3d2964d/sandbox/processwrapper-sandbox/6406/execroot/_main/bazel-out/k8-fastbuild/bin/quality/integration_testing/test/test_hello_world.runfiles/score_itf+
+configfile: pytest.ini
+collected 3 items
+
+../score_itf+::test_hello_world_via_shell 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 14:54:08.651] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: quality/integration_testing/test/_image_test_hello_world_loader.sh
+[2026-10-07 14:54:08.778] [ERROR] [score.itf.plugins.docker] Bootstrap stderr: Neither docker, podman nor nerdctl could be found.
+To use a different container runtime, pass an executable to the 'loader' attribute of oci_tarball.
+
+[2026-10-07 14:54:08.778] [ERROR] [score.itf.plugins.docker] Bootstrap failed with exit code 1
+ERROR                                                                    [ 33%]
+../score_itf+::test_hello_world_via_binary_execution 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 14:54:09.127] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: quality/integration_testing/test/_image_test_hello_world_loader.sh
+[2026-10-07 14:54:09.242] [ERROR] [score.itf.plugins.docker] Bootstrap stderr: Neither docker, podman nor nerdctl could be found.
+To use a different container runtime, pass an executable to the 'loader' attribute of oci_tarball.
+
+[2026-10-07 14:54:09.242] [ERROR] [score.itf.plugins.docker] Bootstrap failed with exit code 1
+ERROR                                                                    [ 66%]
+../score_itf+::test_hello_world_as_process 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 14:54:09.271] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: quality/integration_testing/test/_image_test_hello_world_loader.sh
+[2026-10-07 14:54:09.364] [ERROR] [score.itf.plugins.docker] Bootstrap stderr: Neither docker, podman nor nerdctl could be found.
+To use a different container runtime, pass an executable to the 'loader' attribute of oci_tarball.
+
+[2026-10-07 14:54:09.364] [ERROR] [score.itf.plugins.docker] Bootstrap failed with exit code 1
+ERROR                                                                    [100%]
+
+==================================== ERRORS ====================================
+_________________ ERROR at setup of test_hello_world_via_shell _________________
+
+request = <SubRequest 'target_init' for <Function test_hello_world_via_shell>>
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+>               raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+E               subprocess.CalledProcessError: Command 'quality/integration_testing/test/_image_test_hello_world_loader.sh' returned non-zero exit status 1.
+
+../score_itf+/score/itf/plugins/docker.py:352: CalledProcessError
+___________ ERROR at setup of test_hello_world_via_binary_execution ____________
+
+request = <SubRequest 'target_init' for <Function test_hello_world_via_binary_execution>>
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+>               raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+E               subprocess.CalledProcessError: Command 'quality/integration_testing/test/_image_test_hello_world_loader.sh' returned non-zero exit status 1.
+
+../score_itf+/score/itf/plugins/docker.py:352: CalledProcessError
+________________ ERROR at setup of test_hello_world_as_process _________________
+
+request = <SubRequest 'target_init' for <Function test_hello_world_as_process>>
+_docker_configuration = {'command': 'sleep infinity', 'environment': {}, 'init': True, 'shm_size': '2G', ...}
+
+    @pytest.fixture(scope=determine_target_scope)
+    def target_init(request, _docker_configuration):
+        print(_docker_configuration)
+    
+        docker_image_bootstrap = request.config.getoption("docker_image_bootstrap")
+        if docker_image_bootstrap:
+            logger.info(f"Executing custom image bootstrap command: {docker_image_bootstrap}")
+            result = subprocess.run([docker_image_bootstrap], capture_output=True, text=True)
+            if result.stdout:
+                logger.info(f"Bootstrap stdout: {result.stdout}")
+            if result.stderr:
+                logger.error(f"Bootstrap stderr: {result.stderr}")
+            if result.returncode != 0:
+                logger.error(f"Bootstrap failed with exit code {result.returncode}")
+>               raise subprocess.CalledProcessError(result.returncode, docker_image_bootstrap)
+E               subprocess.CalledProcessError: Command 'quality/integration_testing/test/_image_test_hello_world_loader.sh' returned non-zero exit status 1.
+
+../score_itf+/score/itf/plugins/docker.py:352: CalledProcessError
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-followup-pivi6gt7/bazel-output/4b9334f3199c06dc7413ff31e3d2964d/sandbox/processwrapper-sandbox/6406/execroot/_main/bazel-out/k8-fastbuild/testlogs/quality/integration_testing/test/test_hello_world/test.xml -
+=========================== short test summary info ============================
+ERROR ../score_itf+::test_hello_world_via_shell - subprocess.CalledProcessErr...
+ERROR ../score_itf+::test_hello_world_via_binary_execution - subprocess.Calle...
+ERROR ../score_itf+::test_hello_world_as_process - subprocess.CalledProcessEr...
+============================== 3 errors in 0.77s ===============================

@@ -1,0 +1,137 @@
+{
+  "scope": "full original proposals plus warning corrections; omissions are not accepted waivers",
+  "checks": [
+    {
+      "check": "full host build/unit suite",
+      "source": ".github/workflows/_build_and_test_gcc15.yml",
+      "command": "bazel build --config=ci //...; bazel test --config=ci //... --build_tests_only",
+      "status": "unrun_not_waived",
+      "reason": "Selected issue targets and existing integrations are measured separately; complete suite remains a native CI obligation."
+    },
+    {
+      "check": "module integration / external API consumers",
+      "source": ".github/workflows/_build_and_test_gcc15.yml; CI.md API checks",
+      "command": "cd module_integration_test && bazel build //...",
+      "status": "unrun_not_waived",
+      "reason": "External FFIBridge and Runtime implementers/builders not fully inventoried; selected tests establish only in-tree exercised consumers. Do not update the lock merely to pass."
+    },
+    {
+      "check": "full native Clippy, including #250 test code",
+      "source": "quality/static_analysis/static_analysis.bazelrc; .github/workflows/_linter.yml",
+      "command": "bazel build --config=clippy //...",
+      "status": "unrun_not_waived",
+      "reason": "Selected #1261 library/test and #560 binary/test aspects are recorded separately; #250 carries five-library analysis only. No complete warning disposition or all-target analysis is established."
+    },
+    {
+      "check": "C++ address/UB/leak sanitizers",
+      "source": ".github/workflows/_address_sanitizer.yml; quality/sanitizer/sanitizer.bazelrc",
+      "command": "bazel test --config=ci --config=asan_ubsan_lsan //... --build_tests_only",
+      "status": "unrun_not_waived",
+      "reason": "This follow-up reruns the affected selected GCC/Ferrocene checks; LLVM sanitizer configuration and complete native suite remain unmeasured, including inherited callback retention."
+    },
+    {
+      "check": "C++ thread sanitizer",
+      "source": ".github/workflows/_thread_sanitizer.yml; quality/sanitizer/sanitizer.bazelrc",
+      "command": "bazel test --config=ci --config=tsan //... --build_tests_only",
+      "status": "unrun_not_waived",
+      "reason": "Callback interleavings/reentrancy and configuration mutation need verification beyond selected schedules."
+    },
+    {
+      "check": "clang-tidy",
+      "source": "quality/static_analysis/static_analysis.bazelrc; CI.md",
+      "command": "bazel test --config=clang-tidy //...",
+      "status": "unrun_not_waived",
+      "reason": "C++ FFI/runtime changes from the full proposals still require native analysis; the new corrections touch Rust only."
+    },
+    {
+      "check": "CodeQL",
+      "source": ".github/workflows/_codeql.yml; CI.md",
+      "command": "Use native workflow database extraction/query commands; no invented shorthand",
+      "status": "unrun_not_waived",
+      "reason": "Full production extraction/query analysis not performed in this follow-up."
+    },
+    {
+      "check": "QNX / additional architecture configurations",
+      "source": ".bazelrc; CI.md supported configurations; native BUILD target_compatible_with",
+      "command": "Resolve applicable explicit labels under qnx_x64/qnx_arm64 native configurations",
+      "status": "applicability_unresolved_unrun",
+      "reason": "No QNX license/tool/runtime execution established. Linux-only labels are not evidence that the full native change is exempt."
+    },
+    {
+      "check": "formatting of full proposals",
+      "source": "CONTRIBUTING.md; BUILD format_test / format.check",
+      "command": "bazel run //:format.check",
+      "status": "unrun_not_waived",
+      "reason": "Scoped policy-wrapper checks for corrected Rust files are separate; pre-existing C++/BUILD/Python/new Rust source formatting remains a full-proposal obligation."
+    },
+    {
+      "check": "native docs/requirements trace and design validation",
+      "source": "CI.md; dependability TRLC anchors and Rust design documents",
+      "command": "Discover baseline native docs/metamodel BUILD targets; no invented requirement IDs",
+      "status": "applicability_unresolved_unrun",
+      "reason": "Source anchors retained; accepted detailed design, tailoring/profile mapping and work-product instance IDs are not supplied."
+    },
+    {
+      "check": "coverage",
+      "source": "CI.md; quality/coverage configuration",
+      "command": "Resolve native coverage scope and thresholds from adopted verification plan",
+      "status": "applicability_unresolved_unrun",
+      "reason": "No accepted per-change denominator/threshold supplied; no coverage completeness claim."
+    },
+    {
+      "check": "ignored manual doctest examples",
+      "source": "score/mw/com/rust/score_com_concept/BUILD and manual macro doctest results",
+      "command": "Explicit macro doctest label selected; reconcile ignored examples separately",
+      "status": "ignored_not_passed",
+      "reason": "Two ignored doctests remain unexecuted even when the manual target passes."
+    },
+    {
+      "check": "compiler/component qualification",
+      "source": "MODULE.bazel; MODULE.bazel.lock; exact selected compiler identities",
+      "command": null,
+      "status": "human_evidence_pending",
+      "reason": "Pinned Ferrocene name/version and passing builds do not establish tool qualification for the adopted target/use."
+    },
+    {
+      "check": "human engineering and IP review",
+      "source": "CONTRIBUTING.md; CODEOWNERS; HUMAN-REVIEW.md",
+      "command": null,
+      "status": "human_evidence_pending",
+      "reason": "ECA/contribution rights, authorized role/independence and exact-subject decisions cannot be supplied by native command success."
+    },
+    {
+      "check": "ruff",
+      "source": ".github/workflows/_linter.yml; live required status Linters / ruff",
+      "command": "native aspect lint workflow with --config=ruff; retained workflow supplies exact invocation",
+      "status": "unrun_not_waived",
+      "reason": "Full proposal integration helpers include Python; selected Rust checks do not satisfy this required status."
+    },
+    {
+      "check": "copyright",
+      "source": "CONTRIBUTING.md; root BUILD",
+      "command": "bazel run //:copyright.check",
+      "status": "failed_native_tool_path",
+      "reason": "Original baseline check fails before scanning because root labels are passed literally to Git. With the separate checker-path companion, all three proposals and baseline each report 204 findings; exact diagnostic deltas are retained. No automatic IP attestation or baseline waiver."
+    },
+    {
+      "check": "remote required checks / review / merge queue",
+      "source": "inputs/current-main-rules.json",
+      "command": null,
+      "status": "pending_upstream_pr",
+      "reason": "No remote candidate PR/head, ECA commit validation, code-owner approval, required CI statuses or merge-queue result is supplied."
+    },
+    {
+      "check": "Clippy cfg(test) for crate-based rust_test targets",
+      "source": "retained pinned aspect_rules_lint clippy/filter_srcs and rules_rust crate providers; empty native .report/.out placeholders",
+      "command": "Selected native --config=clippy commands execute successfully but produce noop actions for crate-based rust_test rules without explicit srcs",
+      "status": "not_analyzed_native_aspect_noop",
+      "reason": "Do not count command success or empty non-SARIF placeholders as test-code analysis; resolve maintained native lint configuration/tool support or adopt an explicit approved test analysis route."
+    }
+  ],
+  "live_merge_rules": "merge-requirements.json",
+  "measured_follow_up": {
+    "1261": "Final source: scoped native formatting, 81 unit cases, 16 macro doctests (2 ignored), five-library Clippy. LoLa test-target aspect command succeeds with noop reports; cfg(test) analysis is unresolved. Final integration evidence recorded separately.",
+    "250": "68 passing cases and 2 ignored doctests carried through exact 2,883-source binding; five-library SARIF carried",
+    "560": "Final source: scoped native formatting, 12 LoLa and 3 helper units, production binary and mock-runtime compilation, explicit five-library and binary Clippy. Test-target aspect commands succeed with noop reports; cfg(test) analysis is unresolved. Final integration evidence recorded separately."
+  }
+}

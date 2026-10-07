@@ -14,6 +14,7 @@ import posixpath
 import re
 import sys
 import tarfile
+from datetime import datetime
 from pathlib import Path, PurePosixPath
 
 
@@ -47,8 +48,35 @@ def check_manifest(path):
     files = load(path)["files"]
     if not files:
         raise ValueError(f"Empty evidence manifest: {path}")
-    for relative, expected in files.items():
-        actual = file_digest(local_path(path.parent, relative))
+    if isinstance(files, dict):
+        entries = files.items()
+    elif isinstance(files, list):
+        entries = ((entry["path"], entry) for entry in files)
+    else:
+        raise ValueError(f"Unsupported manifest file inventory: {path}")
+    seen = set()
+    for relative, identity in entries:
+        if not isinstance(relative, str):
+            raise ValueError(f"Invalid manifest path: {path}")
+        artifact = local_path(path.parent, relative)
+        name = str(artifact)
+        if name in seen:
+            raise ValueError(f"Duplicate manifest path: {relative}")
+        seen.add(name)
+        if isinstance(identity, str):
+            expected, size = identity, None
+        elif isinstance(identity, dict):
+            expected = identity["sha256"]
+            size = identity.get("size_bytes", identity.get("size"))
+            if "size_bytes" in identity and "size" in identity and identity["size_bytes"] != identity["size"]:
+                raise ValueError(f"Conflicting artifact sizes: {relative}")
+        else:
+            raise ValueError(f"Unsupported manifest identity: {relative}")
+        if not isinstance(expected, str) or len(expected) != 64 or any(c not in "0123456789abcdef" for c in expected):
+            raise ValueError(f"Invalid SHA-256: {relative}")
+        if size is not None and (type(size) is not int or size < 0 or artifact.stat().st_size != size):
+            raise ValueError(f"Artifact size mismatch: {artifact}")
+        actual = file_digest(artifact)
         if actual != expected:
             raise ValueError(f"SHA-256 mismatch: {path.parent / relative}")
     return len(files)
@@ -132,6 +160,22 @@ def check_submission(root, record):
     check_patches(root, {"id": record["id"], "patch": submission["patch"], "patch_sha256": submission["patch_sha256"]})
 
 
+def snapshot_observation(snapshot):
+    """Read either the original registry projection or a captured GitHub response."""
+    fields = ("url", "issue_number", "state", "captured_on")
+    if all(field in snapshot for field in fields):
+        return {field: snapshot[field] for field in fields}
+    issue = snapshot.get("issue")
+    if not isinstance(issue, dict) or not isinstance(snapshot.get("retrieved_at"), str):
+        raise ValueError("Unsupported upstream snapshot format")
+    url = issue.get("html_url", issue.get("url"))
+    number, state = issue.get("number"), issue.get("state")
+    if not isinstance(url, str) or type(number) is not int or not isinstance(state, str):
+        raise ValueError("Incomplete captured GitHub issue identity")
+    captured_on = datetime.fromisoformat(snapshot["retrieved_at"]).date().isoformat()
+    return {"url": url, "issue_number": number, "state": state.lower(), "captured_on": captured_on}
+
+
 def check_archive(root, description):
     archive = local_path(root, description["path"])
     if archive.stat().st_size != description["size_bytes"]:
@@ -185,20 +229,27 @@ def check_archive(root, description):
     return {"portable_entries": len(portable), "candidate_sources": len(sources), "changed_files": len(changed)}
 
 
-def verify(root):
+def verify(root, selected_issues=None):
     registry = load(root / "registry.json")
     if registry["schema_version"] != 1:
         raise ValueError("Unsupported registry schema")
+    if selected_issues is not None:
+        selected_issues = set(selected_issues)
+        unknown = selected_issues - {issue["id"] for issue in registry["issues"]}
+        if unknown:
+            raise ValueError(f"Unknown requested issues: {', '.join(sorted(unknown))}")
     results, seen = [], set()
     for issue in registry["issues"]:
         identity = issue["id"]
         if identity in seen:
             raise ValueError(f"Duplicate issue: {identity}")
         seen.add(identity)
+        if selected_issues is not None and identity not in selected_issues:
+            continue
         for field in ("record", "upstream_snapshot", "pr_draft"):
             if issue.get(field) and not local_path(root, issue[field]).is_file():
                 raise ValueError(f"Missing {field}: {identity}")
-        snapshot = load(local_path(root, issue["upstream_snapshot"]))
+        snapshot = snapshot_observation(load(local_path(root, issue["upstream_snapshot"])))
         if snapshot["url"] != issue["issue_url"] or snapshot["issue_number"] != issue["issue_number"]:
             raise ValueError(f"Upstream issue identity mismatch: {identity}")
         if snapshot["state"] != issue["upstream_state"] or snapshot["captured_on"] != issue["upstream_observed_on"]:
@@ -213,6 +264,14 @@ def verify(root):
             check_submission(root, issue)
         if issue.get("original_manifest"):
             result["original_files"] = check_manifest(local_path(root, issue["original_manifest"]))
+        if issue.get("readiness_review"):
+            review = issue["readiness_review"]
+            manifest = local_path(root, review["manifest"])
+            if file_digest(manifest) != review["manifest_sha256"]:
+                raise ValueError(f"Readiness manifest SHA-256 mismatch: {identity}")
+            result["readiness_files"] = check_manifest(manifest)
+            if file_digest(local_path(root, review["candidate_patch"])) != review["candidate_patch_sha256"]:
+                raise ValueError(f"Readiness candidate SHA-256 mismatch: {identity}")
         if issue.get("archive"):
             result.update(check_archive(root, issue["archive"]))
         results.append(result)
@@ -233,9 +292,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1] / "contributions", help="Contribution directory (default: this repository's contributions/)")
     parser.add_argument("--json", action="store_true", help="Print a machine-readable result")
+    parser.add_argument("--issue", action="append", help="Verify only this exact registry issue ID; repeat for multiple issues")
     args = parser.parse_args()
     try:
-        result = verify(args.root.resolve())
+        result = verify(args.root.resolve(), args.issue)
     except (OSError, ValueError, KeyError, TypeError, tarfile.TarError) as exc:
         result = {"status": "failed", "error": str(exc)}
         print(json.dumps(result, indent=2) if args.json else f"FAILED: {exc}")
@@ -245,7 +305,7 @@ def main():
     else:
         for issue in result["issues"]:
             print(f"Verified {issue['issue']}: {issue['captured_files']} captured files; {issue['local_status']}")
-        print("All retained evidence hashes verified. Native tests were not rerun; engineering acceptance is not evaluated.")
+        print("Retained evidence hashes verified for the reported issues. Native tests were not rerun; engineering acceptance is not evaluated.")
     return 0
 
 

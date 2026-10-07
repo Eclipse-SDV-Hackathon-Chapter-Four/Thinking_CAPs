@@ -1,0 +1,2208 @@
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
+index c9d7ebde..5978ffb3 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
+@@ -222,6 +222,30 @@ pub trait FFIBridge: Send + Sync + Clone + Debug + 'static + Unpin + Default {
+     /// still held by the caller.
+     unsafe fn unsubscribe_to_event(&self, event_ptr: *mut ProxyEventBase);
+ 
++    /// # Safety
++    /// `event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
++    /// `get_event_from_proxy`. The returned value is the raw
++    /// `score::mw::com::impl::SubscriptionState` enumeration value.
++    unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8;
++
++    /// # Safety
++    /// `event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
++    /// `get_event_from_proxy`. `handler` must be a valid `FatPtr` referencing a live
++    /// `FnMut(u8) -> bool` closure. Ownership of the closure is transferred to the middleware,
++    /// which disposes it when the handler is unregistered, when it returns `false`, or when the
++    /// event is destroyed. If the call returns `false`, ownership has not been transferred and
++    /// the caller must reclaim the closure.
++    unsafe fn set_subscription_state_change_handler(
++        &self,
++        event_ptr: *mut ProxyEventBase,
++        handler: &FatPtr,
++    ) -> bool;
++
++    /// # Safety
++    /// `event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
++    /// `get_event_from_proxy`.
++    unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool;
++
+     /// # Safety
+     /// `proxy_event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
+     /// `get_event_from_proxy`. `handler` must be a valid `FatPtr` referencing a callable
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
+index 0ec941b3..0f6e92cc 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
+@@ -127,6 +127,58 @@ unsafe extern "C" fn mw_com_impl_call_dyn_ref_fnmut_find_service(
+     }
+ }
+ 
++/// Rust closure invocation for subscription state change notifications.
++///
++/// Called by C++ when the subscription state of a proxy event changes. The stored closure has
++/// the signature `FnMut(u8) -> bool` (raw `SubscriptionState`); the returned `bool` tells the
++/// middleware whether the handler shall be kept (`true`) or unregistered (`false`).
++///
++/// # Safety
++/// - `ptr` must point to a valid `FatPtr` whose payload is a live
++///   `Box<dyn FnMut(u8) -> bool + Send + 'static>` that has not yet been dropped.
++/// - `new_state` must be one of the raw `SubscriptionState` enumeration values.
++#[unsafe(no_mangle)]
++unsafe extern "C" fn mw_com_impl_call_dyn_ref_fnmut_subscription_state(ptr: *const FatPtr, new_state: u8) -> bool {
++    if ptr.is_null() {
++        return false;
++    }
++    // SAFETY: caller guarantees ptr is a valid FatPtr created from a
++    // Box<dyn FnMut(u8) -> bool + Send + 'static>; transmute reconstructs the fat pointer.
++    // The reconstructed trait-object type must match the boxing site
++    // (`consumer.rs`) and the typed deleter `mw_com_impl_delete_boxed_fnmut_subscription_state`,
++    // otherwise the allocation could be interpreted through a different (unspecified) vtable.
++    let callable: *mut (dyn FnMut(u8) -> bool + Send + 'static) = unsafe { std::mem::transmute(*ptr) };
++    // SAFETY: the box is still alive (C++ only disposes it after all invocations finish); the
++    // raw pointer is valid for the duration of this call.
++    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| unsafe { (*callable)(new_state) })) {
++        Ok(keep) => keep,
++        Err(_) => {
++            log::error!(
++                "Panic caught in mw_com_impl_call_dyn_ref_fnmut_subscription_state: aborting to prevent unwind across FFI boundary"
++            );
++            // Abort to prevent unwinding across FFI boundary
++            std::process::abort();
++        },
++    }
++}
++
++/// Drops a boxed `FnMut(u8) -> bool` subscription state change handler.
++///
++/// Called by C++ (`RustBoxedCallable<bool, SubscriptionState>::dispose`) when the handler is
++/// unregistered or overridden. It must use the same closure type that
++/// [`mw_com_impl_call_dyn_ref_fnmut_subscription_state`] expects so that the drop glue and
++/// allocation layout are reconstructed for the correct trait object type.
++///
++/// # Safety
++/// `ptr` must point to the same `FatPtr` that was previously passed to
++/// `mw_com_proxy_event_set_subscription_state_change_handler`, and must only be called once.
++#[unsafe(no_mangle)]
++unsafe extern "C" fn mw_com_impl_delete_boxed_fnmut_subscription_state(ptr: *mut FatPtr) {
++    // SAFETY: caller guarantees ptr is valid and this is the single dispose call.
++    let dyn_fnmut: *mut (dyn FnMut(u8) -> bool + Send + 'static) = unsafe { std::mem::transmute(*ptr) };
++    drop(unsafe { Box::from_raw(dyn_fnmut) });
++}
++
+ // FFI declarations for C++ functions implemented in registry_bridge_macro.cpp
+ unsafe extern "C" {
+ 
+@@ -372,6 +424,37 @@ unsafe extern "C" {
+     /// * `event_ptr` - Opaque event pointer
+     fn mw_com_proxy_event_unsubscribe(event_ptr: *mut ProxyEventBase);
+ 
++    /// Get the current subscription state of a proxy event
++    ///
++    /// # Arguments
++    /// * `event_ptr` - Opaque proxy event pointer
++    ///
++    /// # Returns
++    /// Raw `SubscriptionState` enumeration value
++    fn mw_com_proxy_event_get_subscription_state(event_ptr: *mut ProxyEventBase) -> u8;
++
++    /// Register a subscription state change handler for a proxy event
++    ///
++    /// # Arguments
++    /// * `event_ptr` - Opaque proxy event pointer
++    /// * `handler` - FatPtr to the Rust `FnMut(u8) -> bool` handler
++    ///
++    /// # Returns
++    /// true if the handler was registered, false otherwise
++    fn mw_com_proxy_event_set_subscription_state_change_handler(
++        event_ptr: *mut ProxyEventBase,
++        handler: *const FatPtr,
++    ) -> bool;
++
++    /// Unregister the subscription state change handler of a proxy event
++    ///
++    /// # Arguments
++    /// * `event_ptr` - Opaque proxy event pointer
++    ///
++    /// # Returns
++    /// true if the handler was unregistered, false otherwise
++    fn mw_com_proxy_event_unset_subscription_state_change_handler(event_ptr: *mut ProxyEventBase) -> bool;
++
+     /// Get type operations instance for a given interface and member
+     ///
+     /// # Arguments
+@@ -788,6 +871,36 @@ impl FFIBridge for LolaFFIBridge {
+         }
+     }
+ 
++    /// Unsafe wrapper around mw_com_proxy_event_get_subscription_state
++    ///
++    /// # Safety
++    /// event_ptr must be a valid pointer to a ProxyEventBase previously obtained from
++    /// get_event_from_proxy().
++    unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8 {
++        // SAFETY: event_ptr is guaranteed to be valid per the caller's contract.
++        unsafe { mw_com_proxy_event_get_subscription_state(event_ptr) }
++    }
++
++    /// Unsafe wrapper around mw_com_proxy_event_set_subscription_state_change_handler
++    ///
++    /// # Safety
++    /// event_ptr must be valid; handler must reference a live `FnMut(u8) -> bool` closure whose
++    /// ownership is transferred to the middleware on success.
++    unsafe fn set_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase, handler: &FatPtr) -> bool {
++        // SAFETY: both pointers are valid per the caller's contract.
++        unsafe { mw_com_proxy_event_set_subscription_state_change_handler(event_ptr, handler) }
++    }
++
++    /// Unsafe wrapper around mw_com_proxy_event_unset_subscription_state_change_handler
++    ///
++    /// # Safety
++    /// event_ptr must be a valid pointer to a ProxyEventBase previously obtained from
++    /// get_event_from_proxy().
++    unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool {
++        // SAFETY: event_ptr is guaranteed to be valid per the caller's contract.
++        unsafe { mw_com_proxy_event_unset_subscription_state_change_handler(event_ptr) }
++    }
++
+     /// Unsafe wrapper around mw_com_proxy_set_event_receive_handler
+     ///
+     /// # Arguments
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
+index 01c455f1..217e898d 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
+@@ -171,6 +171,16 @@ mock! {
+ 
+         unsafe fn unsubscribe_to_event(&self, event_ptr: *mut ProxyEventBase);
+ 
++        unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8;
++
++        unsafe fn set_subscription_state_change_handler(
++            &self,
++            event_ptr: *mut ProxyEventBase,
++            handler: &FatPtr,
++        ) -> bool;
++
++        unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool;
++
+         unsafe fn set_event_receive_handler(
+             &self,
+             proxy_event_ptr: *mut ProxyEventBase,
+@@ -356,6 +366,25 @@ impl bridge_ffi_rs::FFIBridge for SharedMockBridge {
+         unsafe { self.locked().unsubscribe_to_event(event_ptr) }
+     }
+ 
++    unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8 {
++        //Safety: This is just forwarding the call to the inner mock, which is expected to be configured correctly in tests using mockall's expectations.
++        unsafe { self.locked().get_subscription_state(event_ptr) }
++    }
++
++    unsafe fn set_subscription_state_change_handler(
++        &self,
++        event_ptr: *mut ProxyEventBase,
++        handler: &FatPtr,
++    ) -> bool {
++        //Safety: This is just forwarding the call to the inner mock, which is expected to be configured correctly in tests using mockall's expectations.
++        unsafe { self.locked().set_subscription_state_change_handler(event_ptr, handler) }
++    }
++
++    unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool {
++        //Safety: This is just forwarding the call to the inner mock, which is expected to be configured correctly in tests using mockall's expectations.
++        unsafe { self.locked().unset_subscription_state_change_handler(event_ptr) }
++    }
++
+     unsafe fn get_samples_from_event(
+         &self,
+         event_ptr: *mut ProxyEventBase,
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
+index e3a273a0..daab7c95 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
+@@ -379,6 +379,47 @@ void mw_com_proxy_clear_event_receive_handler(ProxyEventBase* event_ptr)
+     score::cpp::ignore = event_ptr->UnsetReceiveHandler();
+ }
+ 
++/// \brief Get the current subscription state of a proxy event
++/// \param event_ptr Opaque proxy event pointer (ProxyEventBase*)
++/// \return Raw SubscriptionState enumeration value; kNotSubscribed for a null pointer
++std::uint8_t mw_com_proxy_event_get_subscription_state(ProxyEventBase* event_ptr)
++{
++    if (event_ptr == nullptr)
++    {
++        return static_cast<std::uint8_t>(SubscriptionState::kNotSubscribed);
++    }
++    return static_cast<std::uint8_t>(event_ptr->GetSubscriptionState());
++}
++
++/// \brief Register a subscription state change handler for a proxy event
++/// \param event_ptr Opaque proxy event pointer (ProxyEventBase*)
++/// \param boxed_handler Pointer to FatPtr containing the Rust FnMut(u8) -> bool handler
++/// \return true if the handler was registered, false otherwise
++bool mw_com_proxy_event_set_subscription_state_change_handler(ProxyEventBase* event_ptr, const FatPtr* boxed_handler)
++{
++    if (event_ptr == nullptr || boxed_handler == nullptr)
++    {
++        return false;
++    }
++
++    auto result = event_ptr->SetSubscriptionStateChangeHandler(
++        RustFnMutCallable<RustBoxedCallable, bool, SubscriptionState>{*boxed_handler});
++    return result.has_value();
++}
++
++/// \brief Unregister the subscription state change handler of a proxy event
++/// \param event_ptr Opaque proxy event pointer (ProxyEventBase*)
++/// \return true if the handler was unregistered, false otherwise
++bool mw_com_proxy_event_unset_subscription_state_change_handler(ProxyEventBase* event_ptr)
++{
++    if (event_ptr == nullptr)
++    {
++        return false;
++    }
++    auto result = event_ptr->UnsetSubscriptionStateChangeHandler();
++    return result.has_value();
++}
++
+ /// \brief Start asynchronous service discovery with a callback
+ /// \details Initiates a service discovery operation using a Rust callback. The callback will be invoked
+ /// when matching services are found. The callback signature is:
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
+index f4c8a3dd..fa88b43c 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
+@@ -147,6 +147,22 @@ void mw_com_impl_call_dyn_ref_fnmut_find_service(
+     const ::score::mw::com::impl::rust::FatPtr* boxed_fnmut,
+     void* service_handles,
+     ::score::mw::com::impl::FindServiceHandle find_service_handle) noexcept;
++
++/// \brief Rust closure invocation for subscription state change notifications
++/// \details This function is called by C++ whenever the subscription state of a proxy event
++/// changes. The invoked Rust closure returns a bool telling the middleware whether the handler
++/// shall be kept (true) or unregistered (false).
++/// \param boxed_fnmut Pointer to FatPtr representing the Rust FnMut closure
++/// \param new_state Raw SubscriptionState enumeration value
++/// \return true if the handler shall be kept, false if it shall be unregistered
++bool mw_com_impl_call_dyn_ref_fnmut_subscription_state(const FatPtr* boxed_fnmut, std::uint8_t new_state) noexcept;
++
++/// \brief Rust closure deletion for subscription state change handlers
++/// \details Drops the boxed Rust `FnMut(u8) -> bool` closure. Kept separate from
++/// mw_com_impl_delete_boxed_fnmut because the reconstructed trait object type must match the one
++/// the closure was created with.
++/// \param boxed_fnmut Pointer to FatPtr representing the Rust FnMut closure to be deleted
++void mw_com_impl_delete_boxed_fnmut_subscription_state(const FatPtr* boxed_fnmut) noexcept;
+ }
+ 
+ /// \brief Template specialization of RustBoxedCallable for void return type
+@@ -189,6 +205,25 @@ class RustBoxedCallable<void,
+     static void dispose(FatPtr) noexcept {}
+ };
+ 
++/// \brief Specialization of RustBoxedCallable for subscription state change notifications
++/// \details The invoked Rust closure returns a bool telling the middleware whether the handler
++/// shall be kept (true) or unregistered (false). Disposal drops the boxed closure through the
++/// matching typed deleter.
++template <>
++class RustBoxedCallable<bool, ::score::mw::com::impl::SubscriptionState>
++{
++  public:
++    static bool invoke(FatPtr ptr_, ::score::mw::com::impl::SubscriptionState new_state) noexcept
++    {
++        return mw_com_impl_call_dyn_ref_fnmut_subscription_state(&ptr_, static_cast<std::uint8_t>(new_state));
++    }
++
++    static void dispose(FatPtr ptr_) noexcept
++    {
++        mw_com_impl_delete_boxed_fnmut_subscription_state(&ptr_);
++    }
++};
++
+ /// Base class for Rust FnMut callable wrappers
+ template <template <typename, typename...> class FnMutHandler, typename R, typename... Args>
+ class RustFnMutCallableBase
+diff --git a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
+index 3292d143..8189ed15 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
+@@ -49,7 +49,7 @@ use score_log as log;
+ use score_com_concept::{
+     Builder, CommData, Consumer, ConsumerBuilder, ConsumerDescriptor, ConsumerFailedReason, Error, EventFailedReason,
+     InstanceSpecifier, Interface, ReceiveFailedReason, Result, Sample, SampleContainer, ServiceDiscovery,
+-    ServiceFailedReason, Subscriber, Subscription,
++    ServiceFailedReason, Subscriber, Subscription, SubscriptionState,
+ };
+ 
+ use bridge_ffi_rs::*;
+@@ -382,6 +382,7 @@ impl<T: CommData + Debug, B: FFIBridge> Subscriber<T, LolaRuntimeImpl<B>> for Lo
+             instance_info,
+             waker_storage: Arc::default(),
+             async_init_status: std::sync::OnceLock::new(),
++            subscription_state_handler_set: AtomicBool::new(false),
+             type_ops,
+             _proxy: self.proxy_instance.clone(),
+             _phantom: PhantomData,
+@@ -486,6 +487,9 @@ where
+     instance_info: LolaConsumerInfo<B>,
+     waker_storage: Arc<AtomicWaker>,
+     async_init_status: std::sync::OnceLock<()>,
++    /// Tracks whether a subscription state change handler is currently registered so that
++    /// `Drop` only unregisters when needed (and never unregisters twice).
++    subscription_state_handler_set: AtomicBool,
+     type_ops: TypeOperationsManager,
+     _proxy: ProxyInstanceManager<B>,
+     _phantom: PhantomData<T>,
+@@ -505,6 +509,19 @@ impl<T: CommData + Debug, B: FFIBridge> Drop for LolaSubscriberImpl<T, B> {
+             {
+                 self.instance_info.bridge.clear_event_receive_handler(guard.deref_mut());
+             }
++            // Unregister the subscription state change handler (if any) before unsubscribing so
++            // that it cannot be invoked while the subscription is being torn down. Calling the
++            // bridge directly reuses the guard we already hold (calling the public trait method
++            // would attempt to acquire the guard again and panic).
++            if self
++                .subscription_state_handler_set
++                .load(std::sync::atomic::Ordering::Acquire)
++            {
++                let _ = self
++                    .instance_info
++                    .bridge
++                    .unset_subscription_state_change_handler(guard.deref_mut());
++            }
+             self.instance_info.bridge.unsubscribe_to_event(guard.deref_mut());
+         }
+     }
+@@ -687,6 +704,66 @@ where
+             sample_container: SampleContainer::new(self.max_num_samples),
+         }
+     }
++
++    fn get_subscription_state(&self) -> SubscriptionState {
++        // SAFETY: the event pointer is valid for the lifetime of the subscription and the
++        // ProxyEventManager guard serialises access to it.
++        let raw = unsafe {
++            self.instance_info
++                .bridge
++                .get_subscription_state(self.event.get_proxy_event().deref_mut())
++        };
++        SubscriptionState::from(raw)
++    }
++
++    fn set_subscription_state_change_handler(
++        &self,
++        mut handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
++    ) -> Result<()> {
++        // Adapt the typed user handler to the raw `u8` ABI used at the FFI boundary.
++        // `handler` must be a mutable binding because the adapter closure invokes it as `FnMut`.
++        let adapted = move |raw_state: u8| -> bool { handler(SubscriptionState::from(raw_state)) };
++        let boxed: Box<dyn FnMut(u8) -> bool + Send + 'static> = Box::new(adapted);
++        let raw_ptr = Box::into_raw(boxed);
++        // SAFETY: `raw_ptr` is a live fat pointer to `dyn FnMut(u8) -> bool + Send`; FatPtr is its
++        // binary representation (data pointer + vtable pointer), as used by the existing
++        // trampolines.
++        let fat_ptr: FatPtr = unsafe { std::mem::transmute(raw_ptr) };
++        // SAFETY: the event pointer is valid for the subscription lifetime; `fat_ptr` references a
++        // closure that stays alive until the middleware disposes it (on unset, on a `false` return,
++        // or on event destruction). C++ only refuses the handler on a null argument, before it
++        // takes ownership, so a `false` result means we still own the box.
++        let status = unsafe {
++            self.instance_info
++                .bridge
++                .set_subscription_state_change_handler(self.event.get_proxy_event().deref_mut(), &fat_ptr)
++        };
++        if !status {
++            // SAFETY: `raw_ptr` came from `Box::into_raw` above and was not consumed by the
++            // middleware because the call failed.
++            drop(unsafe { Box::from_raw(raw_ptr) });
++            return Err(Error::EventError(EventFailedReason::SubscriptionStateChangeHandlerFailed));
++        }
++        self.subscription_state_handler_set
++            .store(true, std::sync::atomic::Ordering::Release);
++        Ok(())
++    }
++
++    fn unset_subscription_state_change_handler(&self) -> Result<()> {
++        // SAFETY: the event pointer is valid for the subscription lifetime and the guard
++        // serialises access to it.
++        let status = unsafe {
++            self.instance_info
++                .bridge
++                .unset_subscription_state_change_handler(self.event.get_proxy_event().deref_mut())
++        };
++        if !status {
++            return Err(Error::EventError(EventFailedReason::SubscriptionStateChangeHandlerFailed));
++        }
++        self.subscription_state_handler_set
++            .store(false, std::sync::atomic::Ordering::Release);
++        Ok(())
++    }
+ }
+ 
+ // The ReceiveFuture struct encapsulates the state and logic for asynchronously receiving samples
+@@ -1412,4 +1489,365 @@ mod test {
+ 
+         proxy_alloc.assert_all_freed();
+     }
++
++    /// Test-only marker that lets the raw `FatPtr` handed to the bridge be observed through a
++    /// mockall expectation (mockall requires `Send` closures).
++    ///
++    /// The runtime creates the handler as `Box<dyn FnMut(u8) -> bool + Send + 'static>` and the
++    /// middleware may invoke it from another thread, so treating the pointer as `Send` matches the
++    /// production FFI contract; the pointee is still only dereferenced while the box is alive.
++    #[derive(Clone, Copy)]
++    struct SendFatPtr(FatPtr);
++
++    // SAFETY: the pointee trait object is `Send` (enforced by the public API) and the pointer is
++    // only dereferenced while the box is alive on the middleware side.
++    unsafe impl Send for SendFatPtr {}
++    // SAFETY: access is serialised by the owning mock/teardown flows; the pointee is never
++    // invoked concurrently from Rust.
++    unsafe impl Sync for SendFatPtr {}
++
++    /// Shared slot populated with the handler pointer that the runtime hands to the bridge.
++    type HandlerSlot = Arc<std::sync::Mutex<Option<SendFatPtr>>>;
++
++    fn handler_slot() -> HandlerSlot {
++        Arc::new(std::sync::Mutex::new(None))
++    }
++
++    /// Shared recording of bridge calls, used to assert teardown ordering.
++    fn teardown_order() -> Arc<std::sync::Mutex<Vec<&'static str>>> {
++        Arc::new(std::sync::Mutex::new(Vec::new()))
++    }
++
++    /// Counts drops of a resource captured by a handler closure so tests can assert that the
++    /// boxed handler is reclaimed exactly once (no leak and no double disposal).
++    #[derive(Debug)]
++    struct DropCounter(Arc<AtomicUsize>);
++
++    impl DropCounter {
++        /// Keeps a handler closure owning the whole wrapper (not just the inner `Arc`) so that
++        /// dropping the boxed closure is what runs [`DropCounter::drop`].
++        fn touch(&self) {}
++    }
++
++    impl Drop for DropCounter {
++        fn drop(&mut self) {
++            self.0.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
++        }
++    }
++
++    /// Invokes a recorded handler exactly as `mw_com_impl_call_dyn_ref_fnmut_subscription_state`
++    /// does, using the same `FnMut(u8) -> bool + Send + 'static` trait-object type as the boxing
++    /// site so the reconstructed vtable is the one the box was created with.
++    ///
++    /// # Safety
++    /// `handler` must be a live handler pointer that has not been disposed yet.
++    unsafe fn invoke_state_handler(handler: FatPtr, new_state: u8) -> bool {
++        // SAFETY: `handler` was produced from that exact box type and the box is still alive.
++        let callable: *mut (dyn FnMut(u8) -> bool + Send + 'static) = unsafe { std::mem::transmute(handler) };
++        // SAFETY: `callable` points to a live allocation produced by `Box::into_raw`.
++        unsafe { (*callable)(new_state) }
++    }
++
++    /// Drops a recorded handler exactly as the typed dispose trampoline
++    /// `mw_com_impl_delete_boxed_fnmut_subscription_state` does. Consuming the pointer makes it
++    /// impossible for this helper to dispose the same box twice.
++    ///
++    /// # Safety
++    /// `handler` must be a live handler pointer that has not been disposed before.
++    unsafe fn dispose_state_handler(handler: FatPtr) {
++        // SAFETY: `handler` was produced from that exact box type and is consumed exactly once.
++        let callable: *mut (dyn FnMut(u8) -> bool + Send + 'static) = unsafe { std::mem::transmute(handler) };
++        // SAFETY: `callable` is the live box produced by `Box::into_raw`; it is freed exactly once.
++        drop(unsafe { Box::from_raw(callable) });
++    }
++
++    /// Configures the mock "set" side so a successful registration records the handler pointer,
++    /// exactly like the middleware keeping the callback for later invocation.
++    fn expect_set_handler_success(mock: &mut MockFFIBridge, slot: HandlerSlot) {
++        mock.expect_set_subscription_state_change_handler()
++            .returning(move |_, handler| {
++                *slot.lock().expect("handler slot mutex poisoned") = Some(SendFatPtr(*handler));
++                true
++            });
++    }
++
++    /// Configures the mock "unset" side to dispose the recorded handler exactly once, mirroring
++    /// the C++ middleware that owns the callback and drops it when it is unregistered.
++    fn expect_unset_disposes(mock: &mut MockFFIBridge, slot: HandlerSlot) {
++        mock.expect_unset_subscription_state_change_handler()
++            .times(1)
++            .returning(move |_| {
++                if let Some(handler) = slot.lock().expect("handler slot mutex poisoned").take() {
++                    // SAFETY: the recorded handler is still alive and has not been disposed.
++                    unsafe { dispose_state_handler(handler.0) };
++                }
++                true
++            });
++    }
++
++    // Builds a subscribed `LolaSubscriberImpl` with the standard proxy/event/type-ops mock setup
++    // and the common teardown expectations. Test-specific expectations for the subscription-state
++    // methods must be registered on `mock` by the caller before calling this helper. The
++    // `teardown_order` log records the `unsubscribe` call so tests can assert that the state
++    // handler is unregistered before the event is unsubscribed.
++    fn make_subscribed(
++        mut mock: MockFFIBridge,
++        teardown_order: Arc<std::sync::Mutex<Vec<&'static str>>>,
++    ) -> (
++        LolaSubscriberImpl<TestData, SharedMockBridge>,
++        MockPointerAllocator<ProxyBase>,
++        MockPointerAllocator<ProxyEventBase>,
++    ) {
++        let proxy_alloc = MockPointerAllocator::<ProxyBase>::new();
++        let event_alloc = MockPointerAllocator::<ProxyEventBase>::new();
++        let type_ops_alloc = MockPointerAllocator::<TypeOperations>::new();
++        let prox = proxy_alloc.clone();
++        let evt = event_alloc.clone();
++        mock.expect_create_proxy().returning(move |_, _| prox.allocate());
++        mock.expect_get_event_from_proxy().returning(move |_, _, _| evt.allocate());
++        mock.expect_subscribe_to_event().returning(|_, _| true);
++        mock.expect_get_type_ops_instance().returning(move |_, _| {
++            Some(TypeOperationsManager::new(
++                NonNull::new(type_ops_alloc.allocate()).expect("Failed to allocate TypeOperations"),
++            ))
++        });
++        let evt_cleanup = event_alloc.clone();
++        let order = Arc::clone(&teardown_order);
++        mock.expect_unsubscribe_to_event().returning(move |ptr| {
++            order
++                .lock()
++                .expect("teardown order mutex poisoned")
++                .push("unsubscribe");
++            assert!(evt_cleanup.free(ptr), "unsubscribe_to_event called with unknown pointer");
++        });
++        let prox_cleanup = proxy_alloc.clone();
++        mock.expect_destroy_proxy().returning(move |ptr| {
++            assert!(prox_cleanup.free(ptr), "destroy_proxy called with unknown pointer");
++        });
++
++        let bridge = SharedMockBridge::new(mock);
++        let subscribable = LolaSubscribableImpl::<TestData, SharedMockBridge> {
++            identifier: "TestEvent",
++            instance_info: make_instance_info(bridge.clone()),
++            proxy_instance: make_proxy_instance(bridge.clone(), "TestInterface"),
++            data: PhantomData,
++        };
++        let subscriber = subscribable.subscribe(3).expect("subscribe should succeed");
++        (subscriber, proxy_alloc, event_alloc)
++    }
++
++    #[test]
++    fn test_get_subscription_state_maps_raw_values() {
++        for (raw, expected) in [
++            (0u8, SubscriptionState::Subscribed),
++            (1u8, SubscriptionState::NotSubscribed),
++            (2u8, SubscriptionState::SubscriptionPending),
++            (255u8, SubscriptionState::NotSubscribed),
++        ] {
++            let mut mock = MockFFIBridge::new();
++            mock.expect_get_subscription_state().returning(move |_| raw);
++            let (subscriber, proxy_alloc, event_alloc) = make_subscribed(mock, teardown_order());
++            assert_eq!(subscriber.get_subscription_state(), expected, "raw value {raw}");
++            drop(subscriber.unsubscribe());
++            proxy_alloc.assert_all_freed();
++            event_alloc.assert_all_freed();
++        }
++    }
++
++    #[test]
++    fn test_handler_observed_mapped_state_and_mutated_capture() {
++        let observed = Arc::new(std::sync::Mutex::new(Vec::<SubscriptionState>::new()));
++        let handler_observed = Arc::clone(&observed);
++        let slot = handler_slot();
++
++        let mut mock = MockFFIBridge::new();
++        expect_set_handler_success(&mut mock, Arc::clone(&slot));
++        expect_unset_disposes(&mut mock, Arc::clone(&slot));
++
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock, teardown_order());
++        subscriber
++            .set_subscription_state_change_handler(move |state| {
++                handler_observed
++                    .lock()
++                    .expect("observed state mutex poisoned")
++                    .push(state);
++                true
++            })
++            .expect("registering the handler should succeed");
++
++        let handler = {
++            let guard = slot.lock().expect("handler slot mutex poisoned");
++            guard
++                .as_ref()
++                .copied()
++                .expect("the handler pointer must be recorded by the bridge")
++                .0
++        };
++
++        // Raw `u8` values cross the FFI seam and are mapped to the typed state by the adapter;
++        // the closure observes each mapped value and mutates its captured state.
++        assert!(
++            unsafe { invoke_state_handler(handler, 2) },
++            "a true return must keep the handler registered"
++        );
++        assert!(
++            unsafe { invoke_state_handler(handler, 7) },
++            "an out-of-contract raw value maps to NotSubscribed"
++        );
++        assert_eq!(
++            *observed.lock().expect("observed state mutex poisoned"),
++            vec![
++                SubscriptionState::SubscriptionPending,
++                SubscriptionState::NotSubscribed
++            ],
++            "the handler must observe the mapped SubscriptionState values in order"
++        );
++
++        // Teardown unregisters and disposes the handler exactly once.
++        drop(subscriber);
++    }
++
++    #[test]
++    fn test_handler_false_return_signals_cancellation() {
++        let slot = handler_slot();
++        let mut mock = MockFFIBridge::new();
++        expect_set_handler_success(&mut mock, Arc::clone(&slot));
++        expect_unset_disposes(&mut mock, Arc::clone(&slot));
++
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock, teardown_order());
++        subscriber
++            .set_subscription_state_change_handler(|_state| false)
++            .expect("registering the handler should succeed");
++
++        let handler = {
++            let guard = slot.lock().expect("handler slot mutex poisoned");
++            guard
++                .as_ref()
++                .copied()
++                .expect("the handler pointer must be recorded by the bridge")
++                .0
++        };
++
++        // The `false` return is propagated across the adapter/trampoline; unregistering the
++        // handler on `false` is the C++ state machine's decision, not the Rust adapter's.
++        assert!(
++            !unsafe { invoke_state_handler(handler, 1) },
++            "a false return must be propagated so the middleware can unregister the handler"
++        );
++
++        drop(subscriber);
++    }
++
++    #[test]
++    fn test_set_handler_failure_drops_captured_resource() {
++        let drops = Arc::new(AtomicUsize::new(0));
++        let counter = DropCounter(Arc::clone(&drops));
++
++        let mut mock = MockFFIBridge::new();
++        // The middleware refuses the handler before taking ownership, so the runtime keeps
++        // ownership of the boxed closure and must reclaim (drop) it.
++        mock.expect_set_subscription_state_change_handler()
++            .returning(|_, _| false);
++        // No unset expectation: the registration flag stays false, so Drop must not call unset.
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock, teardown_order());
++
++        let err = subscriber
++            .set_subscription_state_change_handler(move |_state| {
++                // Touch the captured resource so the closure owns it and its drop is observable.
++                counter.touch();
++                true
++            })
++            .expect_err("a failed registration must be reported");
++        assert!(matches!(
++            err,
++            Error::EventError(EventFailedReason::SubscriptionStateChangeHandlerFailed)
++        ));
++        assert_eq!(
++            drops.load(std::sync::atomic::Ordering::SeqCst),
++            1,
++            "the refused handler's captured resource must be dropped exactly once"
++        );
++        drop(subscriber.unsubscribe());
++    }
++
++    #[test]
++    fn test_set_and_unset_disposes_captured_resource_exactly_once() {
++        let drops = Arc::new(AtomicUsize::new(0));
++        let counter = DropCounter(Arc::clone(&drops));
++        let slot = handler_slot();
++
++        let mut mock = MockFFIBridge::new();
++        expect_set_handler_success(&mut mock, Arc::clone(&slot));
++        expect_unset_disposes(&mut mock, Arc::clone(&slot));
++
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock, teardown_order());
++        subscriber
++            .set_subscription_state_change_handler(move |_state| {
++                counter.touch();
++                true
++            })
++            .expect("registering the handler should succeed");
++        subscriber
++            .unset_subscription_state_change_handler()
++            .expect("unregistering the handler should succeed");
++        assert_eq!(
++            drops.load(std::sync::atomic::Ordering::SeqCst),
++            1,
++            "explicit unset must dispose the captured resource exactly once"
++        );
++        // Explicit unset clears the flag, so Drop must NOT call unset a second time (times(1)).
++        drop(subscriber.unsubscribe());
++        assert_eq!(
++            drops.load(std::sync::atomic::Ordering::SeqCst),
++            1,
++            "teardown after an explicit unset must not dispose the resource again"
++        );
++    }
++
++    #[test]
++    fn test_drop_unregisters_before_unsubscribe_and_disposes_once() {
++        let drops = Arc::new(AtomicUsize::new(0));
++        let counter = DropCounter(Arc::clone(&drops));
++        let order = teardown_order();
++        let slot = handler_slot();
++
++        let mut mock = MockFFIBridge::new();
++        expect_set_handler_success(&mut mock, Arc::clone(&slot));
++        {
++            let order = Arc::clone(&order);
++            let slot = Arc::clone(&slot);
++            mock.expect_unset_subscription_state_change_handler()
++                .times(1)
++                .returning(move |_| {
++                    order.lock().expect("teardown order mutex poisoned").push("unset");
++                    if let Some(handler) = slot.lock().expect("handler slot mutex poisoned").take() {
++                        // SAFETY: the recorded handler is still alive and is disposed once.
++                        unsafe { dispose_state_handler(handler.0) };
++                    }
++                    true
++                });
++        }
++
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock, Arc::clone(&order));
++        subscriber
++            .set_subscription_state_change_handler(move |_state| {
++                counter.touch();
++                true
++            })
++            .expect("registering the handler should succeed");
++
++        // Drop must unregister the state handler before unsubscribing from the event.
++        drop(subscriber);
++
++        assert_eq!(
++            *order.lock().expect("teardown order mutex poisoned"),
++            vec!["unset", "unsubscribe"],
++            "teardown must unregister the state handler before unsubscribing"
++        );
++        assert_eq!(
++            drops.load(std::sync::atomic::Ordering::SeqCst),
++            1,
++            "the handler must be disposed exactly once (no double disposal)"
++        );
++    }
+ }
+diff --git a/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs b/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs
+index e0bc1e53..4173df06 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs
+@@ -38,7 +38,7 @@ use std::path::Path;
+ use score_com_concept::{
+     Builder, CommData, Consumer, ConsumerBuilder, ConsumerDescriptor, FindServiceSpecifier, InstanceSpecifier,
+     Interface, Producer, ProducerBuilder, ProviderInfo, Publisher, Result, Runtime, RuntimeBuilder, Sample,
+-    SampleContainer, SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription,
++    SampleContainer, SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription, SubscriptionState,
+ };
+ 
+ pub struct MockRuntimeImpl {}
+@@ -337,6 +337,23 @@ where
+     fn to_stream<'a>(&'a mut self) -> impl Stream<Item = Result<Self::Sample<'a>>> + Unpin + 'a {
+         stream::empty()
+     }
++
++    fn get_subscription_state(&self) -> SubscriptionState {
++        // The mock runtime does not model subscription state transitions; there is no active
++        // subscription, so the documented default state is returned.
++        SubscriptionState::NotSubscribed
++    }
++
++    fn set_subscription_state_change_handler(
++        &self,
++        _handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
++    ) -> Result<()> {
++        Ok(())
++    }
++
++    fn unset_subscription_state_change_handler(&self) -> Result<()> {
++        Ok(())
++    }
+ }
+ 
+ pub struct MockPublisher<T> {
+diff --git a/score/mw/com/rust/design/high_level_design_detail.md b/score/mw/com/rust/design/high_level_design_detail.md
+index 5dd621f2..68d937fe 100644
+--- a/score/mw/com/rust/design/high_level_design_detail.md
++++ b/score/mw/com/rust/design/high_level_design_detail.md
+@@ -95,6 +95,7 @@ The LoLa Runtime is responsible for translating generic trait operations into co
+ - **Type-safe interface generation**: Automatic code generation from interface definitions ensures compile-time correctness through Rust's type system.
+ - **Zero-copy data handling**: Leverages shared memory backend through `Sample<T>` and `SampleMaybeUninit<T>` types for efficient data access.
+ - **Automated resource lifecycle management**: Manages lifecycle of C++ LoLa proxies and skeletons through automatic cleanup via Rust's `Drop` trait.
++- **Subscription state observation**: synchronously queries the event subscription state (`SubscriptionState`) and registers state-change notifications, mirroring the C++ `GetSubscriptionState()` / `SetSubscriptionStateChangeHandler()` APIs.
+ 
+ **Supported score_com_concept Traits by LoLa Runtime**
+ 
+diff --git a/score/mw/com/rust/doc/user_facing_api_examples.md b/score/mw/com/rust/doc/user_facing_api_examples.md
+index b7ac6ade..27d3fc4b 100644
+--- a/score/mw/com/rust/doc/user_facing_api_examples.md
++++ b/score/mw/com/rust/doc/user_facing_api_examples.md
+@@ -432,6 +432,42 @@ async fn read_tire_data_stream<R: Runtime>(
+ 
+ ---
+ 
++### Subscription State Query and Change Notification
++
++**Key Points**:
++- `get_subscription_state()` returns the current `SubscriptionState` synchronously and may be called at any time.
++- `set_subscription_state_change_handler()` registers a callback invoked whenever the state changes; an existing handler is replaced silently.
++- Returning `false` from the handler unregisters it (same effect as `unset_subscription_state_change_handler()`).
++- The handler may run on a middleware thread while an internal lock is held: keep it short and do not call back into the same subscription (this may deadlock).
++
++<details>
++<summary>Examples:</summary>
++
++```rust
++use score_com::{Result, Runtime, Subscription, SubscriptionState};
++use com_api_gen::Tire;
++
++// Query the current subscription state (can be called at any time)
++fn report_state<R: Runtime>(subscription: &impl Subscription<Tire, R>) -> SubscriptionState {
++    subscription.get_subscription_state()
++}
++
++// Register a state-change notification and unregister it later
++fn watch_state<R: Runtime>(subscription: &impl Subscription<Tire, R>) -> Result<()> {
++    subscription.set_subscription_state_change_handler(|new_state| {
++        println!("subscription state changed to {new_state:?}");
++        true // keep the handler registered; return false to unregister it
++    })?;
++
++    // ... later, if needed:
++    subscription.unset_subscription_state_change_handler()?;
++    Ok(())
++}
++```
++</details>
++
++---
++
+ ## Producer API
+ 
+ A producer is constructed by calling `Runtime::producer_builder()` with an `InstanceSpecifier`, then `build()` to create the producer, and finally `offer()` to make the service visible to consumers. While offered, the producer holds typed `Publisher` fields for each event defined in the interface.
+diff --git a/score/mw/com/rust/score_com.rs b/score/mw/com/rust/score_com.rs
+index 4e162220..67b4c149 100644
+--- a/score/mw/com/rust/score_com.rs
++++ b/score/mw/com/rust/score_com.rs
+@@ -138,7 +138,7 @@ pub use score_com_concept::{
+     interface, interface_common, interface_consumer, interface_producer, Builder, CommData, Consumer, ConsumerBuilder,
+     ConsumerDescriptor, Error, FindServiceSpecifier, InstanceSpecifier, Interface, OfferedProducer, PlacementDefault,
+     Producer, ProducerBuilder, ProviderInfo, Publisher, Reloc, Result, Runtime, RuntimeBuilder, SampleContainer,
+-    SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription,
++    SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription, SubscriptionState,
+ };
+ 
+ #[doc(hidden)]
+diff --git a/score/mw/com/rust/score_com_concept/concept.rs b/score/mw/com/rust/score_com_concept/concept.rs
+index b46055c1..fec285a1 100644
+--- a/score/mw/com/rust/score_com_concept/concept.rs
++++ b/score/mw/com/rust/score_com_concept/concept.rs
+@@ -61,6 +61,41 @@ use std::path::Path;
+ /// Result type alias with `std::result::Result` using `score_com::Error` as error type
+ pub type Result<T> = core::result::Result<T, Error>;
+ 
++/// State of an event subscription.
++///
++/// This mirrors the C++ middleware enumeration `score::mw::com::impl::SubscriptionState`
++/// (AUTOSAR `SWS_CM_00310`). The discriminants form part of the ABI contract with the C++
++/// implementation and must not be changed.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++#[repr(u8)]
++pub enum SubscriptionState {
++    /// The subscription has been successfully acknowledged by the provider side and the
++    /// consumer has not been notified that the service is no longer offered.
++    Subscribed = 0,
++    /// No subscription exists: `subscribe` has not been called yet or the last successful
++    /// subscription was withdrawn/rejected, or the provider cancelled it.
++    NotSubscribed = 1,
++    /// The subscription request is being dispatched/acknowledged by the provider, or the
++    /// provider has stopped offering and the consumer is waiting to auto-reconnect.
++    SubscriptionPending = 2,
++}
++
++impl From<u8> for SubscriptionState {
++    /// Converts the raw enumeration value received from the middleware.
++    ///
++    /// Unknown values are mapped to [`SubscriptionState::NotSubscribed`] because an unknown
++    /// value cannot represent an active subscription; a value outside of the documented
++    /// contract indicates an ABI mismatch between the Rust and C++ layers.
++    fn from(value: u8) -> Self {
++        match value {
++            0 => Self::Subscribed,
++            2 => Self::SubscriptionPending,
++            // 1 and any out-of-contract value mean "no active subscription".
++            _ => Self::NotSubscribed,
++        }
++    }
++}
++
+ /// A factory-like trait for constructing complex objects through a builder pattern.
+ ///
+ /// This trait enables type-safe construction of objects by moving self during the build phase,
+@@ -929,6 +964,40 @@ pub trait Subscription<T: CommData + Debug, R: Runtime + ?Sized> {
+     /// The stream only terminates when the subscription is unsubscribed or dropped or if the stream is explicitly dropped by the user.
+     /// With this design, users can handle errors on it side and take appropriate actions.
+     fn to_stream<'a>(&'a mut self) -> impl Stream<Item = Result<Self::Sample<'a>>> + Unpin + 'a;
++
++    /// Returns the current subscription state of this event.
++    ///
++    /// This mirrors the C++ `ProxyEventBase::GetSubscriptionState()` API and can be called at
++    /// any time regardless of the state of the subscription.
++    fn get_subscription_state(&self) -> SubscriptionState;
++
++    /// Registers a handler that is called whenever the subscription state of this event changes.
++    ///
++    /// An already registered handler is silently replaced. The handler receives the new
++    /// [`SubscriptionState`] and returns `true` to stay registered or `false` to unregister
++    /// itself (mirroring the C++ `SubscriptionStateChangeHandler` contract).
++    ///
++    /// The handler may be invoked from a middleware thread while an internal state-machine lock
++    /// is held. It must therefore be `Send`, must not perform long-running work, and must not
++    /// call back into this subscription (for example `try_receive`, `get_subscription_state`,
++    /// this method or [`Subscription::unset_subscription_state_change_handler`]) because doing so
++    /// can deadlock.
++    ///
++    /// # Errors
++    /// Returns [`Error::EventError`] if the handler cannot be registered.
++    fn set_subscription_state_change_handler(
++        &self,
++        handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
++    ) -> Result<()>;
++
++    /// Unregisters the subscription state change handler, if any.
++    ///
++    /// After this method returns it is guaranteed that a previously registered handler is no
++    /// longer active and will not be called.
++    ///
++    /// # Errors
++    /// Returns [`Error::EventError`] if the handler cannot be unregistered.
++    fn unset_subscription_state_change_handler(&self) -> Result<()>;
+ }
+ 
+ /// A trait for types that can be default-constructed in place, skipping intermediate moves.
+diff --git a/score/mw/com/rust/score_com_concept/error.rs b/score/mw/com/rust/score_com_concept/error.rs
+index 79e49eb9..1d1a4842 100644
+--- a/score/mw/com/rust/score_com_concept/error.rs
++++ b/score/mw/com/rust/score_com_concept/error.rs
+@@ -108,6 +108,8 @@ pub enum EventFailedReason {
+     InvalidMaxSamples,
+     #[error("Sample count out of bounds, expected at most {max}, but got {requested}")]
+     MaxSampleOutOfBounds { max: usize, requested: usize },
++    #[error("Failed to register or unregister the subscription state change handler")]
++    SubscriptionStateChangeHandlerFailed,
+ }
+ 
+ /// Error enumeration for different failure cases in the Consumer/Producer/Runtime APIs.
+diff --git a/score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD b/score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD
+new file mode 100644
+index 00000000..53619228
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/subscription_state_apis/BUILD
+@@ -0,0 +1,67 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
++load("//score/mw/com/test:pkg_application.bzl", "pkg_application")
++
++# Single production binary with two roles chosen at runtime:
++#   * controller (default, --scenario <name>): owns the LoLa runtime, discovery,
++#     consumer and subscription; spawns itself as the provider child.
++#   * provider (--provider): owns a separate LoLa runtime and offered producer.
++rust_binary(
++    name = "subscription-state-apis",
++    srcs = ["subscription_state_app.rs"],
++    features = ["link_std_cpp_lib"],
++    # linux_x86_64_score_gcc_12_2_0_posix toolchain is built without --enable-default-pie, so its static C++ libs are non-PIC.
++    # When Bazel builds this binary in exec config (py_test build with rule cfg=exec), the Rust linker
++    # defaults to PIE and rejects non-PIC archives. -no-pie disables PIE; -lstdc++ is needed because
++    # the link_std_cpp_lib CC feature is not activated in exec config.
++    rustc_flags = select({
++        "@platforms//os:linux": [
++            "-Clink-arg=-no-pie",
++            "-Clink-arg=-lstdc++",
++        ],
++        "//conditions:default": [],
++    }),
++    visibility = [
++        "//score/mw/com/test/basic_rust_api:__subpackages__",
++    ],
++    deps = [
++        "//score/mw/com/rust:score_com",
++        "//score/mw/com/test/basic_rust_api:bigdata_com_api_gen_rs",
++    ],
++)
++
++rust_test(
++    name = "subscription-state-apis-tests",
++    crate = ":subscription-state-apis",
++    target_compatible_with = [
++        "@platforms//os:linux",
++        "@platforms//cpu:x86_64",
++    ],
++)
++
++pkg_application(
++    name = "subscription-state-apis-pkg",
++    app_name = "subscription-state-apis",
++    bin = [
++        ":subscription-state-apis",
++    ],
++    etc = [
++        "//score/mw/com/test/basic_rust_api/etc:config",
++        "//score/mw/com/test/bigdata:logging.json",
++    ],
++    visibility = [
++        "//score/mw/com/test/basic_rust_api:__subpackages__",
++    ],
++)
+diff --git a/score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/BUILD b/score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/BUILD
+new file mode 100644
+index 00000000..c4088e29
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/BUILD
+@@ -0,0 +1,28 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++load("//quality/integration_testing:integration_testing.bzl", "integration_test")
++
++# Linux-only production callback coverage for the Rust subscription-state API. The QNX/ARM
++# variants are intentionally not exercised here (QNX #1278 remains excluded).
++integration_test(
++    name = "test_subscription_state_apis",
++    timeout = "moderate",
++    srcs = [
++        "test_subscription_state_apis.py",
++    ],
++    filesystem = "//score/mw/com/test/basic_rust_api/subscription_state_apis:subscription-state-apis-pkg",
++    target_compatible_with = [
++        "@platforms//os:linux",
++        "@platforms//cpu:x86_64",
++    ],
++)
+diff --git a/score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/test_subscription_state_apis.py b/score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/test_subscription_state_apis.py
+new file mode 100644
+index 00000000..ccf610ed
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/subscription_state_apis/integration_test/test_subscription_state_apis.py
+@@ -0,0 +1,62 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++"""Production-path Linux integration cases for the Rust subscription-state change API (#560).
++
++Each case launches a fresh controller process. The controller spawns its own provider child
++(handling OFFER/WITHDRAW/SEND/FINISH over a prefixed stdin/stdout protocol), so a single
++``target.wrap_exec`` drives the whole scenario for that case.
++"""
++
++APP = "bin/subscription-state-apis"
++APP_CWD = "/opt/subscription-state-apis"
++
++
++def scenario(target, name, **kwargs):
++    return target.wrap_exec(
++        APP,
++        ["--scenario", name],
++        cwd=APP_CWD,
++        wait_on_exit=True,
++        **kwargs,
++    )
++
++
++def test_subscription_state_notifications(target):
++    """Real pending-after-withdrawal and subscribed-after-reoffer callbacks on one subscription."""
++    with scenario(target, "notifications", wait_timeout=180):
++        pass
++
++
++def test_subscription_state_handler_replacement(target):
++    """A second handler replaces the first; each is disposed exactly once and only B observes."""
++    with scenario(target, "replacement", wait_timeout=180):
++        pass
++
++
++def test_subscription_state_handler_unset(target):
++    """A returning unset fences the old handler; a positive control confirms later transitions."""
++    with scenario(target, "unset", wait_timeout=180):
++        pass
++
++
++def test_subscription_state_handler_false_then_drop(target):
++    """A false-returning handler is disposed once and is not invoked again across re-offer/drop."""
++    with scenario(target, "false-then-drop", wait_timeout=180):
++        pass
++
++
++def test_subscription_state_handler_drop_active(target):
++    """Dropping a subscription with an active handler disposes it once; fresh control verifies."""
++    with scenario(target, "drop-active", wait_timeout=180):
++        pass
+diff --git a/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs b/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs
+new file mode 100644
+index 00000000..661d4e37
+--- /dev/null
++++ b/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs
+@@ -0,0 +1,1009 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++//! Production-path Linux integration binary for the Rust subscription-state change API (#560).
++//!
++//! The binary runs in one of two roles:
++//!
++//! * **controller** (default, `--scenario <name>`): owns the production LoLa runtime, service
++//!   discovery, the consumer and the subscription. It spawns *itself* in provider mode using
++//!   standard child stdin/stdout pipes and drives a small, prefixed, phase-tagged line protocol.
++//! * **provider** (`--provider`): owns a *separate* LoLa runtime and an offered
++//!   `MixedPrimitivesInterface` producer. It executes `OFFER`, `WITHDRAW`, `SEND <marker>` and
++//!   `FINISH` commands and acknowledges each one.
++//!
++//! The controller exercises the real production Rust -> C++ -> Rust callback path
++//! (`Subscription::set_subscription_state_change_handler` -> FFI -> `ProxyEventBase` ->
++//! `SubscriptionStateMachine` -> the Rust trampoline). No trampoline is called directly and no
++//! mock bridge is linked. Registration is not expected to deliver an initial current-state
++//! notification; the subscription state is established through the synchronous query before the
++//! first handler is registered.
++//!
++//! Test diagnostics are emitted on stderr; only protocol acknowledgements are written to the
++//! provider's stdout.
++
++use std::io::{BufRead, BufReader, Stdout, Write};
++use std::path::Path;
++use std::process::{Child, ChildStdin, Command, Stdio};
++use std::sync::atomic::{AtomicUsize, Ordering};
++use std::sync::mpsc::{channel, Receiver, RecvTimeoutError};
++use std::sync::Arc;
++use std::thread::{self, JoinHandle};
++use std::time::{Duration, Instant};
++
++use bigdata_com_api_gen::{MixedPrimitivesInterface, MixedPrimitivesPayload};
++use score_com::{
++    Builder, FindServiceSpecifier, InstanceSpecifier, LolaRuntimeBuilderImpl, OfferedProducer, Producer, Publisher,
++    Runtime, RuntimeBuilder, SampleContainer, SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription,
++    SubscriptionState,
++};
++
++/// Result type used throughout this binary. Failures carry a short human-readable description and
++/// are reported on stderr before the process exits non-zero.
++type AppResult<T> = std::result::Result<T, String>;
++
++const CONFIG_PATH: &str = "etc/config.json";
++const SERVICE_INSTANCE: &str = "/IntegrationTest/MixedPrimitives";
++/// Unique prefix that separates protocol acknowledgements from native/application diagnostics.
++const PROTOCOL_PREFIX: &str = "SSAPI-PROTO";
++const MAX_SAMPLES: usize = 5;
++const SAMPLE_MARKER_NOTIFICATIONS: u32 = 0x51;
++const SAMPLE_MARKER_FALSE_THEN_DROP: u32 = 0x77;
++
++const ACK_TIMEOUT: Duration = Duration::from_secs(30);
++const EXIT_TIMEOUT: Duration = Duration::from_secs(30);
++const DISCOVERY_TIMEOUT: Duration = Duration::from_secs(60);
++const QUERY_TIMEOUT: Duration = Duration::from_secs(30);
++const CALLBACK_TIMEOUT: Duration = Duration::from_secs(30);
++const DISPOSAL_TIMEOUT: Duration = Duration::from_secs(30);
++const SAMPLE_TIMEOUT: Duration = Duration::from_secs(30);
++const POLL_INTERVAL: Duration = Duration::from_millis(20);
++
++fn err_str<E: std::fmt::Debug>(error: E) -> String {
++    format!("{:?}", error)
++}
++
++fn deadline_after(timeout: Duration) -> Instant {
++    Instant::now() + timeout
++}
++
++fn main() {
++    let arguments: Vec<String> = std::env::args().collect();
++    if arguments.iter().any(|argument| argument == "--provider") {
++        if let Err(error) = provider_entry() {
++            eprintln!("[subscription-state-apis] provider failed: {}", error);
++            std::process::exit(1);
++        }
++        return;
++    }
++
++    let scenario = match parse_scenario(&arguments) {
++        Some(scenario) => scenario,
++        None => {
++            eprintln!(
++                "[subscription-state-apis] usage: subscription-state-apis --scenario \
++                 <notifications|replacement|unset|false-then-drop|drop-active>"
++            );
++            std::process::exit(2);
++        }
++    };
++
++    if let Err(error) = controller_entry(scenario) {
++        eprintln!("[subscription-state-apis] controller scenario '{}' failed: {}", scenario, error);
++        std::process::exit(1);
++    }
++}
++
++fn parse_scenario(arguments: &[String]) -> Option<&str> {
++    let mut iter = arguments.iter();
++    while let Some(argument) = iter.next() {
++        if argument == "--scenario" {
++            return iter.next().map(String::as_str);
++        }
++    }
++    None
++}
++
++fn provider_entry() -> AppResult<()> {
++    let mut builder: LolaRuntimeBuilderImpl = LolaRuntimeBuilderImpl::new();
++    builder.load_config(Path::new(CONFIG_PATH));
++    let runtime = builder.build().map_err(err_str)?;
++    provider_main(&runtime)
++}
++
++fn controller_entry(scenario: &str) -> AppResult<()> {
++    let mut builder: LolaRuntimeBuilderImpl = LolaRuntimeBuilderImpl::new();
++    builder.load_config(Path::new(CONFIG_PATH));
++    let runtime = builder.build().map_err(err_str)?;
++    run_controller(&runtime, scenario)
++}
++
++// ------------------------------------------------------------------------------------------------
++// Provider child
++// ------------------------------------------------------------------------------------------------
++
++fn provider_main<R: Runtime>(runtime: &R) -> AppResult<()> {
++    let specifier = InstanceSpecifier::new(SERVICE_INSTANCE).map_err(err_str)?;
++    let initial_producer = runtime
++        .producer_builder::<MixedPrimitivesInterface>(specifier)
++        .build()
++        .map_err(err_str)?;
++
++    // The provider starts unoffered and only offers on the controller's OFFER command. The
++    // returned producer is retained across `unoffer` so the *same* provider can be re-offered.
++    // Types are inferred from the concrete runtime `R`; no cross-crate type aliases are required.
++    let mut offered = None;
++    let mut unoffered = Some(initial_producer);
++
++    let stdin = std::io::stdin();
++    let mut stdout = std::io::stdout();
++
++    for line_result in stdin.lock().lines() {
++        let line = line_result.map_err(|error| format!("provider stdin read failed: {}", error))?;
++        let trimmed = line.trim();
++        if trimmed.is_empty() {
++            continue;
++        }
++
++        let fields: Vec<&str> = trimmed.split_whitespace().collect();
++        if fields.len() < 3 || fields[0] != PROTOCOL_PREFIX {
++            continue;
++        }
++        let phase = fields[1].to_string();
++        let command = fields[2].to_string();
++
++        let mut status = true;
++        let mut fatal: Option<String> = None;
++
++        match command.as_str() {
++            "OFFER" => {
++                if offered.is_none() {
++                    if let Some(producer) = unoffered.take() {
++                        match producer.offer() {
++                            Ok(offered_producer) => offered = Some(offered_producer),
++                            Err(error) => {
++                                status = false;
++                                fatal = Some(format!("offer failed: {:?}", error));
++                            },
++                        }
++                    } else {
++                        status = false;
++                    }
++                }
++            },
++            "WITHDRAW" => {
++                if let Some(offered_producer) = offered.take() {
++                    match offered_producer.unoffer() {
++                        Ok(producer) => unoffered = Some(producer),
++                        Err(error) => {
++                            status = false;
++                            fatal = Some(format!("unoffer failed: {:?}", error));
++                        },
++                    }
++                }
++            },
++            "SEND" => {
++                let marker = fields.get(3).copied().and_then(|value| value.parse::<u32>().ok());
++                match (marker, offered.as_ref()) {
++                    (Some(marker), Some(offered_producer)) => {
++                        let payload = make_payload(marker);
++                        match offered_producer.mixed_event.allocate() {
++                            Ok(uninitialized) => {
++                                let initialized = uninitialized.write(payload);
++                                if let Err(error) = initialized.send() {
++                                    status = false;
++                                    fatal = Some(format!("send failed: {:?}", error));
++                                }
++                            },
++                            Err(error) => {
++                                status = false;
++                                fatal = Some(format!("allocate failed: {:?}", error));
++                            },
++                        }
++                    },
++                    _ => status = false,
++                }
++            },
++            "FINISH" => {
++                if let Some(offered_producer) = offered.take() {
++                    let _ = offered_producer.unoffer();
++                }
++                ack(&mut stdout, &phase, &command, true)?;
++                return Ok(());
++            },
++            _ => status = false,
++        }
++
++        ack(&mut stdout, &phase, &command, status)?;
++        if let Some(message) = fatal {
++            return Err(message);
++        }
++    }
++
++    Ok(())
++}
++
++fn make_payload(marker: u32) -> MixedPrimitivesPayload {
++    MixedPrimitivesPayload {
++        u64_val: u64::from(marker),
++        i64_val: i64::from(marker),
++        u32_val: marker,
++        i32_val: i32::try_from(marker).unwrap_or(i32::MAX),
++        f32_val: marker as f32 / 2.0,
++        u16_val: u16::try_from(marker).unwrap_or(u16::MAX),
++        i16_val: i16::try_from(marker).unwrap_or(i16::MAX),
++        u8_val: u8::try_from(marker).unwrap_or(u8::MAX),
++        i8_val: i8::try_from(marker).unwrap_or(i8::MAX),
++        flag: marker.is_multiple_of(2),
++    }
++}
++
++fn ack(stdout: &mut Stdout, phase: &str, command: &str, ok: bool) -> AppResult<()> {
++    let status = if ok { "OK" } else { "ERR" };
++    writeln!(stdout, "{} {} {} {}", PROTOCOL_PREFIX, phase, command, status)
++        .map_err(|error| format!("provider stdout write failed: {}", error))?;
++    stdout
++        .flush()
++        .map_err(|error| format!("provider stdout flush failed: {}", error))?;
++    Ok(())
++}
++
++// ------------------------------------------------------------------------------------------------
++// Controller side: provider child process and line protocol
++// ------------------------------------------------------------------------------------------------
++
++struct ProviderSession {
++    child: Option<Child>,
++    stdin: Option<ChildStdin>,
++    receiver: Receiver<String>,
++    reader: Option<JoinHandle<()>>,
++    next_phase: u32,
++    /// Non-protocol lines received from the provider stdout, retained for failure diagnostics.
++    diagnostics: Vec<String>,
++}
++
++impl ProviderSession {
++    fn offer(&mut self) -> AppResult<()> {
++        self.command("OFFER", None)
++    }
++
++    fn withdraw(&mut self) -> AppResult<()> {
++        self.command("WITHDRAW", None)
++    }
++
++    fn send_sample(&mut self, marker: u32) -> AppResult<()> {
++        self.command("SEND", Some(marker))
++    }
++
++    fn finish(&mut self) -> AppResult<()> {
++        self.finish_with_wait(Child::try_wait)
++    }
++
++    /// Keep the child in the session until it is reaped. Every error then leaves `Drop` able to
++    /// terminate the owned process before joining its stdout reader. The injected poll operation
++    /// permits deterministic testing of wait failures without changing the production protocol.
++    fn finish_with_wait(
++        &mut self,
++        mut try_wait: impl FnMut(&mut Child) -> std::io::Result<Option<std::process::ExitStatus>>,
++    ) -> AppResult<()> {
++        self.command("FINISH", None)?;
++        // Close the child stdin so a misbehaving provider cannot block on further reads.
++        self.stdin.take();
++        let deadline = deadline_after(EXIT_TIMEOUT);
++        let status = loop {
++            let child = self.child.as_mut().ok_or_else(|| "provider child is missing".to_string())?;
++            match try_wait(child) {
++                Ok(Some(status)) => break status,
++                Ok(None) => {
++                    if Instant::now() >= deadline {
++                        return Err("provider child did not exit after FINISH".to_string());
++                    }
++                    thread::sleep(POLL_INTERVAL);
++                },
++                Err(error) => return Err(format!("provider wait failed: {}", error)),
++            }
++        };
++        self.child.take();
++        if let Some(reader) = self.reader.take() {
++            reader.join().map_err(|_| "provider stdout reader panicked".to_string())?;
++        }
++        if !status.success() {
++            return Err(format!("provider child exited unsuccessfully after FINISH: {}", status));
++        }
++        Ok(())
++    }
++
++    fn command(&mut self, command: &str, argument: Option<u32>) -> AppResult<()> {
++        let phase = self.next_phase;
++        self.next_phase = self.next_phase.wrapping_add(1);
++        let line = match argument {
++            Some(value) => format!("{} {} {} {}\n", PROTOCOL_PREFIX, phase, command, value),
++            None => format!("{} {} {}\n", PROTOCOL_PREFIX, phase, command),
++        };
++        let stdin = self
++            .stdin
++            .as_mut()
++            .ok_or_else(|| "provider stdin is closed".to_string())?;
++        stdin
++            .write_all(line.as_bytes())
++            .map_err(|error| format!("provider stdin write failed: {}", error))?;
++        stdin
++            .flush()
++            .map_err(|error| format!("provider stdin flush failed: {}", error))?;
++        self.await_ack(phase, command)
++    }
++
++    fn await_ack(&mut self, phase: u32, command: &str) -> AppResult<()> {
++        let deadline = deadline_after(ACK_TIMEOUT);
++        loop {
++            let now = Instant::now();
++            if now >= deadline {
++                if let Some(child) = self.child.as_mut() {
++                    if let Ok(Some(status)) = child.try_wait() {
++                        return Err(format!(
++                            "provider exited early ({}) while awaiting {} phase {}",
++                            status, command, phase
++                        ));
++                    }
++                }
++                return Err(format!("timeout awaiting {} phase {}", command, phase));
++            }
++
++            match self.receiver.recv_timeout(deadline - now) {
++                Ok(line) => {
++                    if line.starts_with(PROTOCOL_PREFIX) {
++                        let parsed = parse_protocol(&line)
++                            .ok_or_else(|| format!("malformed protocol message: {}", line))?;
++                        let (received_phase, received_command, ok) = parsed;
++                        if received_phase != phase {
++                            return Err(format!(
++                                "protocol phase mismatch: expected {}, received {}",
++                                phase, received_phase
++                            ));
++                        }
++                        if received_command != command {
++                            return Err(format!(
++                                "protocol command mismatch: expected {}, received {}",
++                                command, received_command
++                            ));
++                        }
++                        if !ok {
++                            return Err(format!("provider reported failure for {} phase {}", command, phase));
++                        }
++                        return Ok(());
++                    }
++                    self.diagnostics.push(line);
++                },
++                Err(RecvTimeoutError::Timeout) => {
++                    return Err(format!("timeout awaiting {} phase {}", command, phase));
++                },
++                Err(RecvTimeoutError::Disconnected) => {
++                    return Err(format!("provider stdout closed while awaiting {} phase {}", command, phase));
++                },
++            }
++        }
++    }
++}
++
++impl Drop for ProviderSession {
++    fn drop(&mut self) {
++        // Close the child stdin so the provider sees EOF, then forcibly reap the owned child. The
++        // reader thread owns no native handles and only exits once stdout is closed.
++        self.stdin.take();
++        if let Some(mut child) = self.child.take() {
++            let _ = child.kill();
++            let _ = child.wait();
++        }
++        if let Some(reader) = self.reader.take() {
++            let _ = reader.join();
++        }
++    }
++}
++
++fn parse_protocol(line: &str) -> Option<(u32, String, bool)> {
++    let remainder = line.strip_prefix(PROTOCOL_PREFIX)?;
++    let mut fields = remainder.split_whitespace();
++    let phase = fields.next()?.parse::<u32>().ok()?;
++    let command = fields.next()?.to_string();
++    let ok = fields.next()? == "OK";
++    Some((phase, command, ok))
++}
++
++fn spawn_provider() -> AppResult<ProviderSession> {
++    let executable = std::env::current_exe().map_err(|error| format!("cannot resolve current exe: {}", error))?;
++    let child = Command::new(executable)
++        .arg("--provider")
++        .stdin(Stdio::piped())
++        .stdout(Stdio::piped())
++        // Inherit stderr so an unread pipe cannot block the provider, and so native diagnostics are
++        // visible in the integration-test log.
++        .stderr(Stdio::inherit())
++        .spawn()
++        .map_err(|error| format!("failed to spawn provider child: {}", error))?;
++
++    provider_session_from_child(child)
++}
++
++fn provider_session_from_child(mut child: Child) -> AppResult<ProviderSession> {
++    let stdin = child
++        .stdin
++        .take()
++        .ok_or_else(|| "provider child has no stdin".to_string())?;
++    let stdout = child
++        .stdout
++        .take()
++        .ok_or_else(|| "provider child has no stdout".to_string())?;
++
++    let (sender, receiver) = channel::<String>();
++    let reader = thread::spawn(move || {
++        let buffered = BufReader::new(stdout);
++        for line in buffered.lines() {
++            match line {
++                Ok(line) => {
++                    // The channel is unbounded, so the reader never blocks on the controller.
++                    if sender.send(line).is_err() {
++                        break;
++                    }
++                },
++                Err(_) => break,
++            }
++        }
++    });
++
++    Ok(ProviderSession {
++        child: Some(child),
++        stdin: Some(stdin),
++        receiver,
++        reader: Some(reader),
++        next_phase: 1,
++        diagnostics: Vec::new(),
++    })
++}
++
++// ------------------------------------------------------------------------------------------------
++// Controller side: subscription, observation and scenarios
++// ------------------------------------------------------------------------------------------------
++
++fn run_controller<R: Runtime>(runtime: &R, scenario: &str) -> AppResult<()> {
++    let mut session = spawn_provider()?;
++
++    // Offer the service before discovery; the provider starts unoffered itself.
++    session.offer()?;
++
++    let subscription = discover_and_subscribe::<R>(runtime)?;
++    // Registration never promises an immediate current-state notification, so establish the
++    // initial Subscribed state through the synchronous query before registering any handler.
++    wait_for_state::<R, _>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++
++    match scenario {
++        "notifications" => scenario_notifications::<R, _>(&mut session, subscription)?,
++        "replacement" => scenario_replacement::<R, _>(&mut session, subscription)?,
++        "unset" => scenario_unset::<R, _>(&mut session, subscription)?,
++        "false-then-drop" => scenario_false_then_drop::<R, _>(&mut session, subscription)?,
++        "drop-active" => scenario_drop_active::<R, _>(&mut session, runtime, subscription)?,
++        other => return Err(format!("unknown scenario: {}", other)),
++    }
++
++    session.finish()?;
++    eprintln!("[subscription-state-apis] scenario '{}' completed", scenario);
++    Ok(())
++}
++
++fn discover_and_subscribe<R: Runtime>(runtime: &R) -> AppResult<impl Subscription<MixedPrimitivesPayload, R>> {
++    let specifier = InstanceSpecifier::new(SERVICE_INSTANCE).map_err(err_str)?;
++    let discovery = runtime.find_service::<MixedPrimitivesInterface>(FindServiceSpecifier::Specific(specifier));
++    let deadline = deadline_after(DISCOVERY_TIMEOUT);
++    let consumer = loop {
++        let instances = discovery.get_available_instances().map_err(err_str)?;
++        if let Some(builder) = instances.into_iter().next() {
++            break builder.build().map_err(err_str)?;
++        }
++        if Instant::now() >= deadline {
++            return Err("service discovery timeout".to_string());
++        }
++        thread::sleep(POLL_INTERVAL);
++    };
++    let subscription = consumer.mixed_event.subscribe(MAX_SAMPLES).map_err(err_str)?;
++    Ok(subscription)
++}
++
++fn wait_for_state<R, S>(subscription: &S, expected: SubscriptionState, timeout: Duration) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let deadline = deadline_after(timeout);
++    let mut observed = Vec::new();
++    loop {
++        let state = subscription.get_subscription_state();
++        observed.push(state);
++        if state == expected {
++            return Ok(());
++        }
++        if Instant::now() >= deadline {
++            return Err(format!(
++                "timeout waiting for state {:?}, observed {:?}",
++                expected, observed
++            ));
++        }
++        thread::sleep(POLL_INTERVAL);
++    }
++}
++
++fn receive_marker<R, S>(subscription: &S, marker: u32, timeout: Duration) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let deadline = deadline_after(timeout);
++    let mut container = SampleContainer::new(MAX_SAMPLES);
++    loop {
++        let received = subscription.try_receive(&mut container, MAX_SAMPLES).map_err(err_str)?;
++        if received > 0 {
++            while let Some(sample) = container.pop_front() {
++                if sample.u32_val == marker {
++                    return Ok(());
++                }
++            }
++        }
++        if Instant::now() >= deadline {
++            return Err(format!("timeout waiting for sample marker {}", marker));
++        }
++        thread::sleep(POLL_INTERVAL);
++    }
++}
++
++/// A single handler invocation, tagged with the originating handler ID.
++#[derive(Debug)]
++struct Observation {
++    handler_id: u32,
++    state: SubscriptionState,
++}
++
++/// Resources captured by a subscription-state handler. Dropping this value records exactly one
++/// disposal of the callable that owned it.
++struct DisposeProbe {
++    handler_id: u32,
++    disposals: Arc<AtomicUsize>,
++}
++
++impl DisposeProbe {
++    fn handler_id(&self) -> u32 {
++        self.handler_id
++    }
++}
++
++impl Drop for DisposeProbe {
++    fn drop(&mut self) {
++        self.disposals.fetch_add(1, Ordering::SeqCst);
++    }
++}
++
++/// Test-owned view of one registered handler.
++struct HandlerControl {
++    id: u32,
++    receiver: Receiver<Observation>,
++    disposals: Arc<AtomicUsize>,
++    invocations: Arc<AtomicUsize>,
++    send_failures: Arc<AtomicUsize>,
++}
++
++/// Create a handler that records every invocation and always/never keeps itself registered.
++///
++/// The returned closure never calls back into the subscription, never blocks and never panics; a
++/// failed observation send is recorded in a test-owned atomic instead.
++fn make_handler(id: u32, keep: bool) -> (HandlerControl, impl FnMut(SubscriptionState) -> bool + Send + 'static) {
++    let (sender, receiver) = channel::<Observation>();
++    let disposals = Arc::new(AtomicUsize::new(0));
++    let invocations = Arc::new(AtomicUsize::new(0));
++    let send_failures = Arc::new(AtomicUsize::new(0));
++
++    let probe = DisposeProbe {
++        handler_id: id,
++        disposals: Arc::clone(&disposals),
++    };
++    let invocations_counter = Arc::clone(&invocations);
++    let send_failures_counter = Arc::clone(&send_failures);
++
++    let handler = move |state: SubscriptionState| -> bool {
++        // Referencing the probe keeps it owned by, and disposed with, this callable.
++        let _ = probe.handler_id();
++        invocations_counter.fetch_add(1, Ordering::SeqCst);
++        let observation = Observation {
++            handler_id: id,
++            state,
++        };
++        if sender.send(observation).is_err() {
++            send_failures_counter.fetch_add(1, Ordering::SeqCst);
++        }
++        keep
++    };
++
++    (
++        HandlerControl {
++            id,
++            receiver,
++            disposals,
++            invocations,
++            send_failures,
++        },
++        handler,
++    )
++}
++
++fn await_observation(
++    control: &HandlerControl,
++    expected: SubscriptionState,
++    timeout: Duration,
++) -> AppResult<Vec<Observation>> {
++    let deadline = deadline_after(timeout);
++    let mut collected = Vec::new();
++    loop {
++        let now = Instant::now();
++        if now >= deadline {
++            return Err(format!(
++                "timeout awaiting {:?} observation from handler {}, collected {:?}",
++                expected, control.id, collected
++            ));
++        }
++        match control.receiver.recv_timeout(deadline - now) {
++            Ok(observation) => {
++                let matched = observation.handler_id == control.id && observation.state == expected;
++                collected.push(observation);
++                if matched {
++                    return Ok(collected);
++                }
++            },
++            Err(RecvTimeoutError::Timeout) => {
++                return Err(format!(
++                    "timeout awaiting {:?} observation from handler {}, collected {:?}",
++                    expected, control.id, collected
++                ));
++            },
++            Err(RecvTimeoutError::Disconnected) => {
++                return Err(format!("observation channel for handler {} disconnected", control.id));
++            },
++        }
++    }
++}
++
++fn await_disposal(control: &HandlerControl, timeout: Duration) -> AppResult<()> {
++    let deadline = deadline_after(timeout);
++    loop {
++        if control.disposals.load(Ordering::SeqCst) >= 1 {
++            return Ok(());
++        }
++        if Instant::now() >= deadline {
++            return Err(format!("timeout awaiting disposal of handler {}", control.id));
++        }
++        thread::sleep(POLL_INTERVAL);
++    }
++}
++
++fn require_eq(actual: usize, expected: usize, what: &str) -> AppResult<()> {
++    if actual == expected {
++        Ok(())
++    } else {
++        Err(format!("{}: expected {}, got {}", what, expected, actual))
++    }
++}
++
++fn require_at_least(actual: usize, minimum: usize, what: &str) -> AppResult<()> {
++    if actual >= minimum {
++        Ok(())
++    } else {
++        Err(format!("{}: expected at least {}, got {}", what, minimum, actual))
++    }
++}
++
++/// Case 1: real pending-after-withdrawal and subscribed-after-reoffer notifications.
++fn scenario_notifications<R, S>(session: &mut ProviderSession, subscription: S) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let (control, handler) = make_handler(1, true);
++    subscription.set_subscription_state_change_handler(handler).map_err(err_str)?;
++
++    session.withdraw()?;
++    let pending = await_observation(&control, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::SubscriptionPending, QUERY_TIMEOUT)?;
++
++    session.offer()?;
++    let subscribed = await_observation(&control, SubscriptionState::Subscribed, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++
++    session.send_sample(SAMPLE_MARKER_NOTIFICATIONS)?;
++    receive_marker::<R, S>(&subscription, SAMPLE_MARKER_NOTIFICATIONS, SAMPLE_TIMEOUT)?;
++
++    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    require_eq(
++        control.disposals.load(Ordering::SeqCst),
++        1,
++        "notifications: handler disposed exactly once on unset",
++    )?;
++    require_at_least(
++        control.invocations.load(Ordering::SeqCst),
++        2,
++        "notifications: handler observes pending and subscribed",
++    )?;
++    require_eq(
++        control.send_failures.load(Ordering::SeqCst),
++        0,
++        "notifications: callback observations were delivered",
++    )?;
++    eprintln!(
++        "[notifications] pending observations={:?} subscribed observations={:?}",
++        pending, subscribed
++    );
++    drop(subscription);
++    Ok(())
++}
++
++/// Case 2: setting a second handler replaces the first, disposing it exactly once.
++fn scenario_replacement<R, S>(session: &mut ProviderSession, subscription: S) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let (control_a, handler_a) = make_handler(1, true);
++    let (control_b, handler_b) = make_handler(2, true);
++
++    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
++    subscription.set_subscription_state_change_handler(handler_b).map_err(err_str)?;
++    require_eq(
++        control_a.disposals.load(Ordering::SeqCst),
++        1,
++        "replacement: replaced handler A disposed once",
++    )?;
++
++    session.withdraw()?;
++    await_observation(&control_b, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::SubscriptionPending, QUERY_TIMEOUT)?;
++
++    session.offer()?;
++    await_observation(&control_b, SubscriptionState::Subscribed, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++
++    require_eq(
++        control_a.invocations.load(Ordering::SeqCst),
++        0,
++        "replacement: replaced handler A never invoked",
++    )?;
++
++    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    require_eq(
++        control_b.disposals.load(Ordering::SeqCst),
++        1,
++        "replacement: handler B disposed once on unset",
++    )?;
++
++    drop(subscription);
++    require_eq(
++        control_a.disposals.load(Ordering::SeqCst),
++        1,
++        "replacement: A disposal remains exactly one after drop",
++    )?;
++    require_eq(
++        control_b.disposals.load(Ordering::SeqCst),
++        1,
++        "replacement: B disposal remains exactly one after drop",
++    )?;
++    Ok(())
++}
++
++/// Case 3: unset while subscribed fences the handler; a positive control verifies transitions.
++fn scenario_unset<R, S>(session: &mut ProviderSession, subscription: S) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let (control_a, handler_a) = make_handler(1, true);
++    let (control_b, handler_b) = make_handler(2, true);
++
++    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
++    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    require_eq(
++        control_a.disposals.load(Ordering::SeqCst),
++        1,
++        "unset: handler A disposed once on unset",
++    )?;
++
++    session.withdraw()?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::SubscriptionPending, QUERY_TIMEOUT)?;
++    session.offer()?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++    require_eq(
++        control_a.invocations.load(Ordering::SeqCst),
++        0,
++        "unset: handler A never invoked after unset",
++    )?;
++
++    subscription.set_subscription_state_change_handler(handler_b).map_err(err_str)?;
++    session.withdraw()?;
++    await_observation(&control_b, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::SubscriptionPending, QUERY_TIMEOUT)?;
++    session.offer()?;
++    await_observation(&control_b, SubscriptionState::Subscribed, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++
++    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    require_eq(
++        control_b.disposals.load(Ordering::SeqCst),
++        1,
++        "unset: handler B disposed once on unset",
++    )?;
++    require_at_least(
++        control_b.invocations.load(Ordering::SeqCst),
++        2,
++        "unset: positive-control handler B observes both transitions",
++    )?;
++    require_eq(
++        control_a.disposals.load(Ordering::SeqCst),
++        1,
++        "unset: handler A disposal remains exactly one",
++    )?;
++    drop(subscription);
++    Ok(())
++}
++
++/// Case 4: a handler that returns false is unregistered and disposed exactly once.
++fn scenario_false_then_drop<R, S>(session: &mut ProviderSession, subscription: S) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let (control_a, handler_a) = make_handler(1, false);
++    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
++
++    session.withdraw()?;
++    await_observation(&control_a, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
++    // Receiving the callback is not a disposal fence: await the captured resource's destruction
++    // and then use a synchronous query as the state-lock fence before re-offer.
++    await_disposal(&control_a, DISPOSAL_TIMEOUT)?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::SubscriptionPending, QUERY_TIMEOUT)?;
++
++    session.offer()?;
++    wait_for_state::<R, S>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++    session.send_sample(SAMPLE_MARKER_FALSE_THEN_DROP)?;
++    receive_marker::<R, S>(&subscription, SAMPLE_MARKER_FALSE_THEN_DROP, SAMPLE_TIMEOUT)?;
++    require_eq(
++        control_a.invocations.load(Ordering::SeqCst),
++        1,
++        "false-then-drop: handler A records exactly the first pending transition",
++    )?;
++
++    // Drop the same subscription with the still-true Rust flag: a redundant native unset followed
++    // by unsubscribe must still dispose the handler exactly once.
++    drop(subscription);
++    require_eq(
++        control_a.disposals.load(Ordering::SeqCst),
++        1,
++        "false-then-drop: handler A disposal exactly one after drop",
++    )?;
++    require_eq(
++        control_a.invocations.load(Ordering::SeqCst),
++        1,
++        "false-then-drop: no later handler A invocation",
++    )?;
++    Ok(())
++}
++
++/// Case 5: dropping a subscription with an active handler disposes it once; a fresh
++/// subscription with a positive-control handler verifies a full withdrawal/re-offer cycle.
++fn scenario_drop_active<R, S>(
++    session: &mut ProviderSession,
++    runtime: &R,
++    subscription: S,
++) -> AppResult<()>
++where
++    R: Runtime,
++    S: Subscription<MixedPrimitivesPayload, R>,
++{
++    let (control_a, handler_a) = make_handler(1, true);
++    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
++    drop(subscription);
++    require_eq(
++        control_a.disposals.load(Ordering::SeqCst),
++        1,
++        "drop-active: active handler A disposed once on subscription drop",
++    )?;
++    require_eq(
++        control_a.invocations.load(Ordering::SeqCst),
++        0,
++        "drop-active: handler A observes no callback",
++    )?;
++
++    let fresh_subscription = discover_and_subscribe::<R>(runtime)?;
++    wait_for_state::<R, _>(&fresh_subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++
++    let (control_b, handler_b) = make_handler(2, true);
++    fresh_subscription
++        .set_subscription_state_change_handler(handler_b)
++        .map_err(err_str)?;
++
++    session.withdraw()?;
++    await_observation(&control_b, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, _>(
++        &fresh_subscription,
++        SubscriptionState::SubscriptionPending,
++        QUERY_TIMEOUT,
++    )?;
++    session.offer()?;
++    await_observation(&control_b, SubscriptionState::Subscribed, CALLBACK_TIMEOUT)?;
++    wait_for_state::<R, _>(&fresh_subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
++
++    fresh_subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    require_eq(
++        control_b.disposals.load(Ordering::SeqCst),
++        1,
++        "drop-active: positive-control handler B disposed once",
++    )?;
++    require_at_least(
++        control_b.invocations.load(Ordering::SeqCst),
++        2,
++        "drop-active: handler B observes both transitions",
++    )?;
++    drop(fresh_subscription);
++    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    // These subprocess tests cover controller cleanup only. The five integration scenarios
++    // continue to require the production LoLa provider and do not use these protocol stubs.
++    fn scripted_provider(script: &str) -> ProviderSession {
++        let child = Command::new("/bin/sh")
++            .arg("-c")
++            .arg(script)
++            .stdin(Stdio::piped())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::inherit())
++            .spawn()
++            .expect("scripted provider must start");
++        provider_session_from_child(child).expect("scripted provider pipes must be available")
++    }
++
++    #[test]
++    fn provider_success_after_finish_is_accepted() {
++        let mut session = scripted_provider("read -r line; printf 'SSAPI-PROTO 1 FINISH OK\\n'; exit 0");
++        assert!(session.finish().is_ok());
++        assert!(session.child.is_none());
++    }
++
++    #[test]
++    fn provider_failure_after_finish_is_rejected() {
++        let mut session = scripted_provider("read -r line; printf 'SSAPI-PROTO 1 FINISH OK\\n'; exit 7");
++        let error = session.finish().expect_err("a FINISH acknowledgement cannot hide a failed exit");
++        assert!(error.contains("exited unsuccessfully"), "{error}");
++        assert!(session.child.is_none(), "the exited child must already be reaped");
++    }
++
++    #[test]
++    fn provider_wait_error_preserves_cleanup_and_reaps_live_child() {
++        // exec avoids a grandchild inheriting stdout: the child PID itself remains alive until
++        // session Drop terminates it. The error is injected only after the FINISH acknowledgement.
++        let mut session = scripted_provider("read -r line; printf 'SSAPI-PROTO 1 FINISH OK\\n'; exec sleep 60");
++        let pid = session.child.as_ref().expect("owned child").id();
++        let error = session
++            .finish_with_wait(|_| Err(std::io::Error::other("injected wait error")))
++            .expect_err("wait errors must propagate");
++        assert!(error.contains("injected wait error"), "{error}");
++        assert!(session.child.is_some(), "wait error must preserve cleanup ownership");
++        assert!(session.child.as_mut().expect("owned child").try_wait().expect("real wait").is_none());
++        drop(session);
++        assert!(!Path::new(&format!("/proc/{pid}")).exists(), "the owned child must be reaped");
++    }
++}

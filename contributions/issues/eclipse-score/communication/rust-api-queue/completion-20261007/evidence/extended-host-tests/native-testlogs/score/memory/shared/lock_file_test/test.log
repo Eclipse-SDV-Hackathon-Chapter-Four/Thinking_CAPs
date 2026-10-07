@@ -1,0 +1,162 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:lock_file_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 21 tests from 4 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m6 tests from LockFileCreateFixture
+[0;32m[ RUN      ] [mLockFileCreateFixture.LockFileShouldManageFileWithRaii
+[0;32m[       OK ] [mLockFileCreateFixture.LockFileShouldManageFileWithRaii (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateFixture.LockFileCreateShouldReturnEmptyIfOpenFails
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffc47d88fc0 pointing to "/proc/self/exe", 0x5582af3317e0 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-86 D8-47 FC-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/07 17:02:39.2559520 1547977597 000 ECU1 NONE shm log error verbose 4 LockFile::Create failed to open file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileCreateFixture.LockFileCreateShouldReturnEmptyIfOpenFails (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateFixture.LockFileCreateDoesNotCloseAndUnlinkFileIfOpenFails
+2026/10/07 17:02:39.2559520 1547977598 000 ECU1 NONE shm log error verbose 4 LockFile::Create failed to open file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileCreateFixture.LockFileCreateDoesNotCloseAndUnlinkFileIfOpenFails (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateFixture.LockFileCreateShouldReturnEmptyIfChmodFails
+2026/10/07 17:02:39.2559520 1547977598 000 ECU1 NONE shm log error verbose 4 LockFile::Create failed to chmod file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileCreateFixture.LockFileCreateShouldReturnEmptyIfChmodFails (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateFixture.LockFileCreateShouldCallOpenWithExclusiveFlag
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <CF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: close(0)
+          Returns: 12-byte object <FF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: unlink(0x7ffc47d89c10 pointing to "/test_lock_file")
+          Returns: 12-byte object <EF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileCreateFixture.LockFileCreateShouldCallOpenWithExclusiveFlag (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateFixture.IfLockFileCreateIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <BF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileCreateFixture.IfLockFileCreateIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction (0 ms)
+[0;32m[----------] [m6 tests from LockFileCreateFixture (0 ms total)
+
+[0;32m[----------] [m7 tests from LockFileCreateOrOpenFixture
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenShouldCallOpenWithoutExclusiveFlag
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <BF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: close(0)
+          Returns: 12-byte object <FF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenShouldCallOpenWithoutExclusiveFlag (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenShouldReturnEmptyIfOpenFails
+2026/10/07 17:02:39.2559520 1547977601 000 ECU1 NONE shm log error verbose 4 LockFile::CreateOrOpen failed to open file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenShouldReturnEmptyIfOpenFails (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenDoesNotCloseAndUnlinkFileIfOpenFails
+2026/10/07 17:02:39.2559520 1547977601 000 ECU1 NONE shm log error verbose 4 LockFile::CreateOrOpen failed to open file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenDoesNotCloseAndUnlinkFileIfOpenFails (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenShouldReturnEmptyIfChmodFails
+2026/10/07 17:02:39.2559520 1547977602 000 ECU1 NONE shm log error verbose 4 LockFile::CreateOrOpen failed to chmod file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.LockFileCreateOrOpenShouldReturnEmptyIfChmodFails (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.IfLockFileCreateOrOpenIsCalledThenLockFileShouldBeClosedButNotUnlinkedOnDestruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <AF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.IfLockFileCreateOrOpenIsCalledThenLockFileShouldBeClosedButNotUnlinkedOnDestruction (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.IfLockFileCreateOrOpenWithOwnershipFlagSetIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <AF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.IfLockFileCreateOrOpenWithOwnershipFlagSetIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction (0 ms)
+[0;32m[ RUN      ] [mLockFileCreateOrOpenFixture.IfLockFileCreateOrOpenAndTakeOwnershipIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <AF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileCreateOrOpenFixture.IfLockFileCreateOrOpenAndTakeOwnershipIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction (0 ms)
+[0;32m[----------] [m7 tests from LockFileCreateOrOpenFixture (0 ms total)
+
+[0;32m[----------] [m5 tests from LockFileOpenFixture
+[0;32m[ RUN      ] [mLockFileOpenFixture.LockFileOpenShouldCallFcntlOpenWithReadFlagOnly
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: close(0)
+          Returns: 12-byte object <FF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileOpenFixture.LockFileOpenShouldCallFcntlOpenWithReadFlagOnly (0 ms)
+[0;32m[ RUN      ] [mLockFileOpenFixture.LockFileOpenShouldReturnEmptyIfOpenFails
+2026/10/07 17:02:39.2559521 1547977604 000 ECU1 NONE shm log error verbose 4 LockFile::Open failed to open file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileOpenFixture.LockFileOpenShouldReturnEmptyIfOpenFails (0 ms)
+[0;32m[ RUN      ] [mLockFileOpenFixture.LockFileOpenDoesNotCloseAndUnlinkFileIfOpenFails
+2026/10/07 17:02:39.2559521 1547977605 000 ECU1 NONE shm log error verbose 4 LockFile::Open failed to open file:  /test_lock_file  | Error:  An OS error has occurred with error code: No such file or directory 
+[0;32m[       OK ] [mLockFileOpenFixture.LockFileOpenDoesNotCloseAndUnlinkFileIfOpenFails (0 ms)
+[0;32m[ RUN      ] [mLockFileOpenFixture.IfLockFileOpenIsCalledThenLockFileShouldBeClosedButNotUnlinkedOnDestruction
+[0;32m[       OK ] [mLockFileOpenFixture.IfLockFileOpenIsCalledThenLockFileShouldBeClosedButNotUnlinkedOnDestruction (0 ms)
+[0;32m[ RUN      ] [mLockFileOpenFixture.IfLockFileOpenAndTakeOwnershipIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction
+[0;32m[       OK ] [mLockFileOpenFixture.IfLockFileOpenAndTakeOwnershipIsCalledThenLockFileShouldBeClosedAndUnlinkedOnDestruction (0 ms)
+[0;32m[----------] [m5 tests from LockFileOpenFixture (0 ms total)
+
+[0;32m[----------] [m3 tests from LockFileMoveFixture
+[0;32m[ RUN      ] [mLockFileMoveFixture.LockFileShouldNotRemoveFileOnMoveConstruction
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89be0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <8F-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileMoveFixture.LockFileShouldNotRemoveFileOnMoveConstruction (0 ms)
+[0;32m[ RUN      ] [mLockFileMoveFixture.LockFileShouldRemoveFileOnMoveAssignment
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89c10 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <4F-91 D8-47 FC-7F 00-00 01-90 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5582af33d700 pointing to "/test_lock_file_2", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <4F-91 D8-47 FC-7F 00-00 01-90 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileMoveFixture.LockFileShouldRemoveFileOnMoveAssignment (0 ms)
+[0;32m[ RUN      ] [mLockFileMoveFixture.LockFileShouldNotRemoveFileWhenMoveAssigningToItself
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x7ffc47d89bf0 pointing to "/test_lock_file", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <BF-91 D8-47 FC-7F 00-00 01-91 D8-47>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mLockFileMoveFixture.LockFileShouldNotRemoveFileWhenMoveAssigningToItself (0 ms)
+[0;32m[----------] [m3 tests from LockFileMoveFixture (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m21 tests from 4 test suites ran. (1 ms total)
+[0;32m[  PASSED  ] [m21 tests.
