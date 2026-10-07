@@ -71,16 +71,3 @@ Elsewhere, recreate the branch from the bundle:
 
 Agents drafted the code (DeepSeek V4 Flash via Fabro, with Codex/Claude corrections where noted);
 deterministic tools measured it. No GitHub comment, push, PR or issue change was made.
-
-## Readiness follow-up — 2026-10-07
-
-The follow-up removes the redundant per-observation counter, retains the atomic counters used by assertions and replaces the parity expression with `is_multiple_of(2)`.
-
-See the [shared readiness review](../rust-api-queue/readiness-review-20261007/README.md) for
-corrective/full candidate patches, exact verification, native trace, expected checks
-and pending human/IP decisions. Original patches and bundles above are historical
-measured subjects and do not contain the new corrections. Historical run budgets
-are preserved; this follow-up responds to the new user request. Fresh results for
-changed subjects are recorded separately from the original Result section.
-
-Final review artifacts: [merge requirements](../rust-api-queue/readiness-review-20261007/MERGE-ARTIFACTS.md), [current PR draft](../rust-api-queue/readiness-review-20261007/pr-drafts/560.md) and [source-bound verification](../rust-api-queue/readiness-review-20261007/verification.json).
