@@ -17,7 +17,7 @@ This single command coordinates CARLA, the Zenoh VCU, the Zenoh–SOME/IP bridge
 
 The [first-installation reference](#first-installation-reference) below covers acquiring dependencies and provisioning the environment on a new machine. For an existing workspace, continue with the [OpenSOVD/openDuT and web UI guide](#bring-up-the-agreed-opensovdopendut-use-case).
 
-The diagnostic campaigns have their own lifecycle: they start instrumented application instances on the managed openDuT bench and a dedicated CARLA instance. Stop the interactive X-Verse supervisor **and its separately started Zenoh router** before running that workflow. The router can bind port 7447 on every interface and prevent the campaign listener from starting. OpenSOVD, openDuT, and Vehicle Lab are started by the integration instructions below.
+The diagnostic campaigns have their own lifecycle: they start instrumented application instances on the managed openDuT bench and a dedicated CARLA instance. Stop the interactive X-Verse supervisor (it also stops the Zenoh router it started) and any separately started Zenoh router before running that workflow. The router can bind port 7447 on every interface and prevent the campaign listener from starting. OpenSOVD, openDuT, and Vehicle Lab are started by the integration instructions below.
 
 For a fresh installation, follow [Recreate the integration](docs/fresh-workspace.md). It covers source checkout, image/native builds, configuration generation, web UI checks, Android readiness and teardown. The integration is published on `contributions/eclipse-sdv-hackathon`; Autoverse and the bridge/S-CORE fixes are on `dev/sdv-hackathon-2026`, with Cuttlefish fixes on `main`.
 
@@ -638,7 +638,7 @@ Verify the selected interpreter:
 
 ### 4. Start a local Zenoh router
 
-The vehicle clients and bridge connect to `tcp/127.0.0.1:7447`. The supervisor does not start a router. If a suitable router already owns that port, use it; otherwise start one in a separate terminal and leave it running:
+The vehicle clients and bridge connect to `tcp/127.0.0.1:7447`. `run_autoverse.py` starts a router as its first step (Docker container `autoverse-zenoh-router`, image `eclipse/zenoh:1.3.4`) when nothing answers on that port, and stops it again at shutdown. A router that already owns the port is reused and left alone. Set `AUTOVERSE_ZENOH_ROUTER=0` to never start one, or `ZENOH_ROUTER_IMAGE` to use another image. To run a router yourself instead, start it in a separate terminal and leave it running:
 
 ```bash
 docker run --init --rm --name autoverse-zenoh-router \
@@ -809,7 +809,7 @@ gateway rather than relying on the bundled Android Emulator default
 speed on the Android display while driving. The saved endpoint survives app
 and guest restarts; recheck it if the Cuttlefish network changes.
 
-Press **`Ctrl+C` in the supervisor terminal** to stop the launched processes and managed containers. Local CARLA is cleaned up; a server selected with `--external-carla-server` is left running. The separately started Zenoh router can be stopped with `Ctrl+C` in its own terminal.
+Press **`Ctrl+C` in the supervisor terminal** to stop the launched processes and managed containers. Local CARLA is cleaned up; a server selected with `--external-carla-server` is left running. The Zenoh router started by the supervisor is stopped with it; a separately started router can be stopped with `Ctrl+C` in its own terminal.
 
 ## Other baseline launch modes
 
@@ -877,7 +877,7 @@ cd "$HOME/autoverse"
 ./setup.sh --carla --cuttlefish
 ```
 
-Use `--steer` for the G920 setup and `--rust` for host Rust tooling. Omit `--carla` when using an existing server or mock mode, then run `just install-client` separately to prepare the client environment. The script always prepares the SOME/IP bridge and S-CORE, so it also builds those components for a Zenoh-only deployment. It does not start the Zenoh router.
+Use `--steer` for the G920 setup, `--rust` for host Rust tooling and `--threadx` for the ThreadX AZ3166 lighting ECU (bridge dependencies and `dialout` group). When the checkout is not at `~/autoverse` (for example `Thinking_CAPs/demo/X-Verse`), the script links `~/autoverse` to it. After `vcs import` it lists component checkouts that are not on the branch or tag in `autoverse.repos`, because `vcs import` does not switch existing checkouts. Omit `--carla` when using an existing server or mock mode, then run `just install-client` separately to prepare the client environment. The script always prepares the SOME/IP bridge and S-CORE, so it also builds those components for a Zenoh-only deployment. The Zenoh router is started by `run_autoverse.py` when needed.
 
 The script modifies `~/.bashrc`, installs packages, imports repositories, and provisions containers. The manual steps above explain those operations and provide checkpoints for troubleshooting. The CARLA server installation in the script tolerates failures; confirm server installation separately before a local simulation launch.
 

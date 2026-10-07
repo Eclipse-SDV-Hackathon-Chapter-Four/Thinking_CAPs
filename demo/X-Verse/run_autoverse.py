@@ -54,6 +54,7 @@ import json
 import shutil
 import shlex
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -116,6 +117,22 @@ def select_python(requested: Optional[str], carla_mock: bool,
         "and the CARLA API matching your server installed.\n" + "\n".join(failures)
     )
 
+def port_open(host: str, port: int, timeout: float = 0.5) -> bool:
+    """True when something accepts TCP connections on host:port."""
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def container_running(name: str) -> bool:
+    """True when the named Docker container exists and is running."""
+    result = subprocess.run(["docker", "inspect", "-f", "{{.State.Running}}", name],
+                            capture_output=True, text=True)
+    return result.returncode == 0 and result.stdout.strip() == "true"
+
+
 def build_steps(
     carla_mock: bool = False,
     enable_camera_display: bool = False,
@@ -143,6 +160,27 @@ def build_steps(
 
     # Define steps dynamically according to user configuration
     steps = []
+
+    # Zenoh router on tcp/127.0.0.1:7447, which every component connects to.
+    # Started only when nothing answers there yet (and it is not our own
+    # container from a previous run), so an existing router is reused and
+    # never stopped. Version matches the Zenoh Python API (just install-zenoh).
+    # AUTOVERSE_ZENOH_ROUTER=0 disables it.
+    router_name = "autoverse-zenoh-router"
+    if os.environ.get("AUTOVERSE_ZENOH_ROUTER", "1") != "0" and (
+            not port_open("127.0.0.1", 7447) or container_running(router_name)):
+        steps.append({
+            "name": "Zenoh router (Docker)",
+            "containers": [router_name],
+            "cwd": "$HOME",
+            "cmd": ["sh", "-c",
+                    f"docker inspect {router_name} >/dev/null 2>&1 || "
+                    f"docker run -d --init --rm --name {router_name} --network host "
+                    f"{os.environ.get('ZENOH_ROUTER_IMAGE', 'eclipse/zenoh:1.3.4')}"],
+            "stp": ["sh", "-c", f"docker rm -f {router_name} >/dev/null 2>&1 || true"],
+            "kill_patterns": [],
+            "startup_delay_sec": 2.0,
+        })
     
     # Conditionally add CARLA Server step (only when not in mock mode)
     if not carla_mock and not external_carla_server:
@@ -162,7 +200,12 @@ def build_steps(
     # vehicle), plus a watchdog that restarts it when the board re-enumerates.
     # Started before the VCU so it sees the VCU's first status changes.
     # Overrides: AZ3166_PORT (serial device), THREADX_DIR (solution folder).
-    threadx_dir = os.path.expandvars(os.environ.get("THREADX_DIR", "$HOME/Thinking_CAPs/ThreadX"))
+    # Default: next to this checkout when it lives in Thinking_CAPs
+    # (demo/X-Verse -> ../../ThreadX), else ~/Thinking_CAPs/ThreadX.
+    threadx_sibling = Path(__file__).resolve().parents[2] / "ThreadX"
+    threadx_dir = os.path.expandvars(os.environ.get(
+        "THREADX_DIR",
+        str(threadx_sibling) if (threadx_sibling / "ctl.sh").is_file() else "$HOME/Thinking_CAPs/ThreadX"))
     az3166_ports = sorted(Path("/dev/serial/by-id").glob("usb-STMicroelectronics_STM32_STLink_*-if02"))
     az3166_port = os.environ.get("AZ3166_PORT") or (str(az3166_ports[0]) if az3166_ports else "")
     if az3166_port and os.path.exists(az3166_port) and os.path.isfile(os.path.join(threadx_dir, "ctl.sh")):

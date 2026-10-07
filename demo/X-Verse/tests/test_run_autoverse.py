@@ -34,6 +34,29 @@ class LauncherTests(unittest.TestCase):
         self.assertIn('CONTAINER=audit-android', android['stp'])
         self.assertEqual(score['containers'], ['audit-score-adas_score-1'])
 
+    def router_steps(self, port_open, our_container_running, env=None):
+        with mock.patch.object(runner, "port_open", return_value=port_open), \
+                mock.patch.object(runner, "container_running", return_value=our_container_running), \
+                mock.patch.dict(runner.os.environ, env or {}):
+            return [s for s in runner.build_steps(vcu_zenoh=True) if 'Zenoh router' in s['name']]
+
+    def test_zenoh_router_started_first_when_port_is_free(self):
+        with mock.patch.object(runner, "port_open", return_value=False), \
+                mock.patch.object(runner, "container_running", return_value=False):
+            steps = runner.build_steps(vcu_zenoh=True)
+        self.assertIn('Zenoh router', steps[0]['name'])
+        self.assertEqual(steps[0]['containers'], ['autoverse-zenoh-router'])
+        self.assertIn('eclipse/zenoh:1.3.4', steps[0]['cmd'][-1])
+
+    def test_existing_zenoh_router_is_reused_not_managed(self):
+        self.assertEqual(self.router_steps(port_open=True, our_container_running=False), [])
+
+    def test_own_zenoh_router_from_previous_run_is_managed(self):
+        self.assertEqual(len(self.router_steps(port_open=True, our_container_running=True)), 1)
+
+    def test_zenoh_router_can_be_disabled(self):
+        self.assertEqual(self.router_steps(False, False, {'AUTOVERSE_ZENOH_ROUTER': '0'}), [])
+
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
