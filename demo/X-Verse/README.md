@@ -93,7 +93,10 @@ The vehicle baseline uses the Python Zenoh VCU with the SOME/IP bridge and S-COR
 | Android Automotive cluster | X-Verse digital cluster application in Cuttlefish | `vecu/aaos_cuttlefish` |
 | Eclipse OpenSOVD integration | Native receiver observation providers and fault history | `~/eclipse_sdv_hackathon_2026/OpenSOVD/` |
 | Eclipse openDuT testbench | CARL, EDGAR peers, CLEO, and the managed DUT network | `~/eclipse_sdv_hackathon_2026/OpenDut/` |
-| ThreadX | Linux-simulated zonal controller for brake/reverse lights over CAN and Zenoh2CAN | `~/eclipse_sdv_hackathon_2026/ThreadX/` |
+| ThreadX | Zonal controller for brake/reverse lights over CAN and Zenoh2CAN (Linux simulation and MXChip AZ3166 board) | `external_hackathon_ecus/ThreadX` |
+| OpenSOVD vECU | `opensovd-gateway` of inc_diagnostics PR #40 (`:7690`) with the SOVD Adapter Console and the upstream CDA + ECU simulator, started by `run_autoverse.py` | `external_hackathon_ecus/OpenSOVD` |
+| SOVD Adapter Console | Live console (`:8080`): Zenoh vehicle speed next to the gateway, fault bridge, automatic classic DTC | `external_hackathon_ecus/SOVD_Adapter_Console` |
+| Demo Console (v1) | Earlier console for the two diagnostic paths, run by hand | `external_hackathon_ecus/demo_console` |
 | AutoSD | QEMU/KVM vehicle computer hosting ThreadX/Zenoh2CAN, native OpenSOVD lighting resources and optional managed openDuT Ethernet | `~/eclipse_sdv_hackathon_2026/AutoSD/` |
 | Campaign runner | Controlled disturbance, diagnostic/regression assertions, cleanup, and evidence | `~/eclipse_sdv_hackathon_2026/scripts/run_campaign.py` |
 | Vehicle Lab dashboard | OpenSOVD Diagnosis and Test Manager over the openDuT bench | `~/eclipse_sdv_hackathon_2026/integration/dashboard` |
@@ -1060,5 +1063,5 @@ This repository uses the [Apache License 2.0](LICENSE). Component repositories r
 [diagnosis-screenshot]: https://github.com/The-Xverse/eclipse_sdv_hackathon_2026/blob/contributions/eclipse-sdv-hackathon/evidence/f010-live/physical-live-diagnosis.png?raw=true
 [test-manager-screenshot]: https://github.com/The-Xverse/eclipse_sdv_hackathon_2026/blob/contributions/eclipse-sdv-hackathon/evidence/f010-browser-acceptance/tests-desktop.png?raw=true
 
-[threadx-guide]: https://github.com/The-Xverse/eclipse_sdv_hackathon_2026/blob/contributions/eclipse-sdv-hackathon/ThreadX/README.md
+[threadx-guide]: external_hackathon_ecus/ThreadX/README.md
 [autosd-guide]: https://github.com/The-Xverse/eclipse_sdv_hackathon_2026/blob/contributions/eclipse-sdv-hackathon/AutoSD/README.md

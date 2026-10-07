@@ -1,0 +1,46 @@
+@startuml components
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+title Static software architecture — layered components and interfaces
+skinparam shadowing false
+skinparam componentStyle rectangle
+skinparam nodesep 40
+skinparam ranksep 55
+
+actor "Host\n(Zenoh2CAN bridge)" as HOST
+
+package "Application layer — main.c" as APP #F4F8FC {
+  component "ARC-08\nSLCAN ingress thread\n(prio 11)" as ING
+  component "ARC-09\nLighting control thread\n(prio 10)" as CTL
+  component "ARC-10\nStatus display thread\n(prio 20)" as DSP
+  component "ARC-11\nFault handling\n(require_tx, stack_error)" as FLT
+}
+package "Protocol layer (target independent)" as PROT #F7F7F2 {
+  component "ARC-06\nSLCAN codec\nslcan.c" as SLC
+  component "ARC-07\nLights protocol\nlights_protocol.c\n(shared with Linux)" as LP
+}
+package "Platform layer" as PLAT #F2F7F2 {
+  component "ARC-04\nUSART6 driver\nISR + TX ring" as UART
+  component "ARC-03\nBoard support\nclock, lamps, LEDs" as BSP
+  component "ARC-05\nOLED driver\nI2C + display.c" as OLED
+  component "ARC-02\nEclipse ThreadX\nkernel + port init" as TX
+  component "ARC-01\nStartup, vectors,\nlinker script" as SU
+}
+
+HOST <--> UART : IF-01 SLCAN over UART
+UART --> ING : IF-02 rx byte queue
+ING --> CTL : IF-03 CAN frame queue
+ING --> UART : IF-04 uart_send
+CTL --> UART : IF-04 uart_send
+ING ..> SLC : slcan_parse
+CTL ..> SLC : slcan_format
+ING ..> LP : lights_decode
+CTL ..> LP : lights_decode / lights_off
+CTL --> BSP : IF-05 board_lamps, LEDs
+CTL --> DSP : IF-06 REDRAW events
+ING --> CTL : IF-06 LINK event
+DSP --> OLED : IF-07 display API
+FLT --> BSP : board_fault
+SU --> TX : main → tx_kernel_enter
+TX ..> APP : schedules threads,\nqueues, mutexes, timer
+@enduml

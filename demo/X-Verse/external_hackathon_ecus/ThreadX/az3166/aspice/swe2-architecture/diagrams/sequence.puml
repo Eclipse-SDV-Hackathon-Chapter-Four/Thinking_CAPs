@@ -1,0 +1,28 @@
+@startuml sequence
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+title Frame flow — VCU status to light command
+skinparam shadowing false
+autonumber
+participant "Zenoh2CAN\n(python-can slcan)" as BR
+participant "USART6 ISR" as ISR
+participant "ingress_thread" as ING
+participant "slcan / lights_protocol" as P
+participant "control_thread" as CTL
+participant "board (GPIO)" as GPIO
+
+BR -> ISR : "t1F1806…\\r" (bytes)
+loop each byte
+  ISR -> ING : tx_queue_send(rx_byte_queue)
+end
+ING -> P : slcan_parse(line)
+P --> ING : SLCAN_FRAME 0x1F1
+ING -> BR : "z\\r" (via uart_send)
+ING -> P : lights_decode (accept?)
+ING -> CTL : tx_queue_send(frame_queue)
+CTL -> P : lights_decode → 0x1F4
+CTL -> GPIO : board_lamps(reverse, brake)
+CTL -> P : slcan_format(0x1F4)
+CTL -> BR : "t1F48 03…\\r" (via uart_send)
+note over BR, CTL : measured: median 3.5 ms, max 4.5 ms (USB + UART + ThreadX)
+@enduml

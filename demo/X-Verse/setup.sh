@@ -49,16 +49,16 @@ This script is for setting up the XVerse environment and repos after cloning the
 - Optionally runs 'just' commands to install rust language and tools.
 - Optionally runs 'just' commands to setup Logitech G920 steering wheel.
 - Optionally sets up cuttlefish emulator.
-- Optionally prepares the ThreadX AZ3166 lighting ECU (Thinking_CAPs).
+- Optionally prepares the ThreadX AZ3166 lighting ECU (external_hackathon_ecus/ThreadX).
 - Works from any checkout location (~/autoverse is not required). When the
   checkout is elsewhere (e.g. Thinking_CAPs demo/X-Verse) and ~/autoverse does
   not exist, ~/autoverse is created as a link to it, for tools that expect it.
 - Sets up each necessary sub-repo, and warns about existing component
   checkouts that are not on the branch/tag in autoverse.repos.
 - Builds S-CORE, including its cruise-control diagnostics server.
-- Builds the OpenSOVD vECU images (Thinking_CAPs demo/OpenSOVD: gateway,
-  SOVD Adapter Console, CDA + ECU simulator) when it is there, so its first
-  start fits run_autoverse.py's start timeout.
+- Builds the OpenSOVD vECU images (external_hackathon_ecus/OpenSOVD: gateway,
+  SOVD Adapter Console, CDA + ECU simulator), so its first start fits
+  run_autoverse.py's start timeout.
 
 Options:
     --carla      Download and install CARLA server and client. Does not by default.
@@ -211,7 +211,7 @@ just install-zenoh
 
 if [ $SETUP_THREADX == "true" ]; then
     echo "preparing the ThreadX AZ3166 lighting ECU"
-    # Zenoh2CAN bridge over the board's SLCAN serial port (Thinking_CAPs/ThreadX/ctl.sh)
+    # Zenoh2CAN bridge over the board's SLCAN serial port (external_hackathon_ecus/ThreadX/ctl.sh)
     pip install --user "python-can==4.2.2" "pyserial==3.5"
     if ! id -nG "$USER" | tr ' ' '\n' | grep -qx dialout; then
         sudo usermod -aG dialout "$USER"
@@ -266,18 +266,11 @@ pushd bridges/someip/zenoh-someip-bridge
 popd
 
 ## OpenSOVD vECU (gateway, SOVD Adapter Console, CDA + ECU simulator): build the
-## images now; run_autoverse.py starts it with ./ctl.sh up. It belongs to
-## Thinking_CAPs (demo/OpenSOVD next to demo/X-Verse), found like run_autoverse.py
-## does: OPENSOVD_VECU_DIR, else next to this checkout, else ~/Thinking_CAPs.
-OPENSOVD_VECU_DIR="${OPENSOVD_VECU_DIR:-$(dirname -- "$(cd -- "$AUTOVERSE_DIR" && pwd -P)")/OpenSOVD}"
-[[ -x "$OPENSOVD_VECU_DIR/ctl.sh" ]] || OPENSOVD_VECU_DIR="$HOME/Thinking_CAPs/demo/OpenSOVD"
-if [[ -x "$OPENSOVD_VECU_DIR/ctl.sh" ]]; then
-    pushd "$OPENSOVD_VECU_DIR"
-        ./ctl.sh build
-    popd
-else
-    echo "OpenSOVD vECU not found (Thinking_CAPs demo/OpenSOVD); run_autoverse.py runs without it."
-fi
+## images now; run_autoverse.py starts it with ./ctl.sh up (same folder as
+## run_autoverse.py uses; OPENSOVD_VECU_DIR overrides it).
+pushd "${OPENSOVD_VECU_DIR:-$AUTOVERSE_DIR/external_hackathon_ecus/OpenSOVD}"
+    ./ctl.sh build
+popd
 
 if [ $INSTALL_CUTTLEFISH == "true" ]; then
     pushd vecu/aaos_cuttlefish
@@ -293,10 +286,10 @@ Next steps:
 - S-CORE diagnostics: built above; rebuild with  ./setup.sh --rebuild-diag
   Only the legacy SOVD provider (SDV_DIAG_APP=legacy) needs an OpenSOVD
   checkout:  export OPENSOVD_DIR=<path to OpenSOVD>
-- OpenSOVD vECU (Thinking_CAPs demo/OpenSOVD): images built above;
-  run_autoverse.py starts it and opens the SOVD Adapter Console
-  (http://localhost:8080). ThreadX (--threadx) is found
-  next to a Thinking_CAPs checkout (ThreadX/) or at ~/Thinking_CAPs/ThreadX.
+- Hackathon ECUs in external_hackathon_ecus/: OpenSOVD (images built above;
+  run_autoverse.py starts it and opens the SOVD Adapter Console on
+  http://localhost:8080), ThreadX (started when the AZ3166 board is plugged
+  in; prepare with --threadx), and the v1 demo_console (run by hand).
 - Zenoh router: run_autoverse.py starts one in Docker (eclipse/zenoh:1.3.4)
   when nothing answers on tcp/127.0.0.1:7447.
 - Start everything:  python3 $AUTOVERSE_DIR/run_autoverse.py --enable-camera-display --vcu-zenoh

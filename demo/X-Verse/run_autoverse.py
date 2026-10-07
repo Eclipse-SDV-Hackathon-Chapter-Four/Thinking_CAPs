@@ -204,13 +204,10 @@ def build_steps(
     # replies to vehicle/lights/*_cmd (applied to CARLA by the virtual
     # vehicle), plus a watchdog that restarts it when the board re-enumerates.
     # Started before the VCU so it sees the VCU's first status changes.
-    # Overrides: AZ3166_PORT (serial device), THREADX_DIR (solution folder).
-    # Default: next to this checkout when it lives in Thinking_CAPs
-    # (demo/X-Verse -> ../../ThreadX), else ~/Thinking_CAPs/ThreadX.
-    threadx_sibling = Path(__file__).resolve().parents[2] / "ThreadX"
+    # Overrides: AZ3166_PORT (serial device), THREADX_DIR (solution folder,
+    # default external_hackathon_ecus/ThreadX in this checkout).
     threadx_dir = os.path.expandvars(os.environ.get(
-        "THREADX_DIR",
-        str(threadx_sibling) if (threadx_sibling / "ctl.sh").is_file() else "$HOME/Thinking_CAPs/ThreadX"))
+        "THREADX_DIR", "$AUTOVERSE_ROOT/external_hackathon_ecus/ThreadX"))
     az3166_ports = sorted(Path("/dev/serial/by-id").glob("usb-STMicroelectronics_STM32_STLink_*-if02"))
     az3166_port = os.environ.get("AZ3166_PORT") or (str(az3166_ports[0]) if az3166_ports else "")
     if az3166_port and os.path.exists(az3166_port) and os.path.isfile(os.path.join(threadx_dir, "ctl.sh")):
@@ -320,19 +317,14 @@ def build_steps(
     # OpenSOVD vECU - opensovd-gateway (inc_diagnostics PR #40, component
     # `cruise`, :7690), the SOVD Adapter Console (:8080, watches the vehicle
     # speed on Zenoh next to the gateway) and the classic path (upstream CDA
-    # :20002 + ECU simulator :8181), from Thinking_CAPs demo/OpenSOVD (console
-    # sources in demo/SOVD_Adapter_Console).  ctl.sh up builds (cached; setup.sh
-    # pre-builds the images), starts everything and opens the console in the
-    # browser.  Only added when the folder exists.  Like ThreadX it belongs to
-    # Thinking_CAPs, not to this repository.  Override: OPENSOVD_VECU_DIR
-    # (OPENSOVD_DIR is taken: the S-CORE compose mounts its fault profile from
-    # it).  Default: next to this checkout when it lives in Thinking_CAPs
-    # (demo/X-Verse -> ../OpenSOVD, also through a ~/autoverse link), else
-    # ~/Thinking_CAPs/demo/OpenSOVD.
-    opensovd_sibling = Path(__file__).resolve().parent.parent / "OpenSOVD"
+    # :20002 + ECU simulator :8181), from external_hackathon_ecus/OpenSOVD
+    # (console sources in external_hackathon_ecus/SOVD_Adapter_Console).
+    # ctl.sh up builds (cached; setup.sh pre-builds the images), starts
+    # everything and opens the console in the browser.  Override:
+    # OPENSOVD_VECU_DIR (OPENSOVD_DIR is taken: the S-CORE compose mounts its
+    # fault profile from it).
     opensovd_dir = os.path.expandvars(os.environ.get(
-        "OPENSOVD_VECU_DIR",
-        str(opensovd_sibling) if (opensovd_sibling / "ctl.sh").is_file() else "$HOME/Thinking_CAPs/demo/OpenSOVD"))
+        "OPENSOVD_VECU_DIR", "$AUTOVERSE_ROOT/external_hackathon_ecus/OpenSOVD"))
     if os.path.isfile(os.path.join(opensovd_dir, "ctl.sh")):
         steps.append({
             "name": "OpenSOVD vECU: gateway + SOVD Adapter Console + CDA",
