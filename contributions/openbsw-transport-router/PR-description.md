@@ -2,14 +2,25 @@
 
 **Title:** Add transportRouter module for diagnostic gateways
 
-**Base:** `main` at `432b9be6098d99570ab8ebc32a7cbb895ca7bb63` · **Patch:**
-[0001-transport-router.patch](0001-transport-router.patch) (one commit, signed off)
+**Base:** `main` at `b0550871b7a44ae47bb9b7c68af84fb9115bfa77` · **Patch:**
+[0001-transport-router.patch](0001-transport-router.patch) (one commit, signed off, `Assisted-by` trailer)
 
-Closes: #<issue number, once the [issue](ISSUE-draft.md) is accepted>
+**Tag:** `tested_on_hw` (S32K148EVB, see Test Plan)
+
+The body below follows `.github/PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md`. Open it
+once the committers have agreed on the approach in the [issue](ISSUE-draft.md). Before
+that, replace `#TBD` with the issue number here and in [commit-message.txt](commit-message.txt),
+and regenerate the patch.
 
 ---
 
-## Summary
+## Purpose of this PR
+- [ ] Bugfix
+- [x] New Feature
+- [ ] Documentation Update
+- [ ] Other (Please specify)
+
+**Description**
 
 This PR adds `libs/bsw/transportRouter`, a diagnostic gateway router. It routes UDS
 messages by logical address between external testers (e.g. DoIP), the local
@@ -19,8 +30,6 @@ diagnostic server and diagnostic nodes reached through other transport layers
 `TransportRouterSimple` stays unchanged. It sends every request to the local server
 and every reply to the bus of the last request. That is right for a single ECU but
 not for a gateway.
-
-## What it does
 
 - `transport::TransportRouter` implements `ITransportMessageProvidingListener` and
   registers the existing transport layers with `addTransportLayer()`, like
@@ -36,7 +45,8 @@ not for a gateway.
 - **Supervision:**
   - one outstanding request per route
   - P2 after delivery, P2* after each NRC 0x78
-  - a transfer budget for delivery and for segmented responses
+  - a configurable transfer budget (`transferTimeoutMs`) for delivery and for
+    segmented responses
 
   Late and unsolicited responses are discarded. `releaseTester()` frees a
   disconnected tester's routes.
@@ -46,45 +56,59 @@ not for a gateway.
 - **Configuration:** `TransportRouterConfiguration` with a span of `DiagnosticRoute`;
   `validate()` reports the first error and the offending route.
 - **Observability:** `TransportRouterStatistics` (saturating counters) and
-  `IRouteObserver` (`routeResponded`, `routeTimedOut`).
+  `IRouteObserver` (`routeResponded`, `routeTimedOut`), with `RouteObserverMock` in
+  `mock/gmock/include` (CMake `transportRouterMock`, Bazel `transport_router_mock`).
 - **Static memory:** 4 × 4095 and 8 × 8 message buffers, 16 routes, 8 testers.
   Requests for the local server always get a full-size buffer, because the UDS
   server builds its response in the request buffer.
 
-## Files
+The module documentation is in `libs/bsw/transportRouter/doc/index.rst` (Sphinx build
+without warnings).
 
-| Path | Change |
-| --- | --- |
-| `libs/bsw/transportRouter/` | New module: headers, sources, `doc/index.rst`, `BUILD.bazel`, `module.spec`, unit tests |
-| `libs/bsw/CMakeLists.txt` | `add_subdirectory(transportRouter)` |
-| `CMakeLists.txt` | Unit-test build: `add_subdirectory(libs/bsw/transportRouter/test)` |
+Changed outside the module: one `add_subdirectory` line each in `libs/bsw/CMakeLists.txt`
+and in the unit-test list of the top-level `CMakeLists.txt`.
 
-## Testing
+**AI disclosure:** the module was largely written with an AI assistant (Anthropic Claude
+Opus 5.5) and reviewed and tested by the author. Each file says so below its copyright
+header, and the commit carries `Assisted-by: Anthropic Claude Opus 5.5` (Eclipse
+Foundation generative AI guidelines).
 
-All of these were run on the PR branch; the logs are in [evidence/](evidence/):
+**Related Issues**
 
-| Check | Result |
-| --- | --- |
-| `tests-posix-debug`: `transportRouterTest` (42 tests) and `transportRouterSimpleTest` (4) | 46/46 passed, 0 build warnings |
-| Coverage of `libs/bsw/transportRouter/src` (gcovr, without throw/unreachable branches) | 100% lines, 99.1% branches, 100% functions |
-| `treefmt --no-cache` + `git diff --exit-code` (clang-format 17, cmake-format 0.6.13, buildifier 8.5.1) | clean |
-| `tools/cr_checker` on the changed files | ok |
-| clang-tidy with the repository `.clang-tidy` (module sources) | 0 findings (clang-tidy 19 locally; CI uses 17) |
-| `bazel test //libs/bsw/transportRouter/... //libs/bsw/transportRouterSimple/...` | 2/2 passed |
-| gitlint with the repository `.gitlint` | ok |
+Resolves #TBD (feature request: Add a diagnostic gateway router that routes UDS by
+logical address)
 
-The module also runs in a POSIX zonal gateway: DoIP over lwIP/TAP, DoCAN on
-`vcan0` and the OpenBSW UDS server. There it passed 28 integration tests
-against simulated CAN ECUs, covering:
+Related: #663 (DoIP client transport layer, which this router uses to reach Ethernet ECUs
+in the gateway described below).
 
-- physical, segmented (1003 bytes) and 4095-byte transfers
-- NRC 0x78
-- busy, too-large and unknown targets
-- functional requests with responses from three nodes
-- tester disconnects
-- vehicle announcement and identification
+**Breaking Changes**
+- [ ] Yes
+- [x] No
 
-The p95 forwarding latency was 2.9 ms (DoIP→CAN) and 0.8 ms (CAN→DoIP).
+**Test Plan**
+
+- Unit tests: `cmake --preset tests-posix-debug`, build `transportRouterTest`, run
+  `ctest -L transportRouter` (42 new tests with `StrictMock`s and a fake millisecond
+  clock, plus the 4 existing `transportRouterSimpleTest` tests). Coverage of `src/`
+  (gcovr): 100 % lines, 99.1 % branches, 100 % functions. Bazel:
+  `bazel test //libs/bsw/transportRouter/... //libs/bsw/transportRouterSimple/...`.
+- Gates on `main` `b0550871`: treefmt (clang-format 17, cmake-format, buildifier) clean,
+  `tools/cr_checker` ok, clang-tidy with the repository `.clang-tidy` 0 findings, unit-test
+  build with 0 warnings, gitlint ok, Sphinx documentation build without warnings.
+- Integration, outside this repository: a zonal diagnostic gateway built on OpenBSW
+  (DoIP server, DoCAN, the UDS server and this router).
+  - On POSIX (FreeRTOS, lwIP on TAP, `vcan0`), 44 tests passed. They cover physical,
+    segmented and 4095-byte transfers, NRC 0x78, busy, too-large and unknown targets,
+    functional requests with responses from several nodes, tester disconnects, and
+    routing to an Ethernet ECU over DoIP. Forwarding latency p95 was 1.9 ms
+    (DoIP→CAN) and 0.9 ms (CAN→DoIP).
+  - On the **S32K148EVB** (ThreadX 6.4.3, 100BASE-T1, no CAN adapter connected), 16
+    tests passed: local UDS, rejections, routing over DoIP, and the timeout of a CAN
+    route without a peer.
+
+**Regression Tests**
+
+Have tests been added/updated? [x] Yes [ ] No
 
 ## Notes for reviewers
 

@@ -28,9 +28,9 @@ in the Thinking CAPs zonal diagnostic gateway, where `transport::TransportRouter
 tester requests to it:
 
 - POSIX (FreeRTOS, lwIP on TAP): 14 DoIP integration tests against a simulated Ethernet
-  ECU (`OpenBSW/gateway/tests/test_doip_routing.py`), part of 42/42 —
+  ECU (`OpenBSW/gateway/tests/test_doip_routing.py`), part of 44/44 —
   `OpenBSW/evidence/gateway-it/results.json`.
-- NXP S32K148EVB (ThreadX 6.4.3, 100BASE-T1): 5 DoIP tests, part of 15/15; routed round
+- NXP S32K148EVB (ThreadX 6.4.3, 100BASE-T1): 5 DoIP tests, part of 16/16; routed round
   trip p95 4.1 ms — `OpenBSW/evidence/board-gateway-it/results.json`.
 
 ## Limitations

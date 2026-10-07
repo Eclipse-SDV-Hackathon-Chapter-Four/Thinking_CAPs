@@ -43,7 +43,7 @@ new module (see [DoIP routes](#doip-routes-ethernet-zonal-ecus)).
 | Module coverage | `transportRouter` 100% lines, 99.1% branches; `doipClient` 94.6% lines |
 | Integration tests | 44/44 on the Linux host against simulated CAN ECUs and a simulated Ethernet ECU ([evidence/gateway-it](evidence/gateway-it/results.json)); 16/16 on the S32K148EVB, 6 of them over DoIP to the Ethernet ECU ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
 | CAN bus load (SWR-032) | The gateway paces its own frames (≥ 3 ms apart): worst case 9.0 % of 500 kbit/s, measured peak 7.9 % |
-| Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel pass. `doipClient` on current upstream `main`: format, copyright, unit tests, clang-tidy, Bazel, docs build and gitlint pass ([packet](../contributions/openbsw-doip-client/README.md)) |
+| Upstream gates for the modules | On current upstream `main`, both modules pass format, copyright, unit tests, clang-tidy, Bazel, docs build and gitlint ([transportRouter packet](../contributions/openbsw-transport-router/README.md), [doipClient packet](../contributions/openbsw-doip-client/README.md)) |
 | ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 33/39 requirements verified; 6 partially, waiting only for the live qualification campaigns QTC-12 and QTC-13 |
 
 Open items, all of them visible in the report:
@@ -99,8 +99,8 @@ sudo OpenBSW/scripts/net-up.sh          # vcan0 + tap0 (reuses existing ones)
 OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-freertos build
 OpenBSW/scripts/run.sh                  # start the POSIX app; Ctrl-C stops it
 OpenBSW/scripts/sil-test.sh             # OpenBSW's own SIL suite (uds, enet, docan)
-OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 28 integration tests, record evidence
-OpenBSW/scripts/openbsw-pr.sh all       # upstream gates and patch for the transportRouter contribution
+OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 44 integration tests, record evidence
+OpenBSW/scripts/openbsw-pr.sh all       # upstream gates and patch for the transportRouter contribution (OBSW_BASE=<sha> for upstream main)
 python3 OpenBSW/aspice/tools/generate_report.py   # ASPICE SWE report
 ```
 

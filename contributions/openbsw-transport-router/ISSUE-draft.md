@@ -1,11 +1,18 @@
-# Upstream issue draft — eclipse-openbsw/openbsw
+# Issue — eclipse-openbsw/openbsw (feature request)
+
+**Status:** draft for the author's review; not filed.
+
+Open this issue first and agree on the approach before the pull request
+(CONTRIBUTING.md: "talk with the team through an issue"; `pull_request.rst`: a
+completely new feature must be discussed with the committers).
 
 Target: <https://github.com/eclipse-openbsw/openbsw/issues/new?template=feature_request.md>
-Labels: `enhancement`
+
+**Title:** Add a diagnostic gateway router that routes UDS by logical address (transportRouter)
+
+**Labels:** enhancement
 
 ---
-
-**Title:** Diagnostic gateway router: route UDS by logical address between DoIP, DoCAN and the local server
 
 **Describe the feature**
 
@@ -18,7 +25,7 @@ connects them by logical address.
 the bus that sent the last request (`_busIdToReply`). The target address is never
 used to choose a destination. As a result, an OpenBSW node cannot forward a tester's
 request to another ECU behind it. That is the job of a central or zonal diagnostic
-gateway: DoIP on the vehicle side, CAN ECUs behind it.
+gateway: DoIP on the vehicle side, CAN (and Ethernet) ECUs behind it.
 
 A gateway router needs:
 
@@ -39,7 +46,7 @@ A gateway router needs:
 
 **Proposed Solution**
 
-Add a new module `libs/bsw/transportRouter`, next to `transportRouterSimple`.
+A new module `libs/bsw/transportRouter`, next to `transportRouterSimple`.
 `TransportRouterSimple` is not changed, and existing applications are unaffected.
 
 - `transport::TransportRouter` implements `ITransportMessageProvidingListener` and
@@ -51,6 +58,8 @@ Add a new module `libs/bsw/transportRouter`, next to `transportRouterSimple`.
   - the gateway's own tester address towards the nodes
   - external tester address range
   - functional window and maximum functional length
+  - transfer budget (`transferTimeoutMs`) for the transport layer to deliver a
+    request or receive a long response
   - a span of `DiagnosticRoute{logicalAddress, busId, p2Ms, p2StarMs, maxLength, name}`
 - `validate()` checks the configuration: duplicates, overlaps with the local,
   functional or tester addresses, timing, lengths.
@@ -61,7 +70,8 @@ Add a new module `libs/bsw/transportRouter`, next to `transportRouterSimple`.
 - `cyclic()` (e.g. every 10 ms) supervises the deadlines with a wrap-safe
   millisecond clock, which is injected (`NowMsType`).
 - `TransportRouterStatistics` provides saturating counters. `IRouteObserver`
-  reports responded and timed-out routes.
+  reports responded and timed-out routes; the module provides `RouteObserverMock`
+  for unit tests.
 - All memory is static:
   - 4 × 4095-byte and 8 × 8-byte message buffers
   - 16 routes
@@ -75,17 +85,12 @@ Use cases:
 - A zonal or central gateway with DoIP towards an OpenSOVD Classic Diagnostic
   Adapter or an external tester, and DoCAN towards CAN ECUs.
 - Several CAN buses behind one DoIP entity.
+- Ethernet ECUs behind the gateway, together with the DoIP client proposed in #663.
 
-The module is platform-, OS- and compiler-independent. It uses only `transport`,
-`async` (`LockType`), `util` (logger) and ETL, and builds with CMake and Bazel.
-
-We have an implementation ready to propose as a PR:
-
-- 42 GoogleTest/gMock unit tests with 100% line and 99% branch coverage
-- passes the treefmt, copyright and clang-tidy gates and `bazel test`
-- integrated in a POSIX gateway (DoIP over TAP, DoCAN on `vcan0`) and tested end to
-  end against simulated CAN ECUs, including segmented responses, NRC 0x78, busy
-  and unknown targets, functional requests and tester disconnects
+The module is not specific to an operating system, compiler or build system. It uses
+only `transport`, `async` (`LockType`), `util` (logger) and ETL, and builds with CMake
+and Bazel. Tested with GCC 11.4 (POSIX unit tests, CMake and Bazel) and on the
+S32K148EVB (Arm GNU Toolchain 14.3, ThreadX).
 
 Limitations and possible follow-ups:
 
@@ -97,12 +102,25 @@ Limitations and possible follow-ups:
 
 **Additional context**
 
-The work comes from the Eclipse SDV Hackathon 2026 "Thinking CAPs" blueprint. There,
-an OpenBSW zonal gateway sits between OpenSOVD (CDA over DoIP) and zonal CAN ECUs in
-a CARLA-based virtual vehicle. We would like to know if the maintainers agree with:
+- A working implementation is ready as one commit on current `main`. It has 42 unit
+  tests with 100 % line and 99 % branch coverage, and passes the OpenBSW format,
+  copyright, clang-tidy, Bazel and documentation gates.
+- It is used in a zonal diagnostic gateway built for the Eclipse SDV Hackathon 2026
+  "Thinking CAPs" blueprint (OpenSOVD CDA over DoIP to zonal ECUs). There it passed
+  44 integration tests on POSIX, routing to simulated CAN ECUs over DoCAN and to a
+  simulated Ethernet ECU over DoIP. They cover segmented responses, NRC 0x78, busy
+  and unknown targets, functional requests and tester disconnects. On the S32K148EVB
+  (no CAN adapter connected yet) it passed 16 tests: local UDS, rejections, routing
+  over DoIP, and the timeout of a CAN route without a peer.
+- The implementation was largely written with an AI assistant (Anthropic Claude Opus
+  5.5) and reviewed and tested by me. Following the Eclipse Foundation guidelines on
+  generative AI, each file states this below its copyright header, and the commit
+  carries an `Assisted-by:` trailer. As asked in #663: do you want the file headers
+  in another form, for example the dual `Apache-2.0 AND CC0-1.0` SPDX expression from
+  the Eclipse handbook template?
 
-- adding a separate module rather than extending `TransportRouterSimple`
+Before I open the PR, I would like to know whether you agree with:
+
+- a separate module rather than extending `TransportRouterSimple`
 - the module and class names
 - the configuration API
-
-before we open the PR.

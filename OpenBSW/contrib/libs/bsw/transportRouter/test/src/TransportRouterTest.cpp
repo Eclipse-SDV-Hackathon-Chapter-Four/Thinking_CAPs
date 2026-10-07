@@ -8,10 +8,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
+// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
+
 #include "transport/routing/TransportRouter.h"
 
 #include "transport/AbstractTransportLayerMock.h"
 #include "transport/TransportMessageProcessedListenerMock.h"
+#include "transport/routing/RouteObserverMock.h"
 
 #include <async/LockMock.h>
 #include <etl/array.h>
@@ -71,13 +75,6 @@ TransportRouterConfiguration configuration(::etl::span<DiagnosticRoute const> co
         routes};
 }
 
-class ObserverMock : public IRouteObserver
-{
-public:
-    MOCK_METHOD(void, routeResponded, (size_t), (override));
-    MOCK_METHOD(void, routeTimedOut, (size_t), (override));
-};
-
 class TransportRouterTest : public Test
 {
 protected:
@@ -93,8 +90,10 @@ protected:
     {
         fakeNowMs = 1000U;
         // every lock must be released again
-        ON_CALL(_lock, lock()).WillByDefault(Invoke([this] { ++_locks; }));
-        ON_CALL(_lock, unlock()).WillByDefault(Invoke([this] { --_locks; }));
+        EXPECT_CALL(_lock, lock()).Times(AnyNumber()).WillRepeatedly(Invoke([this] { ++_locks; }));
+        EXPECT_CALL(_lock, unlock())
+            .Times(AnyNumber())
+            .WillRepeatedly(Invoke([this] { --_locks; }));
         _router.init();
         _router.addTransportLayer(_eth);
         _router.addTransportLayer(_canA);
@@ -109,20 +108,24 @@ protected:
         _router.shutdown();
     }
 
+    /// Requests a buffer like a transport layer does and returns the router's answer; used
+    /// for requests the router refuses.
+    ErrorCode requestBuffer(uint8_t busId, uint16_t source, uint16_t target, uint16_t length)
+    {
+        TransportMessage* msg = nullptr;
+        return _router.getTransportMessage(busId, source, target, length, {}, msg);
+    }
+
     /// Requests a buffer like a transport layer does, fills it and returns it.
-    TransportMessage* message(
-        uint8_t busId,
-        uint16_t source,
-        uint16_t target,
-        std::vector<uint8_t> const& payload,
-        ErrorCode expected = ErrorCode::TPMSG_OK)
+    TransportMessage*
+    message(uint8_t busId, uint16_t source, uint16_t target, std::vector<uint8_t> const& payload)
     {
         TransportMessage* msg = nullptr;
         EXPECT_EQ(
-            expected,
+            ErrorCode::TPMSG_OK,
             _router.getTransportMessage(
                 busId, source, target, static_cast<uint16_t>(payload.size()), {}, msg));
-        if (msg == nullptr)
+        if (msg == nullptr) // the failed expectation above is reported; avoid a crash
         {
             return nullptr;
         }
@@ -167,24 +170,13 @@ protected:
         _pendingListener->transportMessageProcessed(request, result);
     }
 
-    /// A node response arriving on its bus; returns the router's result.
-    ReceiveResult nodeResponse(
-        uint8_t busId,
-        uint16_t node,
-        std::vector<uint8_t> const& payload,
-        uint16_t* target   = nullptr,
-        ErrorCode expected = ErrorCode::TPMSG_OK)
+    /// A node response arriving on its bus; returns the router's result and keeps the
+    /// response's target address after routing in _responseTarget.
+    ReceiveResult nodeResponse(uint8_t busId, uint16_t node, std::vector<uint8_t> const& payload)
     {
-        TransportMessage* response = message(busId, node, GW_TESTER, payload, expected);
-        if (response == nullptr)
-        {
-            return ReceiveResult::RECEIVED_ERROR;
-        }
+        TransportMessage* response = message(busId, node, GW_TESTER, payload);
         ReceiveResult const result = _router.messageReceived(busId, *response, &_nodeSide);
-        if (target != nullptr)
-        {
-            *target = response->getTargetId();
-        }
+        _responseTarget            = response->getTargetId();
         _router.releaseTransportMessage(*response);
         return result;
     }
@@ -195,7 +187,28 @@ protected:
         _router.cyclic();
     }
 
-    NiceMock<::async::LockMock> _lock;
+    /// Takes `count` buffers for messages of `length` bytes and appends them to `held`.
+    void holdBuffers(std::vector<TransportMessage*>& held, size_t count, uint16_t length)
+    {
+        for (size_t i = 0U; i < count; ++i)
+        {
+            TransportMessage* msg = nullptr;
+            EXPECT_EQ(
+                ErrorCode::TPMSG_OK,
+                _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, length, {}, msg));
+            held.push_back(msg);
+        }
+    }
+
+    void releaseAll(std::vector<TransportMessage*> const& held)
+    {
+        for (TransportMessage* msg : held)
+        {
+            _router.releaseTransportMessage(*msg);
+        }
+    }
+
+    StrictMock<::async::LockMock> _lock;
     int _locks = 0;
     TransportRouterStatistics _statistics;
     TransportRouter _router;
@@ -204,14 +217,18 @@ protected:
     StrictMock<AbstractTransportLayerMock> _canB;
     StrictMock<AbstractTransportLayerMock> _local;
     StrictMock<TransportMessageProcessedListenerMock> _tester;
-    NiceMock<TransportMessageProcessedListenerMock> _nodeSide;
-    StrictMock<ObserverMock> _observer;
+    StrictMock<TransportMessageProcessedListenerMock> _nodeSide;
+    StrictMock<RouteObserverMock> _observer;
     ITransportMessageProcessedListener* _pendingListener = nullptr;
+    uint16_t _responseTarget                             = 0U;
 };
 
 // --- configuration ---------------------------------------------------------------------------
 
-TEST_F(TransportRouterTest, validConfigurationPassesValidation)
+/**
+ * Test that a consistent routing table passes validate() without naming a route.
+ */
+TEST_F(TransportRouterTest, ValidConfigurationPassesValidation)
 {
     size_t bad = 0U;
     EXPECT_EQ(TransportRouter::ValidationError::NONE, _router.validate(bad));
@@ -219,7 +236,13 @@ TEST_F(TransportRouterTest, validConfigurationPassesValidation)
     EXPECT_STREQ("ok", TransportRouter::toString(TransportRouter::ValidationError::NONE));
 }
 
-TEST_F(TransportRouterTest, invalidConfigurationsAreRejectedWithTheOffendingRoute)
+/**
+ * Test that validate() rejects each kind of invalid route and reports its index.
+ *
+ * Covers address conflicts with the local, functional and tester addresses and the local bus,
+ * a duplicate node address, invalid P2/P2* timing and invalid maximum lengths.
+ */
+TEST_F(TransportRouterTest, InvalidRouteIsRejectedWithItsIndex)
 {
     struct Case
     {
@@ -262,7 +285,12 @@ TEST_F(TransportRouterTest, invalidConfigurationsAreRejectedWithTheOffendingRout
     }
 }
 
-TEST_F(TransportRouterTest, invalidGlobalConfigurationsAreRejected)
+/**
+ * Test that validate() rejects an empty or oversized routing table, a tester range that
+ * overlaps node addresses, a functional length above the small buffer and a zero transfer
+ * budget.
+ */
+TEST_F(TransportRouterTest, InvalidGlobalConfigurationIsRejected)
 {
     TransportRouterStatistics statistics;
     size_t bad = 0U;
@@ -301,7 +329,10 @@ TEST_F(TransportRouterTest, invalidGlobalConfigurationsAreRejected)
     }
 }
 
-TEST_F(TransportRouterTest, everyValidationErrorHasAText)
+/**
+ * Test that toString() names every validation error and returns "unknown" otherwise.
+ */
+TEST_F(TransportRouterTest, EveryValidationErrorHasAText)
 {
     using E = TransportRouter::ValidationError;
     for (E const error :
@@ -319,7 +350,11 @@ TEST_F(TransportRouterTest, everyValidationErrorHasAText)
     EXPECT_STREQ("unknown", TransportRouter::toString(static_cast<E>(0xFFU)));
 }
 
-TEST_F(TransportRouterTest, invalidAddressSetupsAreRejected)
+/**
+ * Test that validate() rejects local or functional addresses inside the tester range, equal
+ * local and functional addresses, and a zero functional length.
+ */
+TEST_F(TransportRouterTest, InvalidAddressSetupIsRejected)
 {
     TransportRouterStatistics statistics;
     size_t bad = 0U;
@@ -343,7 +378,11 @@ TEST_F(TransportRouterTest, invalidAddressSetupsAreRejected)
     check(cfg, TransportRouter::ValidationError::INVALID_LENGTH);
 }
 
-TEST_F(TransportRouterTest, transportLayerOfABusIsRegisteredOnlyOnce)
+/**
+ * Test that a second transport layer for an already registered bus is ignored and that
+ * removing an unregistered layer has no effect.
+ */
+TEST_F(TransportRouterTest, TransportLayerOfABusIsRegisteredOnlyOnce)
 {
     StrictMock<AbstractTransportLayerMock> second(BUS_CAN_A);
     _router.addTransportLayer(second);
@@ -355,7 +394,11 @@ TEST_F(TransportRouterTest, transportLayerOfABusIsRegisteredOnlyOnce)
 
 // --- local and unknown targets ---------------------------------------------------------------
 
-TEST_F(TransportRouterTest, requestToLocalAddressGoesToLocalBusWithFullSizeBuffer)
+/**
+ * Test that a request to the gateway's own address gets a full-size buffer and is passed to
+ * the local bus with the tester address unchanged.
+ */
+TEST_F(TransportRouterTest, RequestToLocalAddressGoesToLocalBus)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, LOCAL, {0x22, 0xF1, 0x90});
     ASSERT_NE(nullptr, request);
@@ -368,7 +411,10 @@ TEST_F(TransportRouterTest, requestToLocalAddressGoesToLocalBusWithFullSizeBuffe
     _router.releaseTransportMessage(*request);
 }
 
-TEST_F(TransportRouterTest, localResponseGoesBackToTheTestersBus)
+/**
+ * Test that a response of the local diagnostic server goes to the bus the tester used.
+ */
+TEST_F(TransportRouterTest, LocalResponseGoesBackToTheTestersBus)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, LOCAL, {0x3E, 0x00});
     EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
@@ -384,7 +430,10 @@ TEST_F(TransportRouterTest, localResponseGoesBackToTheTestersBus)
     _router.releaseTransportMessage(*response);
 }
 
-TEST_F(TransportRouterTest, localResponseToAnUnknownTesterIsAnError)
+/**
+ * Test that a local response to a tester that never sent a request is not forwarded.
+ */
+TEST_F(TransportRouterTest, LocalResponseToAnUnknownTesterIsAnError)
 {
     TransportMessage* response = message(BUS_LOCAL, LOCAL, 0x0E99U, {0x7E, 0x00});
     EXPECT_EQ(
@@ -392,15 +441,20 @@ TEST_F(TransportRouterTest, localResponseToAnUnknownTesterIsAnError)
     _router.releaseTransportMessage(*response);
 }
 
-TEST_F(TransportRouterTest, unknownTargetIsRejectedAndCounted)
+/**
+ * Test that a request to an address without a route is rejected and counted.
+ */
+TEST_F(TransportRouterTest, UnknownTargetIsRejectedAndCounted)
 {
-    EXPECT_EQ(
-        nullptr,
-        message(BUS_ETH, TESTER, 0x1099U, {0x3E, 0x00}, ErrorCode::TPMSG_INVALID_TGT_ADDRESS));
+    EXPECT_EQ(ErrorCode::TPMSG_INVALID_TGT_ADDRESS, requestBuffer(BUS_ETH, TESTER, 0x1099U, 2U));
     EXPECT_EQ(1U, _statistics.get(RouterCounter::UNKNOWN_TARGET));
 }
 
-TEST_F(TransportRouterTest, messagesFromUnknownSourcesAreNotAccepted)
+/**
+ * Test that messages from unknown addresses, or from a node address on the wrong bus, are not
+ * accepted.
+ */
+TEST_F(TransportRouterTest, MessageFromAnUnknownSourceIsNotAccepted)
 {
     TransportMessage* msg = nullptr;
     EXPECT_EQ(
@@ -421,14 +475,20 @@ TEST_F(TransportRouterTest, messagesFromUnknownSourcesAreNotAccepted)
 
 // --- physical routing ------------------------------------------------------------------------
 
-TEST_F(TransportRouterTest, physicalRequestAndResponseRoundTrip)
+/**
+ * Test the physical routing of a request to a node and of its response back to the tester.
+ *
+ * The request leaves with the gateway's tester address; the route waits for the delivery and
+ * then for the response, which goes to the original tester. Statistics and buffers are
+ * updated.
+ */
+TEST_F(TransportRouterTest, PhysicalRequestAndResponseRoundTrip)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     EXPECT_EQ(RouteState::SENDING, _router.routeState(0U));
     confirmDelivery(*request);
     EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
 
-    uint16_t target = 0U;
     EXPECT_CALL(_eth, send(_, &_nodeSide))
         .WillOnce(Invoke(
             [](TransportMessage& msg, ITransportMessageProcessedListener*)
@@ -440,8 +500,8 @@ TEST_F(TransportRouterTest, physicalRequestAndResponseRoundTrip)
     EXPECT_CALL(_observer, routeResponded(0U));
     EXPECT_EQ(
         ReceiveResult::RECEIVED_NO_ERROR,
-        nodeResponse(BUS_CAN_A, NODE_A, {0x62, 0xF1, 0x95, 0x01}, &target));
-    EXPECT_EQ(TESTER, target);
+        nodeResponse(BUS_CAN_A, NODE_A, {0x62, 0xF1, 0x95, 0x01}));
+    EXPECT_EQ(TESTER, _responseTarget);
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::REQUESTS));
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::RESPONSES));
@@ -449,7 +509,11 @@ TEST_F(TransportRouterTest, physicalRequestAndResponseRoundTrip)
         _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
 }
 
-TEST_F(TransportRouterTest, responseBeforeDeliveryConfirmationIsAccepted)
+/**
+ * Test that a response that arrives before the delivery confirmation ends the request and that
+ * the late confirmation does not reopen the route.
+ */
+TEST_F(TransportRouterTest, ResponseBeforeDeliveryConfirmationIsAccepted)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     EXPECT_CALL(_eth, send(_, _)).WillOnce(Return(TpError::TP_OK));
@@ -459,7 +523,10 @@ TEST_F(TransportRouterTest, responseBeforeDeliveryConfirmationIsAccepted)
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
 }
 
-TEST_F(TransportRouterTest, requestsToTwoRoutesAreOutstandingTogether)
+/**
+ * Test that requests to nodes on different routes are outstanding at the same time.
+ */
+TEST_F(TransportRouterTest, RequestsToTwoRoutesAreOutstandingTogether)
 {
     TransportMessage* a = sendRequest(NODE_A, _canA);
     TransportMessage* c = sendRequest(NODE_C, _canB);
@@ -472,27 +539,33 @@ TEST_F(TransportRouterTest, requestsToTwoRoutesAreOutstandingTogether)
     EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}));
 }
 
-TEST_F(TransportRouterTest, secondRequestToABusyRouteIsRejected)
+/**
+ * Test that a second request to a route with an outstanding request is rejected and counted.
+ */
+TEST_F(TransportRouterTest, SecondRequestToABusyRouteIsRejected)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
-    EXPECT_EQ(
-        nullptr,
-        message(BUS_ETH, TESTER_2, NODE_A, {0x3E, 0x00}, ErrorCode::TPMSG_NO_MSG_AVAILABLE));
+    EXPECT_EQ(ErrorCode::TPMSG_NO_MSG_AVAILABLE, requestBuffer(BUS_ETH, TESTER_2, NODE_A, 2U));
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::NACK_BUSY));
     confirmDelivery(*request);
     EXPECT_CALL(_observer, routeTimedOut(0U));
     advance(200U);
 }
 
-TEST_F(TransportRouterTest, requestLargerThanTheRouteLimitIsRejected)
+/**
+ * Test that a request above the route's maximum length is rejected and counted.
+ */
+TEST_F(TransportRouterTest, RequestLargerThanTheRouteLimitIsRejected)
 {
-    std::vector<uint8_t> payload(65U, 0x22U);
-    EXPECT_EQ(nullptr, message(BUS_ETH, TESTER, NODE_C, payload, ErrorCode::TPMSG_SIZE_TOO_LARGE));
+    EXPECT_EQ(ErrorCode::TPMSG_SIZE_TOO_LARGE, requestBuffer(BUS_ETH, TESTER, NODE_C, 65U));
     EXPECT_EQ(1U, _statistics.get(2U, RouteCounter::NACK_TOO_LARGE));
     EXPECT_EQ(RouteState::IDLE, _router.routeState(2U));
 }
 
-TEST_F(TransportRouterTest, bufferReleasedBeforeForwardingFreesTheRoute)
+/**
+ * Test that releasing a request buffer that was never forwarded frees its route.
+ */
+TEST_F(TransportRouterTest, BufferReleasedBeforeForwardingFreesTheRoute)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, NODE_A, {0x22, 0xF1, 0x95});
     EXPECT_EQ(RouteState::RESERVED, _router.routeState(0U));
@@ -500,7 +573,11 @@ TEST_F(TransportRouterTest, bufferReleasedBeforeForwardingFreesTheRoute)
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
 }
 
-TEST_F(TransportRouterTest, failedForwardingKeepsTheTesterAddressAndFreesTheRouteOnRelease)
+/**
+ * Test that a request the node's transport layer refuses is an error, keeps the tester
+ * address, is counted and frees the route when released.
+ */
+TEST_F(TransportRouterTest, FailedForwardingFreesTheRouteOnRelease)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, NODE_A, {0x22, 0xF1, 0x95});
     EXPECT_CALL(_canA, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
@@ -511,7 +588,10 @@ TEST_F(TransportRouterTest, failedForwardingKeepsTheTesterAddressAndFreesTheRout
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
 }
 
-TEST_F(TransportRouterTest, missingTransportLayerIsAnError)
+/**
+ * Test that a request to a route whose bus has no transport layer is an error.
+ */
+TEST_F(TransportRouterTest, MissingTransportLayerIsAnError)
 {
     _router.removeTransportLayer(_canB);
     TransportMessage* request = message(BUS_ETH, TESTER, NODE_C, {0x3E, 0x00});
@@ -519,7 +599,10 @@ TEST_F(TransportRouterTest, missingTransportLayerIsAnError)
     _router.releaseTransportMessage(*request);
 }
 
-TEST_F(TransportRouterTest, failedDeliveryFreesTheRouteAndReportsTheNode)
+/**
+ * Test that a failed delivery frees the route, is counted and is reported to the observer.
+ */
+TEST_F(TransportRouterTest, FailedDeliveryFreesTheRouteAndReportsTheNode)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     EXPECT_CALL(_observer, routeTimedOut(0U));
@@ -530,7 +613,10 @@ TEST_F(TransportRouterTest, failedDeliveryFreesTheRouteAndReportsTheNode)
 
 // --- timing ----------------------------------------------------------------------------------
 
-TEST_F(TransportRouterTest, noResponseWithinP2FreesTheRoute)
+/**
+ * Test that a missing response within P2 frees the route and is reported to the observer.
+ */
+TEST_F(TransportRouterTest, NoResponseWithinP2FreesTheRoute)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     confirmDelivery(*request);
@@ -542,7 +628,10 @@ TEST_F(TransportRouterTest, noResponseWithinP2FreesTheRoute)
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::TIMEOUTS));
 }
 
-TEST_F(TransportRouterTest, unconfirmedDeliveryTimesOut)
+/**
+ * Test that a delivery that is never confirmed times out after the transfer budget.
+ */
+TEST_F(TransportRouterTest, UnconfirmedDeliveryTimesOut)
 {
     sendRequest(NODE_A, _canA);
     EXPECT_CALL(_observer, routeTimedOut(0U));
@@ -550,7 +639,10 @@ TEST_F(TransportRouterTest, unconfirmedDeliveryTimesOut)
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
 }
 
-TEST_F(TransportRouterTest, responsePendingIsForwardedAndExtendsToP2Star)
+/**
+ * Test that NRC 0x78 (response pending) is forwarded and extends the deadline to P2*.
+ */
+TEST_F(TransportRouterTest, ResponsePendingIsForwardedAndExtendsToP2Star)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     confirmDelivery(*request);
@@ -566,7 +658,10 @@ TEST_F(TransportRouterTest, responsePendingIsForwardedAndExtendsToP2Star)
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::RESPONSES));
 }
 
-TEST_F(TransportRouterTest, responsePendingTimesOutAfterP2Star)
+/**
+ * Test that a request with a pending response times out when P2* expires.
+ */
+TEST_F(TransportRouterTest, ResponsePendingTimesOutAfterP2Star)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     confirmDelivery(*request);
@@ -577,7 +672,10 @@ TEST_F(TransportRouterTest, responsePendingTimesOutAfterP2Star)
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
 }
 
-TEST_F(TransportRouterTest, segmentedResponseGetsMoreThanP2)
+/**
+ * Test that the reception of a long response may outlast P2 once its first frame arrived.
+ */
+TEST_F(TransportRouterTest, SegmentedResponseGetsMoreThanP2)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     confirmDelivery(*request);
@@ -595,7 +693,10 @@ TEST_F(TransportRouterTest, segmentedResponseGetsMoreThanP2)
     _router.releaseTransportMessage(*response);
 }
 
-TEST_F(TransportRouterTest, deadlinesWorkAcrossTimerWrapAround)
+/**
+ * Test that deadlines are correct when the millisecond timer wraps around.
+ */
+TEST_F(TransportRouterTest, DeadlinesWorkAcrossTimerWrapAround)
 {
     fakeNowMs                 = 0xFFFFFFF0U;
     TransportMessage* request = sendRequest(NODE_A, _canA);
@@ -606,7 +707,10 @@ TEST_F(TransportRouterTest, deadlinesWorkAcrossTimerWrapAround)
     advance(50U);
 }
 
-TEST_F(TransportRouterTest, negativeResponseOtherThanPendingEndsTheRequest)
+/**
+ * Test that a negative response other than NRC 0x78 is final and ends the request.
+ */
+TEST_F(TransportRouterTest, NegativeResponseOtherThanPendingEndsTheRequest)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     confirmDelivery(*request);
@@ -618,7 +722,13 @@ TEST_F(TransportRouterTest, negativeResponseOtherThanPendingEndsTheRequest)
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::RESPONSES));
 }
 
-TEST_F(TransportRouterTest, segmentedResponseWithShortP2StarGetsTheTransferBudget)
+/**
+ * Test that a long response gets the configured transfer budget even when P2* is shorter.
+ *
+ * Uses a router with one unnamed route (P2* 500 ms); the reception times out exactly at
+ * DEFAULT_TRANSFER_TIMEOUT_MS.
+ */
+TEST_F(TransportRouterTest, SegmentedResponseGetsTheTransferBudget)
 {
     DiagnosticRoute const routes[] = {{NODE_A, BUS_CAN_A, 50U, 500U, 4095U, nullptr}};
     TransportRouterStatistics statistics;
@@ -656,7 +766,11 @@ TEST_F(TransportRouterTest, segmentedResponseWithShortP2StarGetsTheTransferBudge
     router.removeTransportLayer(_canA);
 }
 
-TEST_F(TransportRouterTest, requestWithoutProcessedListenerIsRouted)
+/**
+ * Test that a request without a processed listener is routed and its route times out
+ * normally.
+ */
+TEST_F(TransportRouterTest, RequestWithoutProcessedListenerIsRouted)
 {
     TransportMessage* request                    = message(BUS_ETH, TESTER, NODE_A, {0x3E, 0x00});
     ITransportMessageProcessedListener* listener = nullptr;
@@ -670,31 +784,23 @@ TEST_F(TransportRouterTest, requestWithoutProcessedListenerIsRouted)
     advance(150U);
 }
 
-TEST_F(TransportRouterTest, routeRequestWithoutFreeBufferIsRejected)
+/**
+ * Test that a routed request is rejected without reserving the route when no buffer is free.
+ */
+TEST_F(TransportRouterTest, RouteRequestWithoutFreeBufferIsRejected)
 {
     std::vector<TransportMessage*> held;
-    TransportMessage* msg = nullptr;
-    while (_router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg)
-           == ErrorCode::TPMSG_OK)
-    {
-        held.push_back(msg);
-    }
-    EXPECT_EQ(
-        nullptr,
-        message(
-            BUS_ETH,
-            TESTER,
-            NODE_A,
-            std::vector<uint8_t>(100U, 0U),
-            ErrorCode::TPMSG_NO_MSG_AVAILABLE));
+    holdBuffers(held, TransportRouter::NUM_BUFFERS, 100U);
+    EXPECT_EQ(ErrorCode::TPMSG_NO_MSG_AVAILABLE, requestBuffer(BUS_ETH, TESTER, NODE_A, 100U));
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
-    for (TransportMessage* m : held)
-    {
-        _router.releaseTransportMessage(*m);
-    }
+    releaseAll(held);
 }
 
-TEST_F(TransportRouterTest, releasingAnotherTesterKeepsSendingRoutesAndFunctionalWindow)
+/**
+ * Test that releasing one tester keeps the routes and the functional window of another
+ * tester, and that releasing the owner frees them.
+ */
+TEST_F(TransportRouterTest, ReleasingAnotherTesterKeepsItsRoutes)
 {
     sendRequest(NODE_A, _canA); // SENDING
     TransportMessage* functional = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x80});
@@ -712,7 +818,10 @@ TEST_F(TransportRouterTest, releasingAnotherTesterKeepsSendingRoutesAndFunctiona
 
 // --- unsolicited and late responses ------------------------------------------------------------
 
-TEST_F(TransportRouterTest, unsolicitedResponseIsDiscardedAndCounted)
+/**
+ * Test that a response from a node without an outstanding request is discarded and counted.
+ */
+TEST_F(TransportRouterTest, UnsolicitedResponseIsDiscardedAndCounted)
 {
     TransportMessage* msg = nullptr;
     EXPECT_EQ(
@@ -729,7 +838,13 @@ TEST_F(TransportRouterTest, unsolicitedResponseIsDiscardedAndCounted)
     EXPECT_EQ(2U, _statistics.get(0U, RouteCounter::DISCARDED));
 }
 
-TEST_F(TransportRouterTest, releasedTesterFreesItsRoutesAtOnce)
+/**
+ * Test that releasing a tester (e.g. its DoIP connection closed) frees its routes at once.
+ *
+ * A later response of the node is discarded, and another tester can use the route right
+ * away.
+ */
+TEST_F(TransportRouterTest, ReleasedTesterFreesItsRoutesAtOnce)
 {
     TransportMessage* request = sendRequest(NODE_A, _canA);
     confirmDelivery(*request);
@@ -737,9 +852,7 @@ TEST_F(TransportRouterTest, releasedTesterFreesItsRoutesAtOnce)
     EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
     _router.releaseTester(TESTER);
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
-    EXPECT_EQ(
-        ReceiveResult::RECEIVED_ERROR,
-        nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, nullptr, ErrorCode::TPMSG_NOT_RESPONSIBLE));
+    EXPECT_EQ(ErrorCode::TPMSG_NOT_RESPONSIBLE, requestBuffer(BUS_CAN_A, NODE_A, GW_TESTER, 2U));
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::DISCARDED));
     // a new tester can use the route immediately
     TransportMessage* next = message(BUS_ETH, TESTER_2, NODE_A, {0x3E, 0x00});
@@ -749,7 +862,14 @@ TEST_F(TransportRouterTest, releasedTesterFreesItsRoutesAtOnce)
 
 // --- functional routing ------------------------------------------------------------------------
 
-TEST_F(TransportRouterTest, functionalRequestGoesToLocalAndOncePerRouteBus)
+/**
+ * Test the functional routing of a request and of the responses within the window.
+ *
+ * The request goes to the local server and once to each route bus. Every node's response
+ * within the functional window reaches the tester; the copies are released when their
+ * delivery is confirmed, and responses after the window are discarded.
+ */
+TEST_F(TransportRouterTest, FunctionalRequestGoesToLocalAndOncePerRouteBus)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x00});
     ASSERT_NE(nullptr, request);
@@ -774,10 +894,8 @@ TEST_F(TransportRouterTest, functionalRequestGoesToLocalAndOncePerRouteBus)
     // responses of every node within the window reach the tester
     EXPECT_CALL(_eth, send(_, _)).Times(3).WillRepeatedly(Return(TpError::TP_OK));
     EXPECT_CALL(_observer, routeResponded(_)).Times(3);
-    uint16_t target = 0U;
-    EXPECT_EQ(
-        ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, &target));
-    EXPECT_EQ(TESTER, target);
+    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}));
+    EXPECT_EQ(TESTER, _responseTarget);
     EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_B, {0x7E, 0x00}));
     EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_B, NODE_C, {0x7E, 0x00}));
 
@@ -792,24 +910,21 @@ TEST_F(TransportRouterTest, functionalRequestGoesToLocalAndOncePerRouteBus)
 
     // after the window, responses are discarded
     advance(150U);
-    EXPECT_EQ(
-        ReceiveResult::RECEIVED_ERROR,
-        nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, nullptr, ErrorCode::TPMSG_NOT_RESPONSIBLE));
+    EXPECT_EQ(ErrorCode::TPMSG_NOT_RESPONSIBLE, requestBuffer(BUS_CAN_A, NODE_A, GW_TESTER, 2U));
 }
 
-TEST_F(TransportRouterTest, functionalRequestLargerThanASingleFrameIsRejected)
+/**
+ * Test that a functional request above the maximum functional length is rejected.
+ */
+TEST_F(TransportRouterTest, FunctionalRequestLargerThanTheLimitIsRejected)
 {
-    EXPECT_EQ(
-        nullptr,
-        message(
-            BUS_ETH,
-            TESTER,
-            FUNCTIONAL,
-            std::vector<uint8_t>(8U, 0U),
-            ErrorCode::TPMSG_SIZE_TOO_LARGE));
+    EXPECT_EQ(ErrorCode::TPMSG_SIZE_TOO_LARGE, requestBuffer(BUS_ETH, TESTER, FUNCTIONAL, 8U));
 }
 
-TEST_F(TransportRouterTest, functionalCopyThatCannotBeSentIsReleased)
+/**
+ * Test that a functional copy that a bus refuses is released at once.
+ */
+TEST_F(TransportRouterTest, FunctionalCopyThatCannotBeSentIsReleased)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x80});
     EXPECT_CALL(_canA, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
@@ -822,25 +937,16 @@ TEST_F(TransportRouterTest, functionalCopyThatCannotBeSentIsReleased)
         _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
 }
 
-TEST_F(TransportRouterTest, functionalRequestWithoutFreeBufferReachesOnlyLocal)
+/**
+ * Test that a functional request reaches only the local server when no buffer is free for the
+ * copies, and that each missing copy is counted.
+ */
+TEST_F(TransportRouterTest, FunctionalRequestWithoutFreeBufferReachesOnlyLocal)
 {
     // hold every buffer except one full-size buffer for the request itself
     std::vector<TransportMessage*> held;
-    TransportMessage* msg = nullptr;
-    for (size_t i = 0U; i < TransportRouter::NUM_SMALL_BUFFERS; ++i)
-    {
-        EXPECT_EQ(
-            ErrorCode::TPMSG_OK,
-            _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 2U, {}, msg));
-        held.push_back(msg);
-    }
-    for (size_t i = 1U; i < TransportRouter::NUM_BUFFERS; ++i)
-    {
-        EXPECT_EQ(
-            ErrorCode::TPMSG_OK,
-            _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg));
-        held.push_back(msg);
-    }
+    holdBuffers(held, TransportRouter::NUM_SMALL_BUFFERS, 2U);
+    holdBuffers(held, TransportRouter::NUM_BUFFERS - 1U, 100U);
     TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x00});
     ASSERT_NE(nullptr, request);
     EXPECT_CALL(_local, send(Ref(*request), &_tester)).WillOnce(Return(TpError::TP_OK));
@@ -848,13 +954,13 @@ TEST_F(TransportRouterTest, functionalRequestWithoutFreeBufferReachesOnlyLocal)
         ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
     EXPECT_EQ(2U, _statistics.get(RouterCounter::NO_BUFFER)); // one per route bus
     _router.releaseTransportMessage(*request);
-    for (TransportMessage* m : held)
-    {
-        _router.releaseTransportMessage(*m);
-    }
+    releaseAll(held);
 }
 
-TEST_F(TransportRouterTest, releasedTesterClosesItsFunctionalWindow)
+/**
+ * Test that releasing a tester closes its functional window: later responses are discarded.
+ */
+TEST_F(TransportRouterTest, ReleasedTesterClosesItsFunctionalWindow)
 {
     TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x80});
     ITransportMessageProcessedListener* copyListener = nullptr;
@@ -872,26 +978,22 @@ TEST_F(TransportRouterTest, releasedTesterClosesItsFunctionalWindow)
     EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
     _router.messageReceived(BUS_ETH, *request, &_tester);
     _router.releaseTester(TESTER);
-    EXPECT_EQ(
-        ReceiveResult::RECEIVED_ERROR,
-        nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, nullptr, ErrorCode::TPMSG_NOT_RESPONSIBLE));
+    EXPECT_EQ(ErrorCode::TPMSG_NOT_RESPONSIBLE, requestBuffer(BUS_CAN_A, NODE_A, GW_TESTER, 2U));
     copyListener->transportMessageProcessed(*copyA, Processing::PROCESSED_NO_ERROR);
     _router.releaseTransportMessage(*request);
 }
 
 // --- buffers and statistics ------------------------------------------------------------------
 
-TEST_F(TransportRouterTest, buffersRunOutAndAreCounted)
+/**
+ * Test that running out of full-size buffers is counted, small messages still get small
+ * buffers, and a foreign buffer is ignored on release.
+ */
+TEST_F(TransportRouterTest, BuffersRunOutAndAreCounted)
 {
     std::vector<TransportMessage*> held;
+    holdBuffers(held, TransportRouter::NUM_BUFFERS, 100U);
     TransportMessage* msg = nullptr;
-    for (size_t i = 0U; i < TransportRouter::NUM_BUFFERS; ++i)
-    {
-        EXPECT_EQ(
-            ErrorCode::TPMSG_OK,
-            _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg));
-        held.push_back(msg);
-    }
     EXPECT_EQ(
         ErrorCode::TPMSG_NO_MSG_AVAILABLE,
         _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg));
@@ -901,10 +1003,7 @@ TEST_F(TransportRouterTest, buffersRunOutAndAreCounted)
         ErrorCode::TPMSG_OK, _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 2U, {}, msg));
     EXPECT_EQ(TransportRouter::SMALL_BUFFER_SIZE, msg->getMaxPayloadLength());
     held.push_back(msg);
-    for (TransportMessage* m : held)
-    {
-        _router.releaseTransportMessage(*m);
-    }
+    releaseAll(held);
     uint8_t foreign[4];
     TransportMessage notOurs(foreign, sizeof(foreign));
     _router.releaseTransportMessage(notOurs); // ignored
@@ -912,7 +1011,11 @@ TEST_F(TransportRouterTest, buffersRunOutAndAreCounted)
         _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
 }
 
-TEST_F(TransportRouterTest, statisticsSaturateAndReset)
+/**
+ * Test that counters saturate at 0xFFFF, ignore invalid route indices and are cleared by
+ * reset().
+ */
+TEST_F(TransportRouterTest, StatisticsSaturateAndReset)
 {
     TransportRouterStatistics statistics;
     for (uint32_t i = 0U; i < 0x10005U; ++i)
@@ -929,7 +1032,10 @@ TEST_F(TransportRouterTest, statisticsSaturateAndReset)
     EXPECT_EQ(0U, statistics.get(RouterCounter::LOCAL_REQUESTS));
 }
 
-TEST_F(TransportRouterTest, routerWorksWithoutObserver)
+/**
+ * Test that the router works and counts timeouts when no observer is set.
+ */
+TEST_F(TransportRouterTest, RouterWorksWithoutObserver)
 {
     _router.setObserver(nullptr);
     TransportMessage* request = sendRequest(NODE_A, _canA);
@@ -938,7 +1044,11 @@ TEST_F(TransportRouterTest, routerWorksWithoutObserver)
     EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::TIMEOUTS));
 }
 
-TEST_F(TransportRouterTest, testerTableRemembersTheLatestBusAndWraps)
+/**
+ * Test that the tester table replaces its oldest entry when more testers than entries send
+ * requests.
+ */
+TEST_F(TransportRouterTest, TesterTableReplacesTheOldestTester)
 {
     // more testers than table entries: the oldest is replaced
     for (uint16_t i = 0U; i <= TransportRouter::MAX_TESTERS; ++i)

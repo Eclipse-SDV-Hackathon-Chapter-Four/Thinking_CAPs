@@ -8,6 +8,9 @@
 # SPDX-License-Identifier: Apache-2.0
 # *******************************************************************************
 
+# AI disclosure: this file was largely generated with an AI assistant and was
+# reviewed and tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
+
 add_library(
     transportRouter
     src/transport/TpGatewayLogger.cpp src/transport/routing/TransportRouter.cpp
@@ -16,3 +19,9 @@ add_library(
 target_include_directories(transportRouter PUBLIC include)
 
 target_link_libraries(transportRouter PUBLIC transport etl)
+
+add_library(transportRouterMock INTERFACE)
+
+target_include_directories(transportRouterMock INTERFACE mock/gmock/include)
+
+target_link_libraries(transportRouterMock INTERFACE transportRouter gmock)

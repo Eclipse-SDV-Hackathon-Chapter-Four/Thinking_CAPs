@@ -9,6 +9,10 @@
    SPDX-License-Identifier: Apache-2.0
    *******************************************************************************
 
+..
+   AI disclosure: this file was largely generated with an AI assistant and was reviewed by
+   the contributor. Assisted-by: Anthropic Claude Opus 5.5
+
 transportRouter
 ===============
 
@@ -133,3 +137,11 @@ Usage
 The DoCAN layer must map each route to the node's CAN identifiers with
 ``transportSourceId`` = route address and ``transportTargetId`` = gateway tester
 address, and the functional address to the functional CAN identifier.
+
+Unit tests
+----------
+
+``test/`` contains the unit tests (``transportRouterTest``). For tests of code
+that implements or uses ``IRouteObserver``, the module provides
+``transport::RouteObserverMock`` in ``mock/gmock/include``: CMake target
+``transportRouterMock``, Bazel target ``transport_router_mock``.

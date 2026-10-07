@@ -21,7 +21,16 @@ plugs into the existing DoIP, DoCAN and UDS transport layers:
 - reports busy, too large and unknown targets through
   `ITransportMessageProvider::ErrorCode`, which DoIP maps to diagnostic
   message NACKs
+- gives the transport layer a configurable budget
+  (`transferTimeoutMs`) to deliver a request or receive a long
+  response
 - releases a disconnected tester's requests, counts events in
   `TransportRouterStatistics` and reports outcomes to `IRouteObserver`
+  (`RouteObserverMock` for unit tests)
 
 Memory is static. TransportRouterSimple is unchanged.
+
+Resolves:
+#TBD: Add a transport router for diagnostic gateways (transportRouter)
+
+Assisted-by: Anthropic Claude Opus 5.5

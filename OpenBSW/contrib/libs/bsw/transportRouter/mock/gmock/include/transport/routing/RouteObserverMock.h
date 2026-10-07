@@ -13,6 +13,17 @@
 
 #pragma once
 
-#include "util/logger/Logger.h"
+#include "transport/routing/IRouteObserver.h"
 
-DECLARE_LOGGER_COMPONENT(TPGATEWAY)
+#include <gmock/gmock.h>
+
+namespace transport
+{
+class RouteObserverMock : public IRouteObserver
+{
+public:
+    MOCK_METHOD(void, routeResponded, (size_t routeIndex), (override));
+    MOCK_METHOD(void, routeTimedOut, (size_t routeIndex), (override));
+};
+
+} // namespace transport

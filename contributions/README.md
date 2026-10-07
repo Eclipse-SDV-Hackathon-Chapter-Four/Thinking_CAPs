@@ -29,8 +29,9 @@ handoffs and this repository; add other completed work as its artifacts are reco
   new local preparation, separate from the historic completed-fix inventory above;
   exported patch, native regressions and upstream PR draft, with publication pending.
 - [OpenBSW transportRouter packet](openbsw-transport-router/README.md): prepared upstream
-  contribution of a diagnostic gateway router module for Eclipse OpenBSW (issue draft,
-  signed-off patch, PR description, gate evidence); not yet submitted, no upstream issue yet.
+  contribution of a diagnostic gateway router module for Eclipse OpenBSW, checked against the
+  OpenBSW and Eclipse Foundation contribution rules ([compliance](openbsw-transport-router/compliance.md))
+  on current upstream `main`; the feature issue is a draft for the author's review, not filed.
 - [OpenBSW doipClient packet](openbsw-doip-client/README.md): prepared upstream contribution of
   a DoIP client transport layer, checked against the OpenBSW and Eclipse Foundation contribution
   rules ([compliance](openbsw-doip-client/compliance.md)); feature issue

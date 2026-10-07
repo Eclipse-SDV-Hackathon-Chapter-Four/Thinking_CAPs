@@ -16,6 +16,9 @@
 #   patch      commit (gitlint rules) and git format-patch into contributions/
 #   all        everything above, in order
 #
+# OBSW_BASE selects the OpenBSW base commit (default: the pinned revision of the lock file);
+# for the pull request use the current upstream main.
+#
 # Results: <volume>/openbsw-sil/runs/pr-<timestamp>/ and contributions/openbsw-transport-router/
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
@@ -25,7 +28,7 @@ MODULE_SRC="$OBSW_DIR/contrib/libs/bsw/transportRouter"
 PACKET="$REPO/contributions/openbsw-transport-router"
 WT="$OBSW_WORKSPACE/openbsw-pr"
 TOOLS="$OBSW_WORKSPACE/tools/bin"
-BASE="$(lock "['openbsw']['revision']")"
+BASE="${OBSW_BASE:-$(lock "['openbsw']['revision']")}"
 BRANCH="feature/transport-router"
 RUN="${RUN:-$OBSW_WORKSPACE/runs/pr-$(date +%Y%m%d-%H%M%S)}"
 export PATH="$TOOLS:$OBSW_VENV/bin:$PATH"
@@ -115,7 +118,8 @@ cmd_test() {
     --exclude "$WT/libs/bsw/transportRouter/src/transport/TpGatewayLogger.cpp" \
     --exclude-throw-branches --exclude-unreachable-branches \
     --json-summary-pretty --json-summary "$RUN/coverage-summary.json" \
-    --html-details "$RUN/coverage.html" --txt "$RUN/coverage.txt" "$build" > /dev/null
+    --html-details "$RUN/coverage.html" --txt "$RUN/coverage.txt" \
+    "$build/libs/bsw/transportRouter" > /dev/null
   cat "$RUN/coverage.txt"
 }
 
@@ -151,6 +155,10 @@ cmd_patch() {
     && echo "gitlint: ok" | tee -a "$RUN/gitlint.txt" || { cat "$RUN/gitlint.txt"; exit 1; }
   git -C "$WT" format-patch -1 --stdout > "$PACKET/0001-transport-router.patch"
   git -C "$WT" rev-parse HEAD > "$RUN/commit.txt"
+  mkdir -p "$PACKET/evidence"
+  cp "$RUN"/{junit.xml,ctest.txt,coverage.txt,coverage-summary.json,clang-tidy.txt,treefmt.txt,format-diff.txt,build-warnings.txt,copyright.txt,bazel-test.txt,gitlint.txt,commit.txt,changed-files.txt,tools.txt} \
+    "$PACKET/evidence/"
+  echo "$BASE" > "$PACKET/evidence/openbsw-base.txt"
   echo "patch: $PACKET/0001-transport-router.patch"
 }
 

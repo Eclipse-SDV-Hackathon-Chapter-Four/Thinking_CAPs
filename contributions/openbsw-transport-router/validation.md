@@ -1,58 +1,76 @@
-# Validation record — OpenBSW transportRouter contribution
+# Validation — transportRouter
 
-Prepared on 6 October 2026. Nothing has been submitted publicly, and no
-maintainer approval or merge is claimed.
+All checks ran on 7 October 2026 in a git worktree of OpenBSW `main` at
+`b0550871b7a44ae47bb9b7c68af84fb9115bfa77` with the module added, using
+`OBSW_BASE=b0550871… OpenBSW/scripts/openbsw-pr.sh all` from this repository. Nothing
+has been submitted publicly, and no maintainer approval or merge is claimed.
 
 | Item | Value |
 | --- | --- |
-| Upstream | <https://github.com/eclipse-openbsw/openbsw>, base `432b9be6098d99570ab8ebc32a7cbb895ca7bb63` |
 | Source of the change | `OpenBSW/contrib/libs/bsw/transportRouter` in this repository (the zonal gateway builds from the same files) |
-| Commit on the PR branch | `evidence/commit.txt` (author Jefferson Nascimento, `Signed-off-by`) |
-| Patch | `0001-transport-router.patch`, 16 files, +2353 lines; SHA-256 in `artifact-manifest.json` |
-| Reproduce | `OpenBSW/scripts/bootstrap.sh`, then `OpenBSW/scripts/openbsw-pr.sh all` (needs the external build volume) |
+| Commit on the PR branch | `08904a2031b6…` ([commit.txt](evidence/commit.txt)), author Jefferson Nascimento, `Signed-off-by`, `Assisted-by` |
+| Patch | [0001-transport-router.patch](0001-transport-router.patch), 17 files, +2586 lines |
+| Reproduce | `OpenBSW/scripts/bootstrap.sh`, `OpenBSW/scripts/openbsw-pr.sh tools`, then `OBSW_BASE=<main sha> OpenBSW/scripts/openbsw-pr.sh all` (needs the external build volume) |
 
-## Checks performed
-
-All checks ran on the PR branch: a git worktree of the pinned OpenBSW with the
-module added and the two registration lines.
-
-| Check | Tool and version | Result | Evidence |
+| Check | Command (in the OpenBSW worktree) | Result | Evidence |
 | --- | --- | --- | --- |
-| Unit tests | OpenBSW `tests-posix-debug`, GoogleTest/gMock, GCC 11.4, CMake 4.4 | 46/46 passed (42 new, 4 existing `TransportRouterSimple`) | `ctest.txt`, `junit.xml` |
-| Build warnings (unit-test build) | GCC 11.4 | 0 | `build-warnings.txt` |
-| Coverage | gcovr 7.2, `--exclude-throw-branches --exclude-unreachable-branches` | 100% lines (394/394), 99.1% branches, 100% functions | `coverage.txt`, `coverage-summary.json` |
-| Format gate (OpenBSW `.ci/format.py`) | treefmt 2.1.0, clang-format 17.0.6, cmake-format 0.6.13, buildifier 8.5.1 | clean (empty second-pass diff) | `treefmt.txt`, `format-diff.txt` |
-| Copyright check | OpenBSW `tools/cr_checker` | ok | `copyright.txt` |
-| clang-tidy | clang-tidy 19.1.7 with the repository `.clang-tidy` | 0 findings in the module | `clang-tidy.txt` |
-| Bazel | bazelisk 1.29.0 (SHA-256 as in the OpenBSW Dockerfile), Bazel from `.bazelversion` | 2/2 tests passed | `bazel-test.txt` |
-| Commit message | gitlint 0.19.1 with the repository `.gitlint` | ok | `gitlint.txt` |
-| Patch applies | `git am` on a clean worktree at the base | ok; tree identical to the verified branch (`38f6764325b1…`) | this record |
+| Format | `treefmt --no-cache` twice, `git diff --exit-code` | clean | [treefmt.txt](evidence/treefmt.txt), [format-diff.txt](evidence/format-diff.txt) |
+| Copyright | `tools/cr_checker/cr_checker.py` on the added and changed files | ok | [copyright.txt](evidence/copyright.txt) |
+| Unit tests | `cmake --preset tests-posix-debug`; build `transportRouterTest` and `transportRouterSimpleTest`; `ctest -L transportRouter` | 46/46 (42 new, 4 existing) | [ctest.txt](evidence/ctest.txt), [junit.xml](evidence/junit.xml) |
+| Build warnings | unit-test build log (`-Wall -Werror`) | 0 | [build-warnings.txt](evidence/build-warnings.txt) |
+| Coverage | gcovr on `src/`, without the logger file, throw and unreachable branches | 100 % lines (397/397), 99.1 % branches (330/333), 100 % functions | [coverage.txt](evidence/coverage.txt), [coverage-summary.json](evidence/coverage-summary.json) |
+| clang-tidy | repository `.clang-tidy` on the three sources | 0 findings | [clang-tidy.txt](evidence/clang-tidy.txt) |
+| Bazel | `bazel test //libs/bsw/transportRouter/... //libs/bsw/transportRouterSimple/...` (bazelisk 1.29.0) | 2/2 | [bazel-test.txt](evidence/bazel-test.txt) |
+| Documentation | `make html` in `doc/dev` (requirements of `doc/dev/requirements.txt`, Python 3.10, PlantUML 1.2024.7) | built, no warnings | [docs-build.log](evidence/docs-build.log) |
+| Commit message | `gitlint` with the repository `.gitlint` | ok | [gitlint.txt](evidence/gitlint.txt) |
+| Patch | `git format-patch -1`; `git am` onto a fresh `b0550871` worktree | applies; identical tree `c2f3e2f63d9a…` | [commit.txt](evidence/commit.txt) |
 
-Tool binaries were verified against the SHA-256 sums in OpenBSW's development
-Dockerfile, where it pins them (treefmt, buildifier, bazelisk).
+Tools: treefmt 2.1.0, clang-format 17.0.6, cmake-format 0.6.13, buildifier 8.5.1 (SHA-256
+pinned as in OpenBSW's Dockerfile), GCC 11.4, CMake 4.4, gcovr, clang-tidy 19.1.7,
+gitlint 0.19.1 ([tools.txt](evidence/tools.txt)).
 
-## Integration in the zonal gateway
+## Unit tests and OpenBSW test guidelines
 
-The same module runs in the Thinking CAPs zonal diagnostic gateway: POSIX,
-DoIP over lwIP/TAP, DoCAN on `vcan0`, OpenBSW UDS. The module uses no RTOS API
-directly, only OpenBSW's `async`; it was tested with both RTOS bindings.
+`doc/dev/guidelines/unittests.rst` is followed:
 
-- **Integration tests:** 28/28 passed on FreeRTOS and on ThreadX (the gateway's
-  current default). See `OpenBSW/evidence/gateway-it/results.json`, which
-  records the executable hash of the ThreadX run.
-- **NXP S32K148EVB (ThreadX and FreeRTOS):** 10/10 board tests. See
+- Suite `TransportRouterTest`; test names in CamelCase that describe the behaviour.
+- A Doxygen block before each of the 42 tests, with a brief and, for longer tests, a
+  detailed description.
+- No `if` in the tests. The fixture helpers keep one null check, so that a failed
+  expectation does not crash the run.
+- All mocks are `StrictMock`:
+  - `AbstractTransportLayerMock` and `TransportMessageProcessedListenerMock` from
+    `transport`
+  - `LockMock` from `async`
+  - the module's own `RouteObserverMock`, which is in `mock/gmock/include` with CMake
+    target `transportRouterMock` and Bazel target `transport_router_mock`
+- Tests are in an anonymous namespace.
+
+## Use in an application
+
+The same module source runs in the Thinking CAPs zonal diagnostic gateway (DoIP server,
+DoCAN, OpenBSW UDS and the [doipClient](../openbsw-doip-client/README.md) for Ethernet
+ECUs):
+
+- **POSIX** (FreeRTOS, lwIP on TAP, `vcan0`): 44/44 integration tests on 7 October 2026
+  after the changes above. Forwarding latency p95 was 1.9 ms (DoIP→CAN) and 0.9 ms
+  (CAN→DoIP). Results in `OpenBSW/evidence/gateway-it/results.json`.
+- **NXP S32K148EVB** (ThreadX 6.4.3, 100BASE-T1, no CAN adapter): 16/16 board tests
+  with the image built from these sources. Results in
   `OpenBSW/evidence/board-gateway-it/results.json`.
-- **ASPICE SWE.1–SWE.6 report:** `OpenBSW/aspice/report/aspice-swe-report.html`.
+- **ASPICE SWE.1–SWE.6 report:** `OpenBSW/aspice/report/aspice-swe-report.html`. The
+  unit test cases UTC-01 to UTC-13 trace to the test names above.
 
-## Not done / limitations
+## Limitations
 
 - **CI differences:** the checks ran locally, not in OpenBSW's Docker CI.
-  - clang-tidy was 19 instead of CI's 17.
+  - clang-tidy was 19.1.7, while CI uses version 17.
   - The full `tests-posix-*` matrix and the clang/C++23 CI configurations were not run.
-  - The Sphinx documentation build was not run.
-- **Prerequisites for submission:** opening the issue and agreeing on the
-  approach with the maintainers, and the Eclipse Contributor Agreement for the
-  author's email. Both are pending; CONTRIBUTING.md asks for them before a PR.
+
+  The CI run on the pull request is authoritative.
+- **Not yet done:** the feature issue is not filed. The commit and the PR description
+  reference it as `#TBD`; before the PR, replace that with the issue number and
+  regenerate the patch on the then-current `main`.
 - **Design limits** (both listed in the PR description):
   - DoCAN STmin and block size are per transport layer.
   - The DoIP acknowledgement is sent when the router accepts the message.

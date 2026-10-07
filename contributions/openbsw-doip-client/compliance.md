@@ -57,8 +57,6 @@ confirm it), **open** (to do at submission).
 
 ## Related packet: transportRouter
 
-The earlier [transportRouter packet](../openbsw-transport-router/README.md) does not yet
-meet the same rules: its 42 tests have no Doxygen descriptions, two mocks are `NiceMock`,
-the `IRouteObserver` mock lives in the test instead of a module `mock/` folder, test helpers
-contain `if` logic, its files and commit carry no AI disclosure, and it is based on
-`432b9be6`. Bring it to the same state before submitting it.
+The [transportRouter packet](../openbsw-transport-router/README.md) was brought to the same
+rules on 7 October 2026 ([its compliance check](../openbsw-transport-router/compliance.md));
+its feature issue is a draft for the author's review.

@@ -1,16 +1,18 @@
 # Prepared OpenBSW contribution: transportRouter (diagnostic gateway router)
 
-Prepared on 6 October 2026. Nothing has been submitted publicly, and no
-maintainer approval or merge is claimed.
+Prepared on 6 October 2026 and brought up to the OpenBSW and Eclipse Foundation rules on
+7 October 2026. Nothing has been submitted publicly: the feature issue is a draft for the
+author's review, and no maintainer approval or merge is claimed.
 
 - **Upstream:** [eclipse-openbsw/openbsw](https://github.com/eclipse-openbsw/openbsw),
-  base `432b9be6098d99570ab8ebc32a7cbb895ca7bb63`.
+  base `main` at `b0550871b7a44ae47bb9b7c68af84fb9115bfa77`.
 - **Change:** a new module `libs/bsw/transportRouter` and two registration lines.
   `TransportRouterSimple` is unchanged.
 
 OpenBSW has no router that forwards UDS by logical address: `TransportRouterSimple`
 only serves the local diagnostic server. This module adds that, so an OpenBSW node
-can act as a DoIP-to-DoCAN diagnostic gateway. It came out of the
+can act as a diagnostic gateway from DoIP to DoCAN (and, with the
+[doipClient](../openbsw-doip-client/README.md), to DoIP). It came out of the
 [OpenBSW zonal diagnostic gateway](../../OpenBSW/README.md), which builds from the
 same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRouter).
 
@@ -18,39 +20,45 @@ same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRout
 
 | Artifact | Content |
 | --- | --- |
-| [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template, to open first (CONTRIBUTING.md) |
-| [0001-transport-router.patch](0001-transport-router.patch) | `git format-patch` of the signed-off commit |
-| [commit-message.txt](commit-message.txt) | Commit message (gitlint-checked) |
-| [PR-description.md](PR-description.md) | Pull request title and body |
-| [validation.md](validation.md) | Checks performed, tool versions, results and limitations |
-| [evidence/](evidence/) | Unit test, coverage, format, copyright, clang-tidy, Bazel and gitlint outputs |
+| [compliance.md](compliance.md) | Every OpenBSW, Eclipse Foundation and repository rule checked, with status and evidence |
+| [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template, to open first (CONTRIBUTING.md); not filed |
+| [0001-transport-router.patch](0001-transport-router.patch) | `git format-patch` of the signed-off commit, with `Assisted-by` trailer |
+| [commit-message.txt](commit-message.txt) | Commit message (gitlint-checked); `Resolves: #TBD` until the issue exists |
+| [PR-description.md](PR-description.md) | Pull request title and body in the OpenBSW template |
+| [validation.md](validation.md) | Checks performed, tools, results and limitations |
+| [evidence/](evidence/) | Unit test, coverage, format, copyright, clang-tidy, Bazel, docs and gitlint outputs |
 | [artifact-manifest.json](artifact-manifest.json) | SHA-256 of every file in this folder |
 
 ## Results at a glance
 
 | Check | Result |
 | --- | --- |
-| Unit tests | 46/46 passed |
-| Coverage | 100% lines, 99.1% branches |
-| Format | clean |
-| Copyright | ok |
-| clang-tidy | 0 findings |
+| Unit tests | 46/46 passed (42 new with Doxygen descriptions and `StrictMock`s, 4 existing) |
+| Coverage | 100 % lines, 99.1 % branches, 100 % functions |
+| Format · copyright · clang-tidy | clean · ok · 0 findings |
 | Bazel | 2/2 passed |
+| Documentation build | no warnings |
 | gitlint | ok |
-| Patch | applies to the base with an identical tree |
-| Gateway integration | 28/28 passed |
+| Patch | applies to `main` with an identical tree |
+| Gateway integration | 44/44 on POSIX, 16/16 on the S32K148EVB |
 
-## Submitting
+## Before submitting (author)
 
-1. Sign the Eclipse Contributor Agreement with `jnsagai@gmail.com`.
-2. Open the issue from [ISSUE-draft.md](ISSUE-draft.md) and agree on the approach.
-3. Fork the repository and apply the patch:
+1. Review the code (AI-assisted, see [compliance.md](compliance.md)) and confirm it as for
+   `doipClient`. ECA (`jnascimento6p0`, `jnsagai@gmail.com`), copyright owner and AI-use
+   policy are already confirmed.
+2. Review and open the issue from [ISSUE-draft.md](ISSUE-draft.md). Wait for the
+   committers to agree on the approach.
+3. Replace `#TBD` with the issue number in [commit-message.txt](commit-message.txt) and
+   [PR-description.md](PR-description.md), then regenerate the patch on the then-current
+   `main`:
 
    ```bash
-   git am 0001-transport-router.patch
+   OBSW_BASE=<main sha> OpenBSW/scripts/openbsw-pr.sh all
    ```
 
-4. Push and open the PR with [PR-description.md](PR-description.md), filling in the issue number.
+4. Fork, apply the patch (`git am 0001-transport-router.patch`), push, and open the PR
+   with [PR-description.md](PR-description.md) and the tag `tested_on_hw`.
 5. Record the issue and PR URLs here and add an entry to [registry.json](../registry.json).
 
 To verify the integrity of this folder:
