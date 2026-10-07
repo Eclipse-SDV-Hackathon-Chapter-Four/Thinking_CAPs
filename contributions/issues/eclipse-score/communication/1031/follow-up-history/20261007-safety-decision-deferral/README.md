@@ -1,14 +1,14 @@
 # Communication #1031 — Clarify AoU traceability and visibility
 
-Current status: **public_aou_api_verified_production_integration_blocked**. Public AoU API/fixture verified; actual Config Management provider build/TRLC pass. Production safety decisions are deferred at user request to a separate Config Management follow-up; the recorded full-index failure and remaining integration checks are retained. Native migration approval remains pending.
+Current status: **public_aou_api_verified_production_integration_blocked**. Public AoU API/fixture verified; actual Config Management provider build/TRLC pass. Full safety index fails on legacy/placeholder data; AoU dispositions and native migration approval remain pending.
 
 Use the [2026-10-07 native contribution packet](../../../../communication-followup-20261007/README.md),
 [final verification](../../../../communication-followup-20261007/verification.md) and
 [PR draft](../../../../communication-followup-20261007/pr-communication.md).
 The submission patch targets `cef680454e8586daca9f953084dca33fb3759d0c`.
-Native owner acceptance and required hosted checks remain pending.
-[Draft PR #1342](https://github.com/eclipse-score/communication/pull/1342) is open for user review; no merge or issue closure is claimed. For #1031, complete production integration remains
-incomplete. Memory adequacy, QM/ASIL classification, received-AoU dispositions and safety-record/implementation evidence are explicitly deferred in both PR drafts. The companion remains a draft and #1031 stays open.
+Native owner acceptance and required hosted checks remain pending; no upstream PR
+or issue closure is claimed. For #1031, complete production integration remains
+blocked on the native safety decisions documented in the packet.
 
 The imported patch/draft and status below are **historical**. They are retained
 for chronology; apply the new combined patch for the proposed contribution.
