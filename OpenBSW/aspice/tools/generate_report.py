@@ -389,7 +389,7 @@ def qualification(wp, ws, upstream, checks, it, board, board_it):
         "sil-baseline": (sil["result"]["tests"] == 104 and sil["result"]["failures"] == 0 and sil["result"]["errors"] == 0
                          and sil["openbsw_revision"] == checks["openbsw_lock"],
                          f"{sil['result']['tests'] - sil['result']['failures'] - sil['result']['errors']}/{sil['result']['tests']} "
-                         f"passed at {sil['openbsw_revision'][:12]}"),
+                         f"passed, {sil['preset'].split()[0]} at {sil['openbsw_revision'][:12]}"),
         "upstream-gates": (gates_ok, ", ".join(f"{k} {v}" for k, v in upstream["steps"].items())
                            + f"; bazel {sum(s == 'PASSED' for _, s in upstream['bazel'])}/{len(upstream['bazel'])}"),
         "openbsw-pinned": (checks["openbsw_head"] == checks["openbsw_lock"] and checks["openbsw_clean"],

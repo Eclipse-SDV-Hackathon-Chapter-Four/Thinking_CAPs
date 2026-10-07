@@ -20,7 +20,7 @@ The report generator parses this table: ID | Source | Test case | Method | Verif
 
 | ID | Source | Test case | Method | Verifies |
 | --- | --- | --- | --- | --- |
-| QTC-01 | auto:sil-baseline | OpenBSW SIL suite (uds, enet, docan) on the pinned revision: 104/104 | Test | SWR-050 |
+| QTC-01 | auto:sil-baseline | OpenBSW SIL suite (uds, enet, docan) on the pinned revision, `posix-threadx`: 104/104 | Test | SWR-050 |
 | QTC-02 | auto:upstream-gates | Contributed module in the unmodified pinned OpenBSW: format gate, copyright check, unit tests, Bazel tests | Test | SWR-053 |
 | QTC-03 | auto:openbsw-pinned | The OpenBSW checkout is at the locked revision without tracked modifications | Analysis | SWR-053 |
 | QTC-04 | auto:no-vehicle-middleware | The gateway executable contains no SOME/IP, middleware or Zenoh symbols | Analysis | SWR-031 |

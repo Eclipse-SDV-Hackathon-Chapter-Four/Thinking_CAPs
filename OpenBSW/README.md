@@ -85,7 +85,7 @@ udisksctl loop-setup -f /media/jefferson/Lexar/.s-core-build/build-volume-v1.ext
 udisksctl mount -b /dev/loopN           # mounts at /media/jefferson/11c42dee-…
 
 sudo OpenBSW/scripts/net-up.sh          # vcan0 + tap0 (reuses existing ones)
-OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-freertos build
+OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-threadx build
 OpenBSW/scripts/run.sh                  # start the POSIX app; Ctrl-C stops it
 OpenBSW/scripts/sil-test.sh             # OpenBSW's own SIL suite (uds, enet, docan)
 OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 28 integration tests, record evidence
@@ -97,10 +97,13 @@ Run the gateway by hand with
 `ZGW_CAN_INTERFACE=vcan0 ZGW_TAP_INTERFACE=tap0 <build>/app/application/openbsw-zonal-gw.elf`.
 It answers DoIP at `192.168.0.201` as logical address `0x1010`.
 
-**Baseline result (6 October 2026):** OpenBSW `432b9be6`, `posix-freertos`,
+**Baseline result (7 October 2026):** OpenBSW `432b9be6`, `posix-threadx`,
 104 of 104 tests pass. The suite covers UDS over CAN (`0x7E0`/`0x7E8`) and
 over DoIP (`192.168.0.201:13400`), Ethernet, and DoCAN. Evidence and manifest
-are in [evidence/sil-baseline](evidence/sil-baseline/).
+are in [evidence/sil-baseline](evidence/sil-baseline/). The first baseline,
+on `posix-freertos` (6 October), also passed 104/104 and sent on the same
+CAN IDs ([freertos/](evidence/sil-baseline/freertos/)). `sil-test.sh` takes
+`ZGW_RTOS=FREERTOS` to repeat it.
 
 Findings for the gateway work:
 
