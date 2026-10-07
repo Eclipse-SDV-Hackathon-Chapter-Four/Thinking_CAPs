@@ -1,0 +1,146 @@
+/********************************************************************************
+ * Copyright (c) 2025 Accenture
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+// Modified for the zonal diagnostic gateway: no DEMO, RUST, ROUTING or SOMEIP
+// components, no TPROUTER (TransportRouter replaces TransportRouterSimple); adds GATEWAY
+// and the router's TPGATEWAY.
+
+#include "logger/logger.h"
+
+/* start: adding logger includes */
+
+#include <lifecycle/LifecycleLogger.h>
+#include <transport/TpGatewayLogger.h>
+#include <logger/ConsoleLogger.h>
+#include <safeUtils/SafetyLogger.h>
+#ifdef PLATFORM_SUPPORT_CAN
+#include <can/CanLogger.h>
+#ifdef PLATFORM_SUPPORT_TRANSPORT
+#include <docan/common/DoCanLogger.h>
+#endif // PLATFORM_SUPPORT_TRANSPORT
+#endif // PLATFORM_SUPPORT_CAN
+#if defined(PLATFORM_SUPPORT_TRANSPORT) && defined(PLATFORM_SUPPORT_UDS)
+#include <uds/UdsLogger.h>
+#endif // PLATFORM_SUPPORT_UDS && TRANSPORT
+#ifdef PLATFORM_SUPPORT_ETHERNET
+#include <ethernet/EthernetLogger.h>
+#include <lwipSocket/utils/LwipLogger.h>
+#include <tcp/TcpLogger.h>
+#include <udp/UdpLogger.h>
+#ifdef PLATFORM_SUPPORT_TRANSPORT
+#include <doip/server/DoIpServerLogger.h>
+#endif // PLATFORM_SUPPORT_TRANSPORT
+#endif // PLATFORM_SUPPORT_ETHERNET
+
+/* end: adding logger includes */
+
+DEFINE_LOGGER_COMPONENT(BSP);
+DEFINE_LOGGER_COMPONENT(COMMON);
+DEFINE_LOGGER_COMPONENT(GLOBAL);
+DEFINE_LOGGER_COMPONENT(SAFETY);
+DEFINE_LOGGER_COMPONENT(ETHERNET);
+DEFINE_LOGGER_COMPONENT(DOIP);
+DEFINE_LOGGER_COMPONENT(UDS);
+DEFINE_LOGGER_COMPONENT(LWIP);
+DEFINE_LOGGER_COMPONENT(GATEWAY);
+
+#include <async/AsyncBinding.h>
+#include <console/AsyncCommandWrapper.h>
+#include <logger/ComponentConfig.h>
+#include <logger/ComponentMapping.h>
+#include <logger/DefaultLoggerCommand.h>
+#include <logger/LoggerComposition.h>
+
+START_LOGGER_COMPONENT_MAPPING_INFO_TABLE(loggerComponentInfoTable)
+/* start: adding logger components */
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, BSP, ::util::format::Color::DEFAULT_COLOR)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, COMMON, ::util::format::Color::DEFAULT_COLOR)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, GLOBAL, ::util::format::Color::DEFAULT_COLOR)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, LIFECYCLE, ::util::format::Color::DARK_GRAY)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, CONSOLE, ::util::format::Color::DEFAULT_COLOR)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, SAFETY, ::util::format::Color::DEFAULT_COLOR)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, GATEWAY, ::util::format::Color::LIGHT_GREEN)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, TPGATEWAY, ::util::format::Color::LIGHT_YELLOW)
+#ifdef PLATFORM_SUPPORT_CAN
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, CAN, ::util::format::Color::LIGHT_BLUE)
+#ifdef PLATFORM_SUPPORT_TRANSPORT
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, DOCAN, ::util::format::Color::LIGHT_GRAY)
+#endif // PLATFORM_SUPPORT_TRANSPORT
+#endif // PLATFORM_SUPPORT_CAN
+#ifdef PLATFORM_SUPPORT_TRANSPORT
+#ifdef PLATFORM_SUPPORT_UDS
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, UDS, ::util::format::Color::LIGHT_YELLOW)
+#endif // PLATFORM_SUPPORT_UDS
+#endif // PLATFORM_SUPPORT_TRANSPORT
+#ifdef PLATFORM_SUPPORT_ETHERNET
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, ETHERNET, ::util::format::Color::MAGENTA)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, TCP, ::util::format::Color::CYAN)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, UDP, ::util::format::Color::LIGHT_GRAY)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, LWIP, ::util::format::Color::LIGHT_YELLOW)
+#ifdef PLATFORM_SUPPORT_TRANSPORT
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, DOIP, ::util::format::Color::LIGHT_GREEN)
+#endif // PLATFORM_SUPPORT_TRANSPORT
+#endif // PLATFORM_SUPPORT_ETHERNET
+
+/* end: adding logger components */
+END_LOGGER_COMPONENT_MAPPING_INFO_TABLE();
+
+DEFINE_LOGGER_COMPONENT_MAPPING(
+    LoggerComponentMappingType,
+    loggerComponentMapping,
+    loggerComponentInfoTable,
+    ::util::logger::LevelInfo::getDefaultTable(),
+    GLOBAL);
+
+namespace logger
+{
+using ComponentConfigType = ComponentConfig<LoggerComponentMappingType::MappingSize>;
+ComponentConfigType loggerComponentConfig(loggerComponentMapping);
+LoggerComposition loggerComposition(loggerComponentMapping, "ZonalGw");
+
+DefaultLoggerCommand loggerCommand(loggerComponentConfig);
+
+::console::AsyncCommandWrapper
+    asyncCommandWrapper(loggerCommand.root(), ::async::AsyncBinding::AdapterType::TASK_IDLE);
+
+void init()
+{
+    loggerComposition.start(
+        LoggerComposition::ConfigStart::create<ComponentConfigType, &ComponentConfigType::start>(
+            loggerComponentConfig));
+}
+
+void run() { loggerComposition.run(); }
+
+void flush()
+{
+    loggerComposition.stop(
+        LoggerComposition::ConfigStop::create<ComponentConfigType, &ComponentConfigType::shutdown>(
+            loggerComponentConfig));
+}
+
+using ::util::logger::Logger;
+using ::util::logger::LWIP;
+
+// lwIP requires a C-style variadic callback; delegate to Logger's va_list overload.
+// NOLINTBEGIN(cppcoreguidelines-pro-type-vararg)
+extern "C" void log_lwipInfo(char const* message, ...)
+{
+    va_list ap;
+    va_start(ap, message);
+    Logger::log(LWIP, ::util::logger::LEVEL_INFO, message, ap);
+    va_end(ap);
+}
+
+// NOLINTEND(cppcoreguidelines-pro-type-vararg)
+
+extern "C" void log_lwipError(char const* message) { Logger::error(LWIP, message); }
+
+} // namespace logger

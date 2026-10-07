@@ -1,0 +1,77 @@
+/********************************************************************************
+ * Copyright (c) 2025 Accenture
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Apache License Version 2.0 which is available at
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ********************************************************************************/
+
+// Modified for the zonal diagnostic gateway: TAP interface from ZGW_TAP_INTERFACE.
+
+#include "systems/TapEthernetSystem.h"
+
+#include <cstdlib>
+
+#include "ethConfig.h"
+
+#include <poll.h>
+
+namespace systems
+{
+
+TapEthernetSystem::TapEthernetSystem(::async::ContextType const context)
+: _context(context), _rxTimeout(), _driver(ethX::MAC_ADDRESS)
+{}
+
+void TapEthernetSystem::init() { transitionDone(); }
+
+void TapEthernetSystem::run()
+{
+    // gateway: TAP interface selectable with ZGW_TAP_INTERFACE, default tap0 (SWR-050)
+    char const* tapName = ::std::getenv("ZGW_TAP_INTERFACE");
+    if ((tapName == nullptr) || (tapName[0] == '\0'))
+    {
+        tapName = "tap0";
+    }
+    if (!_driver.start(tapName))
+    {
+        ::util::logger::Logger::critical(
+            ::util::logger::ETHERNET, "TapEthernetDriver start failed!");
+    }
+    else
+    {
+        ::util::logger::Logger::info(::util::logger::ETHERNET, "TapEthernetDriver started!");
+        ::async::scheduleAtFixedRate(
+            _context, *this, _rxTimeout, 1, ::async::TimeUnitType::MILLISECONDS);
+    }
+    transitionDone();
+}
+
+void TapEthernetSystem::shutdown()
+{
+    _driver.stop();
+    _rxTimeout.cancel();
+    transitionDone();
+}
+
+void TapEthernetSystem::execute()
+{
+    pollfd pollFds[1];
+    pollFds[0].fd     = _driver.getTapInterfaceFd();
+    pollFds[0].events = POLLIN;
+    while (poll(pollFds, 1, 0) > 0)
+    {
+        if ((pollFds[0].revents & POLLIN) != 0)
+        {
+            _driver.readFrame();
+        }
+    }
+}
+
+bool TapEthernetSystem::getLinkStatus(size_t const /*port*/) { return true; }
+
+bool TapEthernetSystem::writeFrame(netif* /*ni*/, pbuf* pb) { return _driver.writeFrame(pb); }
+
+} // namespace systems

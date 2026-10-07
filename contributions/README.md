@@ -44,6 +44,9 @@ handoffs and this repository; add other completed work as its artifacts are reco
   12 per-issue folders (#1261, #250, #560, #781, #490, #173, #1264, #1263, #794, #782, #1062, #741)
   with sealed evidence, upstream snapshots and PR drafts; portable branch bundles for #1261, #250,
   #560 (Linux-verified) and #781, #490 (drafts). Nothing pushed upstream; acceptance pending.
+- [OpenBSW transportRouter packet](openbsw-transport-router/README.md): prepared upstream
+  contribution of a diagnostic gateway router module for Eclipse OpenBSW (issue draft,
+  signed-off patch, PR description, gate evidence); not yet submitted, no upstream issue yet.
 - [Submission checklist](submission/README.md) and [hackathon PR draft](submission/hackathon-pr-description.md).
 
 ## Verify the evidence

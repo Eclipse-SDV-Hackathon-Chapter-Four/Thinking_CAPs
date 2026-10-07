@@ -1,0 +1,44 @@
+@startuml context
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Context — OpenBSW zonal diagnostic gateway in the Thinking CAPs blueprint
+left to right direction
+
+actor "Diagnostic user\n(dashboard, SOVD client)" as U
+
+package "Diagnostics" {
+  [OpenSOVD gateway\n:7690 /sovd] as SOVD
+  [Classic Diagnostic Adapter\n(CDA) :20002\nMDD for 0x1010, 0x1020] as CDA
+}
+
+rectangle "OpenBSW zonal diagnostic gateway\nDoIP 0x1010 · router · UDS" as GW #E8F1FB
+
+queue "X-Verse CAN bus\nvcan0 | udp_multicast" as BUS
+
+node "Zonal ECUs (classic CAN)" {
+  [ThreadX rear lighting\n0x1020 · 0x7E1/0x7E9] as TX
+  [Front zone ECU (future)\n0x1030 · 0x7E2/0x7EA] as FZ
+}
+
+package "Cruise-control use case (not touched)" #F2F2F2 {
+  [S-CORE cruise app\n+ sovd_adapter] as SC
+  [Zenoh2CAN bridge\nVCU · CARLA] as Z
+}
+
+U --> SOVD : REST
+SOVD --> CDA : SOVD components
+CDA --> GW : IF-01 UDS over DoIP\nUDP/TCP 13400
+GW --> BUS : IF-02 ISO-TP\n0x7DF, 0x7E1, 0x7E2
+BUS --> GW : 0x7E9, 0x7EA
+BUS <--> TX : ISO-TP diag +\n0x1F1/0x1F4 lighting
+BUS <--> FZ
+SOVD --> SC : Path A (unchanged)
+BUS <--> Z : 0x1F1/0x1F4\n(ignored by gateway)
+
+note bottom of GW
+  Ignores every CAN ID except the configured
+  response IDs; no Zenoh, no SOME/IP
+  (SWR-030, SWR-031)
+end note
+@enduml

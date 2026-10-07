@@ -1,0 +1,52 @@
+@startuml classify
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title DD-01 — message classification in TransportRouter
+
+start
+:getTransportMessage(bus, source, target, size);
+if (bus == local bus?) then (yes)
+  :allocate(size)\n(UDS response or functional copy);
+  stop
+endif
+if (source in tester range?) then (yes)
+  if (target == local address?) then (yes)
+    :allocate(4095) — UDS reuses the buffer;
+  elseif (target == functional?) then (yes)
+    if (size > maxFunctionalLength?) then (yes)
+      :TPMSG_SIZE_TOO_LARGE → NACK 0x04;
+      stop
+    endif
+    :allocate(4095);
+  else (route address?)
+    if (route known?) then (no)
+      :count unknown target;\nTPMSG_INVALID_TGT_ADDRESS → NACK 0x03;
+      stop
+    endif
+    if (size > route.maxLength?) then (yes)
+      :count too large;\nTPMSG_SIZE_TOO_LARGE → NACK 0x04;
+      stop
+    endif
+    if (route state != IDLE?) then (yes)
+      :count busy;\nTPMSG_NO_MSG_AVAILABLE → NACK 0x05;
+      stop
+    endif
+    :allocate(size); route → RESERVED;
+  endif
+  stop
+endif
+if (source is a route address on its bus?) then (yes)
+  if (request pending on route or functional window open?) then (yes)
+    if (request pending?) then (yes)
+      :deadline = now + max(P2*, 2 s)\n(segmented response may outlast P2);
+    endif
+    :allocate(size);
+  else (no)
+    :count discarded;\nTPMSG_NOT_RESPONSIBLE;
+  endif
+else (no)
+  :TPMSG_NOT_RESPONSIBLE;
+endif
+stop
+@enduml
