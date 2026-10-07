@@ -44,14 +44,16 @@ new module (see [DoIP routes](#doip-routes-ethernet-zonal-ecus)).
 | Integration tests | 44/44 on the Linux host against simulated CAN ECUs and a simulated Ethernet ECU ([evidence/gateway-it](evidence/gateway-it/results.json)); 16/16 on the S32K148EVB, 6 of them over DoIP to the Ethernet ECU ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
 | CAN bus load (SWR-032) | The gateway paces its own frames (≥ 3 ms apart): worst case 9.0 % of 500 kbit/s, measured peak 7.9 % |
 | Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel pass. `doipClient` on current upstream `main`: format, copyright, unit tests, clang-tidy, Bazel, docs build and gitlint pass ([packet](../contributions/openbsw-doip-client/README.md)) |
-| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 32/39 requirements verified; 7 partially, waiting only for the live qualification campaigns |
+| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 33/39 requirements verified; 6 partially, waiting only for the live qualification campaigns QTC-12 and QTC-13 |
 
 Open items, all of them visible in the report:
 
-- **Live campaigns not run** (QTC-12, QTC-13, QTC-14):
+- **Live campaigns not run** (QTC-12, QTC-13):
   - X-Verse + CARLA cruise-control regression with the gateway
   - OpenSOVD → CDA → gateway (needs an MDD for the gateway and its nodes)
-  - ThreadX rear lighting ECU with a UDS-on-CAN server (OP-2)
+- The ThreadX rear lighting ECU answers through the gateway since its UDS-on-CAN
+  server (branch `feature/threadx-uds-server`): QTC-14 passed 5/5
+  ([evidence/qtc14-threadx](evidence/qtc14-threadx/results.json)).
 - CAN routing on the board needs a CAN peer (e.g. a USB-CAN adapter); routing
   on the board is verified over DoIP instead.
 

@@ -42,6 +42,7 @@ IT_EVIDENCE = OBSW / "evidence" / "gateway-it"
 SIL_EVIDENCE = OBSW / "evidence" / "sil-baseline"
 BOARD_IT_EVIDENCE = OBSW / "evidence" / "board-gateway-it"
 BOARD_BASELINE = OBSW / "evidence" / "board-baseline"
+QTC14_EVIDENCE = OBSW / "evidence" / "qtc14-threadx"
 # gateway RTOS, same switch and defaults as the scripts: FreeRTOS for the POSIX simulation
 # (OP-8), ThreadX on the S32K148EVB; ZGW_RTOS overrides both
 RTOS = os.environ.get("ZGW_RTOS", "FREERTOS")
@@ -471,6 +472,15 @@ def qualification(wp, ws, upstream, checks, it, board, board_it, doip):
         f"({'current' if pc_current else 'stale'} executable), S32K148EVB "
         f"{sum(t['status'] == 'passed' for t in doip_board)}/{len(doip_board)} "
         f"({'current' if board_now else 'stale'} image)")
+    qtc14 = (json.loads((QTC14_EVIDENCE / "results.json").read_text())
+             if (QTC14_EVIDENCE / "results.json").exists() else None)
+    qtc14_current = bool(qtc14) and qtc14.get("executable_sha256") == checks["elf_sha256"]
+    qtc14_tests = (qtc14 or {}).get("tests", [])
+    auto["threadx-ecu"] = (
+        bool(qtc14_tests) and qtc14_current and all(t["status"] == "passed" for t in qtc14_tests),
+        f"{sum(t['status'] == 'passed' for t in qtc14_tests)}/{len(qtc14_tests)} with the ThreadX controller "
+        f"{(qtc14 or {}).get('threadx', {}).get('commit', '?')} on vcan0 "
+        f"({'current' if qtc14_current else 'stale'} gateway executable)")
     doip_cases = doip["cases"]
     doip_lines = doip["coverage"]["line_percent"]
     auto["doip-client-gates"] = (

@@ -667,7 +667,7 @@ gateway shall add at most 10 ms in each direction at the 95th percentile:
 ## Open points
 
 - **OP-1:** confirm the DoIP logical addresses and functional address the CDA expects, and author the MDD for `0x1010` and `0x1020` (SWR-001, SWR-052).
-- **OP-2:** the ThreadX rear lighting ECU needs a UDS-on-CAN server for SWR-012 and SWR-024 to be qualified end to end. Until then, IT uses a simulated ECU.
+- **OP-2 (closed):** the ThreadX rear lighting ECU has a UDS-on-CAN server since version 1.1.0 (branch `feature/threadx-uds-server`, a separate change to `ThreadX/` so that this branch stays within `OpenBSW/`, SWR-033). QTC-14 qualifies the route end to end with the actual controller; IT keeps the simulated ECU for failure modes.
 - **OP-3 (closed):** `TransportRouterSimple` cannot route by logical address. The router is a new OpenBSW module, `transportRouter`, prepared as an upstream contribution (AD-02).
 - **OP-4:** `U0140`/`U0141` are illustrative fault codes; align them with the MDD.
 - **OP-5:** ISO-TP STmin and block size are one setting for all routes (OpenBSW DoCAN parameters are per transport layer); per-route values need an upstream DoCAN extension.
