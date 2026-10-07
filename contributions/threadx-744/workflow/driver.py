@@ -176,7 +176,7 @@ def agent(role):
     before = patch_hash() if readonly else None
     with (logdir / (stem + ".jsonl")).open("w") as out, (logdir / (stem + ".stderr")).open("w") as err:
         result = subprocess.run(argv, input=prompt, text=True, stdout=out, stderr=err,
-                                env=env, timeout=1200)
+                                env=env, timeout=1800)
     write("agents/" + stem + ".invocation.json", {"role": role, "argv": argv,
           "model": MODEL, "reasoning_effort": EFFORT, "exit_code": result.returncode})
     if result.returncode:
@@ -204,6 +204,17 @@ def freeze():
         raise RuntimeError("Patch escaped the reviewed #744 scope")
     git("diff", "--check", base())
     data = patch_bytes()
+    # Preserve evidence before a repair replaces the current candidate records.
+    if (EVIDENCE / "freeze.json").exists():
+        previous = read("freeze.json")
+        history = EVIDENCE / "history" / (previous["frozen_at"].replace(":", "") + "-" + previous["patch_sha256"][:12])
+        history.mkdir(parents=True, exist_ok=True)
+        for name in ["freeze.json", "contribution.patch", "verification.json",
+                     "technical-review.json", "process-review.json", "last-error.json"]:
+            if (EVIDENCE / name).exists():
+                shutil.copy2(EVIDENCE / name, history / name)
+        if (EVIDENCE / "verification").exists():
+            shutil.copytree(EVIDENCE / "verification", history / "verification", dirs_exist_ok=True)
     (EVIDENCE / "contribution.patch").write_bytes(data)
     write("freeze.json", {"patch_sha256": hashlib.sha256(data).hexdigest(),
           "base_sha": base(), "head_sha": git("rev-parse", "HEAD"), "files": paths,
@@ -217,6 +228,17 @@ def verify():
         raise RuntimeError("Verification input differs from frozen patch")
     result = {"status": "fail", "patch_sha256": patch_hash(), "checks": [], "limitations": []}
     write("verification.json", result)
+    # A new patch gets fresh counters, CTest XML and gcovr output, including repairs.
+    for path in [EVIDENCE / "build", EVIDENCE / "verification"]:
+        if path.exists():
+            shutil.rmtree(path)
+    suite_dirs = {"tx": "test/tx/cmake", "smp": "test/smp/cmake",
+                  "freertos": "test/freertos/cmake"}
+    for directory in suite_dirs.values():
+        for name in ["build", "coverage_report", "test_reports"]:
+            path = SOURCE / directory / name
+            if path.exists():
+                shutil.rmtree(path)
     docker(["gcc-14", "--version"], log="verification/toolchain.log")
     result["image_id"] = run(["docker", "image", "inspect", IMAGE, "--format", "{{.Id}}"], cwd=PACKAGE).stdout.decode().strip()
     baseline = ROOT / "baseline"
@@ -250,7 +272,7 @@ def verify():
         result["checks"].append({"name": name, "status": "expected-failure" if name == "baseline" else "pass", **measured})
         write("verification.json", result)
     # Serialize suites and gcovr. Never hide a first failure with until-pass retries.
-    for suite, directory in [("tx", "test/tx/cmake"), ("smp", "test/smp/cmake"), ("freertos", "utility/rtos_compatibility_layers/FreeRTOS")]:
+    for suite, directory in suite_dirs.items():
         coverage = "ON" if suite in ["tx", "smp"] else "OFF"
         build = docker(["env", "TX_COVERAGE=" + coverage, "CTEST_REPEAT_FAIL=1", "CTEST_TIMEOUT=120",
                         "bash", f"scripts/build_{suite}.sh"], timeout=1800,
@@ -259,8 +281,14 @@ def verify():
                         "bash", f"scripts/test_{suite}.sh"], timeout=2400,
                        log=f"verification/{suite}-test.log")
         result["checks"].append({"name": suite, "status": "pass", "build": build, "test": tests})
+        reports = EVIDENCE / "verification" / suite
+        reports.mkdir(parents=True, exist_ok=True)
+        for path in (SOURCE / directory / "build").glob("*/*.xml"):
+            shutil.copy2(path, reports / (path.parent.name + "-" + path.name))
         if suite in ["tx", "smp"]:
-            report = ET.parse(SOURCE / directory / "coverage_report/merged.xml").getroot()
+            coverage_path = SOURCE / directory / "coverage_report/merged.xml"
+            shutil.copy2(coverage_path, reports / "coverage-merged.xml")
+            report = ET.parse(coverage_path).getroot()
             line_rate = float(report.attrib["line-rate"])
             lines = int(report.attrib["lines-valid"])
             if lines == 0 or line_rate < 0.99:
@@ -269,14 +297,15 @@ def verify():
                                                    "branch_rate": report.attrib.get("branch-rate")}
         write("verification.json", result)
     for name, args in [("ai-disclosure", ["bash", "scripts/check_ai_disclosure.sh"]),
-                       ("port-consistency", ["bash", "scripts/check_ports.sh"])]:
+                       ("port-consistency", ["bash", "scripts/check_ports.sh", "--no-regen"])]:
         measured = docker(args, timeout=600, log="verification/" + name + ".log")
         result["checks"].append({"name": name, "status": "pass", **measured})
     git("diff", "--check", base())
     if patch_hash() != frozen["patch_sha256"]:
         raise RuntimeError("Source changed while deterministic verification ran")
     result["status"] = "pass"
-    result["limitations"] = ["RISC-V, Arm GCC/clang, Cortex-M and FVP are verified by upstream PR CI; not claimed locally",
+    result["limitations"] = ["RISC-V, Arm GCC/clang, Cortex-M and FVP must be verified by upstream PR CI; not claimed locally",
+                              "Generated-port regeneration is deferred to upstream CI; local check uses --no-regen on the uncommitted candidate",
                               "Hardware execution is not claimed", "Human contributor provenance review is pending"]
     write("verification.json", result)
     print("Measured verification passed for", result["patch_sha256"])
@@ -362,8 +391,10 @@ def monitor():
         blockers.append("Required upstream human/code-owner approval is pending")
     if pr["baseRefName"] != "dev" or pr["mergeable"] != "MERGEABLE":
         blockers.append("GitHub mergeability/base branch gate is not satisfied")
+    if pr.get("mergeStateStatus") != "CLEAN":
+        blockers.append("GitHub protected-branch merge state is not clean: " + str(pr.get("mergeStateStatus")))
     write("readiness.json", {"status": "ready" if not blockers else "blocked", "blockers": blockers,
-          "head_sha": pr["headRefOid"], "url": pr["url"], "checked_at": time.time()})
+          "head_sha": pr["headRefOid"], "url": pr["url"], "merge_state": pr.get("mergeStateStatus"), "checked_at": time.time()})
     print("PR readiness:", "ready" if not blockers else "blocked", blockers)
 
 
@@ -372,7 +403,7 @@ def export():
     names = ["admission.json", "issue.json", "dependencies.json", "agent-settings.json", "freeze.json",
              "contribution.patch", "verification.json", "technical-review.json", "process-review.json",
              "review-gate.json", "pr-title.txt", "pr-body.md", "commit-message.txt", "publication.json",
-             "pr-status.json", "readiness.json", "last-error.json", "upstream-rules.json"]
+             "pr-status.json", "readiness.json", "last-error.json", "upstream-rules.json", "eca-verification.json"]
     for name in names:
         if (EVIDENCE / name).exists():
             shutil.copy2(EVIDENCE / name, REPO_ARTIFACTS / name)

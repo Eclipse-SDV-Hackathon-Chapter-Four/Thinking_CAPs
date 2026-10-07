@@ -45,6 +45,21 @@ class ReviewGateTests(unittest.TestCase):
 
 
 class ReadinessTests(unittest.TestCase):
+    def test_protected_branch_block_cannot_be_reported_ready(self):
+        pr = {"headRefOid": "head", "statusCheckRollup": [
+            {"name": name, "status": "COMPLETED", "conclusion": "SUCCESS"} for name in driver.REQUIRED],
+            "isDraft": False, "reviewDecision": "APPROVED", "baseRefName": "dev",
+            "mergeable": "MERGEABLE", "mergeStateStatus": "BLOCKED", "url": "https://github.com/example/pr/1"}
+        records = {"publication.json": {"url": pr["url"], "head_sha": "head"},
+                   "admission.json": {"required_checks": driver.REQUIRED}}
+        writes = {}
+        with patch.object(driver, "read", side_effect=records.__getitem__), \
+             patch.object(driver, "gh_json", return_value=pr), \
+             patch.object(driver, "write", side_effect=lambda name, value: writes.__setitem__(name, value)):
+            driver.monitor()
+        self.assertEqual(writes["readiness.json"]["status"], "blocked")
+        self.assertTrue(any("protected-branch" in b for b in writes["readiness.json"]["blockers"]))
+
     def test_green_ci_does_not_replace_human_approval(self):
         pr = {"headRefOid": "head", "statusCheckRollup": [
             {"name": name, "status": "COMPLETED", "conclusion": "SUCCESS"} for name in driver.REQUIRED],
