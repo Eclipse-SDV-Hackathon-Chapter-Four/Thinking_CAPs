@@ -24,7 +24,9 @@ def data() -> dict:
 
 def test_shipped_configuration_is_valid(data):
     cfg = gen_routing.validate(data)
-    assert cfg["logical_address"] == 0x1010 and len(cfg["routes"]) == 2
+    assert cfg["logical_address"] == 0x1010 and len(cfg["routes"]) == 3
+    assert [r["transport"] for r in cfg["routes"]] == ["docan", "docan", "doip"]
+    assert cfg["routes"][2]["ip_address"] == "192.168.0.30"
     assert len(cfg["hash"]) == 8
 
 
@@ -51,6 +53,16 @@ def test_hash_changes_with_any_address(data):
     (lambda d: d["gateway"].update(tester_range=[0x0EFF, 0x0E00]), "tester_range"),
     (lambda d: d["gateway"].update(logical_address=0x0E05), "inside tester_range"),
     (lambda d: d.update(routes=[]), "at least one route"),
+    # DoIP routes
+    (lambda d: d["routes"][2].update(ip_address="192.168.0.300"), "IPv4"),
+    (lambda d: d["routes"][2].update(ip_address=None), "IPv4"),
+    (lambda d: d["routes"][2].update(ip_address="0.0.0.0"), "unicast"),
+    (lambda d: d["routes"][2].update(ip_address="127.0.0.1"), "unicast"),
+    (lambda d: d["routes"][2].update(ip_address="224.0.0.1"), "unicast"),
+    (lambda d: d["routes"][2].update(ip_address="255.255.255.255"), "unicast"),
+    (lambda d: d["routes"][2].update(request_can_id=0x7E3), "only for docan"),
+    (lambda d: d["routes"][0].update(ip_address="192.168.0.31"), "only for doip"),
+    (lambda d: d["routes"].append(dict(d["routes"][2], logical_address=0x1050)), "duplicates eth_zone"),
 ])
 def test_invalid_configurations_name_the_problem(data, mutate, message):
     mutate(data)
@@ -62,9 +74,13 @@ def test_generated_header_and_address_table(tmp_path):
     assert gen_routing.main([str(CONFIG), "--out", str(tmp_path)]) == 0
     header = (tmp_path / "gateway" / "RoutingConfig.h").read_text()
     assert "constexpr uint16_t GATEWAY_ADDRESS        = 0x1010U;" in header
-    assert 'Route{0x1020U, "rear_lighting", Transport::DOCAN, 0x7E1U, 0x7E9U' in header
+    assert 'Route{0x1020U, "rear_lighting", Transport::DOCAN, 0x7E1U, 0x7E9U, 0x00000000U' in header
+    assert 'Route{0x1040U, "eth_zone", Transport::DOIP, 0x000U, 0x000U, 0xC0A8001EU' in header
+    assert "DOCAN_ROUTE_COUNT = 2U" in header and "DOIP_ROUTE_COUNT  = 1U" in header
     table = json.loads((tmp_path / "routing-table.json").read_text())
-    assert [r["logical_address"] for r in table["routes"]] == [0x1020, 0x1030]
+    assert [r["logical_address"] for r in table["routes"]] == [0x1020, 0x1030, 0x1040]
+    assert table["routes"][2] == {"name": "eth_zone", "logical_address": 0x1040, "transport": "doip",
+                                  "ip_address": "192.168.0.30", "lost_comm_dtc": 0xC14200}
     # unchanged output is not rewritten (keeps incremental builds stable)
     before = (tmp_path / "gateway" / "RoutingConfig.h").stat().st_mtime_ns
     assert gen_routing.main([str(CONFIG), "--out", str(tmp_path)]) == 0

@@ -57,7 +57,10 @@ def main(run: Path, out: Path) -> int:
     tests = []
     for junit in sorted(run.glob("junit*.xml")):
         for case in ET.parse(junit).getroot().iter("testcase"):
-            failure = case.find("failure") or case.find("error")
+            # an Element without children is falsy: test for None explicitly
+            failure = case.find("failure")
+            if failure is None:
+                failure = case.find("error")
             skipped = case.find("skipped")
             tests.append({
                 "name": case.get("name"),

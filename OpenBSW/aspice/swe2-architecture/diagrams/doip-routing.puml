@@ -1,0 +1,46 @@
+@startuml doip-routing
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Dynamic view — physical request to an Ethernet zonal ECU (0x1040) over DoIP
+autonumber
+
+actor "Tester\n(CDA, 0x0E80)" as T
+participant "DoIpServerSystem\nARC-01" as S
+participant "TransportRouter\nARC-03" as R
+participant "DoIpClientTransportLayer\n+ DoIpClientConnection\nARC-11" as C
+participant "Ethernet zonal ECU\n0x1040, 192.168.0.30" as E
+participant "NodeMonitor\nARC-06" as M
+
+T -> S : diagnostic message 0x0E80 → 0x1040\n22 F1 95
+S -> R : getTransportMessage / messageReceived
+R -> R : route 0x1040 IDLE → SENDING\nsource := 0x0E10, transfer budget 2 s
+R -> C : send(msg) on bus DOIP_NODES
+S --> T : diagnostic message ACK
+alt no connection yet
+  C -> E : TCP connect 192.168.0.30:13400\n(delivery budget 1.5 s starts)
+  E --> C : connected
+  C -> E : routing activation request 0x0E10, type 0x00
+  E --> C : routing activation response 0x10
+end
+C -> E : diagnostic message 0x0E10 → 0x1040\n22 F1 95
+E --> C : diagnostic message ACK 0x8002
+C -> R : transportMessageProcessed(OK)
+R -> R : SENDING → WAIT_RESPONSE (P2 150 ms)
+E --> C : diagnostic message 0x1040 → 0x0E10\n62 F1 95 …
+C -> R : getTransportMessage / messageReceived\n(bus DOIP_NODES, source 0x1040)
+R -> S : send(response) to 0x0E80
+S --> T : diagnostic message 0x1040 → 0x0E80
+R -> M : routeResponded(0x1040)
+
+== Failure paths ==
+alt NACK 0x8003, connection refused, activation refused or closed
+  C -> R : transportMessageProcessed(error)
+  R -> R : route IDLE, tx_fail += 1
+  R -> M : routeTimedOut(0x1040)
+else no acknowledgement within 1.5 s
+  C -> E : close connection
+  C -> R : transportMessageProcessed(error)
+  note over C : the next request reconnects
+end
+@enduml

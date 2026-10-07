@@ -20,6 +20,8 @@ static constexpr uint8_t SELFDIAG = 1;
 static constexpr uint8_t CAN_0    = 2;
 static constexpr uint8_t ETH_0    = 3;
 static constexpr uint8_t ETH_1    = 4;
-static constexpr uint8_t LAST_BUS = ETH_1;
+/// DoIP client connections to the Ethernet zonal ECUs (gateway routes with transport doip)
+static constexpr uint8_t DOIP_NODES = 5;
+static constexpr uint8_t LAST_BUS   = DOIP_NODES;
 
 } // namespace busid

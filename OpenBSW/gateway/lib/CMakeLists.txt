@@ -5,7 +5,10 @@
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
-set(GATEWAY_ROUTING_YAML "${CMAKE_CURRENT_SOURCE_DIR}/../config/routing.yaml")
+set(ZGW_ROUTING_YAML
+    "${CMAKE_CURRENT_SOURCE_DIR}/../config/routing.yaml"
+    CACHE FILEPATH "Routing configuration (default: config/routing.yaml)")
+set(GATEWAY_ROUTING_YAML "${ZGW_ROUTING_YAML}")
 set(GATEWAY_GEN_DIR "${CMAKE_BINARY_DIR}/generated")
 set(GATEWAY_ROUTING_HEADER "${GATEWAY_GEN_DIR}/gateway/RoutingConfig.h")
 

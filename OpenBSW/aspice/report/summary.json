@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-07T14:17:54+0100",
-  "executable_sha256": "5cd587bc3e4233f0ecb59a8a14ddb1f180228ec59cdb6656f2929624f3f8966e",
+  "generated": "2026-10-07T15:53:41+0100",
+  "executable_sha256": "25238a04581a59b80f3d6aa9b360bf0453e175022811368050d464b0859993a9",
   "openbsw_revision": "432b9be6098d99570ab8ebc32a7cbb895ca7bb63",
   "requirements": {
     "SWR-001": {
@@ -26,6 +26,10 @@
       ]
     },
     "SWR-005": {
+      "status": "verified",
+      "missing_levels": []
+    },
+    "SWR-006": {
       "status": "verified",
       "missing_levels": []
     },
@@ -64,6 +68,10 @@
       "missing_levels": []
     },
     "SWR-018": {
+      "status": "verified",
+      "missing_levels": []
+    },
+    "SWR-019": {
       "status": "verified",
       "missing_levels": []
     },
@@ -191,13 +199,13 @@
   },
   "requirement_counts": {
     "partially verified": 7,
-    "verified": 28,
+    "verified": 30,
     "not verified": 1,
     "failed": 1
   },
   "unit_tests": {
-    "total": 78,
-    "passed": 78
+    "total": 106,
+    "passed": 106
   },
   "coverage": {
     "module": {
@@ -205,12 +213,17 @@
       "branch_percent": 99.1,
       "function_percent": 100.0
     },
+    "doip_client": {
+      "line_percent": 94.4,
+      "branch_percent": 83.3,
+      "function_percent": 97.2
+    },
     "gateway": {
-      "line_percent": 96.4,
-      "branch_percent": 81.9
+      "line_percent": 96.7,
+      "branch_percent": 83.4
     },
     "generator": {
-      "line_percent": 96.68508287292818
+      "line_percent": 97.27272727272727
     }
   },
   "upstream_gates": {
@@ -233,8 +246,9 @@
   ],
   "static": {
     "cppcheck_open": 0,
-    "cppcheck_total": 6,
+    "cppcheck_total": 7,
     "clang_tidy_module": 0,
+    "clang_tidy_doip_client": 0,
     "clang_tidy_gateway": 0,
     "ccn_violations": 0
   },
@@ -276,11 +290,30 @@
     "ITC-35": "passed",
     "ITC-36": "passed",
     "ITC-37": "passed",
-    "ITC-38": "passed"
+    "ITC-38": "passed",
+    "ITC-39": "passed",
+    "ITC-40": "passed",
+    "ITC-41": "passed",
+    "ITC-42": "passed",
+    "ITC-43": "passed",
+    "ITC-44": "passed",
+    "ITC-45": "passed",
+    "ITC-46": "passed",
+    "ITC-47": "passed",
+    "ITC-48": "passed",
+    "ITC-49": "passed",
+    "ITC-50": "passed",
+    "ITC-51": "passed",
+    "ITC-52": "passed",
+    "ITC-53": "passed",
+    "ITC-54": "passed",
+    "ITC-55": "passed",
+    "ITC-56": "passed",
+    "ITC-57": "passed"
   },
   "integration_current": true,
   "board": {
-    "image_sha256": "8162636d4d0d3fe42c445e5d61fe5f1178341f06235d523deff83dcc73de6265",
+    "image_sha256": "597f9649cbf1dd72a0743d0394e04ad2854e357e3864fb1290af3e4e7f8a8cc5",
     "regions": {
       "FlashConfigField": {
         "used": 0,
@@ -291,8 +324,8 @@
         "percent": 25.0
       },
       "Application": {
-        "used": 197132,
-        "percent": 12.54
+        "used": 203400,
+        "percent": 12.94
       },
       "CrcMeta": {
         "used": 32,
@@ -307,8 +340,8 @@
         "percent": 14.0
       },
       "MainRAM": {
-        "used": 90440,
-        "percent": 71.81
+        "used": 91080,
+        "percent": 72.31
       },
       "NoInit": {
         "used": 0,
@@ -325,7 +358,7 @@
   "qualification": {
     "QTC-01": {
       "status": "passed",
-      "detail": "104/104 passed, posix-threadx at 432b9be6098d"
+      "detail": "104/104 passed, posix-freertos at 432b9be6098d"
     },
     "QTC-02": {
       "status": "passed",
@@ -353,11 +386,11 @@
     },
     "QTC-08": {
       "status": "passed",
-      "detail": "p95 DoIP\u2192CAN 3.3 ms, CAN\u2192DoIP 0.93 ms (200 samples)"
+      "detail": "p95 DoIP\u2192CAN 5.4 ms, CAN\u2192DoIP 6.06 ms (200 samples)"
     },
     "QTC-09": {
       "status": "passed",
-      "detail": "start-up hash b4bdeccc found; statistics line found"
+      "detail": "start-up hash b22f042e found; statistics line found"
     },
     "QTC-10": {
       "status": "passed",
@@ -381,11 +414,19 @@
     },
     "QTC-15": {
       "status": "passed",
-      "detail": "THREADX: flash 197132 B (12.54 %), MainRAM 90440 B (71.81 %); POSIX headers outside platforms/posix: 0; recorded board run uses the current image"
+      "detail": "THREADX: flash 203400 B (12.94 %), MainRAM 91080 B (72.31 %); POSIX headers outside platforms/posix: 0; recorded board run uses the current image"
     },
     "QTC-16": {
       "status": "passed",
       "detail": "19/19 on NXP S32K148EVB (NXP_S32K1xx_S32K148F2M0M11), s32k148-threadx at 432b9be6098d"
+    },
+    "QTC-17": {
+      "status": "passed",
+      "detail": "Linux 14/14 (current executable), S32K148EVB 5/5 (current image)"
+    },
+    "QTC-18": {
+      "status": "passed",
+      "detail": "format clean; unit tests 19/19; lines 94.4 %; clang-tidy 0; base 432b9be6098d"
     }
   },
   "bus_load": {

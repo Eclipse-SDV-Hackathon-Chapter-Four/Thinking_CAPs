@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Build the zonal diagnostic gateway and run its integration tests (SWE.5) against
-# simulated zonal ECUs on vcan0 and a DoIP tester on tap0.
+# simulated zonal ECUs (CAN on vcan0, DoIP at 192.168.0.30) and a DoIP tester on tap0.
 # Results: <volume>/openbsw-sil/runs/it-<timestamp>/ (JUnit, pytest log, gateway logs, candumps)
 #
 #   OpenBSW/scripts/gateway-it.sh [pytest args...]
 #
-# ZGW_RTOS selects the RTOS: THREADX (default) or FREERTOS.
+# ZGW_RTOS selects the RTOS: FREERTOS (default on the PC, see OP-8 in SWE.1) or THREADX.
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 export PATH="$OBSW_VENV/bin:$PATH"
@@ -15,7 +15,7 @@ for itf in vcan0 tap0; do
 done
 
 build="$OBSW_WORKSPACE/build/gateway"
-rtos="${ZGW_RTOS:-THREADX}"
+rtos="${ZGW_RTOS:-FREERTOS}"
 cmake -S "$OBSW_DIR/gateway" -B "$build" -G Ninja -DOPENBSW_DIR="$OBSW_SRC" -DBUILD_TARGET_RTOS="$rtos" \
   -DCMAKE_BUILD_TYPE=Release > /dev/null
 cmake --build "$build" --parallel "$(nproc)" > /dev/null
@@ -29,7 +29,7 @@ echo "$rtos" > "$ZGW_RESULTS/rtos.txt"
 cd "$OBSW_DIR/gateway/tests"
 set +e
 # the PC test modules; test_board.py runs through scripts/board-it.sh
-tests=("$@"); [[ ${#tests[@]} -gt 0 ]] || tests=(test_routing.py test_lifecycle.py)
+tests=("$@"); [[ ${#tests[@]} -gt 0 ]] || tests=(test_routing.py test_doip_routing.py test_lifecycle.py)
 pytest -v -p no:cacheprovider --junitxml="$ZGW_RESULTS/junit.xml" "${tests[@]}" 2>&1 | tee "$ZGW_RESULTS/pytest.txt"
 status=${PIPESTATUS[0]}
 set -e

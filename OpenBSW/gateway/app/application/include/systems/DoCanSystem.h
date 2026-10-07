@@ -71,7 +71,7 @@ private:
     using NormalAddressingFilterType = ::docan::DoCanNormalAddressingFilter<DataLinkLayerType>;
     using AddressEntryType           = NormalAddressingFilterType::AddressEntryType;
     using AddressEntries
-        = ::etl::array<AddressEntryType, ::gateway::config::ROUTE_COUNT + 1U>;
+        = ::etl::array<AddressEntryType, ::gateway::config::DOCAN_ROUTE_COUNT + 1U>;
 
     class TickGeneratorRunnableAdapter final
     : public ::docan::IDoCanTickGenerator

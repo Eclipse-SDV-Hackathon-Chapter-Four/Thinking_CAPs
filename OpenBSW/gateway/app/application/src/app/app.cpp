@@ -21,6 +21,7 @@
 #include "logger/logger.h"
 #include "reset/softwareSystemReset.h"
 #include "systems/DoCanSystem.h"
+#include "systems/DoIpClientSystem.h"
 #include "systems/DoIpServerSystem.h"
 #include "systems/EthernetSystem.h"
 #include "systems/RuntimeSystem.h"
@@ -93,6 +94,7 @@ LifecycleManager lifecycleManager{
 ::etl::typed_storage<::transport::TransportSystem> transportSystem;
 ::etl::typed_storage<::docan::DoCanSystem> doCanSystem;
 ::etl::typed_storage<::doip::DoIpServerSystem> doipServerSystem;
+::etl::typed_storage<::doip::DoIpClientSystem> doipClientSystem;
 ::etl::typed_storage<::uds::UdsSystem> udsSystem;
 ::etl::typed_storage<::uds::DtcSink> dtcSink;
 ::etl::typed_storage<::gateway::NodeMonitor> nodeMonitor;
@@ -236,7 +238,7 @@ void startApp()
     uds.addJob(readRoutingStatistics.create(transport.getRoutingTable(), transport.getStatistics()));
     lifecycleManager.addComponent("uds", uds, 6U);
 
-    /* runlevel 7: DoIP server and vehicle announcement */
+    /* runlevel 7: DoIP server and vehicle announcement; DoIP client to the Ethernet nodes */
     auto& doip = doipServerSystem.create(
         transport,
         ::shed::get<::systems::NetifConfigRegistry>(ethernetSystem->netifs).value,
@@ -249,6 +251,8 @@ void startApp()
     doip.setConnectionStateCallback(testerConnectionMonitor);
     doip.setVinCallback(::doip::DoIpServerSystem::VinCallbackType::create<&provideVin>());
     lifecycleManager.addComponent("doipServer", doip, 7U);
+    lifecycleManager.addComponent(
+        "doipClient", doipClientSystem.create(transport, TASK_ETHERNET), 7U);
 
     /* runlevel 8 */
     lifecycleManager.addComponent(

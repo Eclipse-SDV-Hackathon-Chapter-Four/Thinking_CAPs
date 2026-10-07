@@ -8,8 +8,8 @@
 #
 #   OpenBSW/scripts/sil-test.sh [pytest paths...]     # default: uds enet docan
 #
-# ZGW_RTOS selects the reference app: THREADX (default, preset posix-threadx) or
-# FREERTOS (preset posix-freertos); it is passed to the harness as --app.
+# ZGW_RTOS selects the reference app: FREERTOS (default, preset posix-freertos) or
+# THREADX (preset posix-threadx); it is passed to the harness as --app.
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 
@@ -17,7 +17,7 @@ for itf in vcan0 tap0; do
   ip link show "$itf" >/dev/null 2>&1 || { echo "error: $itf missing; run: sudo $OBSW_DIR/scripts/net-up.sh" >&2; exit 1; }
 done
 
-app="${ZGW_RTOS:-THREADX}"; app="${app,,}"
+app="${ZGW_RTOS:-FREERTOS}"; app="${app,,}"
 elf="$OBSW_SRC/build/posix-$app/executables/referenceApp/application/Release/app.referenceApp.elf"
 [[ -x "$elf" ]] || { echo "error: $elf not built (scripts/bootstrap.sh posix-$app)" >&2; exit 1; }
 

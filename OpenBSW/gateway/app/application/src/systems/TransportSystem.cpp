@@ -39,7 +39,7 @@ uint32_t nowMs() { return ::bsw::time::TimestampProvider::getTimestampUs32Bit() 
     ::gateway::config::TESTER_ADDRESS_MIN,
     ::gateway::config::TESTER_ADDRESS_MAX};
 
-/// Every route of this gateway is a DoCAN node on CAN_0 (SWR-012).
+/// DoCAN routes are reached on CAN_0 (SWR-012), DoIP routes through the DoIP client (SWR-019).
 ::etl::array<::transport::DiagnosticRoute, ::gateway::config::ROUTE_COUNT> diagnosticRoutes()
 {
     ::etl::array<::transport::DiagnosticRoute, ::gateway::config::ROUTE_COUNT> routes{};
@@ -48,7 +48,7 @@ uint32_t nowMs() { return ::bsw::time::TimestampProvider::getTimestampUs32Bit() 
         ::gateway::Route const& route = ::gateway::config::ROUTES[i];
         routes[i]                     = ::transport::DiagnosticRoute{
             route.logicalAddress,
-            ::busid::CAN_0,
+            (route.transport == ::gateway::Transport::DOIP) ? ::busid::DOIP_NODES : ::busid::CAN_0,
             route.p2Ms,
             route.p2StarMs,
             route.maxLength,
@@ -75,7 +75,7 @@ TransportSystem::TransportSystem(::async::ContextType transitionContext)
           ::gateway::config::GATEWAY_ADDRESS,
           ::busid::SELFDIAG,
           ::gateway::config::FUNCTIONAL_ADDRESS,
-          ::gateway::config::CAN_TESTER_ADDRESS,
+          ::gateway::config::NODE_TESTER_ADDRESS,
           ::gateway::config::TESTER_ADDRESS_MIN,
           ::gateway::config::TESTER_ADDRESS_MAX,
           ::gateway::config::FUNCTIONAL_WINDOW_MS,
@@ -126,6 +126,21 @@ void TransportSystem::init()
         static_cast<int>(_table.size()));
     for (::gateway::Route const& route : _table.routes())
     {
+        if (route.transport == ::gateway::Transport::DOIP)
+        {
+            Logger::info(
+                GATEWAY,
+                "route 0x%04x %s: DoIP %d.%d.%d.%d, P2 %d ms, P2* %d ms",
+                route.logicalAddress,
+                route.name,
+                static_cast<int>((route.ipAddress >> 24U) & 0xFFU),
+                static_cast<int>((route.ipAddress >> 16U) & 0xFFU),
+                static_cast<int>((route.ipAddress >> 8U) & 0xFFU),
+                static_cast<int>(route.ipAddress & 0xFFU),
+                route.p2Ms,
+                route.p2StarMs);
+            continue;
+        }
         Logger::info(
             GATEWAY,
             "route 0x%04x %s: CAN 0x%03x/0x%03x, P2 %d ms, P2* %d ms",

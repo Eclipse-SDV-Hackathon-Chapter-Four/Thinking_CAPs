@@ -20,8 +20,15 @@ endif ()
 set(BUILD_TARGET_PLATFORM
     "POSIX"
     CACHE STRING "Target Platform")
+# ThreadX on the board; FreeRTOS for the POSIX simulation, where OpenBSW's SocketCAN
+# transceiver blocks the signals the ThreadX Linux port schedules with (OP-8)
+if (BUILD_TARGET_PLATFORM STREQUAL "POSIX")
+    set(_ZGW_DEFAULT_RTOS "FREERTOS")
+else ()
+    set(_ZGW_DEFAULT_RTOS "THREADX")
+endif ()
 set(BUILD_TARGET_RTOS
-    "THREADX"
+    "${_ZGW_DEFAULT_RTOS}"
     CACHE STRING "Target RTOS")
 # OpenBSW libraries only distinguish referenceApp/unitTest builds.
 set(BUILD_EXECUTABLE
@@ -79,9 +86,11 @@ if (TARGET bspMcu)
                       ${OPENBSW_DIR}/libs/3rdparty/cmsis/m-profile)
 endif ()
 
-# The upstream contribution libs/bsw/transportRouter is built from OpenBSW/contrib, so the
-# gateway runs exactly the code proposed to OpenBSW.
+# The contributed modules libs/bsw/transportRouter and libs/bsw/doipClient are built from
+# OpenBSW/contrib, so the gateway runs exactly the code proposed to OpenBSW.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../contrib/libs/bsw/transportRouter
                  ${CMAKE_BINARY_DIR}/contrib/transportRouter)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../contrib/libs/bsw/doipClient
+                 ${CMAKE_BINARY_DIR}/contrib/doipClient)
 add_subdirectory(lib)
 add_subdirectory(app)

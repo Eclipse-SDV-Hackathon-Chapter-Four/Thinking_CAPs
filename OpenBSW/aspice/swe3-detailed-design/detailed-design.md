@@ -7,7 +7,7 @@ control flow.
 
 The code lives in three places:
 
-- **Contributed module:** `contrib/libs/bsw/transportRouter` (DD-01 … DD-04). It is generic OpenBSW code and the subject of the upstream contribution.
+- **Contributed modules:** `contrib/libs/bsw/transportRouter` (DD-01 … DD-04) and `contrib/libs/bsw/doipClient` (DD-17, DD-18). They are generic OpenBSW code; `transportRouter` is the subject of the upstream contribution, and `doipClient` can follow it.
 - **Gateway units:** `gateway/lib` and `gateway/tools`.
 - **Gateway application:** `gateway/app`, derived from the OpenBSW reference application.
 
@@ -32,7 +32,10 @@ The report generator parses this table: ID | Unit | Source / functions | Element
 | DD-13 | DoIP server adaptation | `DoIpServerSystem.cpp`: `checkRoutingActivation`, `getEntityStatus`; `app.cpp`: `provideVin`, `TesterConnectionMonitor` | ARC-01 | SWR-001, SWR-002, SWR-004, SWR-005, SWR-040, SWR-041 |
 | DD-14 | Platform and lifecycle | `app.cpp`: `startApp` (run levels); `platforms/posix`: `CanSystem.cpp` `canInterfaceName`, `TapEthernetSystem.cpp` `run`, `main.cpp` signal handling; `platforms/s32k148evb`: `main.cpp`, `CanSystem.cpp`, `S32K148EvbEthernetSystem.cpp`, startup and linker script; top-level CMake platform selection and CMSIS include fix | ARC-08 | SWR-044, SWR-050, SWR-051 |
 | DD-15 | Build and dependencies | `gateway/CMakeLists.txt`, `app/application/CMakeLists.txt` (no SOME/IP, middleware or PDU routing), `dependencies.lock.json`, `scripts/bootstrap.sh` | ARC-09 | SWR-031, SWR-053 |
-| DD-16 | Deployment assets | `scripts/net-up.sh`, `scripts/run.sh`, `scripts/storage.sh`; new Serial2CAN profile (planned) | ARC-10 | SWR-033, SWR-050 |
+| DD-16 | Deployment assets | `scripts/net-up.sh` (also `192.168.0.30` on `lo` for the simulated Ethernet ECU), `scripts/run.sh`, `scripts/storage.sh`; new Serial2CAN profile (planned) | ARC-10 | SWR-033, SWR-050 |
+| DD-17 | DoIP client connection | `DoIpClientConnection.cpp`: `request`, `functional`, `cyclic`, `close`, `connect`, `connected`, `sendActivation`, `sendRequest`, `tryFinishRequest`, `finishRequest`, `headerReceived`, `skipPayload`, `activationResponseReceived`, `ackReceived`, `addressInfoReceived`, `diagnosticPayloadReceived`, `releaseSendJob`, `connectionClosed`, `transportMessageProcessed` | ARC-11 | SWR-006, SWR-013, SWR-019, SWR-043 |
+| DD-18 | DoIP client transport layer | `DoIpClientTransportLayer.cpp`: `send` (physical and functional), `cyclic`, `shutdown`, `findConnection`, `functionalCopyReleased`; `declare::DoIpClientTransportLayer` (static connections and sockets) | ARC-11 | SWR-006, SWR-013, SWR-019, SWR-043 |
+| DD-19 | Gateway DoIP client system | `DoIpClientSystem.cpp`: `buildNodes` (the `doip` routes), `run` (registration on `DOIP_NODES`, 10 ms supervision), `shutdown`; `TransportSystem.cpp` `diagnosticRoutes` bus selection; `GatewayDiagJobs.cpp` FD00 DoIP record | ARC-11 | SWR-006, SWR-019, SWR-022 |
 
 SWR-026 (reachability routine `31 01 F000`) is not implemented. The report
 shows it as an open requirement.
@@ -107,6 +110,36 @@ functional entry, which only transmits (invalid reception ID, transmission
 - The tester range comes from `routing.yaml`.
 - The entity status reports node type gateway.
 - The VIN comes from the routing configuration through the DoIP VIN callback.
+
+**DD-17 DoIP client connection.** Each `doip` route has one connection
+object with its own socket. Its states:
+
+| State | Entered by | Left by |
+| --- | --- | --- |
+| CLOSED | start, close, refused connection or activation, closure by the node | a request: `connect` → CONNECTING |
+| CONNECTING | TCP connect started | connected → ACTIVATING (routing activation request sent); refused → CLOSED |
+| ACTIVATING | TCP connected | response code `0x10` → ACTIVE (a waiting request is sent); other code → CLOSED |
+| ACTIVE | routing activated | close or closure by the node → CLOSED |
+
+A request is reported as processed only when both its send job has been
+released by `DoIpTcpConnection` (the TCP stack no longer reads the buffer)
+and the node's acknowledgement has arrived, in either order. A positive
+acknowledgement reports success, a negative one an error. Acknowledgements
+are matched in order with a queue of up to 4 expected acknowledgements
+(request or functional copy), because a node acknowledges messages in the
+order it receives them. `cyclic` closes the connection when a request misses
+its deadline (1.5 s after `send`, covering connect, activation and
+acknowledgement); closing releases the send jobs first, then the request
+fails. A message that the client does not process is skipped with
+`endReceiveMessage`, which also handles empty payloads (OP-7).
+
+**DD-18 DoIP client transport layer.** `send` routes by target address: the
+functional address goes to every connection with active routing and no
+request in progress (the message is processed when every copy is released;
+with no such connection the call fails and the router releases the copy),
+any other address to the connection of that node. A busy node gives
+`TP_MESSAGE_ALREADY_IN_PROGRESS`, an unknown one `TP_SEND_FAIL`. All calls run
+in the Ethernet context, where lwIP runs.
 
 ## Diagrams
 

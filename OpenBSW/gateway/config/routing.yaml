@@ -1,14 +1,16 @@
 # Single source of the zonal gateway's diagnostic addressing (SWR-052).
 # tools/gen_routing.py validates this file (SWR-010) and generates the C++
 # routing configuration and the address table used to check the CDA MDD and
-# the ECU CAN profiles.
+# the ECU CAN profiles. A route's transport is docan (ISO-TP on CAN_0, with
+# request/response CAN identifiers) or doip (DoIP client to the node's DoIP
+# entity at ip_address, TCP port 13400).
 
 gateway:
   name: zonal_gateway
   logical_address: 0x1010       # DoIP logical address of the gateway's own UDS server
   functional_address: 0xE400    # DoIP target address of the "all zonal ECUs" group
   functional_can_id: 0x7DF      # ISO-TP functional request identifier
-  can_tester_address: 0x0E10    # source address the gateway uses on CAN
+  node_tester_address: 0x0E10   # source address the gateway uses towards nodes (CAN and DoIP)
   tester_range: [0x0E00, 0x0EFF] # DoIP testers allowed to activate routing
   functional_window_ms: 150     # time to collect functional responses
   vin: TCAPSZONALGW00001        # 17 characters, DoIP announcement and DID F190
@@ -34,3 +36,12 @@ routes:
     p2_star_ms: 5100
     max_length: 4095
     lost_comm_dtc: 0xC14100     # U0141, illustrative (OP-4)
+
+  - name: eth_zone
+    logical_address: 0x1040
+    transport: doip
+    ip_address: 192.168.0.30    # DoIP entity of the Ethernet zonal ECU (simulated on the host)
+    p2_ms: 150
+    p2_star_ms: 5100
+    max_length: 4095
+    lost_comm_dtc: 0xC14200     # U0142, illustrative (OP-4)

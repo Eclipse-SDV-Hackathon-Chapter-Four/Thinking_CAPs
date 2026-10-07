@@ -34,7 +34,9 @@ public:
         DUPLICATE_CAN_ID,
         CAN_ID_OUT_OF_RANGE,
         INVALID_TIMING,
-        INVALID_LENGTH
+        INVALID_LENGTH,
+        INVALID_IP_ADDRESS,
+        DUPLICATE_IP_ADDRESS
     };
 
     RoutingTable(Addresses const& addresses, ::etl::span<Route const> routes);

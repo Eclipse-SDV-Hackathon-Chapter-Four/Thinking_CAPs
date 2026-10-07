@@ -2,9 +2,9 @@
 
 | Item | Value |
 | --- | --- |
-| Software | OpenBSW zonal diagnostic gateway: `OpenBSW/gateway` (application, gateway units) and the contributed module `OpenBSW/contrib/libs/bsw/transportRouter` |
+| Software | OpenBSW zonal diagnostic gateway: `OpenBSW/gateway` (application, gateway units) and the contributed modules `OpenBSW/contrib/libs/bsw/transportRouter` and `OpenBSW/contrib/libs/bsw/doipClient` |
 | Inputs | [System requirements](system-requirements.md), [README](../../README.md), ISO 13400-2 (DoIP), ISO 14229-1 (UDS), ISO 15765-2 (ISO-TP), [ThreadX CAN contract](../../../ThreadX/docs/can-lighting-contract.md), Eclipse OpenBSW `libs/bsw/{doip,docan,uds,transport,transportRouterSimple}` |
-| Status | Baselined for the hackathon demonstration, 6 October 2026 (revised after implementation) |
+| Status | Baselined for the hackathon demonstration, 6 October 2026 (revised after implementation); DoIP routes added 7 October 2026 |
 
 Each requirement has:
 
@@ -13,7 +13,7 @@ Each requirement has:
 - a type
 - the planned verification levels:
   - **UT** unit test
-  - **IT** integration test (host, with a simulated tester and simulated CAN ECUs)
+  - **IT** integration test (host and S32K148EVB, with a simulated tester, simulated CAN ECUs and a simulated Ethernet ECU)
   - **QT** qualification test in X-Verse with the CDA and OpenSOVD
   - **AN** analysis
   - **RV** review
@@ -26,9 +26,12 @@ Each requirement has:
 | Gateway address | DoIP logical address of the gateway's own UDS server | `0x1010` |
 | Tester addresses | Source addresses allowed to activate routing | `0x0E00`–`0x0EFF` |
 | Functional address | DoIP target address for the "all zonal ECUs" group | `0xE400` |
-| Route | A routing-table entry: logical address, name, transport (`docan`), CAN request/response IDs, P2/P2\* timeouts, maximum length, lost-communication DTC | see below |
+| Route | A routing-table entry: logical address, name, transport (`docan` or `doip`), CAN request/response IDs (`docan`) or IPv4 address (`doip`), P2/P2\* timeouts, maximum length, lost-communication DTC | see below |
 | Rear lighting route | ThreadX rear lighting ECU | `0x1020`, request `0x7E1`, response `0x7E9` |
 | Front zone route | Reserved for a future front-zone ECU | `0x1030`, request `0x7E2`, response `0x7EA` |
+| Ethernet zone route | Ethernet zonal ECU reached over DoIP (simulated on the host) | `0x1040`, `192.168.0.30`, TCP 13400 |
+| Node tester address | Source address the gateway uses towards nodes, on CAN and DoIP | `0x0E10` |
+| DoIP delivery budget | Time for connection set-up, routing activation and the node's acknowledgement of a request | 1.5 s |
 | Functional CAN ID | ISO-TP functional request identifier | `0x7DF` |
 | P2 / P2\* gateway timeout | Time the gateway waits for a remote response / after NRC `0x78` | 150 ms / 5100 ms |
 
@@ -106,6 +109,26 @@ requests: node type gateway, maximum and current open sockets, and power mode
 | Verification | IT |
 | Criterion | Responses contain the configured socket limits and the current connection count. |
 
+### SWR-006 DoIP connection to Ethernet nodes
+The software shall reach each `doip` route through one TCP connection to the
+route's IP address, port 13400, opened by the first request for the route. On
+a new connection it shall request routing activation with the node tester
+address as source and activation type `0x00`, and send diagnostic messages
+only after a response with code `0x10`. The connection shall be kept for later
+requests. It shall be closed when the node refuses routing activation, closes
+it, or does not acknowledge a diagnostic message in time; the next request
+opens it again. The software shall answer the node's alive check requests.
+Connection set-up, routing activation and the node's acknowledgement shall
+complete within the DoIP delivery budget; otherwise the request fails as in
+SWR-019.
+
+| Attribute | Value |
+| --- | --- |
+| Type | Interface |
+| Derived from | SYS-03, SYS-07 |
+| Verification | UT, IT |
+| Criterion | The first request to `0x1040` opens one connection with activation (`0x0E10`, `0x00`); further requests reuse it; a refused activation, a refused connection, a missing acknowledgement and a closure by the node fail the pending request, and the next request reconnects; an alive check is answered with `0x0E10`. |
+
 ## Routing
 
 ### SWR-010 Routing table
@@ -113,8 +136,8 @@ The software shall route by a static routing table, with one entry per
 logical address. Each entry holds:
 
 - logical address and name
-- transport (`local` or `docan`)
-- CAN request and response identifiers
+- transport (`local`, `docan` or `doip`)
+- CAN request and response identifiers (`docan`) or the node's IPv4 address (`doip`)
 - P2 and P2\* timeouts
 - ISO-TP STmin and maximum message length
 
@@ -125,6 +148,8 @@ gateway table and by the router configuration check):
 - duplicate logical addresses or CAN identifiers
 - an identifier outside `0x7DF`–`0x7EF`
 - a route that overlaps the gateway or functional address
+- a `doip` route without a unicast IPv4 address, or two `doip` routes with
+  the same address (one connection per DoIP entity)
 
 | Attribute | Value |
 | --- | --- |
@@ -161,9 +186,11 @@ request. The DoIP source address shall be the route's logical address.
 ### SWR-013 Functional routing
 A diagnostic message to the functional address shall go to the gateway's own
 UDS server. It shall also be sent once as a single-frame ISO-TP request on the
-functional CAN identifier. Each response received within P2\* (from the local
-server or any `docan` route) shall be sent to the tester as a separate DoIP
-diagnostic message, with that node's logical address as source. Functional
+functional CAN identifier, and as a DoIP diagnostic message to the functional
+address on every `doip` connection whose routing is active and which has no
+request in progress. Each response received within P2\* (from the local
+server, any `docan` route or any `doip` route) shall be sent to the tester as
+a separate DoIP diagnostic message, with that node's logical address as source. Functional
 requests longer than one CAN single frame (7 bytes) shall be rejected with
 NACK `0x04`.
 
@@ -244,6 +271,24 @@ that fails with N_Cr shall be discarded.
 | Verification | UT, IT |
 | Criterion | candump of a single- and a multi-frame exchange shows padded 8-byte frames and the gateway's flow control (BS 0, STmin 5 ms); a failed delivery frees the route and is counted. |
 
+### SWR-019 Physical routing to a DoIP ECU
+A diagnostic message whose target is a `doip` route shall be sent as a DoIP
+diagnostic message from the node tester address to the route's logical
+address. The node's positive acknowledgement completes the delivery; P2 and
+P2\* supervision (SWR-016) then apply. A negative acknowledgement or a failed
+delivery shall free the route at once, be counted as a transmission failure
+and be reported to the node monitor. A diagnostic message from the node to the
+node tester address shall be sent to the tester that issued the pending
+request, with the route's logical address as source. No CAN frame shall be
+sent for a `doip` route.
+
+| Attribute | Value |
+| --- | --- |
+| Type | Functional |
+| Derived from | SYS-01, SYS-03 |
+| Verification | UT, IT |
+| Criterion | `22 F1 95` to `0x1040` reaches the simulated Ethernet ECU from `0x0E10` and its reply reaches the tester from `0x1040`, on the Linux host and on the S32K148EVB; a NACK frees the route and is counted as a transmission failure; candump shows no frame. |
+
 ## Gateway UDS server
 
 ### SWR-020 Supported services
@@ -286,8 +331,9 @@ The gateway shall return these identifiers through `0x22`:
 
 ### SWR-022 Routing configuration data
 The gateway shall return the active routing table through `0x22 FD00`: for
-each route, its logical address, transport, CAN request and response
-identifiers, and P2/P2\* timeouts.
+each route, its logical address, transport (`0` DoCAN, `1` DoIP), CAN request
+and response identifiers (DoIP: the IPv4 address in their 4 bytes), and
+P2/P2\* timeouts.
 
 | Attribute | Value |
 | --- | --- |
@@ -470,7 +516,9 @@ be discarded and counted. It shall not be forwarded to any tester.
 
 ### SWR-043 Static resources
 The software shall allocate all memory at initialisation and none while
-running. Buffer counts and sizes shall be fixed by configuration.
+running. Buffer counts and sizes shall be fixed by configuration. This
+includes the DoIP client: one connection, socket and set of send jobs per
+`doip` route.
 
 | Attribute | Value |
 | --- | --- |
@@ -597,13 +645,13 @@ gateway shall add at most 10 ms in each direction at the 95th percentile:
 
 | System requirement | Software requirements |
 | --- | --- |
-| SYS-01 | SWR-001, SWR-012 |
+| SYS-01 | SWR-001, SWR-012, SWR-019 |
 | SYS-02 | SWR-001, SWR-002, SWR-003, SWR-004, SWR-005, SWR-017, SWR-018 |
-| SYS-03 | SWR-003, SWR-010, SWR-011, SWR-012, SWR-013, SWR-014 |
+| SYS-03 | SWR-003, SWR-006, SWR-010, SWR-011, SWR-012, SWR-013, SWR-014, SWR-019 |
 | SYS-04 | SWR-011, SWR-020, SWR-021, SWR-022, SWR-023, SWR-024, SWR-025, SWR-026, SWR-027, SWR-054 |
 | SYS-05 | SWR-024, SWR-030, SWR-031, SWR-032, SWR-033 |
 | SYS-06 | SWR-044, SWR-050, SWR-051 |
-| SYS-07 | SWR-003, SWR-004, SWR-015, SWR-016, SWR-017, SWR-023, SWR-040, SWR-041, SWR-042, SWR-043, SWR-044 |
+| SYS-07 | SWR-003, SWR-004, SWR-006, SWR-015, SWR-016, SWR-017, SWR-023, SWR-040, SWR-041, SWR-042, SWR-043, SWR-044 |
 | SYS-08 | SWR-060 |
 | SYS-09 | SWR-010, SWR-022, SWR-052 |
 | SYS-10 | SWR-021, SWR-053 |
@@ -615,3 +663,6 @@ gateway shall add at most 10 ms in each direction at the 95th percentile:
 - **OP-3 (closed):** `TransportRouterSimple` cannot route by logical address. The router is a new OpenBSW module, `transportRouter`, prepared as an upstream contribution (AD-02).
 - **OP-4:** `U0140`/`U0141` are illustrative fault codes; align them with the MDD.
 - **OP-5:** ISO-TP STmin and block size are one setting for all routes (OpenBSW DoCAN parameters are per transport layer); per-route values need an upstream DoCAN extension.
+- **OP-6:** OpenBSW has no DoIP client. The gateway's client is a new module, `doipClient`, built from `OpenBSW/contrib/` like `transportRouter` and suitable for an upstream contribution (AD-10). Not in scope: DoIP over TLS (port 3496), vehicle discovery over UDP (node addresses are static in `routing.yaml`), and several logical addresses behind one DoIP entity.
+- **OP-7 (upstream finding):** in OpenBSW `DoIpTcpConnection` at `432b9be6`, a handler that answers `headerReceived()` with the discard continuation for a message with an empty payload (for example an alive check request) leaves the connection in the discard state with an empty buffer, so no further message is read. The DoIP server never receives such a message over TCP. The DoIP client ends the reception with `endReceiveMessage()` instead, which handles empty payloads; the finding is to be reported upstream.
+- **OP-8 (upstream finding):** OpenBSW's POSIX `SocketCanTransceiver` (`platforms/posix/bsp/socketCanTransceiver`) blocks every signal (`sigfillset`) while it runs and calls into the CAN stack from inside that region. The ThreadX Linux port suspends and resumes threads with signals, so under heavy host load the gateway built for POSIX with ThreadX deadlocked (CAN thread in `_tx_thread_interrupt_control`, 2 of 4 runs at a load above 40). The POSIX simulation therefore uses FreeRTOS (AD-08), which passed 17 runs at a load of 70–130; the board runs ThreadX. To be reported upstream.

@@ -40,9 +40,19 @@ DiagReturnCode::Type ReadRoutingTable::process(
     for (::gateway::Route const& route : _table.routes())
     {
         append16(response, route.logicalAddress);
-        (void)response.appendUint8(0U); // DoCAN
-        append16(response, static_cast<uint16_t>(route.requestCanId));
-        append16(response, static_cast<uint16_t>(route.responseCanId));
+        if (route.transport == ::gateway::Transport::DOIP)
+        {
+            // DoIP: the 4 bytes of the CAN identifiers hold the node's IPv4 address
+            (void)response.appendUint8(1U);
+            append16(response, static_cast<uint16_t>(route.ipAddress >> 16U));
+            append16(response, static_cast<uint16_t>(route.ipAddress & 0xFFFFU));
+        }
+        else
+        {
+            (void)response.appendUint8(0U); // DoCAN
+            append16(response, static_cast<uint16_t>(route.requestCanId));
+            append16(response, static_cast<uint16_t>(route.responseCanId));
+        }
         append16(response, route.p2Ms);
         append16(response, route.p2StarMs);
     }

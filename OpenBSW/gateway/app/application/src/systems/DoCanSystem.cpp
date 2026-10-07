@@ -55,25 +55,29 @@ DoCanSystem::AddressEntries DoCanSystem::buildAddressEntries()
     size_t i = 0U;
     for (::gateway::Route const& route : ::gateway::config::ROUTES)
     {
+        if (route.transport != ::gateway::Transport::DOCAN)
+        {
+            continue;
+        }
         entries[i] = AddressEntryType{
             route.responseCanId,
             route.requestCanId,
             route.logicalAddress,
-            ::gateway::config::CAN_TESTER_ADDRESS,
+            ::gateway::config::NODE_TESTER_ADDRESS,
             0U,
             0U};
         ++i;
     }
     ::etl::sort(
         entries.begin(),
-        entries.begin() + ::gateway::config::ROUTE_COUNT,
+        entries.begin() + ::gateway::config::DOCAN_ROUTE_COUNT,
         [](AddressEntryType const& a, AddressEntryType const& b)
         { return a._canReceptionId < b._canReceptionId; });
     entries[i] = AddressEntryType{
         DataLinkLayerType::INVALID_ADDRESS,
         ::gateway::config::FUNCTIONAL_CAN_ID,
         ::gateway::config::FUNCTIONAL_ADDRESS,
-        ::gateway::config::CAN_TESTER_ADDRESS,
+        ::gateway::config::NODE_TESTER_ADDRESS,
         0U,
         0U};
     return entries;

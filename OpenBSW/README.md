@@ -4,19 +4,22 @@ This folder holds the Thinking CAPs **zonal diagnostic gateway**, built on
 [Eclipse OpenBSW](https://github.com/eclipse-openbsw/openbsw). It is the
 "New Physical ECU Integration" extension from the [repository README](../README.md#new-physical-ecu-integration).
 
-The gateway is a single diagnostic entry point for the zonal ECUs on the
-X-Verse CAN bus:
+The gateway is a single diagnostic entry point for the zonal ECUs, on the
+X-Verse CAN bus and on Ethernet:
 
 - It receives UDS requests over **DoIP** (ISO 13400-2) from the OpenSOVD
   Classic Diagnostic Adapter (CDA).
 - It reads each request's target logical address and routes it:
   - to its own UDS server,
   - over **ISO-TP** (ISO 15765-2) to one CAN ECU, such as the ThreadX rear lighting controller,
+  - over **DoIP** to one Ethernet ECU, with the gateway as DoIP client (external test equipment),
   - or to all of them (functional addressing).
 
 ```text
 SOVD client ─REST─► OpenSOVD ─► CDA ─DoIP─► OpenBSW gateway ─ISO-TP / vcan0─► ThreadX rear lighting (0x1020)
-                                              └─► own UDS server (0x1010)   └─► future zonal ECUs (0x1030…)
+                                              │                             └─► future zonal ECUs (0x1030…)
+                                              ├─DoIP client─► Ethernet zonal ECU (0x1040, 192.168.0.30)
+                                              └─► own UDS server (0x1010)
 ```
 
 It does not touch the cruise-control use case:
@@ -28,17 +31,20 @@ It does not touch the cruise-control use case:
 ## Status
 
 The gateway runs on the OpenBSW POSIX platform with DoIP over TAP and DoCAN on
-`vcan0`. It routes through `transport::TransportRouter`, a new OpenBSW module
-prepared as an [upstream contribution](../contributions/openbsw-transport-router/README.md).
+`vcan0`, and on the NXP S32K148EVB with Eclipse ThreadX. It routes through
+`transport::TransportRouter`, a new OpenBSW module prepared as an
+[upstream contribution](../contributions/openbsw-transport-router/README.md),
+and reaches Ethernet ECUs through `doip::DoIpClientTransportLayer`, a second
+new module (see [DoIP routes](#doip-routes-ethernet-zonal-ecus)).
 
 | Item | Result |
 | --- | --- |
-| Unit tests | 78/78: 42 module (OpenBSW unit-test build and Bazel), 10 gateway units, 22 generator, 4 existing `TransportRouterSimple` |
-| Module coverage | 100% lines, 99.1% branches |
-| Integration tests | 28/28 on the Linux host against simulated CAN ECUs ([evidence/gateway-it](evidence/gateway-it/results.json)); 10/10 on the S32K148EVB over DoIP ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
-| Forwarding latency (p95) | DoIP→CAN 2.9 ms, CAN→DoIP 0.8 ms |
-| Upstream gates for the module | format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base |
-| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 28/37 requirements verified, 7 partially (live campaigns not run), 1 failed (SWR-032), 1 not implemented (SWR-026) |
+| Unit tests | 106/106: 42 `transportRouter` and 19 `doipClient` (OpenBSW unit-test build; the router also in Bazel), 10 gateway units, 31 generator, 4 existing `TransportRouterSimple` |
+| Module coverage | `transportRouter` 100% lines, 99.1% branches; `doipClient` 94.4% lines, 83.3% branches |
+| Integration tests | 42/42 on the Linux host against simulated CAN ECUs and a simulated Ethernet ECU ([evidence/gateway-it](evidence/gateway-it/results.json)); 15/15 on the S32K148EVB, 5 of them routed over DoIP to the Ethernet ECU ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
+| Forwarding latency (p95) | Linux: DoIP→CAN 5.4 ms, CAN→DoIP 6.1 ms (host load about 50); S32K148EVB: routed DoIP round trip 5.6 ms |
+| Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base. `doipClient`: format, unit tests and clang-tidy pass |
+| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 30/39 requirements verified, 7 partially (live campaigns not run), 1 failed (SWR-032), 1 not implemented (SWR-026) |
 
 Open items, all of them visible in the report:
 
@@ -50,7 +56,8 @@ Open items, all of them visible in the report:
   - X-Verse + CARLA cruise-control regression with the gateway
   - OpenSOVD → CDA (needs an MDD)
   - ThreadX ECU with UDS (OP-2)
-  - CAN routing on the board (needs a CAN peer, e.g. a USB-CAN adapter)
+  - CAN routing on the board (needs a CAN peer, e.g. a USB-CAN adapter); routing
+    on the board is verified over DoIP instead
 
 ## Layout
 
@@ -59,8 +66,9 @@ Open items, all of them visible in the report:
 | `gateway/app/` | Gateway application, derived from the OpenBSW reference app: DoIP, DoCAN, UDS, lifecycle, POSIX platform |
 | `gateway/lib/` | Gateway units: CAN routing table, node monitor, identity; unit tests |
 | `gateway/config/routing.yaml`, `gateway/tools/` | Single source of the addressing and its generator (`gen_routing.py`, with tests) |
-| `gateway/tests/` | Integration tests: simulated ECUs (`sim_ecu.py`), DoIP tester, routing and lifecycle tests |
-| `contrib/libs/bsw/transportRouter/` | The contributed OpenBSW module (same tree as upstream) |
+| `gateway/tests/` | Integration tests: simulated CAN ECUs (`sim_ecu.py`), simulated Ethernet ECU (`sim_doip_ecu.py`), DoIP tester, routing, DoIP routing, lifecycle and board tests |
+| `contrib/libs/bsw/transportRouter/` | The contributed OpenBSW router module (same tree as upstream) |
+| `contrib/libs/bsw/doipClient/` | The contributed OpenBSW DoIP client module (same tree as upstream) |
 | `scripts/` | Volume, network, bootstrap, SIL suite, integration run, upstream PR preparation |
 | `evidence/` | OpenBSW SIL baseline and gateway integration runs |
 | `aspice/` | ASPICE SWE.1–SWE.6 work products and report generator, in the same layout as [Serial2CAN](../X-Verse/bridges/serial2can/aspice/README.md) and [AZ3166](../ThreadX/az3166/aspice/README.md) |
@@ -71,7 +79,7 @@ The gateway runs without hardware on the OpenBSW POSIX platform:
 
 - **CAN:** SocketCAN on `vcan0`
 - **Ethernet:** lwIP on a TAP device `tap0`. The host is `192.168.0.10`; the ECU is `192.168.0.201`.
-- **RTOS:** Eclipse ThreadX (POSIX port), the same RTOS as on the board. `ZGW_RTOS=FREERTOS` builds the FreeRTOS variant instead.
+- **RTOS:** FreeRTOS (POSIX port). The board runs ThreadX. On the PC, OpenBSW's SocketCAN transceiver can deadlock the ThreadX Linux port under heavy host load (see below), so `ZGW_RTOS=THREADX` is available but not the default.
 
 The source, toolchain venv, pip cache, compiler temporaries and build tree all
 live on the external ext4 build volume (UUID `11c42dee-…`). This volume is the
@@ -85,7 +93,7 @@ udisksctl loop-setup -f /media/jefferson/Lexar/.s-core-build/build-volume-v1.ext
 udisksctl mount -b /dev/loopN           # mounts at /media/jefferson/11c42dee-…
 
 sudo OpenBSW/scripts/net-up.sh          # vcan0 + tap0 (reuses existing ones)
-OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-threadx build
+OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-freertos build
 OpenBSW/scripts/run.sh                  # start the POSIX app; Ctrl-C stops it
 OpenBSW/scripts/sil-test.sh             # OpenBSW's own SIL suite (uds, enet, docan)
 OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 28 integration tests, record evidence
@@ -97,13 +105,22 @@ Run the gateway by hand with
 `ZGW_CAN_INTERFACE=vcan0 ZGW_TAP_INTERFACE=tap0 <build>/app/application/openbsw-zonal-gw.elf`.
 It answers DoIP at `192.168.0.201` as logical address `0x1010`.
 
-**Baseline result (7 October 2026):** OpenBSW `432b9be6`, `posix-threadx`,
+**Baseline result (6 October 2026):** OpenBSW `432b9be6`, `posix-freertos`,
 104 of 104 tests pass. The suite covers UDS over CAN (`0x7E0`/`0x7E8`) and
 over DoIP (`192.168.0.201:13400`), Ethernet, and DoCAN. Evidence and manifest
-are in [evidence/sil-baseline](evidence/sil-baseline/). The first baseline,
-on `posix-freertos` (6 October), also passed 104/104 and sent on the same
-CAN IDs ([freertos/](evidence/sil-baseline/freertos/)). `sil-test.sh` takes
-`ZGW_RTOS=FREERTOS` to repeat it.
+are in [evidence/sil-baseline](evidence/sil-baseline/). A `posix-threadx` run
+(7 October) also passed 104/104 and sent on the same CAN IDs
+([threadx/](evidence/sil-baseline/threadx/)); `sil-test.sh` takes
+`ZGW_RTOS=THREADX` to repeat it.
+
+**ThreadX on the PC can deadlock (OP-8).** OpenBSW's POSIX
+`SocketCanTransceiver` blocks every signal while it runs, and calls into the
+CAN stack, and so into the RTOS, from inside that region. The ThreadX Linux
+port suspends and resumes its threads with signals. At a host load above
+about 40, the gateway built with ThreadX stopped in 2 of 4 runs: the CAN
+thread waited in `_tx_thread_interrupt_control` with its signals blocked.
+The FreeRTOS build passed 17 runs in a row at a load of 70 to 130. The
+POSIX simulation therefore stays on FreeRTOS; the board runs ThreadX.
 
 Findings for the gateway work:
 
@@ -124,6 +141,41 @@ The OpenBSW revision, the volume and the SIL addresses are pinned in
 [dependencies.lock.json](dependencies.lock.json); the host tools are in
 [requirements-build.txt](requirements-build.txt). The host CMake 3.22 is too
 old for OpenBSW, which needs 3.28 or later, so the venv provides CMake 4.4.
+
+## DoIP routes (Ethernet zonal ECUs)
+
+A route with `transport: doip` in `routing.yaml` reaches an Ethernet ECU
+through the gateway's DoIP client, `doip::DoIpClientTransportLayer`. It is a
+new OpenBSW module in `contrib/libs/bsw/doipClient`, because OpenBSW has only
+the DoIP server side. It reuses OpenBSW's `DoIpTcpConnection` and send jobs
+and plugs into `TransportRouter` on its own bus (`DOIP_NODES`), next to DoCAN:
+
+- The first request to the route opens a TCP connection to the node
+  (port 13400) and activates routing with source `0x0E10`, type `0x00`. The
+  connection stays open for later requests.
+- A request counts as delivered when the node acknowledges it (`0x8002`). A
+  NACK, a refused connection or activation, or no acknowledgement within
+  1.5 s fails the request at once. The route is freed and the node monitor
+  counts the failure (three in a row set the route's DTC, `U0142` for
+  `0x1040`).
+- Functional requests also go to every DoIP node with active routing.
+- The node's alive checks are answered.
+
+The test ECU is `gateway/tests/sim_doip_ecu.py`: a DoIP entity `0x1040` with a
+UDS server and switchable failures. It listens on `192.168.0.30`, which
+`net-up.sh` adds to the host's `lo`. The host answers ARP for it on `tap0`
+and on the board link, so the PC gateway and the S32K148EVB both reach it.
+On the board this gives a routed path end to end, without a CAN adapter.
+
+`scripts/doip-client-test.sh` builds the module's unit tests in the pinned
+OpenBSW tree (the `tests-posix-debug` preset), applies OpenBSW's format, and
+runs gcovr and clang-tidy.
+
+**OpenBSW finding:** in `DoIpTcpConnection` at `432b9be6`, answering
+`headerReceived()` with the discard continuation for a message with an empty
+payload (such as an alive check request) leaves the connection unable to read
+further messages. The client ends such messages with `endReceiveMessage()`
+instead. This is to be reported upstream (OP-7 in SWE.1).
 
 ## NXP S32K148EVB board
 
@@ -151,9 +203,9 @@ profile comes back on its own afterwards.
 
 **Board RTOS:** Eclipse ThreadX 6.4.3 (Cortex-M4 port, 1 ms tick, stack
 checking on), as pinned by OpenBSW. Until `f8193eb9` the board ran FreeRTOS
-V10.6.2. `ZGW_RTOS=FREERTOS` still selects it in `board-it.sh`,
-`board-sil-test.sh` and `gateway-it.sh`, and each RTOS has its own board build
-directory.
+V10.6.2. `ZGW_RTOS=FREERTOS` still selects it in `board-it.sh` and
+`board-sil-test.sh`, and each RTOS has its own board build directory. The PC
+simulation stays on FreeRTOS (OP-8).
 
 **Board baseline (7 October 2026):**
 

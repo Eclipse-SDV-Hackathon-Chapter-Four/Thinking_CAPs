@@ -2,6 +2,9 @@
 # Create the SIL network interfaces the OpenBSW POSIX app expects (needs sudo):
 #   vcan0  SocketCAN, shared with X-Verse (reused if it already exists)
 #   tap0   Ethernet for lwIP/DoIP; host 192.168.0.10/24, ECU 192.168.0.201
+#   192.168.0.30/32 on lo: the simulated Ethernet zonal ECU (DoIP route 0x1040). The host
+#          answers ARP for it on tap0 and on the board link, so the PC gateway and the
+#          S32K148EVB both reach it.
 # Mirrors OpenBSW tools/can/bring-up-vcan0.sh and tools/enet/bring-up-ethernet.sh,
 # without the VLAN sub-interface. Run: sudo OpenBSW/scripts/net-up.sh
 set -euo pipefail
@@ -23,4 +26,11 @@ else
   ip address add 192.168.0.10/24 dev tap0
   ip link set tap0 up
   echo "tap0 created for user $owner"
+fi
+
+if ip -4 address show dev lo | grep -q "192.168.0.30/32"; then
+  echo "192.168.0.30 already on lo"
+else
+  ip address add 192.168.0.30/32 dev lo
+  echo "192.168.0.30 added to lo (simulated DoIP zonal ECU)"
 fi

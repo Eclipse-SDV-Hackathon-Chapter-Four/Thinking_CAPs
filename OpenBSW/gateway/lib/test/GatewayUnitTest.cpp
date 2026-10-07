@@ -27,7 +27,13 @@ RoutingTable::Addresses const ADDRESSES{0x1010U, 0xE400U, 0x7DFU, 0x0E00U, 0x0EF
 
 Route route(uint16_t address, uint32_t request, uint32_t response)
 {
-    return Route{address, "r", Transport::DOCAN, request, response, 150U, 5100U, 4095U, 0xC14000U};
+    return Route{
+        address, "r", Transport::DOCAN, request, response, 0U, 150U, 5100U, 4095U, 0xC14000U};
+}
+
+Route doipRoute(uint16_t address, uint32_t ip)
+{
+    return Route{address, "e", Transport::DOIP, 0U, 0U, ip, 150U, 5100U, 4095U, 0xC14200U};
 }
 
 Error validate(std::vector<Route> const& routes, size_t& bad)
@@ -46,6 +52,9 @@ TEST(RoutingTable, generatedConfigurationIsValid)
     EXPECT_EQ(RoutingTable::INVALID_INDEX, bad);
     EXPECT_EQ(0U, table.indexOf(0x1020U));
     EXPECT_EQ(1U, table.indexOf(0x1030U));
+    EXPECT_EQ(2U, table.indexOf(0x1040U));
+    EXPECT_EQ(Transport::DOIP, table.find(0x1040U)->transport);
+    EXPECT_EQ(0xC0A8001EU, table.find(0x1040U)->ipAddress); // 192.168.0.30
     EXPECT_EQ(RoutingTable::INVALID_INDEX, table.indexOf(0x1099U));
     EXPECT_EQ(nullptr, table.find(0x1099U));
     EXPECT_EQ(0x7E1U, table.find(0x1020U)->requestCanId);
@@ -88,6 +97,15 @@ TEST(RoutingTable, invalidTablesNameTheOffendingRoute)
         {{route(0x1020U, 0x7E1U, 0x7E9U), route(0x1030U, 0x7E9U, 0x7EAU)}, Error::DUPLICATE_CAN_ID, 1U},
         {{route(0x1020U, 0x7E1U, 0x7E9U), route(0x1030U, 0x7E2U, 0x7E1U)}, Error::DUPLICATE_CAN_ID, 1U},
         {{route(0x1020U, 0x7E1U, 0x7E9U), route(0x1030U, 0x7E2U, 0x7E9U)}, Error::DUPLICATE_CAN_ID, 1U},
+        // DoIP routes (SWR-010): a unicast IPv4 address, one route per DoIP entity
+        {{doipRoute(0x1040U, 0U)}, Error::INVALID_IP_ADDRESS, 0U},
+        {{doipRoute(0x1040U, 0xFFFFFFFFU)}, Error::INVALID_IP_ADDRESS, 0U},
+        {{doipRoute(0x1040U, 0x7F000001U)}, Error::INVALID_IP_ADDRESS, 0U},
+        {{doipRoute(0x1040U, 0xE0000001U)}, Error::INVALID_IP_ADDRESS, 0U},
+        {{doipRoute(0x1040U, 0xC0A8001EU), doipRoute(0x1050U, 0xC0A8001EU)}, Error::DUPLICATE_IP_ADDRESS, 1U},
+        {{doipRoute(0x1040U, 0xC0A8001EU), doipRoute(0x1040U, 0xC0A8001FU)}, Error::DUPLICATE_ADDRESS, 1U},
+        {{route(0x1020U, 0x7E1U, 0x7E9U), doipRoute(0x1020U, 0xC0A8001EU)}, Error::DUPLICATE_ADDRESS, 1U},
+        {{doipRoute(0x1010U, 0xC0A8001EU)}, Error::ADDRESS_CONFLICT, 0U},
     };
     for (Case const& c : cases)
     {
@@ -124,7 +142,9 @@ TEST(NodeMonitor, registersEveryRouteDtc)
     SinkSpy sink;
     ::gateway::NodeMonitor monitor(table, sink);
     monitor.init();
-    EXPECT_EQ((std::vector<std::string>{"register 12664832", "register 12665088"}), sink.events);
+    EXPECT_EQ(
+        (std::vector<std::string>{"register 12664832", "register 12665088", "register 12665344"}),
+        sink.events);
 }
 
 TEST(NodeMonitor, threeConsecutiveTimeoutsSetTheDtcOnceAndAResponsePassesIt)

@@ -4,21 +4,23 @@
 
 Integration is bottom-up on the Linux host target (SWR-050):
 
-1. **OpenBSW integration.** The pinned OpenBSW platform and libraries (DoIP, DoCAN, UDS, lwIP, ThreadX on the POSIX port) and the contributed `transportRouter` module are integrated into the gateway executable. It builds warning-free. The OpenBSW SIL suite (`evidence/sil-baseline`) qualifies the unmodified platform underneath.
+1. **OpenBSW integration.** The pinned OpenBSW platform and libraries (DoIP, DoCAN, UDS, lwIP, FreeRTOS POSIX port) and the contributed `transportRouter` module are integrated into the gateway executable. It builds warning-free. The OpenBSW SIL suite (`evidence/sil-baseline`) qualifies the unmodified platform underneath.
 2. **Gateway integration.** The gateway runs as a process with:
    - CAN on `vcan0` and DoIP over lwIP on `tap0`
    - simulated zonal ECUs ([`sim_ecu.py`](../../gateway/tests/sim_ecu.py)): ISO-TP UDS servers on `0x7E1/0x7E9` and `0x7E2/0x7EA` with normal, silent, response-pending and multi-frame behaviour
+   - a simulated Ethernet zonal ECU ([`sim_doip_ecu.py`](../../gateway/tests/sim_doip_ecu.py)): a DoIP entity `0x1040` at `192.168.0.30` (on the host's `lo`, added by `net-up.sh`) with a UDS server and switchable failures: silent, no acknowledgement, NACK, refused activation, closing the connection, refusing connections
    - a DoIP tester ([`doip_tester.py`](../../gateway/tests/doip_tester.py), doipclient 1.1.1)
    - a CAN recorder that captures every frame on `vcan0`
 
 **Test environment:**
 
-- Ubuntu 22.04, GCC 11.4, ThreadX 6.4.3 POSIX port (`BUILD_TARGET_RTOS=THREADX`)
+- Ubuntu 22.04, GCC 11.4, FreeRTOS POSIX port (the board runs ThreadX; OP-8)
 - python-can 4.4.2, can-isotp 2.0.6, doipclient 1.1.1, pytest 8.3.3
 
 Procedure: [`scripts/gateway-it.sh`](../../scripts/gateway-it.sh). It builds the
 gateway, records the SHA-256 of the executable, and runs
-[`test_routing.py`](../../gateway/tests/test_routing.py) and
+[`test_routing.py`](../../gateway/tests/test_routing.py),
+[`test_doip_routing.py`](../../gateway/tests/test_doip_routing.py) and
 [`test_lifecycle.py`](../../gateway/tests/test_lifecycle.py).
 
 Recorded results: [`evidence/gateway-it/results.json`](../../evidence/gateway-it/results.json).
@@ -29,8 +31,10 @@ current build.
    (Arm GNU Toolchain 14.3.rel1, ThreadX 6.4.3 Cortex-M4 port) and flashed with the PEmicro GDB server over
    OpenSDA. They are tested over the board's 100BASE-T1 Ethernet
    (`192.168.0.200`) with [`test_board.py`](../../gateway/tests/test_board.py).
-   No CAN node is attached to the board, so routed requests exercise the
-   failure path.
+   No CAN node is attached to the board, so routed CAN requests exercise the
+   failure path. The DoIP route `0x1040` reaches the simulated Ethernet ECU on
+   the host over the same link, so routing is verified end to end on the
+   board.
 
    Procedure: [`scripts/board-it.sh`](../../scripts/board-it.sh). Recorded results:
    [`evidence/board-gateway-it/results.json`](../../evidence/board-gateway-it/results.json).
@@ -81,6 +85,25 @@ The report generator parses this table: ID | Check | Test case | Interfaces | Ve
 | ITC-36 | board:test_board_local_latency | S32K148: local UDS round trip p95 ≤ 20 ms over 100BASE-T1 | IF-01 | SWR-051 |
 | ITC-37 | board:test_board_route_without_can_peer | S32K148: unacknowledged CAN request keeps the route busy (NACK 0x05), fails, frees the route, counted | IF-01, IF-02 | SWR-015, SWR-016, SWR-018 |
 | ITC-38 | board:test_board_lost_communication_dtc | S32K148: three failed requests set U0141; ClearDTC resets it | IF-01, IF-06 | SWR-024, SWR-025 |
+| ITC-39 | test_doip_physical_routing | DoIP route: connect, activation (`0x0E10`, `0x00`), request from `0x0E10`, response from `0x1040`; no CAN frame | IF-01, IF-09 | SWR-006, SWR-019, SWR-030 |
+| ITC-40 | test_doip_connection_reused | Five requests over one connection and one activation | IF-09 | SWR-006 |
+| ITC-41 | test_doip_large_messages | 3000-byte response and 4000-byte request unchanged | IF-01, IF-09 | SWR-014, SWR-017 |
+| ITC-42 | test_doip_response_pending | NRC 0x78 then the final response from `0x1040` | IF-09 | SWR-016 |
+| ITC-43 | test_doip_negative_response_passthrough | Negative response from the node forwarded unchanged | IF-09 | SWR-014 |
+| ITC-44 | test_doip_functional | Functional `3E 00` answered by `0x1010`, the CAN ECU `0x1020` and the DoIP ECU `0x1040` | IF-01, IF-02, IF-09 | SWR-013, SWR-019 |
+| ITC-45 | test_doip_alive_check | The node's alive check answered with `0x0E10` | IF-09 | SWR-006 |
+| ITC-46 | test_doip_unsolicited_response_discarded | Diagnostic message from the node without a request: dropped and counted | IF-09, IF-03 | SWR-042 |
+| ITC-47 | test_doip_node_nack | Node NACK: no response, route free at once, tx_fail counted | IF-09, IF-03 | SWR-019 |
+| ITC-48 | test_doip_no_acknowledgement | No acknowledgement: route busy (NACK 0x05) until the 1.5 s budget, connection closed, next request reconnects | IF-01, IF-09 | SWR-006 |
+| ITC-49 | test_doip_activation_refused | Refused routing activation fails the request; the route is free | IF-09 | SWR-006 |
+| ITC-50 | test_doip_node_closes_connection | The next request after a closure by the node reconnects | IF-09 | SWR-006 |
+| ITC-51 | test_doip_node_unreachable | Refused TCP connection fails the request well within the budget; the route is free | IF-09 | SWR-006 |
+| ITC-52 | test_doip_lost_communication_dtc | Three unanswered requests set U0142; ClearDTC resets it | IF-01, IF-06 | SWR-024, SWR-025 |
+| ITC-53 | board:test_board_doip_routing | S32K148: routing activation from `0x0E10` and a routed request to the Ethernet ECU over 100BASE-T1 | IF-01, IF-09 | SWR-006, SWR-019, SWR-051 |
+| ITC-54 | board:test_board_doip_large_and_pending | S32K148: 3000-byte response, 4000-byte request, response pending | IF-01, IF-09 | SWR-014, SWR-016, SWR-017 |
+| ITC-55 | board:test_board_doip_functional | S32K148: functional TesterPresent answered by `0x1010` and `0x1040` | IF-01, IF-09 | SWR-013, SWR-019 |
+| ITC-56 | board:test_board_doip_latency | S32K148: routed round trip tester → board → DoIP ECU → tester, p95 ≤ 20 ms | IF-01, IF-09 | SWR-051 |
+| ITC-57 | board:test_board_doip_node_failures | S32K148: unreachable and silent node fail the requests, three failures set U0142, ClearDTC resets it | IF-01, IF-06, IF-09 | SWR-006, SWR-024, SWR-025 |
 
 ## Pass criteria
 

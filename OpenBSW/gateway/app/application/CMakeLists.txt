@@ -16,6 +16,7 @@ add_executable(
     src/systems/UdsSystem.cpp
     src/systems/EthernetSystem.cpp
     src/systems/DoIpServerSystem.cpp
+    src/systems/DoIpClientSystem.cpp
     src/systems/DoCanSystem.cpp
     src/uds/DemoClearDtc.cpp
     src/uds/DemoDtcManager.cpp
@@ -70,4 +71,5 @@ target_link_libraries(
             lwipSocket
             lwipcore
             ethConfiguration
-            doip)
+            doip
+            doipClient)

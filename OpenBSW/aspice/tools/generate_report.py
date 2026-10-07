@@ -43,8 +43,10 @@ IT_EVIDENCE = OBSW / "evidence" / "gateway-it"
 SIL_EVIDENCE = OBSW / "evidence" / "sil-baseline"
 BOARD_IT_EVIDENCE = OBSW / "evidence" / "board-gateway-it"
 BOARD_BASELINE = OBSW / "evidence" / "board-baseline"
-# gateway RTOS on both platforms; same switch and default as the scripts
-RTOS = os.environ.get("ZGW_RTOS", "THREADX")
+# gateway RTOS, same switch and defaults as the scripts: FreeRTOS for the POSIX simulation
+# (OP-8), ThreadX on the S32K148EVB; ZGW_RTOS overrides both
+RTOS = os.environ.get("ZGW_RTOS", "FREERTOS")
+BOARD_RTOS = os.environ.get("ZGW_RTOS", "THREADX")
 ARM_TOOLCHAIN = "arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi"
 POSIX_HEADERS = re.compile(r"#\s*include\s*<(unistd|pthread|signal|termios|poll|fcntl|sys/[\w/]+|net/[\w/]+|netinet/[\w/]+|arpa/[\w/]+)\.h>")
 PLANTUML_VERSION = "1.2024.7"
@@ -54,11 +56,14 @@ CCN_LIMIT, CCN_JUSTIFIED_LIMIT = 15, 25
 BITRATE = 500_000
 
 MODULE_SRC = OBSW / "contrib" / "libs" / "bsw" / "transportRouter" / "src"
+DOIP_CLIENT_SRC = OBSW / "contrib" / "libs" / "bsw" / "doipClient" / "src"
+DOIP_CLIENT_EVIDENCE = OBSW / "evidence" / "doip-client-ut"
 GATEWAY_LIB_SRC = OBSW / "gateway" / "lib" / "src"
 APP = OBSW / "gateway" / "app" / "application" / "src"
 GATEWAY_APP_SOURCES = [APP / "uds" / "GatewayDiagJobs.cpp", APP / "systems" / "TransportSystem.cpp",
                        APP / "systems" / "DoCanSystem.cpp", APP / "systems" / "UdsSystem.cpp",
-                       APP / "uds" / "DemoDtcManager.cpp", APP / "app" / "app.cpp"]
+                       APP / "uds" / "DemoDtcManager.cpp", APP / "app" / "app.cpp",
+                       APP / "systems" / "DoIpClientSystem.cpp"]
 GENERATOR = OBSW / "gateway" / "tools" / "gen_routing.py"
 
 
@@ -221,6 +226,24 @@ def upstream_gates(ws, skip):
             if (run_dir / "build-warnings.txt").exists() else -1}
 
 
+def doip_client_gates(skip):
+    """The contributed DoIP client module in the pinned OpenBSW: format, unit tests, coverage, tidy."""
+    if not skip:
+        result = run(["bash", OBSW / "scripts" / "doip-client-test.sh"], check=False, timeout=3600)
+        (EVIDENCE / "doipclient-run.txt").write_text(result.stdout + result.stderr)
+    ev = DOIP_CLIENT_EVIDENCE
+    tidy = (ev / "clang-tidy.txt").read_text()
+    for name in ("junit.xml", "coverage.txt", "coverage-summary.json", "clang-tidy.txt", "treefmt.txt", "ctest.txt"):
+        shutil.copy2(ev / name, EVIDENCE / f"doipclient-{name}")
+    warnings = (ev / "build-warnings.txt").read_text().strip() if (ev / "build-warnings.txt").exists() else "0"
+    return {"cases": junit_cases(ev / "junit.xml"),
+            "coverage": json.loads((ev / "coverage-summary.json").read_text()),
+            "tidy_findings": int(re.search(r"clang-tidy findings in module: (\d+)", tidy).group(1)),
+            "format_clean": "format: clean" in (ev / "treefmt.txt").read_text(),
+            "base": (ev / "openbsw-base.txt").read_text().strip(),
+            "build_warnings": int(warnings or 0)}
+
+
 def gateway_unit_tests(ws):
     build = ws["workspace"] / "build" / "gateway-ut"
     venv_bin = ws["venv"] / "bin"
@@ -256,8 +279,9 @@ def generator_tests(ws):
 
 
 def static_analysis(ws, ut_build):
-    sources = [MODULE_SRC, GATEWAY_LIB_SRC] + GATEWAY_APP_SOURCES
-    includes = ["-I", OBSW / "contrib/libs/bsw/transportRouter/include", "-I", OBSW / "gateway/lib/include",
+    sources = [MODULE_SRC, DOIP_CLIENT_SRC, GATEWAY_LIB_SRC] + GATEWAY_APP_SOURCES
+    includes = ["-I", OBSW / "contrib/libs/bsw/transportRouter/include", "-I", OBSW / "contrib/libs/bsw/doipClient/include",
+                "-I", OBSW / "gateway/lib/include",
                 "-I", OBSW / "gateway/app/application/include"]
     cpp = run(["cppcheck", "--enable=warning,style,performance,portability", "--std=c++17", "--inline-suppr",
                "--quiet", "--suppress=missingIncludeSystem", "-DDECLARE_LOGGER_COMPONENT(x)=",
@@ -296,7 +320,8 @@ def build_checks(ws):
     head = run(["git", "-C", ws["openbsw"], "rev-parse", "HEAD"]).stdout.strip()
     clean = run(["git", "-C", ws["openbsw"], "status", "--porcelain", "--untracked-files=no"]).stdout.strip() == ""
     forbidden = []
-    for source in [*MODULE_SRC.rglob("*.cpp"), *GATEWAY_LIB_SRC.rglob("*.cpp"), *GATEWAY_APP_SOURCES]:
+    for source in [*MODULE_SRC.rglob("*.cpp"), *DOIP_CLIENT_SRC.rglob("*.cpp"), *GATEWAY_LIB_SRC.rglob("*.cpp"),
+                   *GATEWAY_APP_SOURCES]:
         for number, line in enumerate(source.read_text().splitlines(), 1):
             code = line.split("//")[0]
             if re.search(r"\bnew\b|\bmalloc\s*\(|\bthrow\b|\bdynamic_cast\b", code):
@@ -320,7 +345,7 @@ def build_checks(ws):
 
 def board_checks(ws):
     """Build the gateway for the S32K148EVB and read its memory regions (SWR-051)."""
-    build = ws["workspace"] / "build" / f"gateway-s32k148-{RTOS.lower()}"
+    build = ws["workspace"] / "build" / f"gateway-s32k148-{BOARD_RTOS.lower()}"
     arm = ws["workspace"] / "tools" / ARM_TOOLCHAIN / "bin"
     if not (arm / "arm-none-eabi-gcc").exists():
         return {"available": False}
@@ -328,7 +353,7 @@ def board_checks(ws):
                CC="arm-none-eabi-gcc", CXX="arm-none-eabi-g++")
     if not (build / "build.ninja").exists():
         run(["cmake", "-S", OBSW / "gateway", "-B", build, "-G", "Ninja", f"-DOPENBSW_DIR={ws['openbsw']}",
-             "-DBUILD_TARGET_PLATFORM=S32K148EVB", f"-DBUILD_TARGET_RTOS={RTOS}",
+             "-DBUILD_TARGET_PLATFORM=S32K148EVB", f"-DBUILD_TARGET_RTOS={BOARD_RTOS}",
              f"-DCMAKE_TOOLCHAIN_FILE={ws['openbsw'] / 'cmake' / 'toolchains' / 'ArmNoneEabi.cmake'}",
              "-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DCMAKE_C_FLAGS_RELWITHDEBINFO=-g3 -O2 -DNDEBUG",
              "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-g3 -O2 -DNDEBUG", "-DCMAKE_ASM_FLAGS_RELWITHDEBINFO=-g3"], env=env)
@@ -351,7 +376,7 @@ def board_checks(ws):
             for number, line in enumerate(source.read_text(errors="replace").splitlines(), 1):
                 if POSIX_HEADERS.search(line):
                     headers.append(f"{rel(source)}:{number}: {line.strip()}")
-    return {"available": True, "rtos": RTOS, "build_ok": result.returncode == 0 and elf.exists(),
+    return {"available": True, "rtos": BOARD_RTOS, "build_ok": result.returncode == 0 and elf.exists(),
             "elf_sha256": sha256(elf) if elf.exists() else None, "regions": regions,
             "own_warnings": own, "posix_headers": headers}
 
@@ -375,7 +400,7 @@ def bus_load(it):
     return cfg, {"worst_frames": frames, "worst_percent": round(worst, 2), "measured_percent": measured}
 
 
-def qualification(wp, ws, upstream, checks, it, board, board_it):
+def qualification(wp, ws, upstream, checks, it, board, board_it, doip):
     cfg, load = bus_load(it)
     profiles = sorted((REPO / "X-Verse" / "bridges" / "serial2can" / "config").glob("*.json"))
     import gen_routing  # noqa: PLC0415
@@ -432,6 +457,25 @@ def qualification(wp, ws, upstream, checks, it, board, board_it):
         f"{base['result']['tests'] - base['result']['failures']}/{base['result']['tests']} on {base['target']}, "
         f"{base['preset'].split()[0]} "
         f"at {base['openbsw_revision'][:12]}" if base else "no board baseline recorded")
+    doip_pc = [t for t in (it or {}).get("tests", []) if t["name"].startswith("test_doip_")]
+    doip_board = [t for t in (board_it or {}).get("tests", []) if t["name"].startswith("test_board_doip_")]
+    pc_current = bool(it) and it.get("executable_sha256") == checks["elf_sha256"]
+    board_now = bool(board_it) and board.get("available") and board_it.get("executable_sha256") == board.get("elf_sha256")
+    auto["doip-routing"] = (
+        bool(doip_pc) and bool(doip_board) and pc_current and board_now
+        and all(t["status"] == "passed" for t in doip_pc + doip_board),
+        f"Linux {sum(t['status'] == 'passed' for t in doip_pc)}/{len(doip_pc)} "
+        f"({'current' if pc_current else 'stale'} executable), S32K148EVB "
+        f"{sum(t['status'] == 'passed' for t in doip_board)}/{len(doip_board)} "
+        f"({'current' if board_now else 'stale'} image)")
+    doip_cases = doip["cases"]
+    doip_lines = doip["coverage"]["line_percent"]
+    auto["doip-client-gates"] = (
+        doip["format_clean"] and bool(doip_cases) and all(v == "passed" for v in doip_cases.values())
+        and doip_lines >= 90 and doip["tidy_findings"] == 0 and doip["base"] == checks["openbsw_lock"],
+        f"format {'clean' if doip['format_clean'] else 'changed'}; unit tests "
+        f"{sum(v == 'passed' for v in doip_cases.values())}/{len(doip_cases)}; lines {doip_lines:.1f} %; "
+        f"clang-tidy {doip['tidy_findings']}; base {doip['base'][:12]}")
     manual = {"reviewed": ("passed", "Review recorded in the case description"),
               "not-run": ("not run", "Live campaign not executed in this slice"),
               "open": ("open", "Depends on an open item")}
@@ -621,10 +665,11 @@ td ul{margin:4px 0;padding-left:18px}a{color:var(--accent)}
 @media (max-width:860px){.layout{grid-template-columns:1fr;padding:16px}nav{position:static;flex-direction:row;flex-wrap:wrap}header{padding:16px}}"""
 
 
-def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools, board, board_it):
+def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools, board, board_it,
+           doip):
     swr = wp["swr"]
     counts = Counter(r["status"] for r in swr.values())
-    m_cov, g_cov, p_cov = cov["module"], cov["gateway"], cov["generator"]
+    m_cov, d_cov, g_cov, p_cov = cov["module"], cov["doip_client"], cov["gateway"], cov["generator"]
     ut_total = len(unit_cases)
     ut_pass = sum(s == "passed" for s in unit_cases.values())
     it_pass = sum(c["status"] == "passed" for c in wp["itc"])
@@ -633,10 +678,10 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
         ("Requirements verified", f"{counts['verified']}/{len(swr)}",
          f"{counts['partially verified']} partial · {counts['failed']} failed · {counts['open'] + counts['not verified']} open"),
         ("Unit tests", f"{ut_pass}/{ut_total}", f"{len(wp['utc'])} cases · gtest, Bazel, pytest"),
-        ("Module coverage", f"{m_cov['line_percent']:.0f}% / {m_cov['branch_percent']:.0f}%", "transportRouter line / branch"),
+        ("Module coverage", f"{m_cov['line_percent']:.0f}% / {d_cov['line_percent']:.0f}%", "transportRouter / doipClient lines"),
         ("Gateway coverage", f"{g_cov['line_percent']:.0f}% / {g_cov['branch_percent']:.0f}%", "gateway units line / branch"),
         ("Static findings open", str(len(ev["open_findings"]) + len(ev["gateway_tidy"])),
-         f"{len(findings)} cppcheck · {upstream['tidy_findings']} + {len(ev['gateway_tidy'])} clang-tidy"),
+         f"{len(findings)} cppcheck · {upstream['tidy_findings'] + doip['tidy_findings']} + {len(ev['gateway_tidy'])} clang-tidy"),
         ("Integration tests", f"{it_pass}/{len(wp['itc'])}",
          f"PC {'current' if ev['it_current'] else 'stale'} · S32K148 {'current' if ev['board_current'] else 'stale'}"),
         ("S32K148 image", f"{board.get('regions', {}).get('Application', {}).get('used', 0) / 1024:.0f} KiB",
@@ -684,6 +729,8 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
     utc_rows = [[f'<span class="id">{c["ID"]}</span>', inline_md(c["Test case"]), c["Unit"], c["Verifies"], badge(c["status"])] for c in wp["utc"]]
     cov_rows = [["transportRouter (contrib module)", f'{m_cov["line_covered"]}/{m_cov["line_total"]}', f'{m_cov["line_percent"]:.1f}%',
                  f'{m_cov["branch_covered"]}/{m_cov["branch_total"]}', f'{m_cov["branch_percent"]:.1f}%', '<a href="coverage-module/index.html">details</a>'],
+                ["doipClient (contrib module)", f'{d_cov["line_covered"]}/{d_cov["line_total"]}', f'{d_cov["line_percent"]:.1f}%',
+                 f'{d_cov["branch_covered"]}/{d_cov["branch_total"]}', f'{d_cov["branch_percent"]:.1f}%', '<a href="evidence/doipclient-coverage.txt">txt</a>'],
                 ["gateway units (lib + DTC store)", f'{g_cov["line_covered"]}/{g_cov["line_total"]}', f'{g_cov["line_percent"]:.1f}%',
                  f'{g_cov["branch_covered"]}/{g_cov["branch_total"]}', f'{g_cov["branch_percent"]:.1f}%', '<a href="evidence/gateway-coverage.json">json</a>'],
                 ["gen_routing.py", f'{p_cov["covered_lines"]}/{p_cov["num_statements"]}', f'{p_cov["percent_covered"]:.1f}%',
@@ -702,7 +749,7 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
         ["SWE.1", link("OpenBSW/aspice/swe1-requirements/software-requirements.md"), "Software requirements"],
         ["SWE.2", link("OpenBSW/aspice/swe2-architecture/architecture.md"), "Architecture, elements, interfaces"],
         ["SWE.3", link("OpenBSW/aspice/swe3-detailed-design/detailed-design.md"), "Units and detailed design"],
-        ["SWE.4", '<a href="evidence/module-junit.xml">module-junit.xml</a> · <a href="evidence/gateway-ut.xml">gateway-ut.xml</a> · '
+        ["SWE.4", '<a href="evidence/module-junit.xml">module-junit.xml</a> · <a href="evidence/doipclient-junit.xml">doipclient-junit.xml</a> · <a href="evidence/gateway-ut.xml">gateway-ut.xml</a> · '
                   '<a href="evidence/generator-ut.xml">generator-ut.xml</a>', "Unit test results"],
         ["SWE.4", '<a href="evidence/cppcheck.txt">cppcheck.txt</a> · <a href="evidence/module-clang-tidy.txt">module-clang-tidy.txt</a> · '
                   '<a href="evidence/clang-tidy-gateway.txt">clang-tidy-gateway.txt</a> · <a href="evidence/complexity.csv">complexity.csv</a>',
@@ -746,7 +793,7 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
 <h3>Structural coverage</h3>{table(["Scope", "Lines", "Line %", "Branches", "Branch %", ""], cov_rows)}
 <h3>Upstream OpenBSW gates for the contributed module</h3>{table(["Gate", "Result"], gate_rows)}
 <h3>cppcheck</h3>{table(["Location", "Severity", "Rule", "Message", "Status"], finding_rows)}
-<h3>clang-tidy</h3><p>Module (OpenBSW <code>.clang-tidy</code>): {upstream['tidy_findings']} findings. Gateway units: {len(ev['gateway_tidy'])} findings.</p>
+<h3>clang-tidy</h3><p>Modules (OpenBSW <code>.clang-tidy</code>): transportRouter {upstream['tidy_findings']}, doipClient {doip['tidy_findings']} findings. Gateway units: {len(ev['gateway_tidy'])} findings.</p>
 <h3>Complexity (CCN &gt; 10)</h3>{table(["File", "Function", "NLOC", "CCN", "Status"], complex_rows)}</section>
 <section id="swe5"><h2>SWE.5 Software integration and integration test</h2><p class="lead">PC run <code>{html.escape((it or {}).get('run_id', '—'))}</code>: executable {'identical to the current build' if ev['it_current'] else '<strong>differs from the current build</strong>'}. S32K148EVB run <code>{html.escape((board_it or {}).get('run_id', '—'))}</code>: image {'identical to the current board build' if ev['board_current'] else '<strong>differs from the current board build</strong>'}.</p>
 {table(["ID", "Check", "Test case", "Interfaces", "Verifies", "Result", "Duration"], itc_rows)}</section>
@@ -782,6 +829,8 @@ def main(argv=None):
     diagrams = render_diagrams()
     print("upstream gates (OpenBSW unit tests, format, copyright, tidy, bazel) …", flush=True)
     upstream = upstream_gates(ws, args.skip_upstream)
+    print("DoIP client module (OpenBSW unit tests, format, tidy) …", flush=True)
+    doip = doip_client_gates(args.skip_upstream)
     print("gateway unit tests …", flush=True)
     gw_cases, gw_cov, ut_build = gateway_unit_tests(ws)
     print("generator tests …", flush=True)
@@ -795,8 +844,8 @@ def main(argv=None):
     it = json.loads((IT_EVIDENCE / "results.json").read_text()) if (IT_EVIDENCE / "results.json").exists() else None
     board_it = (json.loads((BOARD_IT_EVIDENCE / "results.json").read_text())
                 if (BOARD_IT_EVIDENCE / "results.json").exists() else None)
-    unit_cases = {**upstream["cases"], **gw_cases, **py_cases}
-    load, _ = qualification(wp, ws, upstream, built, it, board, board_it)
+    unit_cases = {**upstream["cases"], **doip["cases"], **gw_cases, **py_cases}
+    load, _ = qualification(wp, ws, upstream, built, it, board, board_it, doip)
     ev = evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstream, board, board_it)
     tools = {"gcc": tool_version(["gcc", "--version"]), "cmake": tool_version([ws["venv"] / "bin" / "cmake", "--version"]),
              "cppcheck": tool_version(["cppcheck", "--version"]), "clang-tidy": tool_version(["clang-tidy", "--version"]),
@@ -804,9 +853,10 @@ def main(argv=None):
              "clang-format": tool_version(["clang-format-17", "--version"]), "treefmt": tool_version(["treefmt", "--version"]),
              "gcovr": tool_version([ws["venv"] / "bin" / "gcovr", "--version"]), "lizard": tool_version([ws["venv"] / "bin" / "lizard", "--version"]),
              "bazelisk": "1.29.0 (SHA-256 pinned)", "PlantUML": f"{PLANTUML_VERSION} (sha1 {PLANTUML_SHA1[:12]})"}
-    cov = {"module": upstream["coverage"], "gateway": gw_cov, "generator": py_cov}
+    cov = {"module": upstream["coverage"], "doip_client": doip["coverage"], "gateway": gw_cov, "generator": py_cov}
     (REPORT / "aspice-swe-report.html").write_text(
-        render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools, board, board_it))
+        render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools, board, board_it,
+               doip))
     swr = wp["swr"]
     summary = {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -815,11 +865,13 @@ def main(argv=None):
         "requirement_counts": dict(Counter(r["status"] for r in swr.values())),
         "unit_tests": {"total": len(unit_cases), "passed": sum(s == "passed" for s in unit_cases.values())},
         "coverage": {"module": {k: upstream["coverage"][k] for k in ("line_percent", "branch_percent", "function_percent")},
+                     "doip_client": {k: doip["coverage"][k] for k in ("line_percent", "branch_percent", "function_percent")},
                      "gateway": {k: gw_cov[k] for k in ("line_percent", "branch_percent")},
                      "generator": {"line_percent": py_cov["percent_covered"]}},
         "upstream_gates": upstream["steps"], "bazel": upstream["bazel"],
         "static": {"cppcheck_open": len(ev["open_findings"]), "cppcheck_total": len(findings),
-                   "clang_tidy_module": upstream["tidy_findings"], "clang_tidy_gateway": len(gateway_tidy),
+                   "clang_tidy_module": upstream["tidy_findings"], "clang_tidy_doip_client": doip["tidy_findings"],
+                   "clang_tidy_gateway": len(gateway_tidy),
                    "ccn_violations": sum(f["status"] == "violation" for f in functions)},
         "integration": {c["ID"]: c["status"] for c in wp["itc"]}, "integration_current": ev["it_current"],
         "board": {"image_sha256": board.get("elf_sha256"), "regions": board.get("regions"),

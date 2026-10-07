@@ -9,8 +9,8 @@
  ********************************************************************************/
 
 // Modified for the zonal diagnostic gateway: no DEMO, RUST, ROUTING or SOMEIP
-// components, no TPROUTER (TransportRouter replaces TransportRouterSimple); adds GATEWAY
-// and the router's TPGATEWAY.
+// components, no TPROUTER (TransportRouter replaces TransportRouterSimple); adds GATEWAY,
+// the router's TPGATEWAY and the DoIP client's DOIPCLIENT.
 
 #include "logger/logger.h"
 
@@ -35,6 +35,7 @@
 #include <tcp/TcpLogger.h>
 #include <udp/UdpLogger.h>
 #ifdef PLATFORM_SUPPORT_TRANSPORT
+#include <doip/client/DoIpClientLogger.h>
 #include <doip/server/DoIpServerLogger.h>
 #endif // PLATFORM_SUPPORT_TRANSPORT
 #endif // PLATFORM_SUPPORT_ETHERNET
@@ -86,6 +87,7 @@ LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, UDP, ::util::format::Color::LIGHT_GRAY)
 LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, LWIP, ::util::format::Color::LIGHT_YELLOW)
 #ifdef PLATFORM_SUPPORT_TRANSPORT
 LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, DOIP, ::util::format::Color::LIGHT_GREEN)
+LOGGER_COMPONENT_MAPPING_INFO(_DEBUG, DOIPCLIENT, ::util::format::Color::LIGHT_CYAN)
 #endif // PLATFORM_SUPPORT_TRANSPORT
 #endif // PLATFORM_SUPPORT_ETHERNET
 

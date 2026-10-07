@@ -21,6 +21,7 @@ import can
 import pytest
 
 from doip_tester import FRONT, GATEWAY_IP, REAR, Tester
+from sim_doip_ecu import NODE_IP, SimDoipEcu
 from sim_ecu import SimEcu
 
 CAN_CHANNEL = os.environ.get("ZGW_CAN", "vcan0")
@@ -140,6 +141,27 @@ def _reset_rear(request):
         ecu.mode = "normal"
         ecu.requests.clear()
         ecu.functional_requests.clear()
+    yield
+
+
+@pytest.fixture(scope="module")
+def eth_ecu(gateway):
+    """Simulated Ethernet zonal ECU (DoIP route 0x1040) at NODE_IP on the host."""
+    try:
+        ecu = SimDoipEcu().start()
+    except OSError as exc:
+        pytest.fail(f"cannot listen on {NODE_IP}:13400 ({exc}); add the address with "
+                    f"sudo OpenBSW/scripts/net-up.sh")
+    yield ecu
+    ecu.stop()
+
+
+@pytest.fixture(autouse=True)
+def _reset_eth(request):
+    if "eth_ecu" in request.fixturenames:
+        ecu = request.getfixturevalue("eth_ecu")
+        ecu.resume()
+        ecu.reset()
     yield
 
 

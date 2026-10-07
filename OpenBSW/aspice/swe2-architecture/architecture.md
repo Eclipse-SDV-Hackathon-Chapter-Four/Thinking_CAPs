@@ -4,7 +4,7 @@
 | --- | --- |
 | Software | OpenBSW zonal diagnostic gateway |
 | Inputs | [Software requirements](../swe1-requirements/software-requirements.md), OpenBSW reference application (`executables/referenceApp`: `DoIpServerSystem`, `DoCanSystem`, `TransportSystem`, `UdsSystem`, POSIX `TapEthernetSystem`) |
-| Status | Baselined, 6 October 2026 (revised after implementation) |
+| Status | Baselined, 6 October 2026 (revised after implementation); DoIP client added 7 October 2026 |
 
 | View | File | Purpose |
 | --- | --- | --- |
@@ -12,6 +12,7 @@
 | Static | [components.puml](diagrams/components.puml) | OpenBSW modules reused, gateway elements added, interfaces |
 | Dynamic | [physical-routing.puml](diagrams/physical-routing.puml) | SOVD request → DoIP → ISO-TP → ThreadX ECU and back, with response pending and timeout |
 | Dynamic | [functional-routing.puml](diagrams/functional-routing.puml) | Functional request fan-out and collection of responses |
+| Dynamic | [doip-routing.puml](diagrams/doip-routing.puml) | Request to an Ethernet zonal ECU: on-demand connection, routing activation, acknowledgement, response, and the failure paths |
 | Behaviour | [route-state.puml](diagrams/route-state.puml) | State machine for each route's pending request |
 | Deployment | [deployment.puml](diagrams/deployment.puml) | Linux host in X-Verse, and the S32K148 target |
 
@@ -26,8 +27,10 @@
 | AD-05 | Monitor ECUs passively, from the outcome of routed requests | No extra CAN traffic, so no effect on the X-Verse bus (SWR-024, SWR-030). |
 | AD-06 | One YAML routing source, which generates the C++ configuration and the CDA/ECU consistency check | Addresses defined once (SWR-052, SYS-09). |
 | AD-07 | Two platforms from one source: the Linux host (SocketCAN `vcan0`, lwIP on TAP) and the NXP S32K148EVB (FlexCAN, ENET with TJA1101 100BASE-T1), each with its platform folder under `gateway/app/platforms` | Runs in X-Verse without hardware (SYS-06) and on the target hardware with the same application code (SWR-051). |
-| AD-08 | Eclipse ThreadX (`asyncThreadX`, ThreadX 6.4.3 as pinned by OpenBSW) on both platforms; FreeRTOS (`asyncFreeRtos`) stays selectable with `BUILD_TARGET_RTOS` / `ZGW_RTOS=FREERTOS` | Same RTOS as the ThreadX zonal ECUs of the project. The application uses only OpenBSW's `async` abstraction, so the RTOS is a build option with no code change. Both RTOSes pass the PC and board integration tests (FreeRTOS: earlier runs at `f8193eb9`). |
+| AD-08 | Eclipse ThreadX (`asyncThreadX`, ThreadX 6.4.3 as pinned by OpenBSW) on the S32K148EVB; FreeRTOS (`asyncFreeRtos`) in the POSIX simulation. `BUILD_TARGET_RTOS` / `ZGW_RTOS` selects either on both platforms | On the target: the same RTOS as the ThreadX zonal ECUs of the project. On the PC, OpenBSW's SocketCAN transceiver blocks the signals the ThreadX Linux port schedules with, which deadlocked the gateway under heavy host load (OP-8); FreeRTOS does not show it. The application uses only OpenBSW's `async` abstraction, so the RTOS is a build option with no code change. |
 | AD-09 | SOME/IP and every vehicle-signal middleware excluded from the build | No path into the cruise-control signal flow (SWR-031). |
+| AD-10 | Ethernet zonal ECUs are reached by a DoIP client transport layer (`doip::DoIpClientTransportLayer`, new module `contrib/libs/bsw/doipClient`) registered with the router on its own bus (`DOIP_NODES`); it reuses OpenBSW's `DoIpTcpConnection` and send jobs | The router already routes by bus, so a DoIP route is another transport layer and the routing logic is unchanged (SWR-019). OpenBSW has only the DoIP server; the client is generic and can be proposed upstream like `transportRouter` (OP-6). |
+| AD-11 | One TCP connection per DoIP node, opened by the first request and kept; one delivery budget (1.5 s) covers connect, routing activation and the node's acknowledgement | No connection traffic while idle (as AD-05). The budget is below the router's 2 s transfer budget, so the client always reports a request as processed before the router gives it up; the router then never reuses a buffer that the client still sends (SWR-006). |
 
 ## Software elements
 
@@ -38,13 +41,14 @@ The table follows the Serial2CAN report format: ID | Element | Responsibility | 
 | ARC-01 | DoIP server (`DoIpServerSystem`, OpenBSW `doip`) | Vehicle identification and announcement, routing activation, connection lifecycle, entity status, header validation, diagnostic message (N)ACK | SWR-001, SWR-002, SWR-003, SWR-004, SWR-005, SWR-040 |
 | ARC-02 | DoCAN transport (`DoCanSystem`, OpenBSW `docan` + `cpp2can`) | ISO-TP on the configured identifiers: padding, flow control, STmin, N_x timeouts; drops every other identifier | SWR-018, SWR-030, SWR-032, SWR-060 |
 | ARC-03 | `transport::TransportRouter` (new OpenBSW module `contrib/libs/bsw/transportRouter`) | Route by logical address to local UDS, a route's transport layer or the functional group; per-route pending state; P2/P2\* supervision; late and unsolicited response handling; NACK mapping; statistics | SWR-003, SWR-011, SWR-012, SWR-013, SWR-014, SWR-015, SWR-016, SWR-017, SWR-032, SWR-041, SWR-042, SWR-060 |
-| ARC-04 | Gateway `RoutingTable` + generator (`gateway/config/routing.yaml`, `gateway/tools/gen_routing.py`) | Static routes with CAN identifiers, validated by the generator and at init; generated C++ configuration and router routes; consistency check against ECU CAN profiles | SWR-010, SWR-052 |
+| ARC-04 | Gateway `RoutingTable` + generator (`gateway/config/routing.yaml`, `gateway/tools/gen_routing.py`) | Static routes with CAN identifiers or DoIP node addresses, validated by the generator and at init; generated C++ configuration and router routes; consistency check against ECU CAN profiles | SWR-010, SWR-052 |
 | ARC-05 | Gateway UDS server (`UdsSystem`, OpenBSW `uds` dispatcher + new jobs) | Sessions and S3, TesterPresent, identification DIDs, `FD00`/`FD01`, reachability routine | SWR-011, SWR-020, SWR-021, SWR-022, SWR-023, SWR-026, SWR-027 |
 | ARC-06 | `NodeMonitor` + `DtcStore` (new) | Count consecutive timeouts per route, set/pass the lost-communication fault, status bits, `0x19`/`0x14` | SWR-024, SWR-025 |
 | ARC-07 | `transport::TransportRouterStatistics` (module) + `TransportSystem` log | Saturating counters per route and for the router; periodic log line | SWR-023, SWR-054 |
 | ARC-08 | Platform and lifecycle (OpenBSW `lifecycle`, `async`; platform folders `posix` with `TapEthernetSystem`, and `s32k148evb` with `CanSystem` (FlexCAN), `S32K148EvbEthernetSystem`, startup and linker script) | Start-up order, shutdown on signals, static allocation, CAN/TAP interface selection, board bring-up | SWR-043, SWR-044, SWR-050, SWR-051 |
 | ARC-09 | Build and dependency lock (`CMakeLists.txt`, `dependencies.lock.json`) | Pinned OpenBSW revision, unmodified-checkout check, SOME/IP excluded | SWR-031, SWR-053 |
 | ARC-10 | Deployment assets (container, TAP set-up, new Serial2CAN profile) | Run alongside X-Verse and the CDA using only new files | SWR-033, SWR-050 |
+| ARC-11 | DoIP client (`DoIpClientSystem`, new OpenBSW module `contrib/libs/bsw/doipClient`) | One connection per `doip` route: on-demand TCP connection, routing activation, diagnostic messages and their acknowledgements, alive check response, delivery budget; node responses to the router | SWR-006, SWR-013, SWR-019, SWR-043 |
 
 The forwarding-latency budget (SWR-060) and the bus-load limit (SWR-032) are
 properties of ARC-02 and ARC-03 together (one outstanding request per route,
@@ -62,12 +66,13 @@ ISO-TP flow control). Integration tests, analysis and qualification verify them.
 | IF-06 | `transport::IRouteObserver` (`routeResponded`, `routeTimedOut`) | ARC-03 → ARC-06 | Internal (module API). Called in the context that observed the outcome; never blocks |
 | IF-07 | `routing.yaml` | Integrator → ARC-04 | External. Single source of addresses (SWR-052) |
 | IF-08 | Logger output | ARC-07, ARC-08 → operator | External. Start-up identity, 30 s statistics, debug routing events |
+| IF-09 | DoIP TCP 13400 to Ethernet nodes | ARC-11 ↔ Ethernet zonal ECUs | External. ISO 13400-2:2012 (protocol version 2), the gateway as external test equipment: routing activation from `0x0E10`, type `0x00`; diagnostic messages to the node's logical address or `0xE400`; node `0x1040` at `192.168.0.30` |
 
 ## Resources
 
 | Resource | Allocation |
 | --- | --- |
-| Tasks | OpenBSW async contexts: Ethernet/DoIP, CAN/DoCAN, diagnosis (router, UDS, monitor) |
+| Tasks | OpenBSW async contexts: Ethernet/DoIP (DoIP server and client, lwIP), CAN/DoCAN, diagnosis (router, UDS, monitor) |
 | Memory | Static only: 4 routing buffers of 4095 bytes, 8 small buffers of 8 bytes, 1 pending context per route (16 max), 8 tester entries |
 | CAN | Transmits only on `0x7DF` and the route request IDs; worst case < 10 % of 500 kbit/s (SWR-032) |
-| Network | TAP interface on the host; UDP and TCP port 13400 |
+| Network | TAP interface on the host; UDP and TCP port 13400; one outgoing TCP connection per `doip` route |

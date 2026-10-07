@@ -52,9 +52,11 @@ def test_routing_table_did(tester):
     """SWR-022: FD00 equals the routing configuration."""
     data = tester.read_did(GATEWAY, 0xFD00)[3:]
     count, gw, func = data[0], *struct.unpack_from(">HH", data, 1)
-    assert (count, gw, func) == (2, GATEWAY, FUNCTIONAL)
+    assert (count, gw, func) == (3, GATEWAY, FUNCTIONAL)
     routes = [struct.unpack_from(">HBHHHH", data, 5 + 11 * i) for i in range(count)]
-    assert routes == [(REAR, 0, 0x7E1, 0x7E9, 150, 5100), (FRONT, 0, 0x7E2, 0x7EA, 150, 5100)]
+    # DoIP route: transport 1 and the IPv4 address 192.168.0.30 in place of the CAN identifiers
+    assert routes == [(REAR, 0, 0x7E1, 0x7E9, 150, 5100), (FRONT, 0, 0x7E2, 0x7EA, 150, 5100),
+                      (0x1040, 1, 0xC0A8, 0x001E, 150, 5100)]
 
 
 def test_local_services_and_nrcs(tester):
@@ -203,9 +205,9 @@ def test_lost_communication_dtc(tester, gateway, can_log):
         tester.request(FRONT, b"\x3E\x00", wait=0.3)  # no front ECU on the bus
     status = read_dtcs(tester)[U0141]
     assert status & 0x09 == 0x09, f"testFailed+confirmed expected, got {status:#04x}"
-    # supported DTCs (19 0A) include both routes' DTCs
+    # supported DTCs (19 0A) include every route's DTC, DoIP route 0x1040 (U0142) included
     supported = tester.request(GATEWAY, b"\x19\x0A").responses[-1][1]
-    assert b"\xC1\x40\x00" in supported and b"\xC1\x41\x00" in supported
+    assert all(dtc in supported for dtc in (b"\xC1\x40\x00", b"\xC1\x41\x00", b"\xC1\x42\x00"))
 
 
 def test_dtc_passes_and_clears(tester, front_ecu):

@@ -20,7 +20,7 @@ The report generator parses this table: ID | Source | Test case | Method | Verif
 
 | ID | Source | Test case | Method | Verifies |
 | --- | --- | --- | --- | --- |
-| QTC-01 | auto:sil-baseline | OpenBSW SIL suite (uds, enet, docan) on the pinned revision, `posix-threadx`: 104/104 | Test | SWR-050 |
+| QTC-01 | auto:sil-baseline | OpenBSW SIL suite (uds, enet, docan) on the pinned revision, `posix-freertos`: 104/104 | Test | SWR-050 |
 | QTC-02 | auto:upstream-gates | Contributed module in the unmodified pinned OpenBSW: format gate, copyright check, unit tests, Bazel tests | Test | SWR-053 |
 | QTC-03 | auto:openbsw-pinned | The OpenBSW checkout is at the locked revision without tracked modifications | Analysis | SWR-053 |
 | QTC-04 | auto:no-vehicle-middleware | The gateway executable contains no SOME/IP, middleware or Zenoh symbols | Analysis | SWR-031 |
@@ -36,6 +36,8 @@ The report generator parses this table: ID | Source | Test case | Method | Verif
 | QTC-14 | manual:open | ThreadX rear lighting ECU with a UDS-on-CAN server answers through the gateway (OP-2) | Test | SWR-012, SWR-024 |
 | QTC-15 | auto:target-build | Gateway built for the S32K148EVB: links within the `Application` flash and `MainRAM` regions, no POSIX headers outside `platforms/posix`, the recorded board run used the current image | Analysis | SWR-051 |
 | QTC-16 | auto:board-baseline | OpenBSW SIL suite on the S32K148EVB (reference app `s32k148-threadx`, pinned revision): 19/19 UDS-over-DoIP and Ethernet tests | Test | SWR-051 |
+| QTC-17 | auto:doip-routing | Routing to an Ethernet zonal ECU over DoIP on both targets: every DoIP integration case of the recorded Linux and S32K148EVB runs passed with the current builds | Test | SWR-006, SWR-019, SWR-051 |
+| QTC-18 | auto:doip-client-gates | Contributed module `doipClient` in the unmodified pinned OpenBSW: format clean, unit tests passed, line coverage ≥ 90 %, no clang-tidy findings | Test | SWR-006, SWR-019, SWR-053 |
 
 ## Pass criteria
 

@@ -10,6 +10,20 @@ constexpr uint32_t DIAG_CAN_MAX   = 0x7EFU;
 constexpr uint16_t MAX_UDS_LENGTH = 4095U;
 
 bool inDiagRange(uint32_t const canId) { return (canId >= DIAG_CAN_MIN) && (canId <= DIAG_CAN_MAX); }
+
+/// A unicast IPv4 node address: not 0.0.0.0, loopback, multicast or broadcast.
+bool isNodeAddress(uint32_t const ip)
+{
+    uint32_t const first = ip >> 24U;
+    return (ip != 0U) && (ip != 0xFFFFFFFFU) && (first != 127U) && ((first & 0xF0U) != 0xE0U);
+}
+
+bool canIdsOverlap(Route const& a, Route const& b)
+{
+    return (a.transport == Transport::DOCAN) && (b.transport == Transport::DOCAN)
+           && ((a.requestCanId == b.requestCanId) || (a.requestCanId == b.responseCanId)
+               || (a.responseCanId == b.requestCanId) || (a.responseCanId == b.responseCanId));
+}
 } // namespace
 
 RoutingTable::RoutingTable(Addresses const& addresses, ::etl::span<Route const> const routes)
@@ -37,15 +51,26 @@ RoutingTable::Error RoutingTable::validate(size_t& badIndex) const
         {
             return Error::ADDRESS_CONFLICT;
         }
-        if (!inDiagRange(route.requestCanId) || !inDiagRange(route.responseCanId))
+        if (route.transport == Transport::DOCAN)
         {
-            return Error::CAN_ID_OUT_OF_RANGE;
+            if (!inDiagRange(route.requestCanId) || !inDiagRange(route.responseCanId))
+            {
+                return Error::CAN_ID_OUT_OF_RANGE;
+            }
+            if ((route.requestCanId == route.responseCanId)
+                || (route.requestCanId == _addresses.functionalCanId)
+                || (route.responseCanId == _addresses.functionalCanId))
+            {
+                return Error::DUPLICATE_CAN_ID;
+            }
         }
-        if ((route.requestCanId == route.responseCanId)
-            || (route.requestCanId == _addresses.functionalCanId)
-            || (route.responseCanId == _addresses.functionalCanId))
+        else if (!isNodeAddress(route.ipAddress))
         {
-            return Error::DUPLICATE_CAN_ID;
+            return Error::INVALID_IP_ADDRESS;
+        }
+        else
+        {
+            // DoIP route
         }
         if ((route.p2Ms == 0U) || (route.p2Ms > route.p2StarMs))
         {
@@ -62,12 +87,15 @@ RoutingTable::Error RoutingTable::validate(size_t& badIndex) const
             {
                 return Error::DUPLICATE_ADDRESS;
             }
-            if ((other.requestCanId == route.requestCanId)
-                || (other.requestCanId == route.responseCanId)
-                || (other.responseCanId == route.requestCanId)
-                || (other.responseCanId == route.responseCanId))
+            if (canIdsOverlap(other, route))
             {
                 return Error::DUPLICATE_CAN_ID;
+            }
+            // one DoIP client connection per DoIP entity
+            if ((other.transport == Transport::DOIP) && (route.transport == Transport::DOIP)
+                && (other.ipAddress == route.ipAddress))
+            {
+                return Error::DUPLICATE_IP_ADDRESS;
             }
         }
     }
@@ -105,6 +133,8 @@ char const* RoutingTable::errorText(Error const error)
         case Error::CAN_ID_OUT_OF_RANGE: return "CAN identifier outside 0x7DF-0x7EF";
         case Error::INVALID_TIMING: return "invalid P2/P2* timing";
         case Error::INVALID_LENGTH: return "invalid maximum length";
+        case Error::INVALID_IP_ADDRESS: return "DoIP route without a unicast IPv4 address";
+        case Error::DUPLICATE_IP_ADDRESS: return "duplicate DoIP node IP address";
         default: return "unknown";
     }
 }
