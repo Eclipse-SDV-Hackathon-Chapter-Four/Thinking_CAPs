@@ -1,8 +1,8 @@
 {
   "title": "Thinking CAPs Eclipse contribution compliance audit",
-  "captured_at": "2026-10-07T10:48:24.733575+00:00",
+  "captured_at": "2026-10-07T10:49:47.205684+00:00",
   "verdict": "Not all contributions are ready or demonstrably compliant. Two published native PRs have failing ECA gates; policy/checklist, commit metadata, disclosure, IP-review and evidence issues remain.",
-  "scope": "The working 20-issue registry; selected current native patches and all referenced PR drafts; local and remote Git branch contribution records; GitHub native PRs #601/#40/#3307 and hackathon PRs #32/#33/#34; source notice scan outside imported evidence; the separately imported bug queue. No source code or original evidence was changed.",
+  "scope": "The captured 24-issue registry (20 initially registered issues plus four communication bugs imported during the audit); selected current native patches and all referenced PR drafts; local and remote Git branch contribution records; GitHub native PRs #601/#40/#3307 and hackathon PRs #32/#33/#34; source notice scan outside imported evidence. No source code or original evidence was changed.",
   "applicability": "Official Eclipse project requirements apply to native contributions. Thinking_CAPs is an event repository: its status as an official Foundation-managed project repository was not established. Foundation requirements are used as upstream readiness criteria for its integration code, not asserted as automatic legal violations for every hackathon commit. Team README review/transparency promises apply to its work.",
   "limits": [
     "This is an evidence and process audit, not legal clearance or complete semantic code/security review.",
@@ -15,11 +15,11 @@
   ],
   "summary": {
     "registered_issues": 24,
-    "additional_records_or_groups": 13,
-    "registered_manifest_entries_hash_matched": 35375,
+    "additional_records_or_groups": 9,
+    "registered_manifest_entries_hash_matched": 35399,
     "registered_manifest_missing_entries": 1,
     "registered_manifest_hash_mismatches": 0,
-    "registered_selected_patch_files": 15,
+    "registered_selected_patch_files": 19,
     "native_pr_eca_failed": [
       601,
       40
@@ -244,7 +244,7 @@
       "severity": "medium",
       "status": "confirmed_stale_inventory",
       "title": "Published contributions and branch packets are missing from the registry",
-      "observation": "The working registry has 20 entries and no recorded PR for CDA #543 or diagnostics #16, although current GitHub PRs #601 and #40 exist and branch submission documents name them. OpenBSW transportRouter, fault-storage write-through, receiver instrumentation, ThreadX/X-COM integration and the separately imported four-item communication bug queue are outside the registered issue inventory. Old CDA/diagnostics patches do not identify the current submitted revisions.",
+      "observation": "The initial working registry had 20 entries and the later captured registry has 24 after the four communication bugs were imported concurrently. Neither records PR #601 for CDA #543 or PR #40 for diagnostics #16, although GitHub and branch documents name them. OpenBSW transportRouter, fault-storage write-through, receiver instrumentation and ThreadX/X-COM integration are outside the issue inventory. Old CDA/diagnostics patches do not identify the current submitted revisions.",
       "affected": [
         "Registry",
         "CDA #543",
@@ -1708,55 +1708,229 @@
     },
     {
       "id": "eclipse-score/communication#1236",
-      "status": "Assessment or no implementation",
-      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
       "finding_ids": [
+        "F04",
         "F11",
         "F12"
       ],
       "record": "contributions/issues/eclipse-score/communication/1236/README.md",
       "upstream_url": "https://github.com/eclipse-score/communication/issues/1236",
       "registry_status": "draft_imported_native_lint_failure",
-      "patch_checks": []
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1236/communication-1236.patch",
+          "registry_path_exists": true,
+          "sha256": "7988657efea0ac647991eda56a5b15fccb9eabeb347caac9fa98abf2f5fba60f",
+          "sha_matches": true,
+          "added": 184,
+          "removed": 2,
+          "files": [
+            {
+              "file": ".github/workflows/_linter.yml",
+              "added": 22,
+              "removed": 0
+            },
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "tools/lint/buildifier/BUILD",
+              "added": 41,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/buildifier_lint.py",
+              "added": 69,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/buildifier_lint_test.py",
+              "added": 40,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/clean_fixture.bzl.txt",
+              "added": 5,
+              "removed": 0
+            },
+            {
+              "file": "tools/lint/buildifier/warning_fixture.bzl.txt",
+              "added": 5,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
     },
     {
       "id": "eclipse-score/communication#1031",
-      "status": "Assessment or no implementation",
-      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
       "finding_ids": [
+        "F04",
         "F11",
         "F12"
       ],
       "record": "contributions/issues/eclipse-score/communication/1031/README.md",
       "upstream_url": "https://github.com/eclipse-score/communication/issues/1031",
       "registry_status": "draft_imported_integration_pending",
-      "patch_checks": []
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1031/communication-1031.patch",
+          "registry_path_exists": true,
+          "sha256": "cc3fd7f7ce150f9d941959ceeacea2f0654a35c3fbd1a65415aee72c2ce6c180",
+          "sha_matches": true,
+          "added": 87,
+          "removed": 3,
+          "files": [
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "quality/visibility_guard/public_targets.golden",
+              "added": 1,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/BUILD",
+              "added": 11,
+              "removed": 1
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/README.md",
+              "added": 28,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/aou_forwarding_test/BUILD",
+              "added": 21,
+              "removed": 0
+            },
+            {
+              "file": "score/mw/com/dependability/safety_analysis/aou_forwarding_test/component_requirements.trlc",
+              "added": 24,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
     },
     {
       "id": "eclipse-score/communication#751",
-      "status": "Assessment or no implementation",
-      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
       "finding_ids": [
+        "F04",
         "F11",
         "F12"
       ],
       "record": "contributions/issues/eclipse-score/communication/751/README.md",
       "upstream_url": "https://github.com/eclipse-score/communication/issues/751",
       "registry_status": "draft_imported_linux_checks_review_pending",
-      "patch_checks": []
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/751/communication-751.patch",
+          "registry_path_exists": true,
+          "sha256": "4460dc0ced124b963c112017185361dcf3a347042eecb8855d5e6ced07da6997",
+          "sha_matches": true,
+          "added": 308,
+          "removed": 6,
+          "files": [
+            {
+              "file": ".github/workflows/_codeql.yml",
+              "added": 6,
+              "removed": 2
+            },
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "quality/static_analysis/BUILD",
+              "added": 12,
+              "removed": 1
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint.py",
+              "added": 148,
+              "removed": 1
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint_test.py",
+              "added": 140,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
     },
     {
       "id": "eclipse-score/communication#1104",
-      "status": "Assessment or no implementation",
-      "assessment": "No current native patch. Status is correctly bounded; preserved records do not establish human acceptance or issue completion.",
+      "status": "Local proposal with failed or missing gates",
+      "assessment": "Latest recorded full builds/tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft omit AI disclosure; human acceptance is pending.",
       "finding_ids": [
+        "F04",
         "F11",
         "F12"
       ],
       "record": "contributions/issues/eclipse-score/communication/1104/README.md",
       "upstream_url": "https://github.com/eclipse-score/communication/issues/1104",
       "registry_status": "draft_imported_root_cause_review_pending",
-      "patch_checks": []
+      "patch_checks": [
+        {
+          "path": "contributions/issues/eclipse-score/communication/1104/communication-1104.patch",
+          "registry_path_exists": true,
+          "sha256": "9e9236d5de6996c09b00a0cc35c88410ec036563f732d6f15b99c1cdb88b6347",
+          "sha_matches": true,
+          "added": 154,
+          "removed": 3,
+          "files": [
+            {
+              "file": "BUILD",
+              "added": 2,
+              "removed": 2
+            },
+            {
+              "file": "quality/static_analysis/BUILD",
+              "added": 12,
+              "removed": 1
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint.py",
+              "added": 55,
+              "removed": 0
+            },
+            {
+              "file": "quality/static_analysis/codeql_lint_test.py",
+              "added": 85,
+              "removed": 0
+            }
+          ],
+          "signed_off_by": [],
+          "assisted_by": [],
+          "ai_disclosure": false,
+          "cc0": false
+        }
+      ]
     }
   ],
   "additional_contributions": [
@@ -1859,54 +2033,6 @@
         "F13"
       ],
       "record": "README.md"
-    },
-    {
-      "id": "eclipse-score/communication#1236 bug queue",
-      "status": "Local proposal with failed or missing gates",
-      "assessment": "Latest recorded builds/full tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft lack AI disclosure; outside the 20-entry registry. No upstream publication claimed.",
-      "finding_ids": [
-        "F04",
-        "F09",
-        "F11",
-        "F12"
-      ],
-      "record": "contributions/communication-bug-queue-20261006/recovery-1/REVIEW.md"
-    },
-    {
-      "id": "eclipse-score/communication#1031 bug queue",
-      "status": "Local proposal with failed or missing gates",
-      "assessment": "Latest recorded builds/full tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft lack AI disclosure; outside the 20-entry registry. No upstream publication claimed.",
-      "finding_ids": [
-        "F04",
-        "F09",
-        "F11",
-        "F12"
-      ],
-      "record": "contributions/communication-bug-queue-20261006/recovery-1/REVIEW.md"
-    },
-    {
-      "id": "eclipse-score/communication#1104 bug queue",
-      "status": "Local proposal with failed or missing gates",
-      "assessment": "Latest recorded builds/full tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft lack AI disclosure; outside the 20-entry registry. No upstream publication claimed.",
-      "finding_ids": [
-        "F04",
-        "F09",
-        "F11",
-        "F12"
-      ],
-      "record": "contributions/communication-bug-queue-20261006/recovery-1/REVIEW.md"
-    },
-    {
-      "id": "eclipse-score/communication#751 bug queue",
-      "status": "Local proposal with failed or missing gates",
-      "assessment": "Latest recorded builds/full tests pass (502, with 6 skipped); copyright gate remains failed. Item-specific lint/analyzer or production-use obligations remain. Native patch and PR draft lack AI disclosure; outside the 20-entry registry. No upstream publication claimed.",
-      "finding_ids": [
-        "F04",
-        "F09",
-        "F11",
-        "F12"
-      ],
-      "record": "contributions/communication-bug-queue-20261006/recovery-1/additional-751/REVIEW.md"
     }
   ],
   "integrity_results": [
@@ -2067,6 +2193,38 @@
       "missing": [],
       "mismatched": [],
       "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1236",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1031",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#751",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
+    },
+    {
+      "id": "eclipse-score/communication#1104",
+      "entries": 6,
+      "matched": 6,
+      "missing": [],
+      "mismatched": [],
+      "unsafe": []
     }
   ],
   "additional_checks": [
@@ -2120,13 +2278,13 @@
     "eclipse-score--score-eca-response-readable.txt": "df1f73ffde91c57d752c235e78a418dedb7615ce33168d0a16fded1bae1aac3d",
     "hackathon-34.json": "379c652b6310208b7e004181c4b5892e2a0a5adcb2cf79223cd99e9ecc060476",
     "3307-checks.json": "41a758df914ad9f63dfffd5887f05fcef02037d200e9756027ef83a6ccc851a8",
-    "full-manifest-results.json": "d8baa182bbadbeb87b4077f8eed77c21f39f331ffd439a0755df9fed69ca045a",
+    "full-manifest-results.json": "f9152b7adf561c3d710143acef108346ba82c1b547b762ad26c5c725d658a135",
     "hackathon-33-reviews.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
     "fault-lib-CONTRIBUTING.md": "367d5122de4e76cd86791cec8233336cea01a1f01ea37e25cee9c60ed876f825",
     "hackathon-32.json": "5d8ad184bd67fc14d21042f9ecdd77ebedef318de62b0bc2f06d20a1833a65dc",
     "3307-files-headers.json": "6fa4df0cee7fd8cbfcfffa99f913739f41497170803109cf295dd0e700d9aa1b",
     "eclipse-score--inc_diagnostics-eca-response-readable.txt": "7b39c95f379661fdb5f4886ed440c4155317d6e8c346f0993ad593321352db51",
-    "patch-audit.json": "dadd7589120dc24635f9fd6f2f400bb87c0302f167a45632700e0e3fc79f6c6f",
+    "patch-audit.json": "c8a884fe15c622da23fde4f1e1f38b1da2eb3a32d2f15224c5173f81ab204023",
     "3307-files.json": "9aab09e13d8d4bf4f1289e190be96c682fc6c9abfa7ac982968de6d7a289fcba",
     "33-files-headers.json": "2e23c1635b4da71cc7586f3eb04f7ba4358a110db847736a0e377ee756a9a192",
     "eclipse-opensovd--classic-diagnostic-adapter-pr-601.json": "1c15a56929dfe24fe4843c805f426fbe0eb9aaf66108ce1831abef7ac2bba0f5",
@@ -2137,6 +2295,7 @@
     "audit-subject.json": "a364ad4bb27151c15b05d609c1fae8b71fb6caf3abaa955db01addefc85ba5d6",
     "eclipse-score--inc_diagnostics-pr-40.json": "fd82af07f225bc694f15a0daae13c9b96510f696626a7455dc851200ae21f1b8",
     "eca-lookups.json": "77631c5468476ee80404b38ea8018bed53513564e84e5c330458a2515e58eedc",
+    "registry-snapshot.json": "d44f80aa86ed410a3d86e276da41952744c5dafbbd42a9742e3c5c8139d9d233",
     "3307-status.json": "04e16b90ade7dc63294cfcb01c06da3b46771476fe2863ae7546308c2fc5cdeb",
     "branch-inventory.json": "b093bbd35c9982779e934b6497d3d7c3030bab8a6caa9d8b8b72343e65ad94a5",
     "hackathon-34-reviews.json": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
