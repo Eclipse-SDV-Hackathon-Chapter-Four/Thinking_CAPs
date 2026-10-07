@@ -7,3 +7,7 @@ Fresh baseline/candidate docs checks, candidate HTML and copyright checks pass. 
 The original failed runs remain in [upstream-preparation](../upstream-preparation/README.md). They describe the earlier baseline and are superseded for current PR validation. The old workspace failed storage validation after its mount device changed; a fresh bound disposable workspace was allocated without modifying that old run.
 
 This packet records direct local execution. Hosted CI, publication and reviewer delivery are captured separately in `publication.json`. Marking the PR ready for review supplies no human acceptance, qualification, issue closure or merge. The decision record remains proposed, version 2.
+
+Publication: PR #3307 is ready for review; ECA passes. The three infrastructure CODEOWNERS are requested reviewers, and #3115 assignees are mentioned in the [review comment](https://github.com/eclipse-score/score/pull/3307#issuecomment-6039828874). Hosted workflow runs require maintainer approval (`action_required`). Human review remains pending.
+
+The broader evidence-branch registry checker retains a pre-existing observation-date mismatch for unrelated `inc_diagnostics#16`. The scoped #3115 packet and registry identity checks pass; all other registry entries are unchanged. See [evidence-integrity.json](evidence-integrity.json).
