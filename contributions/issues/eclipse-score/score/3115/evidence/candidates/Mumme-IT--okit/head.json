@@ -1,0 +1,97 @@
+{
+  "sha": "97fff5595416ec222b950ccc8d78e7dd7978976e",
+  "node_id": "C_kwDOSUAe3doAKDk3ZmZmNTU5NTQxNmVjMjIyYjk1MGNjYzhkNzhlN2RkNzk3ODk3NmU",
+  "commit": {
+    "author": {
+      "name": "Felix Mumme",
+      "email": "felix.mumme@mercedes-benz.com",
+      "date": "2026-06-11T08:42:50Z"
+    },
+    "committer": {
+      "name": "Felix Mumme",
+      "email": "felix.mumme@mercedes-benz.com",
+      "date": "2026-06-11T08:42:50Z"
+    },
+    "message": "feat(selector): add fuzzy search",
+    "tree": {
+      "sha": "99c0c0cfe736c6cf5dcc81d2350d3e876bcbd8fa",
+      "url": "https://api.github.com/repos/Mumme-IT/okit/git/trees/99c0c0cfe736c6cf5dcc81d2350d3e876bcbd8fa"
+    },
+    "url": "https://api.github.com/repos/Mumme-IT/okit/git/commits/97fff5595416ec222b950ccc8d78e7dd7978976e",
+    "comment_count": 0,
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "url": "https://api.github.com/repos/Mumme-IT/okit/commits/97fff5595416ec222b950ccc8d78e7dd7978976e",
+  "html_url": "https://github.com/Mumme-IT/okit/commit/97fff5595416ec222b950ccc8d78e7dd7978976e",
+  "comments_url": "https://api.github.com/repos/Mumme-IT/okit/commits/97fff5595416ec222b950ccc8d78e7dd7978976e/comments",
+  "author": null,
+  "committer": null,
+  "parents": [
+    {
+      "sha": "405fce5415823fd1d8de5f5669c54cfe0cf34058",
+      "url": "https://api.github.com/repos/Mumme-IT/okit/commits/405fce5415823fd1d8de5f5669c54cfe0cf34058",
+      "html_url": "https://github.com/Mumme-IT/okit/commit/405fce5415823fd1d8de5f5669c54cfe0cf34058"
+    }
+  ],
+  "stats": {
+    "total": 197,
+    "additions": 189,
+    "deletions": 8
+  },
+  "files": [
+    {
+      "sha": "6e99f64258700a32b3bf23c78fea3830a3099079",
+      "filename": "okit/__init__.py",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2,
+      "blob_url": "https://github.com/Mumme-IT/okit/blob/97fff5595416ec222b950ccc8d78e7dd7978976e/okit%2F__init__.py",
+      "raw_url": "https://github.com/Mumme-IT/okit/raw/97fff5595416ec222b950ccc8d78e7dd7978976e/okit%2F__init__.py",
+      "contents_url": "https://api.github.com/repos/Mumme-IT/okit/contents/okit%2F__init__.py?ref=97fff5595416ec222b950ccc8d78e7dd7978976e",
+      "patch": "@@ -1,3 +1,3 @@\n \"\"\"okit \u2014 CLI for managing OpenCode skills and agents from Git repositories.\"\"\"\n \n-__version__ = \"0.6.2\"\n+__version__ = \"0.6.3\""
+    },
+    {
+      "sha": "68821562a2933f62d33f8b52881dfeb2de5c8afe",
+      "filename": "okit/selector.py",
+      "status": "modified",
+      "additions": 119,
+      "deletions": 6,
+      "changes": 125,
+      "blob_url": "https://github.com/Mumme-IT/okit/blob/97fff5595416ec222b950ccc8d78e7dd7978976e/okit%2Fselector.py",
+      "raw_url": "https://github.com/Mumme-IT/okit/raw/97fff5595416ec222b950ccc8d78e7dd7978976e/okit%2Fselector.py",
+      "contents_url": "https://api.github.com/repos/Mumme-IT/okit/contents/okit%2Fselector.py?ref=97fff5595416ec222b950ccc8d78e7dd7978976e",
+      "patch": "@@ -79,6 +79,42 @@ def _build_visible(nodes: list[_Node], collapsed: set[int]) -> list[int]:\n     return visible\n \n \n+def _fuzzy_matches(query: str, label: str) -> bool:\n+    \"\"\"Return True when all query chars appear in label order, case-insensitively.\"\"\"\n+    needle = query.casefold()\n+    haystack = label.casefold()\n+    next_pos = 0\n+    for char in needle:\n+        found_at = haystack.find(char, next_pos)\n+        if found_at == -1:\n+            return False\n+        next_pos = found_at + 1\n+    return True\n+\n+\n+def _ancestors_for(nodes: list[_Node], node_pos: int) -> list[int]:\n+    \"\"\"Return visible ancestor positions for a flat tree node.\"\"\"\n+    ancestors: list[int] = []\n+    for pos in range(node_pos - 1, -1, -1):\n+        children_range = nodes[pos].children_range\n+        if children_range is None:\n+            continue\n+        if children_range[0] <= node_pos < children_range[1]:\n+            ancestors.append(pos)\n+    return list(reversed(ancestors))\n+\n+\n+def _build_search_visible(nodes: list[_Node], query: str) -> list[int]:\n+    \"\"\"Return matching leaves plus their ancestors for search mode.\"\"\"\n+    included: set[int] = set()\n+    for pos, node in enumerate(nodes):\n+        if node.index is None or not _fuzzy_matches(query, node.label):\n+            continue\n+        included.update(_ancestors_for(nodes, pos))\n+        included.add(pos)\n+    return [pos for pos in range(len(nodes)) if pos in included]\n+\n+\n # ---------------------------------------------------------------------------\n # Render helpers\n # ---------------------------------------------------------------------------\n@@ -231,14 +267,13 @@ def interactive_select_grouped(\n     result: list[int] | None = []\n     cancelled = False\n \n-    # Header lines occupy 3 rows (title + hint + blank line)\n-    HEADER_ROWS = 3\n-\n     hint = (\n         \"\u2191\u2193 navigate  \u25c0\u25b6 collapse/expand  Space toggle  \"\n-        \"Enter confirm  Esc cancel  a select-all  n deselect-all\"\n+        \"Enter confirm  / search  Esc cancel  a select-all  n deselect-all\"\n     )\n     title_text = header or \"Select artifacts\"\n+    search_query = \"\"\n+    search_active = False\n \n     style = Style.from_dict({\n         \"title\": \"bold\",\n@@ -247,23 +282,50 @@ def interactive_select_grouped(\n     })\n \n     def _visible() -> list[int]:\n+        if search_query:\n+            return _build_search_visible(nodes, search_query)\n         return _build_visible(nodes, collapsed)\n \n+    def _header_rows() -> int:\n+        return 4 if search_active or search_query else 3\n+\n+    def _set_cursor_to_first_visible() -> None:\n+        nonlocal cursor, scroll_offset\n+        visible = _visible()\n+        if visible and cursor not in visible:\n+            cursor = visible[0]\n+            scroll_offset = 0\n+\n+    def _append_search_text(text: str) -> None:\n+        nonlocal search_query\n+        search_query += text\n+        _set_cursor_to_first_visible()\n+\n     def get_content():\n         nonlocal scroll_offset\n         visible = _visible()\n+        _set_cursor_to_first_visible()\n+        visible = _visible()\n         cursor_vis_pos = visible.index(cursor) if cursor in visible else 0\n \n         app_height = app.output.get_size().rows\n-        viewport_height = max(1, app_height - HEADER_ROWS)\n+        viewport_height = max(1, app_height - _header_rows())\n \n         scroll_offset = _clamp_scroll(scroll_offset, cursor_vis_pos, viewport_height, len(visible))\n \n         lines = _render_lines(nodes, selected, cursor, collapsed, visible, scroll_offset, viewport_height)\n \n         result_fragments = []\n         result_fragments.append((\"class:title\", f\"{title_text}\\n\"))\n-        result_fragments.append((\"class:hint\", f\"{hint}\\n\\n\"))\n+        result_fragments.append((\"class:hint\", f\"{hint}\\n\"))\n+        if search_active or search_query:\n+            prompt = \"/\" if search_active else \" \"\n+            result_fragments.append((\"class:search\", f\"Search: {prompt}{search_query}\\n\"))\n+        result_fragments.append((\"\", \"\\n\"))\n+\n+        if not visible:\n+            result_fragments.append((\"\", \"  No matches\\n\"))\n+            return result_fragments\n \n         for vis_idx, line in enumerate(lines):\n             abs_vis_pos = scroll_offset + vis_idx\n@@ -292,35 +354,86 @@ def _move_down(event):\n \n     @kb.add(\"right\")\n     def _expand(event):\n+        if search_query:\n+            return\n         node = nodes[cursor]\n         if node.children_range is not None and cursor in collapsed:\n             collapsed.discard(cursor)\n \n     @kb.add(\"left\")\n     def _collapse(event):\n+        if search_query:\n+            return\n         node = nodes[cursor]\n         if node.children_range is not None and cursor not in collapsed:\n             collapsed.add(cursor)\n \n     @kb.add(\"space\")\n     def _toggle(event):\n+        if search_active:\n+            _append_search_text(\" \")\n+            return\n+        visible = _visible()\n+        if not visible:\n+            return\n         _toggle_node(nodes, cursor, selected)\n \n     @kb.add(\"a\")\n     def _all(event):\n+        if search_active:\n+            _append_search_text(event.data)\n+            return\n         _select_all(nodes, selected)\n \n     @kb.add(\"n\")\n     def _none(event):\n+        if search_active:\n+            _append_search_text(event.data)\n+            return\n         _deselect_all(selected)\n \n+    @kb.add(\"/\")\n+    def _start_search(event):\n+        nonlocal search_active\n+        if search_active:\n+            _append_search_text(event.data)\n+            return\n+        search_active = True\n+\n+    @kb.add(\"backspace\")\n+    def _search_backspace(event):\n+        nonlocal search_query\n+        if not search_active:\n+            return\n+        search_query = search_query[:-1]\n+        _set_cursor_to_first_visible()\n+\n+    @kb.add(\"c-h\")\n+    def _search_ctrl_h(event):\n+        _search_backspace(event)\n+\n+    @kb.add(\"<any>\")\n+    def _search_type(event):\n+        if not search_active:\n+            return\n+        _append_search_text(event.data)\n+\n     @kb.add(\"enter\")\n     def _confirm(event):\n         nonlocal result\n         result = sorted(selected)\n         event.app.exit()\n \n     @kb.add(\"escape\")\n+    def _escape(event):\n+        nonlocal cancelled, search_active\n+        if search_active:\n+            search_active = False\n+            _set_cursor_to_first_visible()\n+            return\n+        cancelled = True\n+        event.app.exit()\n+\n     @kb.add(\"c-c\")\n     def _cancel(event):\n         nonlocal cancelled"
+    },
+    {
+      "sha": "b158716f2cf48df02b82909e2f9f370f784b3c8a",
+      "filename": "pyproject.toml",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2,
+      "blob_url": "https://github.com/Mumme-IT/okit/blob/97fff5595416ec222b950ccc8d78e7dd7978976e/pyproject.toml",
+      "raw_url": "https://github.com/Mumme-IT/okit/raw/97fff5595416ec222b950ccc8d78e7dd7978976e/pyproject.toml",
+      "contents_url": "https://api.github.com/repos/Mumme-IT/okit/contents/pyproject.toml?ref=97fff5595416ec222b950ccc8d78e7dd7978976e",
+      "patch": "@@ -4,7 +4,7 @@ build-backend = \"hatchling.build\"\n \n [project]\n name = \"okit\"\n-version = \"0.6.2\"\n+version = \"0.6.3\"\n description = \"CLI for managing OpenCode skills and agents from Git repositories\"\n readme = \"README.md\"\n license = \"MIT\""
+    },
+    {
+      "sha": "35aab260f193ff07edf79025194006c6835f7d9c",
+      "filename": "tests/test_selector.py",
+      "status": "added",
+      "additions": 68,
+      "deletions": 0,
+      "changes": 68,
+      "blob_url": "https://github.com/Mumme-IT/okit/blob/97fff5595416ec222b950ccc8d78e7dd7978976e/tests%2Ftest_selector.py",
+      "raw_url": "https://github.com/Mumme-IT/okit/raw/97fff5595416ec222b950ccc8d78e7dd7978976e/tests%2Ftest_selector.py",
+      "contents_url": "https://api.github.com/repos/Mumme-IT/okit/contents/tests%2Ftest_selector.py?ref=97fff5595416ec222b950ccc8d78e7dd7978976e",
+      "patch": "@@ -0,0 +1,68 @@\n+\"\"\"Tests for selector search filtering.\"\"\"\n+\n+from __future__ import annotations\n+\n+from okit.selector import _build_nodes, _build_search_visible, _fuzzy_matches\n+\n+\n+class TestFuzzyMatches:\n+    def test_matches_case_insensitive_ordered_characters(self):\n+        # Given\n+        query = \"rvw\"\n+        label = \"ReviewWriter\"\n+\n+        # When\n+        result = _fuzzy_matches(query, label)\n+\n+        # Then\n+        assert result is True\n+\n+    def test_rejects_out_of_order_characters(self):\n+        # Given\n+        query = \"wrv\"\n+        label = \"Review\"\n+\n+        # When\n+        result = _fuzzy_matches(query, label)\n+\n+        # Then\n+        assert result is False\n+\n+\n+class TestBuildSearchVisible:\n+    def test_includes_matching_leaf_and_ancestors(self):\n+        # Given\n+        groups = [\n+            {\n+                \"label\": \"user/repo\",\n+                \"children\": [\n+                    {\n+                        \"label\": \"Agents\",\n+                        \"items\": [(0, \"reviewer\"), (1, \"planner\")],\n+                    }\n+                ],\n+            }\n+        ]\n+        nodes = _build_nodes(groups)\n+\n+        # When\n+        visible = _build_search_visible(nodes, \"rv\")\n+\n+        # Then\n+        assert [nodes[pos].label for pos in visible] == [\"user/repo\", \"Agents\", \"reviewer\"]\n+\n+    def test_returns_empty_list_when_nothing_matches(self):\n+        # Given\n+        groups = [\n+            {\n+                \"label\": \"user/repo\",\n+                \"children\": [{\"label\": \"Skills\", \"items\": [(0, \"context7\")]}],\n+            }\n+        ]\n+        nodes = _build_nodes(groups)\n+\n+        # When\n+        visible = _build_search_visible(nodes, \"zzz\")\n+\n+        # Then\n+        assert visible == []"
+    }
+  ]
+}
