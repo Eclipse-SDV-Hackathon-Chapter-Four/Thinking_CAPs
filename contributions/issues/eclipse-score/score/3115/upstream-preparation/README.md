@@ -1,5 +1,11 @@
 # Current native proposal and measured verification
 
+> Current native head: see [license-header correction and direct checks](../license-review/README.md). The original source/commit and results below are preserved.
+
+> Historical native candidate: use [version 3 completion and validation](../completion/README.md) for the current PR. The original source, bindings and results below remain preserved.
+
+> Historical preparation: the inherited failure below is resolved on the updated PR by upstream commit `6122462`. See [fresh passing verification](../review-preparation/README.md). These original failed runs remain unchanged.
+
 The current candidate is [DR-010-infra.rst](DR-010-infra.rst), placed at
 `docs/design_decisions/infrastructure/DR-010-infra.rst` on native baseline
 `fdc04f75a2251fcd8cbfd01585fba158c4e09756`. It preserves the ID from PR #3140,

@@ -1,37 +1,25 @@
-# Issue acceptance and remaining work
+# Issue acceptance and merge mapping
 
-The original issue's DoD is “Decision Record done for the topic.” All eight listed
-options are addressed in the proposed record, with evidence levels separated.
-The issue's DoD cannot be inferred from this preparation step.
+#3115 asks which of eight options best fit S-CORE and defines its DoD as “Decision Record done for the topic.” Native version 3 now supplies a concrete, reasoned selection by role rather than only promising a future evaluation. Native status remains `proposed` until an authorized project decision; acceptance and issue closure are pending.
 
-| Obligation / review question | Prepared artifact | Disposition |
+| Obligation | Artifact / evidence | Disposition |
 | --- | --- | --- |
-| Evaluate packaging options | Decision record: APM, Lola, OKIT; pinned primary captures | Read-only comparison prepared; equal-case installation pilots absent |
-| Evaluate SDLC/harness options | Decision record: Syspilot, BMAD, Spec Kit, Pharaoh | Spec Kit/fabric experience retained; alternatives not executed |
-| Evaluate framework option | Harbor source capture and disposition | No Harbor execution or shared held-out corpus |
-| Clear problem/motivation | Context section tied to existing S-CORE ownership | Proposed; reviewers decide adequacy |
-| Real-world S-CORE use | Existing native contribution packets, source snapshot and historical measurements | Selected Linux/native scopes only; no community-scale claim |
-| Native model and lifecycle loopbacks | Source/tests for 001–005/011; impact/freshness history | Implementation evidence; current producer compatibility and native denominators still open |
-| Bounded agent context | 007/011 source, policies, skills and proxy measurements | Supported scoped mechanism; real-task savings/quality remain unmeasured |
-| Qualification and human acceptance | Explicit gaps, historical failure and offline review examples | Production trust/qualification unresolved; passing tools do not supply acceptance |
-| Native DR format | Captured process template and proposed RST supplement/patch | Current path/template reconciled; ID preserved; fresh checks add no warnings, native docs CI blocked by inherited lifecycle warning |
-| Decision record accepted/done | Draft plus concrete proposal | Awaiting maintainers' decision; issue remains open |
+| Packaging comparison | Native DR and [comparison](completion/comparison.md): APM, Lola, OKIT | Recommend APM, fallback Lola, isolated OKIT prototyping; exact source/version and limitations stated |
+| SDLC/harness comparison | Spec Kit, Syspilot, BMAD, Pharaoh in the native DR/table | Recommend Spec Kit for integration development; native engineering remains S-CORE; explicit deferred/reuse dispositions for all alternatives |
+| Evaluation framework | Harbor in the native DR/table | Recommend as shared benchmark driver; native checks and authorized reviews govern outcomes |
+| Problem, criteria and decision rationale | Context, Selection Criteria, Decision, Alternatives, Consequences and Justification in the native DR | Authored; semantic acceptance remains with reviewers |
+| Real native experience and limitations | Original fabric/native packets; historical failures and measured proxies | Retained with source bindings; no fresh qualification or comparative execution claim |
+| Native format, identity, license and impact | `dec_rec__infra__ai_sdlc_tooling`, proposed, version 3; Apache-2.0; current infrastructure path | Candidate checked against native tooling; changes only the new DR; no requirement/design/interface/safety assumption edits |
+| Reconcile #3140 | Native Reconciliation and Implementation Handoff | Merge one same-ID representation; supersede the other PR, or transfer this source into #3140; no other contributor branch modified |
+| Native documentation validation | [Current report](license-review/verification-report.json) | Final candidate results bound to version 3; previous inherited failure was fixed upstream by `6122462` and retained as history |
+| License headers and notices | Exact native RST/Python templates, direct file-path checks, authored utility audit and retained native NOTICE/LICENSE | Pass; decision body and utility behavior unchanged; original captures preserve their licenses |
+| Contribution identity | Signed-off commits and live ECA status in publication | DCO signed; ECA reported for the exact final native commit |
+| Branch merge rules | `completion/rules.json`, ruleset 2965247 | Require one approving review, code-owner coverage and ECA; approvals absent at initial capture |
+| Configured CI | `completion/native-guidance`, common reusable CI and local check records | Record each executed, carried, conditional or hosted-pending check; local success is separate from GitHub execution |
+| Complete review record | [Merge readiness](completion/merge-readiness.md), source patch, logs, exports, SHA-256 inventory | Contributor material prepared; required human decisions remain explicitly pending |
 
-## Review and remaining work
+## Completion boundary
 
-The current native candidate and measured baseline/candidate results are in
-[upstream-preparation](upstream-preparation/README.md). It adds one proposed DR
-without changing any of the 925 existing exported needs. The initial heading error
-and corrected run are both retained. Strict documentation checks still fail on the
-same inherited lifecycle-link warning; no unrelated native artifacts were changed.
+The issue's published DoD does not itself mandate executing all eight tools, proving organization-wide adoption or qualifying an operational safety tool. This PR recommends the tool combination on the available labelled evidence. Reviewers may require further comparative evidence before acceptance; those requests must be addressed if made. Packaging rollout, native-context prototypes and qualified production use are explicit follow-on implementation work, not fabricated completed obligations.
 
-Publication and the review request are recorded in `upstream-preparation/publication.json`
-after delivery. Requesting review does not establish that maintainers accepted it.
-The draft is offered for incorporation into existing PR #3140.
-
-Maintainers must agree whether a bounded pilot assessment is sufficient or whether
-comparative deployment results are required. They also need to resolve or disposition
-the native documentation baseline failure before readiness. If comparative pilots
-are required, agree source pins, installation/upgrade/rollback cases, lifecycle
-loopbacks, native checks, review effort and a held-out task corpus before execution.
-Tool adoption, qualification and issue closure remain with the project owners.
+A maintainer must approve the evaluation content, reconcile the parallel proposal and authorize merge. Hosted workflows still require maintainer approval to run. No review, qualification, merge or issue closure is inferred from passing local checks.

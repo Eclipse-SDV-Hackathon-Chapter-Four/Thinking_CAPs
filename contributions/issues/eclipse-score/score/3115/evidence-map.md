@@ -7,6 +7,8 @@ complete standalone bundles.
 
 | Evidence | Location | What it establishes |
 | --- | --- | --- |
+| Complete native evaluation | `completion/DR-010-infra.rst`, `comparison.md`, `source-binding.json`, `native-proposal.patch` | Version 3 selections, alternatives, criteria, licensing limits and reconciliation |
+| Current checks and merge gates | `completion/verification-report.json`, check logs/JSON, `rules.json`, `merge-readiness.md`, `publication.json` | Exact final local results, public branch obligations, CI/human pending states |
 | Issue scope and activity | `evidence/upstream/issue-3115*.json`, `upstream-snapshot.json` | Original request, assignees, captured status and linked activity |
 | Existing decision/review | `evidence/upstream/pr-3140*.json`, `proposed-DR-010-infra.rst` | Open proposed DR and reviewers' actual concerns |
 | Contribution and DR rules | `evidence/upstream/score-CONTRIBUTION.md`, `score-improvement-pr-template.md`, `process-decision-record-template.rst` | Native contribution route and captured format; not an adopted fabric policy |
