@@ -48,12 +48,15 @@ Wrapper for docker compose to simplify managing the OpenSOVD vECU
 (opensovd-gateway :7690 + SOVD Adapter Console :8080 + CDA :20002 / ECU simulator :8181).
 
 Commands:
+  build   Build (or refresh) all images without starting anything; used by
+          setup.sh so the first up does not have to compile (gateway ~2 min,
+          CDA ~15 min, longer than run_autoverse.py waits for a step).
   up      Build (cached) if needed, create and start all containers,
           then open the SOVD Adapter Console (${CONSOLE_URL}) in the browser.
           The first build compiles the gateway and the CDA (several minutes).
   stop    Stop running containers without removing them.
-  start   Resume containers previously stopped by stop, then open the
-          console in the browser.
+  start   Resume containers previously stopped by stop (or run up when they
+          do not exist yet), then open the console in the browser.
   down    Stop and remove the containers (images kept).
   logs    Follow the gateway + console logs.
   check   Run the console's 13 checks inside the console container.
@@ -66,6 +69,7 @@ Environment:
   OPENSOVD_BROWSER=0             do not open the browser
 
 Examples:
+  $0 build
   $0 up
   $0 stop
   $0 start
@@ -143,6 +147,17 @@ open_browser() {
 
 # ---------------------------------------------------------------- actions
 
+do_build() {
+    if ensure_cda; then
+        log "building the CDA + ECU simulator images ..."
+        cda_compose build
+    else
+        log "CDA + ECU simulator left out (OPENSOVD_CDA=0)"
+    fi
+    log "building the opensovd-gateway + SOVD Adapter Console images ..."
+    compose build
+}
+
 do_up() {
     if ensure_cda; then
         log "building (cached layers) + starting the CDA + ECU simulator ..."
@@ -168,7 +183,8 @@ do_stop() {
 
 do_start() {
     if ! docker container inspect opensovd-gateway sovd-adapter-console &> /dev/null; then
-        echo "Containers not created yet. Use up instead."
+        echo "Containers not created yet. Running up ..."
+        do_up
         return 0
     fi
     log "starting previously created containers ..."
@@ -196,6 +212,7 @@ do_check() {
 }
 
 case "${COMMAND}" in
+    build) do_build ;;
     up)    do_up ;;
     stop)  do_stop ;;
     start) do_start ;;

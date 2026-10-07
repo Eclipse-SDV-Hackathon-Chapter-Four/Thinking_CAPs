@@ -12,13 +12,15 @@ X-Verse vECUs (`vecu/ota`, `vecu/s-core`) with a `ctl.sh`, and by `run_autoverse
 All use the host network, so they meet on `127.0.0.1` like the S-CORE containers.
 
 ```bash
+./ctl.sh build    # build the images only (setup.sh runs this)
 ./ctl.sh up       # build (cached) + start everything, open http://localhost:8080
 ./ctl.sh check    # the console's 13 checks, inside the console container
 ./ctl.sh stop | start | down | logs
 ```
 
-The first `up` compiles the gateway (about 2 min) and the CDA (about 15 min); later runs reuse the
-images. `OPENSOVD_CDA=0` leaves the CDA + ECU simulator out, `OPENSOVD_BROWSER=0` skips the browser,
+The first build compiles the gateway (about 2 min) and the CDA (about 15 min), longer than
+`run_autoverse.py` waits for a step to start, so `setup.sh` runs `./ctl.sh build` beforehand; later
+runs reuse the images. `OPENSOVD_CDA=0` leaves the CDA + ECU simulator out, `OPENSOVD_BROWSER=0` skips the browser,
 `CRUISE_DEBOUNCE_FAILED_MS` / `CRUISE_DEBOUNCE_PASSED_MS` set the gateway debounce (demo 1500 / 1000).
 
 `run_autoverse.py` runs `./ctl.sh up` as the step "OpenSOVD vECU" and `./ctl.sh stop` on shutdown.

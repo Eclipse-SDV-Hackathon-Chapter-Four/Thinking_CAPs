@@ -25,6 +25,18 @@ ORIG_ARGS=("$@")
 AUTOVERSE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$AUTOVERSE_DIR"
 
+# ~/autoverse for tools that expect the checkout there: a link to this one,
+# so there is a single copy (a sync of Thinking_CAPs demo/X-Verse updates it).
+# An existing ~/autoverse (checkout or link) is never touched.
+if [[ "$AUTOVERSE_DIR" != "$HOME/autoverse" ]]; then
+    if [[ ! -e "$HOME/autoverse" && ! -L "$HOME/autoverse" ]]; then
+        ln -s "$AUTOVERSE_DIR" "$HOME/autoverse"
+        echo "Linked ~/autoverse -> $AUTOVERSE_DIR"
+    elif [[ "$(readlink -f "$HOME/autoverse")" != "$(readlink -f "$AUTOVERSE_DIR")" ]]; then
+        echo -e "\033[1;33mNote: ~/autoverse is another checkout ($(readlink -f "$HOME/autoverse")); this setup uses $AUTOVERSE_DIR.\033[0m"
+    fi
+fi
+
 usage() {
     cat <<EOF
 Usage: $0 <command>
@@ -38,10 +50,15 @@ This script is for setting up the XVerse environment and repos after cloning the
 - Optionally runs 'just' commands to setup Logitech G920 steering wheel.
 - Optionally sets up cuttlefish emulator.
 - Optionally prepares the ThreadX AZ3166 lighting ECU (Thinking_CAPs).
-- Works from any checkout location (~/autoverse is not required).
+- Works from any checkout location (~/autoverse is not required). When the
+  checkout is elsewhere (e.g. Thinking_CAPs demo/X-Verse) and ~/autoverse does
+  not exist, ~/autoverse is created as a link to it, for tools that expect it.
 - Sets up each necessary sub-repo, and warns about existing component
   checkouts that are not on the branch/tag in autoverse.repos.
 - Builds S-CORE, including its cruise-control diagnostics server.
+- Builds the OpenSOVD vECU images (demo/OpenSOVD: gateway, SOVD Adapter
+  Console, CDA + ECU simulator), so its first start fits run_autoverse.py's
+  start timeout.
 
 Options:
     --carla      Download and install CARLA server and client. Does not by default.
@@ -232,6 +249,12 @@ pushd bridges/someip/zenoh-someip-bridge
     ./scripts/ctl.sh up
 popd
 
+## OpenSOVD vECU (gateway, SOVD Adapter Console, CDA + ECU simulator): build the
+## images now; run_autoverse.py starts it with ./ctl.sh up.
+pushd demo/OpenSOVD
+    ./ctl.sh build
+popd
+
 if [ $INSTALL_CUTTLEFISH == "true" ]; then
     pushd aaos_digital_cluster/cuttlefish_emulator
         sudo apt install -y android-tools-adb
@@ -246,6 +269,9 @@ Next steps:
 - S-CORE diagnostics: built above; rebuild with  ./setup.sh --rebuild-diag
   Only the legacy SOVD provider (SDV_DIAG_APP=legacy) needs an OpenSOVD
   checkout:  export OPENSOVD_DIR=<path to OpenSOVD>
+- OpenSOVD vECU: images built above; run_autoverse.py starts it and opens the
+  SOVD Adapter Console (http://localhost:8080). ThreadX (--threadx) is found
+  next to a Thinking_CAPs checkout (ThreadX/) or at ~/Thinking_CAPs/ThreadX.
 - Zenoh router: run_autoverse.py starts one in Docker (eclipse/zenoh:1.3.4)
   when nothing answers on tcp/127.0.0.1:7447.
 - Start everything:  python3 $AUTOVERSE_DIR/run_autoverse.py --enable-camera-display --vcu-zenoh
