@@ -1,0 +1,101 @@
+{
+  "frozen_sync": {
+    "exit_code": 0,
+    "packages": 18
+  },
+  "ruff": {
+    "exit_code": 0,
+    "scope": "src tests"
+  },
+  "mypy": {
+    "exit_code": 0,
+    "source_files": 150
+  },
+  "regression": {
+    "exit_code": 0,
+    "passed": 130,
+    "log": "validation/regression-final.log"
+  },
+  "disconnection": {
+    "exit_code": 0,
+    "passed": 1,
+    "log": "validation/disconnection.log"
+  },
+  "native_replay": {
+    "baseline": {
+      "status": "pass",
+      "cases": 113,
+      "targets": 5,
+      "outputs": 11,
+      "artifact": "native-checks/baseline/result.json"
+    },
+    "optimized": {
+      "status": "pass",
+      "cases": 113,
+      "targets": 5,
+      "outputs": 11,
+      "artifact": "native-checks/optimized/result.json"
+    }
+  },
+  "repository_checks": [
+    {
+      "name": "specify-version",
+      "argv": [
+        "specify",
+        "--version"
+      ],
+      "exit_code": 0,
+      "seconds": 0.268114319012966,
+      "log": "specify-version.log"
+    },
+    {
+      "name": "prerequisites",
+      "argv": [
+        ".specify/scripts/bash/check-prerequisites.sh",
+        "--json",
+        "--require-spec",
+        "--require-tasks",
+        "--include-tasks"
+      ],
+      "exit_code": 0,
+      "seconds": 0.09393394898506813,
+      "log": "prerequisites.log"
+    },
+    {
+      "name": "foundation",
+      "argv": [
+        "uv",
+        "run",
+        "--frozen",
+        "python",
+        "scripts/check_foundation.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.15903201498440467,
+      "log": "foundation.log"
+    },
+    {
+      "name": "build",
+      "argv": [
+        "uv",
+        "build",
+        "--out-dir",
+        "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-t033-bindings-kkaj0qmp/dist"
+      ],
+      "exit_code": 0,
+      "seconds": 17.86006374299177,
+      "log": "build.log"
+    }
+  ],
+  "graph_conformance": {
+    "baseline": true,
+    "optimized": true
+  },
+  "engineering_acceptance": "pending",
+  "retained_failures": [
+    "validation/paired-pytest.log",
+    "validation/regression.log",
+    "validation/graph-first-attempt.json"
+  ],
+  "limitations": "Local replay/controller checks; no provider, native API worker or transmitted-feedback qualification"
+}

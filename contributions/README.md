@@ -10,11 +10,17 @@ Eclipse SDV Hackathon submission. Inventory captured on **2026-10-04**.
 | [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Evidence missing in this checkout | Issue open; recover implementation, baseline and original test records |
 | [Communication #1265](issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch; six Linux integration cases passed; agent engineering review complete, retain pastey0.2.3 recommended | Issue open; exact compiler qualification/adoption and human acceptance pending; historical evidence preserved |
 | [Communication #1167](communication-1167/README.md) | Dedicated COM API idempotency integration test | Agent review complete; 503 full-suite tests pass, 6 skipped; 204 inherited copyright findings retained | Issue open; ECA confirmed; formal acceptance pending; push withheld |
+| [S-CORE #3115](issues/eclipse-score/score/3115/README.md) | AI SDLC / SpecKit tooling evaluation using `s-core_sw_fabric` experience | Source-bound evidence, eight tool source captures, proposed decision record and native RST supplement prepared | Issue open; supplements existing PR #3140; comparative pilots and maintainer decision pending |
 
 The first two rows are completed local implementations with retained measurements.
 Upstream review, merge and issue closure have their own statuses. The diagnostics row
 is a recovery item and is excluded from the submission's completed-fix count.
 The communication assessment was added on **2026-10-06** and is excluded from completed/accepted fix counts.
+The tooling evaluation packet was added on **2026-10-07** and is a proposed assessment,
+excluded from completed/accepted fix counts. Its scoped offline verifier checks the new
+packet and referenced native evidence independently. The existing repository-wide verifier
+currently stops at an inherited diagnostics #16 observation-date mismatch; that failure is
+retained in the packet rather than changing older evidence.
 The inventory covers identifiable contributions in the inspected local factory
 handoffs and this repository; add other completed work as its artifacts are recovered.
 
