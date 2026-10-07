@@ -9,3 +9,5 @@ All eight applicable native checks are rerun and pass on the corrected head, inc
 [Publication](publication.json) records the corrected upstream head, ECA and actual hosted workflow/review state. [Reviewer handoff](../completion/review-handoff.md) describes the remaining human gates. Archived third-party/native/fabric source retains original notices and provenance; this audit does not relicense or certify all historical source trees.
 
 Policy copies under `policy/` identify the exact checker, template, config and native LICENSE/NOTICE bytes. The packet inventory and outer manifest bind all retained artifacts. Verifier behavior is unchanged, as recorded in utility-behavior-comparison.json.
+
+Policy references: [Eclipse Project Handbook — copyright headers](https://www.eclipse.org/projects/handbook/) and the exact pinned S-CORE checker/templates retained under policy/. Eclipse guidance was consulted on 2026-10-07; S-CORE declares Apache-2.0. Existing copyright owners and captured licenses are preserved.
