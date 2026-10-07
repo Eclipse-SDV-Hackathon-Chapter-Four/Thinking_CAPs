@@ -106,6 +106,6 @@ Demonstration work products for code quality and traceability; not an assessed c
 | vecu/s-core | dev/sdv-hackathon-2026 | 1ddedc8 Default OPENSOVD_DIR inside the checkout, not a developer's home |
 | vecu/vcu_zenoh | dev/sdv-hackathon-2026 | c15aea2 Disengage cruise control on the ADAS cancel request |
 | vecu/ota | dev/sdv-hackathon-2026 | 95e88f8 README: Raspberry Pi target over Ethernet at 10.42.0.35 |
-| aaos_digital_cluster/cuttlefish_emulator | dev/sdv-hackathon-2026 | bd0af0c PRE-WORK: deliver the X-Verse APK through OTA; pin display DPI |
+| vecu/aaos_cuttlefish | dev/sdv-hackathon-2026 | bd0af0c PRE-WORK: deliver the X-Verse APK through OTA; pin display DPI |
 
 Regenerate with the system running: `python3 aspice/tools/generate_report.py --full`.

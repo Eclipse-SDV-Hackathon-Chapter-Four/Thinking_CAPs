@@ -30,7 +30,7 @@ The report embeds the rendered views.
 | certgen | `vecu/ota/certgen` (otaRTCU), container `ota-certgen` | CA, server and per-target client certificates | SWR-08 |
 | OTA backend | `vecu/ota/backend/java`, container `ota-backend` | Operator console/API `:9444`, mTLS device API `:9443`, campaigns | SWR-09 |
 | RTCU | `vecu/ota/rtcu`, container `ota-rtcu` | Vehicle OTA agent: poll, verify, adb install, report | SWR-10 |
-| Android target | `aaos_digital_cluster/cuttlefish_emulator` (Cuttlefish), Raspberry Pi 4 | Runs the cluster app, accepts adb installs | SWR-11 |
+| Android target | `vecu/aaos_cuttlefish` (Cuttlefish), Raspberry Pi 4 | Runs the cluster app, accepts adb installs | SWR-11 |
 
 ## Interfaces
 

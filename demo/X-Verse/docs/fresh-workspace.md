@@ -169,7 +169,7 @@ the exported workspace and lab variables remain available.
 The selected diagnostic campaigns do not require Android. To validate the full baseline's Android prerequisite from this same fresh checkout:
 
 ```bash
-cd "$SDV_WORKSPACE/autoverse/aaos_digital_cluster/cuttlefish_emulator"
+cd "$SDV_WORKSPACE/autoverse/vecu/aaos_cuttlefish"
 export IMAGE="$LAB_TAG-android"
 export CONTAINER="$LAB_TAG-android"
 export CUTTLEFISH_OPEN_BROWSER=0

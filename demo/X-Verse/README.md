@@ -90,7 +90,7 @@ The vehicle baseline uses the Python Zenoh VCU with the SOME/IP bridge and S-COR
 | Eclipse S-CORE ADAS | Cruise control application and middleware runtime in a container | `vecu/s-core` |
 | Python Zenoh VCU | Driver requests, cruise control engagement, and vehicle commands | `vecu/vcu_zenoh` |
 | Python PID controller | Alternative controller for the Zenoh-only mode | `vecu/simulink/pid_controller` |
-| Android Automotive cluster | X-Verse digital cluster application in Cuttlefish | `aaos_digital_cluster/cuttlefish_emulator` |
+| Android Automotive cluster | X-Verse digital cluster application in Cuttlefish | `vecu/aaos_cuttlefish` |
 | Eclipse OpenSOVD integration | Native receiver observation providers and fault history | `~/eclipse_sdv_hackathon_2026/OpenSOVD/` |
 | Eclipse openDuT testbench | CARL, EDGAR peers, CLEO, and the managed DUT network | `~/eclipse_sdv_hackathon_2026/OpenDut/` |
 | ThreadX | Linux-simulated zonal controller for brake/reverse lights over CAN and Zenoh2CAN | `~/eclipse_sdv_hackathon_2026/ThreadX/` |
@@ -722,7 +722,7 @@ Keep `SCORE_FOR=X-Verse` in the terminal used to launch Autoverse. See the [S-CO
 **This step is required for every current supervisor mode**, including mock and Zenoh-only modes.
 
 ```bash
-cd "$HOME/autoverse/aaos_digital_cluster/cuttlefish_emulator"
+cd "$HOME/autoverse/vecu/aaos_cuttlefish"
 ./ctl.sh make
 ```
 
@@ -754,7 +754,7 @@ adb -s localhost:6520 install -r apk/digital-cluster-app-debug.apk
 
 Installation must report `Success`. The required Android component has not been reproduced if this check is unavailable. The selected OpenSOVD/openDuT campaigns do not require Cuttlefish and can be tested independently.
 
-See the [Cuttlefish README](aaos_digital_cluster/cuttlefish_emulator/README.md) for the image selection and lifecycle commands.
+See the [Cuttlefish README](vecu/aaos_cuttlefish/README.md) for the image selection and lifecycle commands.
 
 ### 8. Configure the steering wheel, if used
 
@@ -792,7 +792,7 @@ The supervisor starts the OTA vECU (`vecu/ota`: EOL backend + one RTCU) and open
 
 On a fresh setup, install the cluster app on Cuttlefish once:
 
-1. **Upload an APK**: enter a version and choose `aaos_digital_cluster/cuttlefish_emulator/apk/digital-cluster-app-debug.apk` (created by `./ctl.sh make` in step 7).
+1. **Upload an APK**: enter a version and choose `vecu/aaos_cuttlefish/apk/digital-cluster-app-debug.apk` (created by `./ctl.sh make` in step 7).
 2. **Push update** to `PC-CUTTLEFISH-01`.
 3. The campaign moves through `downloading` → `installing` → `success` within about 10–20 s; the RTCU installs it with `adb`.
 

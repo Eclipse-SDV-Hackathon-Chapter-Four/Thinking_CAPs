@@ -173,6 +173,22 @@ fi
 ## python tools and root repo
 pip install --user rust-just vcstool psutil
 
+## The Cuttlefish vECU moved from aaos_digital_cluster/cuttlefish_emulator to
+## vecu/aaos_cuttlefish (2026-10-07). Move an existing checkout, with its
+## downloaded images (several GB), instead of cloning and downloading again.
+## Its container bind-mounts runtime/ from the old path, so it is removed;
+## ./ctl.sh start creates it again (the APK then comes through the OTA stack).
+if [[ -d aaos_digital_cluster/cuttlefish_emulator/.git && ! -e vecu/aaos_cuttlefish ]]; then
+    echo "moving aaos_digital_cluster/cuttlefish_emulator to vecu/aaos_cuttlefish"
+    if docker inspect cuttlefish-orchestration-cont --format '{{range .Mounts}}{{.Source}}{{"\n"}}{{end}}' 2>/dev/null \
+            | grep -q "/aaos_digital_cluster/cuttlefish_emulator/"; then
+        docker rm -f cuttlefish-orchestration-cont
+    fi
+    mkdir -p vecu
+    mv aaos_digital_cluster/cuttlefish_emulator vecu/aaos_cuttlefish
+    rmdir aaos_digital_cluster 2>/dev/null || true
+fi
+
 vcs import . < autoverse.repos ## DO NOT MERGE COMMENTED - temp workaround for carla 0.9.16 - manually changed, not committed
 
 ## vcs import does not switch a component that was already checked out.
@@ -264,7 +280,7 @@ else
 fi
 
 if [ $INSTALL_CUTTLEFISH == "true" ]; then
-    pushd aaos_digital_cluster/cuttlefish_emulator
+    pushd vecu/aaos_cuttlefish
         sudo apt install -y android-tools-adb
         ./ctl.sh make
     popd

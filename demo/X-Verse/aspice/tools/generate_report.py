@@ -41,7 +41,7 @@ EVID = REPORT / "evidence"
 DIAGRAMS = ASPICE / "swe2-architecture" / "diagrams"
 DEVCONTAINER_LABEL = f"devcontainer.local_folder={(ROOT / 'vecu' / 's-core').resolve()}"
 COMPONENTS = ["bridges/carla", "bridges/someip", "bridges/can", "vecu/s-core", "vecu/vcu_zenoh", "vecu/ota",
-              "aaos_digital_cluster/cuttlefish_emulator"]
+              "vecu/aaos_cuttlefish"]
 
 
 def run(cmd, cwd=ROOT, timeout=1800, **kw):

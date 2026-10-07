@@ -372,7 +372,7 @@ def build_steps(
     steps.append({
         "name": "ANDROID Cuttlefish",
         "containers": [os.environ.get("CONTAINER", "cuttlefish-orchestration-cont")],
-        "cwd": "$AUTOVERSE_ROOT/aaos_digital_cluster/cuttlefish_emulator",
+        "cwd": "$AUTOVERSE_ROOT/vecu/aaos_cuttlefish",
         "cmd": ["./ctl.sh",  "start"],
         "stp": ["./ctl.sh",  "stop"],
         "kill_patterns": [],
