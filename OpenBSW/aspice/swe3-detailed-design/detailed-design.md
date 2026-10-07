@@ -30,7 +30,7 @@ The report generator parses this table: ID | Unit | Source / functions | Element
 | DD-11 | Transport system | `TransportSystem.cpp`: `diagnosticRoutes`, `init` (both validations), `run`, `execute` (10 ms supervision), `logStatistics` | ARC-03, ARC-07, ARC-08 | SWR-010, SWR-016, SWR-054 |
 | DD-12 | Gateway DoCAN | `DoCanSystem.cpp`: `buildAddressEntries`, `init`, `run`, `shutdown`; ISO-TP parameters | ARC-02 | SWR-018, SWR-030, SWR-032 |
 | DD-13 | DoIP server adaptation | `DoIpServerSystem.cpp`: `checkRoutingActivation`, `getEntityStatus`; `app.cpp`: `provideVin`, `TesterConnectionMonitor` | ARC-01 | SWR-001, SWR-002, SWR-004, SWR-005, SWR-040, SWR-041 |
-| DD-14 | Platform and lifecycle | `app.cpp`: `startApp` (run levels); POSIX `CanSystem.cpp` `canInterfaceName`, `TapEthernetSystem.cpp` `run`; `main.cpp` signal handling | ARC-08 | SWR-044, SWR-050, SWR-051 |
+| DD-14 | Platform and lifecycle | `app.cpp`: `startApp` (run levels); `platforms/posix`: `CanSystem.cpp` `canInterfaceName`, `TapEthernetSystem.cpp` `run`, `main.cpp` signal handling; `platforms/s32k148evb`: `main.cpp`, `CanSystem.cpp`, `S32K148EvbEthernetSystem.cpp`, startup and linker script; top-level CMake platform selection and CMSIS include fix | ARC-08 | SWR-044, SWR-050, SWR-051 |
 | DD-15 | Build and dependencies | `gateway/CMakeLists.txt`, `app/application/CMakeLists.txt` (no SOME/IP, middleware or PDU routing), `dependencies.lock.json`, `scripts/bootstrap.sh` | ARC-09 | SWR-031, SWR-053 |
 | DD-16 | Deployment assets | `scripts/net-up.sh`, `scripts/run.sh`, `scripts/storage.sh`; new Serial2CAN profile (planned) | ARC-10 | SWR-033, SWR-050 |
 

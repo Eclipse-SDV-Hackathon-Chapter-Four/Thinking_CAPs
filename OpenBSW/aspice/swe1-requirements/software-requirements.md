@@ -520,14 +520,16 @@ platform:
 ### SWR-051 Embedded portability
 The gateway application code shall use only OpenBSW abstractions: `async`,
 `lifecycle`, transport, CAN and IP interfaces. It shall make no direct POSIX
-calls, so that it also builds for the S32K148 platform.
+calls outside the POSIX platform folder. From the same sources it shall build
+for the NXP S32K148EVB within the device's memory and run on the board with
+DoIP over its Ethernet.
 
 | Attribute | Value |
 | --- | --- |
 | Type | Constraint |
 | Derived from | SYS-06 |
-| Verification | AN |
-| Criterion | The S32K148 build of the application compiles and links; a grep check finds no POSIX headers outside `platforms/posix`. |
+| Verification | AN, IT |
+| Criterion | The S32K148 build links within the `Application` flash and `MainRAM` regions; no POSIX headers outside `platforms/posix`; the board integration tests pass with the current image. |
 
 ### SWR-052 Single-source configuration
 The routing table shall have one source, `OpenBSW/config/routing.yaml`. From it

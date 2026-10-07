@@ -11,7 +11,7 @@ traceability; they are not an assessed capability level.
 | SWE.2 Architecture | [architecture.md](swe2-architecture/architecture.md), PlantUML [views](swe2-architecture/diagrams/) | Allocation checks |
 | SWE.3 Detailed design | [detailed-design.md](swe3-detailed-design/detailed-design.md), [diagrams](swe3-detailed-design/diagrams/), [coding-guidelines.md](swe3-detailed-design/coding-guidelines.md) | Warning-free builds, OpenBSW format and copyright gates |
 | SWE.4 Unit verification | [unit-verification.md](swe4-unit-verification/unit-verification.md) | GoogleTest in the OpenBSW unit-test build and Bazel, gateway GoogleTest, pytest; gcovr, coverage.py, cppcheck, clang-tidy, lizard |
-| SWE.5 Integration test | [integration-test.md](swe5-integration-test/integration-test.md) | [Recorded run](../evidence/gateway-it/results.json), checked against the current executable |
+| SWE.5 Integration test | [integration-test.md](swe5-integration-test/integration-test.md) | Recorded runs on the [Linux host](../evidence/gateway-it/results.json) and the [S32K148EVB](../evidence/board-gateway-it/results.json), each checked against the current image |
 | SWE.6 Qualification test | [qualification-test.md](swe6-qualification-test/qualification-test.md) | Automated analyses; live campaigns recorded as not run |
 
 Open the report at [report/aspice-swe-report.html](report/aspice-swe-report.html).
@@ -39,11 +39,11 @@ The generator does the following:
 
 ## Current status
 
-- **Requirements:** 27/37 verified, 7 partially verified, 1 failed (SWR-032 bus load), 1 not verified (SWR-026), 1 open (SWR-051)
+- **Requirements:** 28/37 verified, 7 partially verified, 1 failed (SWR-032 bus load), 1 not verified (SWR-026)
 - **Unit tests:** 78/78; module 100% lines and 99.1% branches
 - **Static analysis:** 0 open findings; 6 cppcheck style hints justified (DEV-02)
-- **Integration tests:** 28/28 on the current executable
-- **Qualification:** 10/15 pass; 1 fails (QTC-06 bus load), 4 live campaigns are not run or open
+- **Integration tests:** 38/38: 28 on the Linux host and 10 on the NXP S32K148EVB, each against the current image
+- **Qualification:** 12/16 pass, including the S32K148 build and the board baseline; 1 fails (QTC-06 bus load), 3 live campaigns are not run or open
 - **Traceability:** one issue, SWR-026, which has no implementation
 
 ## Render the diagrams

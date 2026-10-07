@@ -2,7 +2,7 @@
 !theme plain
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
-title Deployment — Linux host in X-Verse (first) and S32K148 (later)
+title Deployment — Linux host in X-Verse and NXP S32K148EVB
 
 node "Linux x86_64 host (X-Verse workstation)" as H {
   node "Docker network" as DN {
@@ -18,7 +18,7 @@ node "Linux x86_64 host (X-Verse workstation)" as H {
 }
 
 node "MXChip AZ3166\n(ThreadX, SLCAN over USB UART)" as AZ
-node "NXP S32K148 EVB (later)\nOpenBSW S32K platform\nFlexCAN + ENET" as S32 #F2F2F2
+node "NXP S32K148EVB\nopenbsw-zonal-gw (s32k148evb platform)\n192.168.0.200, FlexCAN + ENET/TJA1101" as S32
 
 SOVD --> CDA : HTTP
 CDA --> TAP : DoIP UDP/TCP 13400\n(routed host ↔ tap0)
@@ -29,5 +29,8 @@ VCAN <--> TXL : simulation option
 VCAN <--> S2C
 S2C <--> AZ : hardware option
 VCAN <--> XV : 0x1F1/0x1F4 only
-S32 ..> GW : same application,\nbuild-only first (SWR-051)
+node "100BASE-T1 media converter" as MC
+S32 <--> MC : DoIP over 100BASE-T1
+MC <--> H : enp67s0 192.168.0.20
+note right of S32 : same application sources (SWR-051);\nflashed over OpenSDA USB (PEmicro GDB server)
 @enduml

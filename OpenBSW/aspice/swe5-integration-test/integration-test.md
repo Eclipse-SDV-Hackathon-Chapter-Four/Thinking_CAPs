@@ -25,10 +25,21 @@ Recorded results: [`evidence/gateway-it/results.json`](../../evidence/gateway-it
 The report generator checks that the recorded executable hash matches the
 current build.
 
+3. **Target integration.** The same sources are built for the NXP S32K148EVB
+   (Arm GNU Toolchain 14.3.rel1) and flashed with the PEmicro GDB server over
+   OpenSDA. They are tested over the board's 100BASE-T1 Ethernet
+   (`192.168.0.200`) with [`test_board.py`](../../gateway/tests/test_board.py).
+   No CAN node is attached to the board, so routed requests exercise the
+   failure path.
+
+   Procedure: [`scripts/board-it.sh`](../../scripts/board-it.sh). Recorded results:
+   [`evidence/board-gateway-it/results.json`](../../evidence/board-gateway-it/results.json).
+   The generator checks them against the current board image.
+
 ## Integration test cases
 
 The report generator parses this table: ID | Check | Test case | Interfaces | Verifies.
-*Check* is the pytest test name.
+*Check* is the pytest test name; `board:` marks a test of the board run.
 
 | ID | Check | Test case | Interfaces | Verifies |
 | --- | --- | --- | --- | --- |
@@ -60,7 +71,17 @@ The report generator parses this table: ID | Check | Test case | Interfaces | Ve
 | ITC-26 | test_forwarding_latency | 200 round trips; p95 DoIP→CAN and CAN→DoIP ≤ 10 ms | IF-01, IF-02 | SWR-060 |
 | ITC-27 | test_periodic_statistics_log | Start-up line with routing-table hash; statistics line within 35 s, consistent with FD01 | IF-08, IF-01 | SWR-054 |
 | ITC-28 | test_shutdown | SIGINT → exit 0 within 1 s; no CAN frame afterwards; DoIP after CAN/ISO-TP run levels | IF-08 | SWR-044 |
+| ITC-29 | board:test_board_vehicle_announcement | S32K148: announcement after reset with the configured VIN and `0x1010` | IF-01 | SWR-001, SWR-051 |
+| ITC-30 | board:test_board_vehicle_identification | S32K148: generic and by-VIN identification | IF-01 | SWR-001 |
+| ITC-31 | board:test_board_routing_activation_rules | S32K148: tester range accepted; unknown source and type 0x01 rejected | IF-01 | SWR-002 |
+| ITC-32 | board:test_board_entity_status | S32K148: node type gateway, sockets, power mode | IF-01 | SWR-005 |
+| ITC-33 | board:test_board_local_uds | S32K148: F190/F18C/F195, FD00, sessions, NRC 0x11/0x31 | IF-01, IF-03 | SWR-011, SWR-020, SWR-021, SWR-022 |
+| ITC-34 | board:test_board_rejections | S32K148: unknown target NACK 0x03; 8-byte functional NACK 0x04 | IF-01, IF-03 | SWR-003, SWR-013 |
+| ITC-35 | board:test_board_functional_tester_present | S32K148: functional TesterPresent answered by the gateway | IF-01 | SWR-013 |
+| ITC-36 | board:test_board_local_latency | S32K148: local UDS round trip p95 ≤ 20 ms over 100BASE-T1 | IF-01 | SWR-051 |
+| ITC-37 | board:test_board_route_without_can_peer | S32K148: unacknowledged CAN request keeps the route busy (NACK 0x05), fails, frees the route, counted | IF-01, IF-02 | SWR-015, SWR-016, SWR-018 |
+| ITC-38 | board:test_board_lost_communication_dtc | S32K148: three failed requests set U0141; ClearDTC resets it | IF-01, IF-06 | SWR-024, SWR-025 |
 
 ## Pass criteria
 
-- All cases pass with the executable of the current build.
+- All cases pass with the executable of the current build (POSIX) and the current board image (S32K148).

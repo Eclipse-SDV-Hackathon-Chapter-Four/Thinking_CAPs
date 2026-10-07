@@ -23,7 +23,9 @@ sha256sum "$ZGW_ELF" | cut -d' ' -f1 > "$ZGW_RESULTS/elf.sha256"
 
 cd "$OBSW_DIR/gateway/tests"
 set +e
-pytest -v -p no:cacheprovider --junitxml="$ZGW_RESULTS/junit.xml" "$@" 2>&1 | tee "$ZGW_RESULTS/pytest.txt"
+# the PC test modules; test_board.py runs through scripts/board-it.sh
+tests=("$@"); [[ ${#tests[@]} -gt 0 ]] || tests=(test_routing.py test_lifecycle.py)
+pytest -v -p no:cacheprovider --junitxml="$ZGW_RESULTS/junit.xml" "${tests[@]}" 2>&1 | tee "$ZGW_RESULTS/pytest.txt"
 status=${PIPESTATUS[0]}
 set -e
 echo "results: $ZGW_RESULTS (pytest exit $status)"

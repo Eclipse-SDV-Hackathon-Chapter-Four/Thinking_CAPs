@@ -25,7 +25,7 @@
 | AD-04 | Track the pending tester and its bus per route; learn each tester's bus from its requests; classify messages by address, not by bus | Responses reach the right tester on the right bus, and several testers on several buses can share the gateway (SWR-012, SWR-013, SWR-041). The DoIP ACK follows OpenBSW's synchronous hand-over (SWR-003). |
 | AD-05 | Monitor ECUs passively, from the outcome of routed requests | No extra CAN traffic, so no effect on the X-Verse bus (SWR-024, SWR-030). |
 | AD-06 | One YAML routing source, which generates the C++ configuration and the CDA/ECU consistency check | Addresses defined once (SWR-052, SYS-09). |
-| AD-07 | Linux host first, with SocketCAN `vcan0` and lwIP on TAP; S32K148 is a build-only target at first | Runs in X-Verse without hardware (SYS-06); same application code on both targets (SWR-051). |
+| AD-07 | Two platforms from one source: the Linux host (SocketCAN `vcan0`, lwIP on TAP) and the NXP S32K148EVB (FlexCAN, ENET with TJA1101 100BASE-T1), each with its platform folder under `gateway/app/platforms` | Runs in X-Verse without hardware (SYS-06) and on the target hardware with the same application code (SWR-051). |
 | AD-08 | FreeRTOS POSIX core configuration by default; the ThreadX core configuration (`asyncThreadX`) is an option | FreeRTOS is the reference-app default and the best tested. ThreadX is offered so the team's RTOS choice can be aligned later without changing the application. |
 | AD-09 | SOME/IP and every vehicle-signal middleware excluded from the build | No path into the cruise-control signal flow (SWR-031). |
 
@@ -42,7 +42,7 @@ The table follows the Serial2CAN report format: ID | Element | Responsibility | 
 | ARC-05 | Gateway UDS server (`UdsSystem`, OpenBSW `uds` dispatcher + new jobs) | Sessions and S3, TesterPresent, identification DIDs, `FD00`/`FD01`, reachability routine | SWR-011, SWR-020, SWR-021, SWR-022, SWR-023, SWR-026, SWR-027 |
 | ARC-06 | `NodeMonitor` + `DtcStore` (new) | Count consecutive timeouts per route, set/pass the lost-communication fault, status bits, `0x19`/`0x14` | SWR-024, SWR-025 |
 | ARC-07 | `transport::TransportRouterStatistics` (module) + `TransportSystem` log | Saturating counters per route and for the router; periodic log line | SWR-023, SWR-054 |
-| ARC-08 | Platform and lifecycle (OpenBSW `lifecycle`, `async`, POSIX `main`, `TapEthernetSystem`, `lwipSocket`) | Start-up order, shutdown on signals, static allocation, CAN/TAP interface selection | SWR-043, SWR-044, SWR-050, SWR-051 |
+| ARC-08 | Platform and lifecycle (OpenBSW `lifecycle`, `async`; platform folders `posix` with `TapEthernetSystem`, and `s32k148evb` with `CanSystem` (FlexCAN), `S32K148EvbEthernetSystem`, startup and linker script) | Start-up order, shutdown on signals, static allocation, CAN/TAP interface selection, board bring-up | SWR-043, SWR-044, SWR-050, SWR-051 |
 | ARC-09 | Build and dependency lock (`CMakeLists.txt`, `dependencies.lock.json`) | Pinned OpenBSW revision, unmodified-checkout check, SOME/IP excluded | SWR-031, SWR-053 |
 | ARC-10 | Deployment assets (container, TAP set-up, new Serial2CAN profile) | Run alongside X-Verse and the CDA using only new files | SWR-033, SWR-050 |
 

@@ -35,10 +35,10 @@ prepared as an [upstream contribution](../contributions/openbsw-transport-router
 | --- | --- |
 | Unit tests | 78/78: 42 module (OpenBSW unit-test build and Bazel), 10 gateway units, 22 generator, 4 existing `TransportRouterSimple` |
 | Module coverage | 100% lines, 99.1% branches |
-| Integration tests | 28/28 against simulated CAN ECUs, recorded in [evidence/gateway-it](evidence/gateway-it/results.json) |
+| Integration tests | 28/28 on the Linux host against simulated CAN ECUs ([evidence/gateway-it](evidence/gateway-it/results.json)); 10/10 on the S32K148EVB over DoIP ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
 | Forwarding latency (p95) | DoIP→CAN 2.9 ms, CAN→DoIP 0.8 ms |
 | Upstream gates for the module | format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base |
-| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 27/37 requirements verified, 7 partially (live campaigns not run), 1 failed, 2 open |
+| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 28/37 requirements verified, 7 partially (live campaigns not run), 1 failed (SWR-032), 1 not implemented (SWR-026) |
 
 Open items, all of them visible in the report:
 
@@ -50,7 +50,7 @@ Open items, all of them visible in the report:
   - X-Verse + CARLA cruise-control regression with the gateway
   - OpenSOVD → CDA (needs an MDD)
   - ThreadX ECU with UDS (OP-2)
-  - S32K148 build
+  - CAN routing on the board (needs a CAN peer, e.g. a USB-CAN adapter)
 
 ## Layout
 

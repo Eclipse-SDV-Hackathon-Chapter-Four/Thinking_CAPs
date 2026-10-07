@@ -41,6 +41,10 @@ REPORT = ASPICE / "report"
 EVIDENCE = REPORT / "evidence"
 IT_EVIDENCE = OBSW / "evidence" / "gateway-it"
 SIL_EVIDENCE = OBSW / "evidence" / "sil-baseline"
+BOARD_IT_EVIDENCE = OBSW / "evidence" / "board-gateway-it"
+BOARD_BASELINE = OBSW / "evidence" / "board-baseline"
+ARM_TOOLCHAIN = "arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi"
+POSIX_HEADERS = re.compile(r"#\s*include\s*<(unistd|pthread|signal|termios|poll|fcntl|sys/[\w/]+|net/[\w/]+|netinet/[\w/]+|arpa/[\w/]+)\.h>")
 PLANTUML_VERSION = "1.2024.7"
 PLANTUML_SHA1 = "cb57b315d96413d55622edaa8c4b234e2ebf4b1f"
 PLANTUML_JAR = REPO / "X-Verse" / ".cache" / "tools" / f"plantuml-{PLANTUML_VERSION}.jar"
@@ -210,7 +214,7 @@ def upstream_gates(ws, skip):
         shutil.copy2(page, REPORT / "coverage-module" / ("index.html" if page.name == "coverage.html" else page.name))
     tidy_findings = int(re.search(r"clang-tidy findings in module: (\d+)", tidy).group(1)) if "findings in module" in tidy else -1
     return {"steps": steps, "cases": cases, "coverage": coverage, "tidy_findings": tidy_findings,
-            "bazel": re.findall(r"^(//\S+)\s+(PASSED|FAILED)", bazel, flags=re.M),
+            "bazel": re.findall(r"^(//\S+)\s+(?:\(cached\)\s+)?(PASSED|FAILED)", bazel, flags=re.M),
             "build_warnings": int((run_dir / "build-warnings.txt").read_text().strip() or 0)
             if (run_dir / "build-warnings.txt").exists() else -1}
 
@@ -312,6 +316,44 @@ def build_checks(ws):
             "derived_without_origin": derived, "outside_paths": outside}
 
 
+def board_checks(ws):
+    """Build the gateway for the S32K148EVB and read its memory regions (SWR-051)."""
+    build = ws["workspace"] / "build" / "gateway-s32k148"
+    arm = ws["workspace"] / "tools" / ARM_TOOLCHAIN / "bin"
+    if not (arm / "arm-none-eabi-gcc").exists():
+        return {"available": False}
+    env = dict(os.environ, PATH=f"{arm}:{ws['venv'] / 'bin'}:{os.environ['PATH']}",
+               CC="arm-none-eabi-gcc", CXX="arm-none-eabi-g++")
+    if not (build / "build.ninja").exists():
+        run(["cmake", "-S", OBSW / "gateway", "-B", build, "-G", "Ninja", f"-DOPENBSW_DIR={ws['openbsw']}",
+             "-DBUILD_TARGET_PLATFORM=S32K148EVB",
+             f"-DCMAKE_TOOLCHAIN_FILE={ws['openbsw'] / 'cmake' / 'toolchains' / 'ArmNoneEabi.cmake'}",
+             "-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DCMAKE_C_FLAGS_RELWITHDEBINFO=-g3 -O2 -DNDEBUG",
+             "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-g3 -O2 -DNDEBUG", "-DCMAKE_ASM_FLAGS_RELWITHDEBINFO=-g3"], env=env)
+    elf = build / "app" / "application" / "openbsw-zonal-gw.elf"
+    elf.unlink(missing_ok=True)  # relink to get the memory region table
+    result = run(["cmake", "--build", build], check=False, env=env)
+    log = result.stdout + result.stderr
+    (EVIDENCE / "board-build.log").write_text(log)
+    regions = {m.group(1): {"used": int(m.group(2)), "percent": float(m.group(3))}
+               for m in re.finditer(r"^\s*(\w+):\s+(\d+) B\s+\S+ \w+\s+([\d.]+)%", log, flags=re.M)}
+    for m in re.finditer(r"^\s*(\w+):\s+([\d.]+) KB\s+\S+ \w+\s+([\d.]+)%", log, flags=re.M):
+        regions.setdefault(m.group(1), {"used": int(float(m.group(2)) * 1024), "percent": float(m.group(3))})
+    # warnings that the reference app shares (newlib syscall stubs, RWX segment) are not counted
+    own = [w for w in re.findall(r"warning: .*", log) if "is not implemented and will always fail" not in w
+           and "RWX permissions" not in w]
+    headers = []
+    roots = [OBSW / "gateway" / "app" / "application", OBSW / "gateway" / "lib", OBSW / "contrib"]
+    for root in roots:
+        for source in [*root.rglob("*.cpp"), *root.rglob("*.h")]:
+            for number, line in enumerate(source.read_text(errors="replace").splitlines(), 1):
+                if POSIX_HEADERS.search(line):
+                    headers.append(f"{rel(source)}:{number}: {line.strip()}")
+    return {"available": True, "build_ok": result.returncode == 0 and elf.exists(),
+            "elf_sha256": sha256(elf) if elf.exists() else None, "regions": regions,
+            "own_warnings": own, "posix_headers": headers}
+
+
 # --------------------------------------------------------------------------------------------
 # Qualification analyses
 # --------------------------------------------------------------------------------------------
@@ -331,7 +373,7 @@ def bus_load(it):
     return cfg, {"worst_frames": frames, "worst_percent": round(worst, 2), "measured_percent": measured}
 
 
-def qualification(wp, ws, upstream, checks, it):
+def qualification(wp, ws, upstream, checks, it, board, board_it):
     cfg, load = bus_load(it)
     profiles = sorted((REPO / "X-Verse" / "bridges" / "serial2can" / "config").glob("*.json"))
     import gen_routing  # noqa: PLC0415
@@ -370,6 +412,23 @@ def qualification(wp, ws, upstream, checks, it):
         "baseline-untouched": (not checks["outside_paths"], "only OpenBSW/ and contributions/ changed"
                                if not checks["outside_paths"] else f"outside: {checks['outside_paths']}"),
     }
+    if board.get("available"):
+        app_region, ram = board["regions"].get("Application", {}), board["regions"].get("MainRAM", {})
+        board_current = bool(board_it) and board_it.get("executable_sha256") == board["elf_sha256"]
+        auto["target-build"] = (
+            board["build_ok"] and not board["posix_headers"] and not board["own_warnings"]
+            and 0 < app_region.get("percent", 101) < 100 and 0 < ram.get("percent", 101) < 100 and board_current,
+            f"flash {app_region.get('used')} B ({app_region.get('percent')} %), MainRAM {ram.get('used')} B "
+            f"({ram.get('percent')} %); POSIX headers outside platforms/posix: {len(board['posix_headers'])}; "
+            f"recorded board run {'uses' if board_current else 'does not use'} the current image")
+    else:
+        auto["target-build"] = (False, "Arm GNU Toolchain 14.3.rel1 not found on the build volume")
+    base = json.loads((BOARD_BASELINE / "manifest.json").read_text()) if (BOARD_BASELINE / "manifest.json").exists() else None
+    auto["board-baseline"] = (
+        bool(base) and base["result"]["failures"] == 0 and base["result"]["errors"] == 0 and base["result"]["tests"] > 0
+        and base["openbsw_revision"] == checks["openbsw_lock"],
+        f"{base['result']['tests'] - base['result']['failures']}/{base['result']['tests']} on {base['target']} "
+        f"at {base['openbsw_revision'][:12]}" if base else "no board baseline recorded")
     manual = {"reviewed": ("passed", "Review recorded in the case description"),
               "not-run": ("not run", "Live campaign not executed in this slice"),
               "open": ("open", "Depends on an open item")}
@@ -397,7 +456,7 @@ def match_cases(pattern_list, cases):
     return "passed" if all(s == "passed" for s in statuses) else "failed"
 
 
-def evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstream):
+def evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstream, board, board_it):
     verifications = {req: [] for req in wp["swr"]}
 
     def add(level, case_id, verifies, status, detail=""):
@@ -408,11 +467,15 @@ def evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstr
         case["status"] = match_cases(case["Executable"], unit_cases)
         add("UT", case["ID"], case["Verifies"], case["status"])
     it_tests = {t["name"]: t for t in (it or {}).get("tests", [])}
+    board_tests = {t["name"]: t for t in (board_it or {}).get("tests", [])}
     it_current = bool(it) and it.get("executable_sha256") == built["elf_sha256"]
+    board_current = bool(board_it) and board.get("available") and board_it.get("executable_sha256") == board.get("elf_sha256")
     for case in wp["itc"]:
-        test = it_tests.get(case["Check"])
+        on_board = case["Check"].startswith("board:")
+        name = case["Check"].split(":", 1)[1] if on_board else case["Check"]
+        test = (board_tests if on_board else it_tests).get(name)
         status = test["status"] if test else "missing"
-        if status == "passed" and not it_current:
+        if status == "passed" and not (board_current if on_board else it_current):
             status = "failed"
         case["status"], case["detail"] = status, (f"{test['duration_s']:.2f} s" if test else "not recorded")
         add("IT", case["ID"], case["Verifies"], status)
@@ -482,7 +545,7 @@ def evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstr
                 if req not in wp["swr"]:
                     issues.append(f"{row['ID']} references unknown {req}")
     return {"open_findings": open_findings, "issues": issues, "sys_children": sys_children,
-            "it_current": it_current, "gateway_tidy": gateway_tidy}
+            "it_current": it_current, "board_current": board_current, "gateway_tidy": gateway_tidy}
 
 
 # --------------------------------------------------------------------------------------------
@@ -555,7 +618,7 @@ td ul{margin:4px 0;padding-left:18px}a{color:var(--accent)}
 @media (max-width:860px){.layout{grid-template-columns:1fr;padding:16px}nav{position:static;flex-direction:row;flex-wrap:wrap}header{padding:16px}}"""
 
 
-def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools):
+def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools, board, board_it):
     swr = wp["swr"]
     counts = Counter(r["status"] for r in swr.values())
     m_cov, g_cov, p_cov = cov["module"], cov["gateway"], cov["generator"]
@@ -571,7 +634,10 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
         ("Gateway coverage", f"{g_cov['line_percent']:.0f}% / {g_cov['branch_percent']:.0f}%", "gateway units line / branch"),
         ("Static findings open", str(len(ev["open_findings"]) + len(ev["gateway_tidy"])),
          f"{len(findings)} cppcheck · {upstream['tidy_findings']} + {len(ev['gateway_tidy'])} clang-tidy"),
-        ("Integration tests", f"{it_pass}/{len(wp['itc'])}", "same executable" if ev["it_current"] else "executable changed"),
+        ("Integration tests", f"{it_pass}/{len(wp['itc'])}",
+         f"PC {'current' if ev['it_current'] else 'stale'} · S32K148 {'current' if ev['board_current'] else 'stale'}"),
+        ("S32K148 image", f"{board.get('regions', {}).get('Application', {}).get('used', 0) / 1024:.0f} KiB",
+         f"MainRAM {board.get('regions', {}).get('MainRAM', {}).get('percent', '—')} %"),
         ("Qualification", f"{qt_pass}/{len(wp['qtc'])}", f"{sum(c['status'] != 'passed' for c in wp['qtc'])} open / not run / failed"),
         ("Trace issues", str(len(ev["issues"])), "bidirectional consistency"),
     ]
@@ -641,7 +707,10 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
         ["SWE.4", '<a href="evidence/module-treefmt.txt">module-treefmt.txt</a> · <a href="evidence/module-copyright.txt">module-copyright.txt</a> · '
                   '<a href="evidence/module-bazel-test.txt">module-bazel-test.txt</a>', "OpenBSW upstream gates"],
         ["SWE.5", link("OpenBSW/evidence/gateway-it/results.json"), "Integration results (recorded)"],
-        ["SWE.6", link("OpenBSW/evidence/sil-baseline/manifest.json"), "OpenBSW SIL baseline"],
+        ["SWE.5", link("OpenBSW/evidence/board-gateway-it/results.json"), "S32K148EVB integration results (recorded)"],
+        ["SWE.6", link("OpenBSW/evidence/sil-baseline/manifest.json"), "OpenBSW SIL baseline (Linux)"],
+        ["SWE.6", link("OpenBSW/evidence/board-baseline/manifest.json"), "OpenBSW SIL baseline (S32K148EVB)"],
+        ["SWE.3", '<a href="evidence/board-build.log">board-build.log</a>', "S32K148 build and memory regions"],
         ["All", '<a href="summary.json">summary.json</a>', "Machine-readable summary"],
     ]
     tool_rows = [[html.escape(k), html.escape(v)] for k, v in tools.items()]
@@ -653,7 +722,7 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ASPICE SWE Evidence</title><style>{CSS}</style></head><body>
 <header><h1>ASPICE SWE evidence — OpenBSW zonal diagnostic gateway</h1>
-<p>Executable <code>{built['elf_sha256'][:16]}…</code> · OpenBSW <code>{built['openbsw_lock'][:12]}</code> + contributed <code>transportRouter</code> · generated {generated}. Demonstration of SWE.1–SWE.6 work products; not an assessed ASPICE capability level.</p></header>
+<p>Linux executable <code>{built['elf_sha256'][:16]}…</code> · S32K148 image <code>{(board.get('elf_sha256') or '—')[:16]}…</code> · OpenBSW <code>{built['openbsw_lock'][:12]}</code> + contributed <code>transportRouter</code> · generated {generated}. Demonstration of SWE.1–SWE.6 work products; not an assessed ASPICE capability level.</p></header>
 <div class="layout"><nav>{"".join(f'<a href="#{a}">{b}</a>' for a, b in nav)}</nav><main>
 <section id="overview"><h2>Overview</h2><p class="lead">Indicators are computed from the work products and from tool runs during generation. Integration results are the recorded SWE.5 run; the generator checks it used the current executable.</p><div class="kpis">{kpi_html}</div></section>
 <section id="swe1"><h2>SWE.1 Software requirements analysis</h2><p class="lead">{len(swr)} software requirements derived from {len(wp['sys'])} system requirements.</p>
@@ -676,7 +745,7 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
 <h3>cppcheck</h3>{table(["Location", "Severity", "Rule", "Message", "Status"], finding_rows)}
 <h3>clang-tidy</h3><p>Module (OpenBSW <code>.clang-tidy</code>): {upstream['tidy_findings']} findings. Gateway units: {len(ev['gateway_tidy'])} findings.</p>
 <h3>Complexity (CCN &gt; 10)</h3>{table(["File", "Function", "NLOC", "CCN", "Status"], complex_rows)}</section>
-<section id="swe5"><h2>SWE.5 Software integration and integration test</h2><p class="lead">Recorded run <code>{html.escape((it or {}).get('run_id', '—'))}</code>, executable {'identical to the current build' if ev['it_current'] else '<strong>differs from the current build</strong>'}.</p>
+<section id="swe5"><h2>SWE.5 Software integration and integration test</h2><p class="lead">PC run <code>{html.escape((it or {}).get('run_id', '—'))}</code>: executable {'identical to the current build' if ev['it_current'] else '<strong>differs from the current build</strong>'}. S32K148EVB run <code>{html.escape((board_it or {}).get('run_id', '—'))}</code>: image {'identical to the current board build' if ev['board_current'] else '<strong>differs from the current board build</strong>'}.</p>
 {table(["ID", "Check", "Test case", "Interfaces", "Verifies", "Result", "Duration"], itc_rows)}</section>
 <section id="swe6"><h2>SWE.6 Software qualification test</h2><p class="lead">Automated analyses are computed now; live campaigns record their status. Bus load: worst case {load['worst_percent']} %, measured peak {load['measured_percent']} %.</p>
 {table(["ID", "Test case", "Method", "Verifies", "Result", "Detail"], qtc_rows)}</section>
@@ -718,18 +787,23 @@ def main(argv=None):
     findings, gateway_tidy, functions = static_analysis(ws, ut_build)
     print("build checks …", flush=True)
     built = build_checks(ws)
+    print("board build …", flush=True)
+    board = board_checks(ws)
     it = json.loads((IT_EVIDENCE / "results.json").read_text()) if (IT_EVIDENCE / "results.json").exists() else None
+    board_it = (json.loads((BOARD_IT_EVIDENCE / "results.json").read_text())
+                if (BOARD_IT_EVIDENCE / "results.json").exists() else None)
     unit_cases = {**upstream["cases"], **gw_cases, **py_cases}
-    load, _ = qualification(wp, ws, upstream, built, it)
-    ev = evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstream)
+    load, _ = qualification(wp, ws, upstream, built, it, board, board_it)
+    ev = evaluate(wp, unit_cases, it, built, findings, gateway_tidy, functions, upstream, board, board_it)
     tools = {"gcc": tool_version(["gcc", "--version"]), "cmake": tool_version([ws["venv"] / "bin" / "cmake", "--version"]),
              "cppcheck": tool_version(["cppcheck", "--version"]), "clang-tidy": tool_version(["clang-tidy", "--version"]),
+             "arm-none-eabi-gcc": tool_version([ws["workspace"] / "tools" / ARM_TOOLCHAIN / "bin" / "arm-none-eabi-gcc", "--version"]),
              "clang-format": tool_version(["clang-format-17", "--version"]), "treefmt": tool_version(["treefmt", "--version"]),
              "gcovr": tool_version([ws["venv"] / "bin" / "gcovr", "--version"]), "lizard": tool_version([ws["venv"] / "bin" / "lizard", "--version"]),
              "bazelisk": "1.29.0 (SHA-256 pinned)", "PlantUML": f"{PLANTUML_VERSION} (sha1 {PLANTUML_SHA1[:12]})"}
     cov = {"module": upstream["coverage"], "gateway": gw_cov, "generator": py_cov}
     (REPORT / "aspice-swe-report.html").write_text(
-        render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools))
+        render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstream, it, load, tools, board, board_it))
     swr = wp["swr"]
     summary = {
         "generated": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -745,6 +819,8 @@ def main(argv=None):
                    "clang_tidy_module": upstream["tidy_findings"], "clang_tidy_gateway": len(gateway_tidy),
                    "ccn_violations": sum(f["status"] == "violation" for f in functions)},
         "integration": {c["ID"]: c["status"] for c in wp["itc"]}, "integration_current": ev["it_current"],
+        "board": {"image_sha256": board.get("elf_sha256"), "regions": board.get("regions"),
+                  "integration_current": ev["board_current"], "posix_headers": board.get("posix_headers")},
         "qualification": {c["ID"]: {"status": c["status"], "detail": c.get("detail", "")} for c in wp["qtc"]},
         "bus_load": load, "trace_issues": ev["issues"],
     }
