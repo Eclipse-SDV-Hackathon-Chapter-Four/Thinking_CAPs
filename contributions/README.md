@@ -1,7 +1,7 @@
 # S-CORE and Eclipse SDV contributions
 
 Evidence and artifacts for completed local fixes, their upstream review, and a later
-Eclipse SDV Hackathon submission. Inventory captured on **2026-10-04**.
+Eclipse SDV Hackathon submission. Inventory initially captured on **2026-10-04**; consolidated additions on **2026-10-07**.
 
 | Project / issue | Contribution | Local result | Upstream / next action |
 | --- | --- | --- | --- |
@@ -12,7 +12,6 @@ Eclipse SDV Hackathon submission. Inventory captured on **2026-10-04**.
 | [Communication #1167](communication-1167/README.md) | Dedicated COM API idempotency integration test | Agent review complete; 503 full-suite tests pass, 6 skipped; 204 inherited copyright findings retained | Issue open; original hackathon-source branch push recorded; native PR and formal acceptance pending |
 | [S-CORE #3115](issues/eclipse-score/score/3115/README.md) | AI SDLC / SpecKit tooling evaluation using `s-core_sw_fabric` experience | Current native DR prepared; 925 existing needs unchanged; fresh checks retain one inherited docs failure | Issue open; draft PR #3307 offered for PR #3140; assignee review requested; docs CI, comparative pilots and acceptance pending |
 | [S-CORE #2850](issues/eclipse-score/score/2850/README.md) | Documentation chatbot retrieval/provenance foundation | Current source, design records, fresh deterministic checks and historical release evidence retained | Issue open; scoped proposal only; native harness adapter and maintainer agreement pending |
-
 | [CDA #543](issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md) | Replace Option error paths with Result | Patch recovered; snapshot and manifest bound; native testing pending | Issue open; native validation and upstream submission pending |
 | [Communication #1236](issues/eclipse-score/communication/1236/README.md) | Buildifier CI enforcement | Original draft/recovery retained; 27 baseline-identical lint findings remain | Imported; human review and native lint cleanup pending |
 | [Communication #1031](issues/eclipse-score/communication/1031/README.md) | AoU visibility and traceability | Historical scoped checks retained | Imported; production Config Management/FMEA integration and review pending |
