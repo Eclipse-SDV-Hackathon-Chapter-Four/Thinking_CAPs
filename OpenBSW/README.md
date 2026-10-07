@@ -122,6 +122,38 @@ The OpenBSW revision, the volume and the SIL addresses are pinned in
 [requirements-build.txt](requirements-build.txt). The host CMake 3.22 is too
 old for OpenBSW, which needs 3.28 or later, so the venv provides CMake 4.4.
 
+## NXP S32K148EVB board
+
+The S32K148EVB is flashed and debugged over its OpenSDA USB port. It talks
+DoIP over its 100BASE-T1 Ethernet (TJA1101) to the host through a media
+converter. These tools live on the build volume:
+
+- **GDB server:** PEmicro 10.02 from the `com.pemicro.debug.gdbjtag.pne`
+  update site, needing the OpenSDA Linux driver (`pemicro-other-20181128`: udev
+  rule `58-pemicro.rules` and `libp64`).
+- **Compiler:** Arm GNU Toolchain 14.3.rel1, with the SHA-256 pinned by the
+  OpenBSW Dockerfile.
+
+```bash
+OpenBSW/scripts/board.sh status                 # debugger, GDB server, console port
+OpenBSW/scripts/board.sh flash <elf>            # PEmicro GDB server + OpenBSW flash.gdb
+OpenBSW/scripts/board.sh console 10             # board console (OpenSDA CDC, 115200)
+OpenBSW/scripts/board-sil-test.sh               # OpenBSW suite against the board over DoIP
+```
+
+The host side of the link is the NetworkManager profile `openbsw-board`: 
+`192.168.0.20/24` on `enp67s0`, a host route to the board at `192.168.0.200`,
+and autoconnect priority 100. Every board reset drops the link, and the
+profile comes back on its own afterwards.
+
+**Board baseline (7 October 2026):**
+
+- OpenBSW `432b9be6`, unmodified reference app (`s32k148-freertos`)
+- **19/19** UDS-over-DoIP and Ethernet tests, with a reset before every test
+- CAN tests not run (no CAN adapter attached)
+
+Evidence and manifest are in [evidence/board-baseline](evidence/board-baseline/).
+
 ## Dependencies on other items
 
 - **ThreadX rear lighting ECU:** it needs a minimal UDS-on-CAN server (`0x7E1`/`0x7E9`) before end-to-end routing can be shown. That is a separate change to [ThreadX](../ThreadX/README.md).
