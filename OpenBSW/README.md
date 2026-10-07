@@ -71,7 +71,7 @@ The gateway runs without hardware on the OpenBSW POSIX platform:
 
 - **CAN:** SocketCAN on `vcan0`
 - **Ethernet:** lwIP on a TAP device `tap0`. The host is `192.168.0.10`; the ECU is `192.168.0.201`.
-- **RTOS:** FreeRTOS POSIX simulation. The `posix-threadx` preset is the ThreadX alternative.
+- **RTOS:** Eclipse ThreadX (POSIX port), the same RTOS as on the board. `ZGW_RTOS=FREERTOS` builds the FreeRTOS variant instead.
 
 The source, toolchain venv, pip cache, compiler temporaries and build tree all
 live on the external ext4 build volume (UUID `11c42dee-…`). This volume is the
@@ -146,23 +146,33 @@ The host side of the link is the NetworkManager profile `openbsw-board`:
 and autoconnect priority 100. Every board reset drops the link, and the
 profile comes back on its own afterwards.
 
+**Board RTOS:** Eclipse ThreadX 6.4.3 (Cortex-M4 port, 1 ms tick, stack
+checking on), as pinned by OpenBSW. Until `f8193eb9` the board ran FreeRTOS
+V10.6.2. `ZGW_RTOS=FREERTOS` still selects it in `board-it.sh`,
+`board-sil-test.sh` and `gateway-it.sh`, and each RTOS has its own board build
+directory.
+
 **Board baseline (7 October 2026):**
 
-- OpenBSW `432b9be6`, unmodified reference app (`s32k148-freertos`)
-- **19/19** UDS-over-DoIP and Ethernet tests, with a reset before every test
+- OpenBSW `432b9be6`, unmodified reference app (`s32k148-threadx`)
+- **19/19** UDS-over-DoIP and Ethernet tests, with a reset before every test.
+  The earlier `s32k148-freertos` run also gave 19/19
+  ([freertos/](evidence/board-baseline/freertos/)).
 - CAN tests not run (no CAN adapter attached)
 
 Evidence and manifest are in [evidence/board-baseline](evidence/board-baseline/).
 
-**Gateway on the board (7 October 2026):**
+**Gateway on the board (7 October 2026, ThreadX):**
 
 - The zonal gateway builds for the S32K148EVB from the same sources. Its
   platform folder is `gateway/app/platforms/s32k148evb`, taken from the
   reference app.
-- Flash 197,584 B. RAM (data + bss) 100,448 B; MainRAM is at 66 %, against
-  87 % for the reference app.
+- Flash 197,132 B (Application region). RAM (data + bss) 108,276 B; MainRAM is at 72 %, against
+  94 % for the ThreadX reference app.
+  - On FreeRTOS the gateway used 66 % of MainRAM.
+- All 9 run levels are done 27 ms after reset.
 - `scripts/board-it.sh` flashes the board and runs `gateway/tests/test_board.py`.
-  Result: **10/10**.
+  Result: **10/10**, the same as on FreeRTOS.
   - DoIP: announcement with the configured VIN, identification, activation
     rules, node type gateway.
   - The gateway's own UDS server and its NACKs.
@@ -170,7 +180,7 @@ Evidence and manifest are in [evidence/board-baseline](evidence/board-baseline/)
   - Without a CAN peer, a routed request leaves the route busy (NACK `0x05`).
     The unacknowledged CAN transmission then fails after about 1 s, the route
     is freed, and the third failure on `0x1030` sets U0141.
-- Local UDS round trip: p95 3.1 ms.
+- Local UDS round trip: p95 3.2 ms (3.1 ms on FreeRTOS).
 - Evidence is in [evidence/board-gateway-it](evidence/board-gateway-it/).
 
 ## Dependencies on other items

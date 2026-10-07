@@ -43,6 +43,8 @@ IT_EVIDENCE = OBSW / "evidence" / "gateway-it"
 SIL_EVIDENCE = OBSW / "evidence" / "sil-baseline"
 BOARD_IT_EVIDENCE = OBSW / "evidence" / "board-gateway-it"
 BOARD_BASELINE = OBSW / "evidence" / "board-baseline"
+# gateway RTOS on both platforms; same switch and default as the scripts
+RTOS = os.environ.get("ZGW_RTOS", "THREADX")
 ARM_TOOLCHAIN = "arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi"
 POSIX_HEADERS = re.compile(r"#\s*include\s*<(unistd|pthread|signal|termios|poll|fcntl|sys/[\w/]+|net/[\w/]+|netinet/[\w/]+|arpa/[\w/]+)\.h>")
 PLANTUML_VERSION = "1.2024.7"
@@ -224,7 +226,7 @@ def gateway_unit_tests(ws):
     venv_bin = ws["venv"] / "bin"
     env = dict(os.environ, PATH=f"{venv_bin}:{os.environ['PATH']}")
     run(["cmake", "-S", OBSW / "gateway", "-B", build, "-G", "Ninja", f"-DOPENBSW_DIR={ws['openbsw']}",
-         "-DCMAKE_BUILD_TYPE=Debug", "-DZGW_UNIT_TESTS=ON", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"], env=env)
+         f"-DBUILD_TARGET_RTOS={RTOS}", "-DCMAKE_BUILD_TYPE=Debug", "-DZGW_UNIT_TESTS=ON", "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"], env=env)
     for gcda in build.rglob("*.gcda"):
         gcda.unlink()
     run(["cmake", "--build", build, "--target", "gatewayUnitTest"], env=env)
@@ -282,7 +284,7 @@ def build_checks(ws):
     venv_bin = ws["venv"] / "bin"
     env = dict(os.environ, PATH=f"{venv_bin}:{os.environ['PATH']}")
     run(["cmake", "-S", OBSW / "gateway", "-B", release, "-G", "Ninja", f"-DOPENBSW_DIR={ws['openbsw']}",
-         "-DCMAKE_BUILD_TYPE=Release"], env=env)
+         f"-DBUILD_TARGET_RTOS={RTOS}", "-DCMAKE_BUILD_TYPE=Release"], env=env)
     (release / "app/application/openbsw-zonal-gw.elf").unlink(missing_ok=True)
     build = run(["cmake", "--build", release, "--target", "openbsw-zonal-gw"], check=False, env=env)
     log = build.stdout + build.stderr
@@ -318,7 +320,7 @@ def build_checks(ws):
 
 def board_checks(ws):
     """Build the gateway for the S32K148EVB and read its memory regions (SWR-051)."""
-    build = ws["workspace"] / "build" / "gateway-s32k148"
+    build = ws["workspace"] / "build" / f"gateway-s32k148-{RTOS.lower()}"
     arm = ws["workspace"] / "tools" / ARM_TOOLCHAIN / "bin"
     if not (arm / "arm-none-eabi-gcc").exists():
         return {"available": False}
@@ -326,7 +328,7 @@ def board_checks(ws):
                CC="arm-none-eabi-gcc", CXX="arm-none-eabi-g++")
     if not (build / "build.ninja").exists():
         run(["cmake", "-S", OBSW / "gateway", "-B", build, "-G", "Ninja", f"-DOPENBSW_DIR={ws['openbsw']}",
-             "-DBUILD_TARGET_PLATFORM=S32K148EVB",
+             "-DBUILD_TARGET_PLATFORM=S32K148EVB", f"-DBUILD_TARGET_RTOS={RTOS}",
              f"-DCMAKE_TOOLCHAIN_FILE={ws['openbsw'] / 'cmake' / 'toolchains' / 'ArmNoneEabi.cmake'}",
              "-DCMAKE_BUILD_TYPE=RelWithDebInfo", "-DCMAKE_C_FLAGS_RELWITHDEBINFO=-g3 -O2 -DNDEBUG",
              "-DCMAKE_CXX_FLAGS_RELWITHDEBINFO=-g3 -O2 -DNDEBUG", "-DCMAKE_ASM_FLAGS_RELWITHDEBINFO=-g3"], env=env)
@@ -349,7 +351,7 @@ def board_checks(ws):
             for number, line in enumerate(source.read_text(errors="replace").splitlines(), 1):
                 if POSIX_HEADERS.search(line):
                     headers.append(f"{rel(source)}:{number}: {line.strip()}")
-    return {"available": True, "build_ok": result.returncode == 0 and elf.exists(),
+    return {"available": True, "rtos": RTOS, "build_ok": result.returncode == 0 and elf.exists(),
             "elf_sha256": sha256(elf) if elf.exists() else None, "regions": regions,
             "own_warnings": own, "posix_headers": headers}
 
@@ -418,7 +420,7 @@ def qualification(wp, ws, upstream, checks, it, board, board_it):
         auto["target-build"] = (
             board["build_ok"] and not board["posix_headers"] and not board["own_warnings"]
             and 0 < app_region.get("percent", 101) < 100 and 0 < ram.get("percent", 101) < 100 and board_current,
-            f"flash {app_region.get('used')} B ({app_region.get('percent')} %), MainRAM {ram.get('used')} B "
+            f"{board['rtos']}: flash {app_region.get('used')} B ({app_region.get('percent')} %), MainRAM {ram.get('used')} B "
             f"({ram.get('percent')} %); POSIX headers outside platforms/posix: {len(board['posix_headers'])}; "
             f"recorded board run {'uses' if board_current else 'does not use'} the current image")
     else:
@@ -427,7 +429,8 @@ def qualification(wp, ws, upstream, checks, it, board, board_it):
     auto["board-baseline"] = (
         bool(base) and base["result"]["failures"] == 0 and base["result"]["errors"] == 0 and base["result"]["tests"] > 0
         and base["openbsw_revision"] == checks["openbsw_lock"],
-        f"{base['result']['tests'] - base['result']['failures']}/{base['result']['tests']} on {base['target']} "
+        f"{base['result']['tests'] - base['result']['failures']}/{base['result']['tests']} on {base['target']}, "
+        f"{base['preset'].split()[0]} "
         f"at {base['openbsw_revision'][:12]}" if base else "no board baseline recorded")
     manual = {"reviewed": ("passed", "Review recorded in the case description"),
               "not-run": ("not run", "Live campaign not executed in this slice"),

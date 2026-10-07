@@ -6,15 +6,19 @@
 #
 #   OpenBSW/scripts/board-sil-test.sh [pytest paths...]   # default: uds enet
 #
-# Needs: the reference app built with the s32k148-freertos preset, the PEmicro GDB
+# ZGW_RTOS selects the reference app: THREADX (default, preset s32k148-threadx)
+# or FREERTOS (preset s32k148-freertos); it is passed to the harness as --app.
+#
+# Needs: the reference app built with the matching preset, the PEmicro GDB
 # server (scripts/board.sh server-start) and a route to 192.168.0.200.
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 BOARD="$(dirname "$0")/board.sh"
 
 TOOLCHAIN="$OBSW_WORKSPACE/tools/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin"
-ELF="$OBSW_SRC/build/s32k148-freertos/executables/referenceApp/application/RelWithDebInfo/app.referenceApp.elf"
-[[ -f "$ELF" ]] || { echo "error: $ELF not built (cmake --preset s32k148-freertos)" >&2; exit 1; }
+app="${ZGW_RTOS:-THREADX}"; app="${app,,}"
+ELF="$OBSW_SRC/build/s32k148-$app/executables/referenceApp/application/RelWithDebInfo/app.referenceApp.elf"
+[[ -f "$ELF" ]] || { echo "error: $ELF not built (cmake --preset s32k148-$app)" >&2; exit 1; }
 ping -c1 -W1 192.168.0.200 >/dev/null 2>&1 || echo "warning: 192.168.0.200 not reachable yet" >&2
 
 "$BOARD" server-start > /dev/null
@@ -22,6 +26,7 @@ port="$("$BOARD" status | grep -o '/dev/ttyACM[0-9]*' | head -1)"
 
 run="$OBSW_WORKSPACE/runs/board-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$run"
+echo "$app" > "$run/rtos.txt"
 # untracked target file: the pinned OpenBSW checkout keeps no tracked modification
 cat > "$OBSW_SRC/test/pyTest/target_s32k148eth.toml" <<EOF
 [serial]
@@ -35,7 +40,7 @@ send_command_max_retries = 2
 [eth]
 ip_address = "192.168.0.200"
 
-[freertos.target_process]
+[$app.target_process]
 command_line = "$TOOLCHAIN/arm-none-eabi-gdb -batch -x reset.gdb $ELF > /dev/null 2>&1"
 wait_for_exit = true
 skip_first = false
@@ -58,7 +63,7 @@ ping -c1 -W1 192.168.0.200 >/dev/null 2>&1 || { echo "error: board not reachable
 tests=("$@"); [[ ${#tests[@]} -gt 0 ]] || tests=(uds enet --deselect uds/test_udsToolRDBI.py::test_rdbi)
 cd "$OBSW_SRC/test/pyTest"
 set +e
-sg dialout -c "SERIAL_LOG_PATH='$run/serial.log' '$OBSW_VENV/bin/pytest' --target=s32k148eth ${tests[*]} -q -p no:cacheprovider --junitxml='$run/junit.xml'" 2>&1 | tee "$run/pytest.txt"
+sg dialout -c "SERIAL_LOG_PATH='$run/serial.log' '$OBSW_VENV/bin/pytest' --target=s32k148eth --app=$app ${tests[*]} -q -p no:cacheprovider --junitxml='$run/junit.xml'" 2>&1 | tee "$run/pytest.txt"
 status=${PIPESTATUS[0]}
 set -e
 echo "results: $run (pytest exit $status)"

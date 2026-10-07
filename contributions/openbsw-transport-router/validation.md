@@ -34,10 +34,14 @@ Dockerfile, where it pins them (treefmt, buildifier, bazelisk).
 ## Integration in the zonal gateway
 
 The same module runs in the Thinking CAPs zonal diagnostic gateway: POSIX,
-FreeRTOS, DoIP over lwIP/TAP, DoCAN on `vcan0`, OpenBSW UDS.
+DoIP over lwIP/TAP, DoCAN on `vcan0`, OpenBSW UDS. The module uses no RTOS API
+directly, only OpenBSW's `async`; it was tested with both RTOS bindings.
 
-- **Integration tests:** 28/28 passed. See
-  `OpenBSW/evidence/gateway-it/results.json`, which records the executable hash.
+- **Integration tests:** 28/28 passed on FreeRTOS and on ThreadX (the gateway's
+  current default). See `OpenBSW/evidence/gateway-it/results.json`, which
+  records the executable hash of the ThreadX run.
+- **NXP S32K148EVB (ThreadX and FreeRTOS):** 10/10 board tests. See
+  `OpenBSW/evidence/board-gateway-it/results.json`.
 - **ASPICE SWE.1–SWE.6 report:** `OpenBSW/aspice/report/aspice-swe-report.html`.
 
 ## Not done / limitations

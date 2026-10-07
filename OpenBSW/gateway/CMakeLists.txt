@@ -21,7 +21,7 @@ set(BUILD_TARGET_PLATFORM
     "POSIX"
     CACHE STRING "Target Platform")
 set(BUILD_TARGET_RTOS
-    "FREERTOS"
+    "THREADX"
     CACHE STRING "Target RTOS")
 # OpenBSW libraries only distinguish referenceApp/unitTest builds.
 set(BUILD_EXECUTABLE

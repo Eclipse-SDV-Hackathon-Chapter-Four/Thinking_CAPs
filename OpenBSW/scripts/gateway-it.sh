@@ -4,6 +4,8 @@
 # Results: <volume>/openbsw-sil/runs/it-<timestamp>/ (JUnit, pytest log, gateway logs, candumps)
 #
 #   OpenBSW/scripts/gateway-it.sh [pytest args...]
+#
+# ZGW_RTOS selects the RTOS: THREADX (default) or FREERTOS.
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 export PATH="$OBSW_VENV/bin:$PATH"
@@ -13,13 +15,16 @@ for itf in vcan0 tap0; do
 done
 
 build="$OBSW_WORKSPACE/build/gateway"
-cmake -S "$OBSW_DIR/gateway" -B "$build" -G Ninja -DOPENBSW_DIR="$OBSW_SRC" -DCMAKE_BUILD_TYPE=Release > /dev/null
+rtos="${ZGW_RTOS:-THREADX}"
+cmake -S "$OBSW_DIR/gateway" -B "$build" -G Ninja -DOPENBSW_DIR="$OBSW_SRC" -DBUILD_TARGET_RTOS="$rtos" \
+  -DCMAKE_BUILD_TYPE=Release > /dev/null
 cmake --build "$build" --parallel "$(nproc)" > /dev/null
 
 export ZGW_ELF="$build/app/application/openbsw-zonal-gw.elf"
 export ZGW_RESULTS="${ZGW_RESULTS:-$OBSW_WORKSPACE/runs/it-$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$ZGW_RESULTS"
 sha256sum "$ZGW_ELF" | cut -d' ' -f1 > "$ZGW_RESULTS/elf.sha256"
+echo "$rtos" > "$ZGW_RESULTS/rtos.txt"
 
 cd "$OBSW_DIR/gateway/tests"
 set +e
@@ -32,5 +37,6 @@ echo "results: $ZGW_RESULTS (pytest exit $status)"
 # a full run (no pytest arguments) is recorded as SWE.5 evidence in the repository
 if [[ $# -eq 0 ]]; then
   python3 "$OBSW_DIR/scripts/record_it_evidence.py" "$ZGW_RESULTS" "$OBSW_DIR/evidence/gateway-it"
+  cp "$ZGW_RESULTS/rtos.txt" "$OBSW_DIR/evidence/gateway-it/"
 fi
 exit "$status"

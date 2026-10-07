@@ -4,7 +4,7 @@
 
 Integration is bottom-up on the Linux host target (SWR-050):
 
-1. **OpenBSW integration.** The pinned OpenBSW platform and libraries (DoIP, DoCAN, UDS, lwIP, FreeRTOS POSIX) and the contributed `transportRouter` module are integrated into the gateway executable. It builds warning-free. The OpenBSW SIL suite (`evidence/sil-baseline`) qualifies the unmodified platform underneath.
+1. **OpenBSW integration.** The pinned OpenBSW platform and libraries (DoIP, DoCAN, UDS, lwIP, ThreadX on the POSIX port) and the contributed `transportRouter` module are integrated into the gateway executable. It builds warning-free. The OpenBSW SIL suite (`evidence/sil-baseline`) qualifies the unmodified platform underneath.
 2. **Gateway integration.** The gateway runs as a process with:
    - CAN on `vcan0` and DoIP over lwIP on `tap0`
    - simulated zonal ECUs ([`sim_ecu.py`](../../gateway/tests/sim_ecu.py)): ISO-TP UDS servers on `0x7E1/0x7E9` and `0x7E2/0x7EA` with normal, silent, response-pending and multi-frame behaviour
@@ -13,7 +13,7 @@ Integration is bottom-up on the Linux host target (SWR-050):
 
 **Test environment:**
 
-- Ubuntu 22.04, GCC 11.4, FreeRTOS POSIX core
+- Ubuntu 22.04, GCC 11.4, ThreadX 6.4.3 POSIX port (`BUILD_TARGET_RTOS=THREADX`)
 - python-can 4.4.2, can-isotp 2.0.6, doipclient 1.1.1, pytest 8.3.3
 
 Procedure: [`scripts/gateway-it.sh`](../../scripts/gateway-it.sh). It builds the
@@ -26,7 +26,7 @@ The report generator checks that the recorded executable hash matches the
 current build.
 
 3. **Target integration.** The same sources are built for the NXP S32K148EVB
-   (Arm GNU Toolchain 14.3.rel1) and flashed with the PEmicro GDB server over
+   (Arm GNU Toolchain 14.3.rel1, ThreadX 6.4.3 Cortex-M4 port) and flashed with the PEmicro GDB server over
    OpenSDA. They are tested over the board's 100BASE-T1 Ethernet
    (`192.168.0.200`) with [`test_board.py`](../../gateway/tests/test_board.py).
    No CAN node is attached to the board, so routed requests exercise the

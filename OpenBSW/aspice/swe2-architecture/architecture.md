@@ -26,7 +26,7 @@
 | AD-05 | Monitor ECUs passively, from the outcome of routed requests | No extra CAN traffic, so no effect on the X-Verse bus (SWR-024, SWR-030). |
 | AD-06 | One YAML routing source, which generates the C++ configuration and the CDA/ECU consistency check | Addresses defined once (SWR-052, SYS-09). |
 | AD-07 | Two platforms from one source: the Linux host (SocketCAN `vcan0`, lwIP on TAP) and the NXP S32K148EVB (FlexCAN, ENET with TJA1101 100BASE-T1), each with its platform folder under `gateway/app/platforms` | Runs in X-Verse without hardware (SYS-06) and on the target hardware with the same application code (SWR-051). |
-| AD-08 | FreeRTOS POSIX core configuration by default; the ThreadX core configuration (`asyncThreadX`) is an option | FreeRTOS is the reference-app default and the best tested. ThreadX is offered so the team's RTOS choice can be aligned later without changing the application. |
+| AD-08 | Eclipse ThreadX (`asyncThreadX`, ThreadX 6.4.3 as pinned by OpenBSW) on both platforms; FreeRTOS (`asyncFreeRtos`) stays selectable with `BUILD_TARGET_RTOS` / `ZGW_RTOS=FREERTOS` | Same RTOS as the ThreadX zonal ECUs of the project. The application uses only OpenBSW's `async` abstraction, so the RTOS is a build option with no code change. Both RTOSes pass the PC and board integration tests (FreeRTOS: earlier runs at `f8193eb9`). |
 | AD-09 | SOME/IP and every vehicle-signal middleware excluded from the build | No path into the cruise-control signal flow (SWR-031). |
 
 ## Software elements

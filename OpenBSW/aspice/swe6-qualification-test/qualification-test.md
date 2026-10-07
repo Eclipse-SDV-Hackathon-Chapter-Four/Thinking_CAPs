@@ -35,7 +35,7 @@ The report generator parses this table: ID | Source | Test case | Method | Verif
 | QTC-13 | manual:not-run | OpenSOVD → CDA → gateway: SOVD client reads `0x1010` identification and `0x1020` data, lists and clears U0140 | Test | SWR-001, SWR-012, SWR-021, SWR-025 |
 | QTC-14 | manual:open | ThreadX rear lighting ECU with a UDS-on-CAN server answers through the gateway (OP-2) | Test | SWR-012, SWR-024 |
 | QTC-15 | auto:target-build | Gateway built for the S32K148EVB: links within the `Application` flash and `MainRAM` regions, no POSIX headers outside `platforms/posix`, the recorded board run used the current image | Analysis | SWR-051 |
-| QTC-16 | auto:board-baseline | OpenBSW SIL suite on the S32K148EVB (reference app, pinned revision): 19/19 UDS-over-DoIP and Ethernet tests | Test | SWR-051 |
+| QTC-16 | auto:board-baseline | OpenBSW SIL suite on the S32K148EVB (reference app `s32k148-threadx`, pinned revision): 19/19 UDS-over-DoIP and Ethernet tests | Test | SWR-051 |
 
 ## Pass criteria
 
