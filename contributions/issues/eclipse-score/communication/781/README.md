@@ -1,70 +1,57 @@
-# Communication #781 — Improvement: Implementation of MethodInArgPtr in rust side
+# Communication #781 — Implement lifetime-bound MethodInArgPtr ABI owner
 
-Draft `MethodInArgPtr<T>` plumbing type with a LoLa size-check test support library.
+Adds the Rust MethodInArgPtr ABI representation with exclusive lifetime-bound ownership of the input and activity flag. Moving the owner transfers responsibility; dropping it clears the flag without freeing the input. Native tests compare size/alignment and member representation with the real C++ object and exercise both languages’ move/destruction behavior.
 
 | Field | Record |
 | --- | --- |
 | Upstream issue | https://github.com/eclipse-score/communication/issues/781 |
-| Upstream status | open, observed 2026-10-07 (updated 2026-07-27, 0 comments) |
-| Local status | `draft_patch_partially_verified` |
-| Baseline commit | `381d43dec900ab6a9076f3f30e7bfbdee019e26e` |
-| Branch | `draft/781-method-in-arg-ptr` |
-| Upstream PR / merge | not submitted |
-| Engineering acceptance | pending offline (tests and agent reviews do not imply acceptance) |
+| Local status | Draft PR published; selected local Linux checks passed; upstream CI and maintainer review pending |
+| Verified baseline | `c77751819b8885a902540dbef7f0fe25cf85d51c` |
+| Candidate commit | `d39eb127221538d623a3ddb4c8b519396a0528b1` |
+| Branch | `feature/781-method-in-arg-ptr-ownership` (portable bundle and disposable workspace; reference clone unchanged) |
+| Native verification | 5 targets; 40 cases passed, 0 ignored, zero failed; selected Clippy and formatting passed |
+| Upstream publication | [Draft PR #1339](https://github.com/eclipse-score/communication/pull/1339) |
+| Contributor behavior approval | Approved in this session; upstream engineering acceptance pending |
 
-## Result
+## PR artifacts
 
-Linux x86_64, baseline `381d43de`: selected tests passed. The original lint groups failed because
-of an operator launcher defect (duplicate `clippy_strict` aspect), not the source. A later run with
-the corrected launcher on the identical source: Clippy exit 0; the doctest target ran but contains
-zero runnable examples.
+- [git-am patch](communication-781.patch) and [portable branch bundle](feature-781-method-in-arg-ptr-ownership.bundle).
+- [PR title](pr-title.txt) and [PR description](pr-description.md).
+- [Review packet](evidence/native-fix-20261007/review-packet.md), [test evidence](evidence/native-fix-20261007/verification-summary.json), [merge checklist](evidence/native-fix-20261007/merge-readiness.md), [reproduction](evidence/native-fix-20261007/reproduce.md).
+- [Final source/patch binding](evidence/native-fix-20261007/candidate/source-binding.json) and [packet manifest](evidence/native-fix-20261007/artifact-manifest.json).
 
-## Branch and PR
+The patch cleanly applies to the recorded current-main baseline and produces the candidate Git tree; the bundle was verified. The full final source matches the test and lint input manifests. Import into a disposable clone as documented in reproduction; local preparation preserved the reference clone; later publication is recorded below.
 
-| Field | Value |
-| --- | --- |
-| Branch | `draft/781-method-in-arg-ptr` at `494d7b78612a` in `/home/jefferson/eclipse-score/communication` |
-| Base | `381d43dec900ab6a9076f3f30e7bfbdee019e26e` (evidence baseline) |
-| Patch (`git am`-ready) | [`communication-781.patch`](communication-781.patch) |
-| Portable branch | [`draft-781-method-in-arg-ptr.bundle`](draft-781-method-in-arg-ptr.bundle) |
-| PR title / body | [`pr-title.txt`](pr-title.txt) / [`pr-description.md`](pr-description.md) |
+## Scope and pending decisions
 
-Branch is based on the verified baseline `381d43de`. It merges into upstream `main` (`e073dede`, 2026-10-06) without textual conflicts; the merged result has not been built or tested.
+Approve the Linux x86_64 representation, exclusive borrowed input/flag lifecycle and pointer-only future FFI boundary. Confirm applicability of MethodInArgPtrMatches@1 to subsequent method integration.
 
-To open the PR from your fork (nothing has been pushed):
+The former unresolved ABI/ownership point now has an explicit implementation and native representation/lifecycle evidence. Validation is Linux x86_64. Non-trivial C++ by-value ABI and end-to-end method IPC are outside #781’s ABI-type scope.
 
-```bash
-cd /home/jefferson/eclipse-score/communication
-git remote add fork git@github.com:<your-user>/communication.git   # once
-git rebase origin/main draft/781-method-in-arg-ptr        # optional; re-run the checks if you rebase
-git push fork draft/781-method-in-arg-ptr
-gh pr create -R eclipse-score/communication --draft --head <your-user>:draft/781-method-in-arg-ptr \
-  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/781/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/781/pr-description.md
-```
+The project requires ECA, its exact required CI checks, an approving/code-owner review and merge queue. Full repository tests, QNX/sanitizers and official lint statuses remain pending; no local result or artifact substitutes for them. The ECA status subsequently passed on the published PR; other gates remain pending. [merge-readiness.md](evidence/native-fix-20261007/merge-readiness.md) inventories each gate and reviewer decision.
 
-Elsewhere, recreate the branch from the bundle:
-`git fetch /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/781/draft-781-method-in-arg-ptr.bundle draft/781-method-in-arg-ptr:draft/781-method-in-arg-ptr` (the clone must contain `381d43dec900`).
+## History and provenance
 
-## Open items
+Historical draft records are preserved in [previous-record](evidence/native-fix-20261007/previous-record/); older sealed evidence folders remain unchanged. Original Fabro correction budgets were exhausted; this user-authorized direct engineering follow-up did not resume those loops or make paid calls. The earlier draft bundles remain historical and do not contain this fix. Current [provenance.json](provenance.json) and [artifact-manifest.json](artifact-manifest.json) bind these records. That packet predates publication. The later [publication record](publication/README.md) records the approved behavior, fork/branch publication, draft PR and strict ECA validation; no issue closure, merge or upstream acceptance was made.
 
-- ABI layout and ownership semantics unresolved (supervisor: not a completed issue fix).
-- Behavioral coverage is minimal; correction budget 3/3 exhausted.
+## Draft publication
 
-## Notes
+[PR #1339](https://github.com/eclipse-score/communication/pull/1339) is open from `jnsagai:feature/781-method-in-arg-ptr-ownership` against
+`eclipse-score/communication:main`. Its exact head, six changed files, title/body and draft
+state were checked. Your ECA account `jnascimento6p0` passed strict validation for the
+author/committer commit email. You approved the proposed behavior and will review and
+mark ready manually. Hosted CI and maintainer approval remain separate pending gates.
 
-- Keep as a draft PR or local branch until the ABI/ownership design is agreed upstream.
+[Public sealed review evidence](https://github.com/jnsagai/communication/tree/b7da4c751f19e666ea53d22632c32a975e74df29/contribution-evidence/communication/781) is on a separate fork branch,
+without adding evidence files to the native PR's code diff. The tested baseline remains
+`c77751819b8885a902540dbef7f0fe25cf85d51c`; upstream's later safety-documentation changes are recorded in
+[upstream-at-publication.json](publication/upstream-at-publication.json). The original
+sealed native packet remains unchanged.
 
-## Evidence
+## License-header verification
 
-- Supervisor review: [`evidence/queue-run-ycbvxir7-issue-781/export/reports/supervisor.md`](evidence/queue-run-ycbvxir7-issue-781/export/reports/supervisor.md)
-- Corrected-launcher Clippy/doctest re-run: [`evidence/score-rust-runtime-review-tf_tonek/README.md`](evidence/score-rust-runtime-review-tf_tonek/README.md)
-- Every sealed packet is copied under `evidence/` with its original `artifact-manifest.json`.
-  Raw Fabro event streams are stored as `events.jsonl.zst`; [`compressed-evidence.json`](compressed-evidence.json)
-  records each original SHA-256 (`zstd -dc <file> | sha256sum`).
-- Queue-wide records (queue definition, launch, all-issue review, #1265 run):
-  [`../rust-api-queue/`](../rust-api-queue/README.md).
-- [`provenance.json`](provenance.json) maps each copy to its sealed source and manifest digest;
-  [`artifact-manifest.json`](artifact-manifest.json) seals this folder.
-
-Agents drafted the code (DeepSeek V4 Flash via Fabro, with Codex/Claude corrections where noted);
-deterministic tools measured it. No GitHub comment, push, PR or issue change was made.
+All 6 changed source/build files passed the native
+copyright checker with the unmodified Eclipse contributor / Apache-2.0 template.
+[Local audit](license-header-audit-20261007/README.md) and [published audit](https://github.com/jnsagai/communication/tree/2fdc2a88c2272db4c6a5641443a4b033c2e1ee3c/contribution-evidence/communication/781/license-header-audit-20261007)
+retain per-file hashes, exact commands and raw output. No header/source changes
+were necessary; the PR code head remains `d39eb127221538d623a3ddb4c8b519396a0528b1`.
