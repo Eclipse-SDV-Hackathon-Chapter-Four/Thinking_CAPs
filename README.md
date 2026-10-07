@@ -76,8 +76,8 @@ through [Diagnostics PR #40](https://github.com/eclipse-score/inc_diagnostics/pu
 | Contribution | Module / subsystem | Current status | Upstream PR |
 | --- | --- | --- | --- |
 | [ThreadX #744 — stack-address width](contributions/threadx-744/README.md) | Kernel `_tx_thread_create`, stack initialization and MISRA alignment helpers | Fix and regression evidence retained; final review pending | Not submitted |
-| [Linux zonal lighting controller](ThreadX/README.md) | GNU/Linux simulation port; threads, queues, timers and event flags; CAN/Zenoh application integration | Implemented and tested | N/A — integration |
-| [MXChip AZ3166 lighting ECU](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/ThreadX/az3166/README.md) | Cortex-M4 / STM32F412 board integration; UART/SLCAN lighting firmware | Hardware and live CARLA checks retained | N/A — integration |
+| [Linux zonal lighting controller](demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) | GNU/Linux simulation port; threads, queues, timers and event flags; CAN/Zenoh application integration | Implemented and tested | N/A — integration |
+| [MXChip AZ3166 lighting ECU](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/README.md) | Cortex-M4 / STM32F412 board integration; UART/SLCAN lighting firmware | Hardware and live CARLA checks retained | N/A — integration |
 
 ### Eclipse OpenBSW
 
@@ -179,7 +179,7 @@ for the distinction between the starting baseline and the planned event work.
 | Drive the vehicle and try instrument-cluster OTA | [Run and Verify the End-to-End Demonstration](#run-and-verify-the-end-to-end-demonstration) |
 | Run managed diagnostic and recovery campaigns | [Native reproduction guide](docs/reproduction.md) |
 | Use the diagnosis and test-management UI | [Vehicle Lab dashboard guide](docs/dashboard.md) |
-| Run a lighting ECU or diagnostic gateway | [ThreadX Linux](ThreadX/README.md), [AZ3166 hardware](ThreadX/az3166/README.md), [AutoSD](AutoSD/README.md) or [OpenBSW](OpenBSW/README.md) |
+| Run a lighting ECU or diagnostic gateway | [ThreadX Linux](demo/X-Verse/external_hackathon_ecus/ThreadX/README.md), [AZ3166 hardware](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/README.md), [AutoSD](AutoSD/README.md) or [OpenBSW](OpenBSW/README.md) |
 | Find test commands and understand saved results | [Shared tests](tests/README.md), [Quality Control](#quality-control) and [claim/evidence map](docs/claim-evidence.md) |
 | Understand ownership, scope and team agreements | [Team Roster](#team-roster), [Responsibilities](#responsibilities), [Hackathon Scope](#hackathon-scope) and [How We Work](#how-we-work) |
 
@@ -351,8 +351,8 @@ The software-factory and engineering-assistant work is documented in the
 | [demo/X-Verse/](demo/X-Verse/README.md) | Main interactive vehicle workspace: launcher, setup, component import manifest, Android cluster/OTA assets and ASPICE requirements, tests and reports. Component sources are imported from their own repositories during setup. |
 | [OpenSOVD/](OpenSOVD/README.md) | Native Rust diagnostic providers, fault configuration, upstream patches, build scripts, tests and component evidence. Start with `integration/diagnostics/` for cruise-control diagnosis. |
 | [OpenDut/](OpenDut/README.md) | Managed two-peer testbench configuration, lifecycle scripts, receiver/network tests and deployment evidence. The directory is spelled `OpenDut`; the project is openDuT. |
-| [ThreadX/](ThreadX/README.md) | C lighting-controller application using the ThreadX Linux simulation port, its CAN contract, build configuration, tests and artifacts. |
-| [ThreadX/az3166/](ThreadX/az3166/README.md) | Physical MXChip AZ3166 lighting ECU: firmware, UART/SLCAN transport, board setup, tests and ASPICE work products. |
+| [ThreadX/ (in X-Verse)](demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) | C lighting-controller application using the ThreadX Linux simulation port, its CAN contract, build configuration, tests and artifacts. |
+| [ThreadX/az3166/ (in X-Verse)](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/README.md) | Physical MXChip AZ3166 lighting ECU: firmware, UART/SLCAN transport, board setup, tests and ASPICE work products. |
 | [OpenBSW/](OpenBSW/README.md) | DoIP-to-CAN zonal diagnostic gateway for Linux and S32K148EVB, routing configuration, upstream module, tests and evidence. |
 | [AutoSD/](AutoSD/README.md) | VM provisioning and workload deployment, service configuration, managed-network support and lighting-integration evidence. |
 | [score/](score/README.md) | Earlier S-CORE cruise-control ECU/bridge integration, Docker configuration and build scripts. The native campaign's external S-CORE checkout is selected through its configuration. |

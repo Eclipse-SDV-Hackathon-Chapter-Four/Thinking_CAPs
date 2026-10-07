@@ -19,7 +19,7 @@ The guest is **Automotive Stream Distribution 10**, using its automotive kernel
 and Podman. ThreadX and the gateway are separate processes in separate containers.
 The pinned kernel includes `vxcan` but not `vcan`: frames sent on one endpoint
 arrive at the other. Host CAN interfaces are separate from these guest interfaces.
-The [ThreadX CAN contract](../ThreadX/docs/can-lighting-contract.md) is unchanged:
+The [ThreadX CAN contract](../demo/X-Verse/external_hackathon_ecus/ThreadX/docs/can-lighting-contract.md) is unchanged:
 standard eight-byte `0x1F1` VCU status requests and `0x1F4` light responses.
 
 ## 1. Install prerequisites and select a workspace

@@ -185,6 +185,6 @@ Evidence and manifest are in [evidence/board-baseline](evidence/board-baseline/)
 
 ## Dependencies on other items
 
-- **ThreadX rear lighting ECU:** it needs a minimal UDS-on-CAN server (`0x7E1`/`0x7E9`) before end-to-end routing can be shown. That is a separate change to [ThreadX](../ThreadX/README.md).
+- **ThreadX rear lighting ECU:** it needs a minimal UDS-on-CAN server (`0x7E1`/`0x7E9`) before end-to-end routing can be shown. That is a separate change to [ThreadX](../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md).
 - **CDA diagnostic description (MDD):** it must declare the gateway and every routed ECU with the logical addresses in the routing table. The CDA rejects anything not in the MDD ([demo/README.md](../demo/README.md)).
 - **AZ3166 on hardware:** it needs a new Serial2CAN profile that adds `0x7E1` to `to_serial` and `0x7E9` to `from_serial`. The existing profiles stay unchanged.

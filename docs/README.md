@@ -2,7 +2,7 @@
 
 Component documentation and development now live in
 [OpenSOVD](../OpenSOVD/README.md), [OpenDuT](../OpenDut/README.md),
-[ThreadX](../ThreadX/README.md) and [AutoSD](../AutoSD/README.md).
+[ThreadX](../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) and [AutoSD](../AutoSD/README.md).
 The guides below cover the shared environment and UI.
 
 ## Contents

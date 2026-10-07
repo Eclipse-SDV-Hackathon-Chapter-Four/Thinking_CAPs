@@ -10,6 +10,8 @@ import tempfile
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+# ThreadX comes with the X-Verse branch (external_hackathon_ecus/ThreadX).
+THREADX = ROOT.parent / 'demo' / 'X-Verse' / 'external_hackathon_ecus' / 'ThreadX'
 sys.path.insert(0, str(ROOT / 'scripts'))
 from vm import digest, run
 
@@ -31,7 +33,7 @@ def main():
     run(['git', '-C', bridge, 'diff', '--exit-code', 'HEAD', '--', 'src/bridge.py'])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     (ROOT / '.local').mkdir(exist_ok=True)
-    run([args.engine, 'build', '-t', 'threadx-zonal-lights:autosd-build', ROOT.parent / 'ThreadX'])
+    run([args.engine, 'build', '-t', 'threadx-zonal-lights:autosd-build', THREADX])
     with tempfile.TemporaryDirectory(prefix='autosd-bundle-', dir=ROOT / '.local') as temp:
         staging = Path(temp)
         context = staging / 'context'
@@ -55,7 +57,7 @@ def main():
         metadata = {'schema_version': 1, 'bridge_revision': revision,
                     'bridge_source_sha256': digest(bridge / 'src/bridge.py'),
                     'opensovd_revision': cfg['opensovd_revision'],
-                    'threadx_revision': json.loads((ROOT.parent / 'ThreadX/dependencies.lock.json').read_text()),
+                    'threadx_revision': json.loads((THREADX / 'dependencies.lock.json').read_text()),
                     'rustc': subprocess.check_output(['rustc', '--version'], text=True).strip(),
                     'cargo': subprocess.check_output(['cargo', '--version'], text=True).strip(),
                     'container_id': subprocess.check_output([args.engine, 'image', 'inspect', '--format', '{{.Id}}',

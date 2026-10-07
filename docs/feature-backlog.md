@@ -14,7 +14,7 @@ Prepared on 2026-10-04. User instruction: defer AAOS FOTA until its asset is bro
 | F008 reproduction/handover | P0 | clean-source self-run passed; local handover prepared | Actual second-person signoff deferred by user; source/build/cache boundaries and contribution packet documented |
 | F009 CARLA startup recovery | P0 | actual world/actor/native campaign verified | Fresh startup clients, test-driver steering and explicit compiler paths; human signoff still pending |
 | F010 diagnosis/test dashboard | P1 | implemented; actual native/physical/cancellation verified | Browser OpenSOVD diagnosis and openDuT-managed project campaigns; dual-client state and scoped evidence download |
-| F011 ThreadX zonal lighting | P1 | implemented; real ThreadX Linux port/CAN/CARLA verified | [CAN contract and standalone deployment](../ThreadX/README.md) |
+| F011 ThreadX zonal lighting | P1 | implemented; real ThreadX Linux port/CAN/CARLA verified | [CAN contract and standalone deployment](../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) |
 | F012 AutoSD vehicle computer | P1 | implemented; fresh guest, native lighting diagnostics and actual managed GRE/CARLA verified | [Component specification](../AutoSD/specs/vehicle-computer/spec.md), [deployment guide](../AutoSD/README.md) and [evidence](../AutoSD/artifacts/README.md) |
 
 See specs/001-baseline-audit for F001. Each later feature gets its own Spec Kit artifacts
