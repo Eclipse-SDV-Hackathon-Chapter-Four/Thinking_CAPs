@@ -15,7 +15,7 @@ native process ownership, lifecycle loopbacks, bounded context and qualification
 | Source | [Fabric source identity](evidence/fabric/source-identity.json), [snapshot](evidence/fabric/source-snapshot.tar.gz), [per-file hashes](evidence/fabric/source-files.json) |
 | Upstream status | Issue open, assigned to `aryansingh0012` and `praveen-ltts`; adoption and issue closure pending |
 | Existing DR | `dec_rec__infra__ai_sdlc_tooling`, proposed in PR #3140 |
-| New publication | None; local preparation only |
+| New publication | [Draft PR #3307](https://github.com/eclipse-score/score/pull/3307); [review requested](https://github.com/eclipse-score/score/issues/3115#issuecomment-6031268045) |
 
 Start with the [current native proposal and measured verification](upstream-preparation/README.md).
 The original local [decision-record proposal](decision-record.md), then the
@@ -70,3 +70,13 @@ Offer this pilot evidence to #3115's assignees for incorporation into PR #3140. 
 review, an agreed evaluation scope and required native documentation CI. ECA/DCO
 requirements are retained in the captured contribution guide. This packet neither
 closes #3115 nor proposes wholesale adoption of the fabric.
+
+
+## Published review candidate
+
+The [evidence branch](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/tree/contrib/score-ai-sdlc-3115-evidence/contributions/issues/eclipse-score/score/3115)
+is published, and native [draft PR #3307](https://github.com/eclipse-score/score/pull/3307)
+is offered for incorporation into #3140. A [review request](https://github.com/eclipse-score/score/issues/3115#issuecomment-6031268045)
+was delivered to both #3115 assignees. Publication identities and the exact submitted
+body are retained in [publication.json](upstream-preparation/publication.json).
+Human responses, native CI, acceptance and qualification remain pending.
