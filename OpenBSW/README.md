@@ -27,18 +27,43 @@ It does not touch the cruise-control use case:
 
 ## Status
 
-| Work product | State |
+The gateway runs on the OpenBSW POSIX platform with DoIP over TAP and DoCAN on
+`vcan0`. It routes through `transport::TransportRouter`, a new OpenBSW module
+prepared as an [upstream contribution](../contributions/openbsw-transport-router/README.md).
+
+| Item | Result |
 | --- | --- |
-| SWE.1 [system](aspice/swe1-requirements/system-requirements.md) and [software](aspice/swe1-requirements/software-requirements.md) requirements | Draft for review, 6 October 2026 |
-| SWE.2 [architecture](aspice/swe2-architecture/architecture.md) with PlantUML [views](aspice/swe2-architecture/diagrams/) | Draft for review, 6 October 2026 |
-| SWE.3–SWE.6, implementation, tests | Not started |
+| Unit tests | 78/78: 42 module (OpenBSW unit-test build and Bazel), 10 gateway units, 22 generator, 4 existing `TransportRouterSimple` |
+| Module coverage | 100% lines, 99.1% branches |
+| Integration tests | 28/28 against simulated CAN ECUs, recorded in [evidence/gateway-it](evidence/gateway-it/results.json) |
+| Forwarding latency (p95) | DoIP→CAN 2.9 ms, CAN→DoIP 0.8 ms |
+| Upstream gates for the module | format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base |
+| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 27/37 requirements verified, 7 partially (live campaigns not run), 1 failed, 2 open |
+
+Open items, all of them visible in the report:
+
+- **SWR-032 bus load:** a 4095-byte request to an ECU that grants STmin 0 uses
+  about 16 % of a 500 kbit/s bus in one second (budget 10 %). The fix is to limit
+  `max_length` per route or to add a transmit STmin.
+- **SWR-026:** the reachability routine `31 01 F000` is not implemented.
+- **Live campaigns not run:**
+  - X-Verse + CARLA cruise-control regression with the gateway
+  - OpenSOVD → CDA (needs an MDD)
+  - ThreadX ECU with UDS (OP-2)
+  - S32K148 build
 
 ## Layout
 
 | Path | Content |
 | --- | --- |
-| `aspice/` | ASPICE SWE work products, in the same layout as [Serial2CAN](../X-Verse/bridges/serial2can/aspice/README.md) and [AZ3166](../ThreadX/az3166/aspice/README.md) |
-| `src/`, `config/`, `tests/` | Planned: gateway application, routing table, tests |
+| `gateway/app/` | Gateway application, derived from the OpenBSW reference app: DoIP, DoCAN, UDS, lifecycle, POSIX platform |
+| `gateway/lib/` | Gateway units: CAN routing table, node monitor, identity; unit tests |
+| `gateway/config/routing.yaml`, `gateway/tools/` | Single source of the addressing and its generator (`gen_routing.py`, with tests) |
+| `gateway/tests/` | Integration tests: simulated ECUs (`sim_ecu.py`), DoIP tester, routing and lifecycle tests |
+| `contrib/libs/bsw/transportRouter/` | The contributed OpenBSW module (same tree as upstream) |
+| `scripts/` | Volume, network, bootstrap, SIL suite, integration run, upstream PR preparation |
+| `evidence/` | OpenBSW SIL baseline and gateway integration runs |
+| `aspice/` | ASPICE SWE.1–SWE.6 work products and report generator, in the same layout as [Serial2CAN](../X-Verse/bridges/serial2can/aspice/README.md) and [AZ3166](../ThreadX/az3166/aspice/README.md) |
 
 ## Virtual environment (SIL)
 
@@ -63,7 +88,14 @@ sudo OpenBSW/scripts/net-up.sh          # vcan0 + tap0 (reuses existing ones)
 OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-freertos build
 OpenBSW/scripts/run.sh                  # start the POSIX app; Ctrl-C stops it
 OpenBSW/scripts/sil-test.sh             # OpenBSW's own SIL suite (uds, enet, docan)
+OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 28 integration tests, record evidence
+OpenBSW/scripts/openbsw-pr.sh all       # upstream gates and patch for the transportRouter contribution
+python3 OpenBSW/aspice/tools/generate_report.py   # ASPICE SWE report
 ```
+
+Run the gateway by hand with
+`ZGW_CAN_INTERFACE=vcan0 ZGW_TAP_INTERFACE=tap0 <build>/app/application/openbsw-zonal-gw.elf`.
+It answers DoIP at `192.168.0.201` as logical address `0x1010`.
 
 **Baseline result (6 October 2026):** OpenBSW `432b9be6`, `posix-freertos`,
 104 of 104 tests pass. The suite covers UDS over CAN (`0x7E0`/`0x7E8`) and
@@ -77,13 +109,13 @@ Findings for the gateway work:
   ([can-ids.txt](evidence/sil-baseline/can-ids.txt)). Run it only while
   X-Verse is stopped.
 - **The CAN interface is hard-coded.** The POSIX platform uses `"vcan0"` in
-  `CanSystem.cpp`. SWR-050 (selectable interface) therefore needs a
-  gateway-owned platform `CanSystem`, rather than a patch to OpenBSW (SWR-053).
+  `CanSystem.cpp`. The gateway's own platform `CanSystem` reads
+  `ZGW_CAN_INTERFACE` instead, so OpenBSW stays unmodified (SWR-050, SWR-053).
 
 The unmodified reference application sends on CAN `0x558` (a demo frame)
 and serves UDS on `0x7E0`/`0x7E8`. Neither collides with X-Verse, which uses
-`0x1F0`–`0x1F4` and `0x300`. The gateway will replace the demo traffic with
-the routing table's identifiers only (SWR-030).
+`0x1F0`–`0x1F4` and `0x300`. The gateway sends only on `0x7DF`, `0x7E1` and
+`0x7E2`, and accepts only `0x7E9`/`0x7EA` (SWR-030, verified in SWE.5).
 
 The OpenBSW revision, the volume and the SIL addresses are pinned in
 [dependencies.lock.json](dependencies.lock.json); the host tools are in
