@@ -2,14 +2,15 @@
 # Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
 # Created: 2026-10-06 · Latest version: 2026-10-07
 # Goal: Tests of the Zenoh scouting parser, the endpoint selection and the reconnect after a vehicle restart.
-"""Zenoh scouting replies and endpoint selection; the stand-in following a restarted vehicle."""
+"""Zenoh scouting replies and endpoint selection; the console following a restarted vehicle."""
 import os
 import sys
+import threading
 import time
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-import score_app  # noqa: E402
+import server  # noqa: E402
 from discover import parse_hello, tcp_endpoints  # noqa: E402
 
 VEHICLE = "10.169.127.81"
@@ -64,12 +65,12 @@ class FakeLink:
 class FollowVehicleTests(unittest.TestCase):
     def test_reconnects_once_when_the_vehicle_moved(self):
         link, asked = FakeLink(), []
-        app = score_app.ScoreApp(link=link, stats_file="")
+        console = server.Console(link=link)   # not started: only the vehicle finder runs here
 
         def find(host):
             asked.append(host)
             return [f"tcp/{VEHICLE}:40235"]
-        app.follow_vehicle(VEHICLE, every_s=0.01, find=find)
+        threading.Thread(target=console._follow_vehicle, args=(VEHICLE, 0.01, find), daemon=True).start()
         deadline = time.monotonic() + 2
         while len(asked) < 5 and time.monotonic() < deadline:
             time.sleep(0.01)
@@ -77,7 +78,7 @@ class FollowVehicleTests(unittest.TestCase):
         time.sleep(0.05)
         n = len(asked)
         time.sleep(0.1)
-        app.stop()
+        console.stop()
         self.assertEqual(link.reconnects, [[f"tcp/{VEHICLE}:40235"]])   # same endpoints afterwards: no new reconnect
         self.assertEqual(asked[0], VEHICLE)
         self.assertEqual(len(asked), n)

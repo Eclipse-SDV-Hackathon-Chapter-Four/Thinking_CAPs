@@ -1,13 +1,17 @@
 # Eclipse SDV Hackathon 2026 (Chapter Four) · Demo Console v2 (Zenoh input)
 # Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
-# Created: 2026-10-06 · Latest version: 2026-10-07
-# Goal: Test harness: mirrors each S-CORE fault into the classic ECU simulator as a DTC and reads it back via the CDA.
-"""Automatic classic DTC (test harness): when the vehicle simulates a fault, the
-classic ECU stores a matching DTC and the tester reads it back through the CDA.
+# Created: 2026-10-06 · Latest version: 2026-10-07 (v2.1: follows the tester's fault model instead of SOVD fault lists)
+# Goal: Test harness: mirrors each qualified fault into the classic ECU simulator as a DTC and reads it back via the CDA.
+"""Automatic classic DTC (test harness): when a fault is qualified failed, the classic ECU
+stores a matching DTC and the tester reads it back through the CDA.
 
-    S-CORE fault starts failing (bit 0 0 -> 1)  ->  ECU simulator: DTC = MASK_ACTIVE (0x2F)
-    S-CORE fault heals          (bit 0 1 -> 0)  ->  ECU simulator: DTC = MASK_HEALED (0x28)
+    fault qualified failed  (stage failed)        ->  ECU simulator: DTC = MASK_ACTIVE (0x2F)
+    fault qualified passed  (stage passed again)  ->  ECU simulator: DTC = MASK_HEALED (0x28)
     each change is then read back through the CDA (UDS over DoIP) and timed.
+
+v2.1: the faults come from the tester's fault model (faults.py): F1 is the gateway's
+debounced fault status, F2 the console's link monitor. A fault whose source cannot be
+read (gateway down) is skipped, so no edge is invented from missing data.
 
 This uses the simulator's control API, which is test-only, so it lives in the console
 (the tester), not in the vehicle computer. Edges only: a fault that stays failing is not
@@ -17,18 +21,19 @@ import threading
 import time
 from collections import deque
 
-from backends import bit_set, decode_status, find_fault, norm_code
+from backends import decode_status, find_fault, norm_code
 
 
 class AutoDtc:
-    def __init__(self, backends, mapping, entities, mask_active="2F", mask_healed="28",
+    def __init__(self, backends, mapping, faults_source, mask_active="2F", mask_healed="28",
                  period_s=0.5, readback_s=3.0, enabled=True):
-        self.b, self.entities = backends, list(entities)
+        self.b, self.faults_source = backends, faults_source
         self.mask_active, self.mask_healed = mask_active.upper(), mask_healed.upper()
         self.period_s, self.readback_s, self.enabled = period_s, readback_s, enabled
         self.map = dict(mapping)
         self._lock = threading.Lock()
-        self.state = {code: {"dtc": dtc, "failing": None, "ecu_mask": None, "display": None} for code, dtc in mapping.items()}
+        self.state = {code: {"dtc": dtc, "failing": None, "ecu_mask": None, "display": None, "retry_at": 0}
+                      for code, dtc in mapping.items()}
         self.events = deque(maxlen=50)
         self.seq = 0
         self.error = None
@@ -56,27 +61,20 @@ class AutoDtc:
         self._stop.set()
 
     def poll_once(self):
-        items, errors = [], []
-        for entity in self.entities:
-            r, faults = self.b.sovd_faults(entity, origin="auto")
-            if r.ok:
-                items.extend(faults)
-            else:
-                errors.append(f"{entity}: {r.error or 'HTTP ' + str(r.status)}")
+        items = list(self.faults_source() or [])
         self.polls += 1
         self.last_poll = time.time()
-        self.error = "; ".join(errors) or None
-        if errors and not items:
-            return
+        unavailable = [f["code"] for f in items if not f.get("available", True)]
+        self.error = ("source not readable: " + ", ".join(unavailable)) if unavailable else None
         now = time.time()
         for code, st in self.state.items():
             f = find_fault(items, code)
-            if f is None:
+            if f is None or not f.get("available", True):
                 continue
-            failing = bit_set(f.get("status"), 0)
+            failing = bool(f.get("qualified_failed"))
             with self._lock:
                 prev = st["failing"]
-                st["display"] = f.get("display") or f.get("fault_name")
+                st["display"] = f.get("display")
                 waiting = now < st.get("retry_at", 0)
             if waiting:
                 continue

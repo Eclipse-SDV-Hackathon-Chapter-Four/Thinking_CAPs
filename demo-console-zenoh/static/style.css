@@ -1,6 +1,6 @@
 /* Eclipse SDV Hackathon 2026 (Chapter Four) · Demo Console v2 (Zenoh input)
    Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
-   Created: 2026-10-06 · Latest version: 2026-10-07
+   Created: 2026-10-06 · Latest version: 2026-10-07 (v2.1: SOVD gateway block)
    Goal: Dark stage theme of the page: one screen at 1920x1080, stacked layout below 1200 px. */
 :root {
   --bg: #141a22; --panel: #1c2430; --panel-2: #222d3b; --line: #2f3d4e;
@@ -46,7 +46,8 @@ h3 { font-size: 13px; margin: 0 0 6px; color: var(--ink); font-weight: 600; text
 .grid { flex: 1; display: grid; gap: 12px; padding: 12px 20px; min-height: 0;
   grid-template-columns: 1fr 1.3fr 1fr; grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) 290px;
   grid-template-areas: "score topo classic" "score runner classic" "flow flow log"; }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-height: 0; display: flex; flex-direction: column; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
+#panel-score .block.grow { min-height: 150px; }   /* the fault cards must stay visible under the gateway block */
 #panel-score { grid-area: score; } #panel-topo { grid-area: topo; } #panel-classic { grid-area: classic; }
 #panel-runner { grid-area: runner; } #panel-log { grid-area: log; } #panel-flow { grid-area: flow; }
 .block { margin-top: 12px; }
@@ -58,10 +59,11 @@ h3 { font-size: 13px; margin: 0 0 6px; color: var(--ink); font-weight: 600; text
   h1 { font-size: 22px; } h2 { font-size: 17px; } h3 { font-size: 15px; } .muted { font-size: 14px; }
   .pill { font-size: 16px; padding: 7px 14px; } .clock { font-size: 17px; }
   .btn { font-size: 16px; padding: 11px 20px; }
-  .grid { grid-template-rows: minmax(0, 1.45fr) minmax(0, 1fr) 340px; gap: 16px; }
+  .grid { grid-template-rows: minmax(0, 1.45fr) minmax(0, 1fr) 300px; gap: 14px; }
   .step b { font-size: 13px; } .step span { font-size: 15px; } .step .count { font-size: 13px; }
   .events { font-size: 14px; } .scope-foot { font-size: 12px; } .sound-state { font-size: 13px; }
-  .speed { font-size: 84px; } .unit { font-size: 17px; } .age, .src { font-size: 15px; }
+  .speed { font-size: 64px; } .unit { font-size: 16px; } .age, .src { font-size: 14px; }
+  #panel-score .block { margin-top: 8px; }
   .kv { font-size: 15px; } .chip { font-size: 13px; }
   .states span { font-size: 14px; padding: 8px 0; } .bar { height: 14px; }
   .fault .code { font-size: 20px; } .fault .hex { font-size: 16px; } .fault .name, .fault .summary { font-size: 15px; }
@@ -213,6 +215,26 @@ h3 { font-size: 13px; margin: 0 0 6px; color: var(--ink); font-weight: 600; text
 .ev.bad .m { color: var(--red); }
 .ev.new { background: rgba(226,85,63,.18); } .ev.new .m { color: var(--ink); font-weight: 600; }
 .ev.base { opacity: .6; }
+
+/* SOVD gateway block (v2.1: the four data items of the PR #40 contract) */
+.gw-items { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.gw-item { display: flex; flex-direction: column; gap: 1px; padding: 6px 9px; border-radius: 7px; background: var(--panel-2); border: 1px solid var(--line); min-width: 0; }
+.gw-item .k { font: 11px var(--mono); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gw-item b { font: 700 15px var(--mono); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gw-item small { font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gw-item.ok b { color: var(--green); } .gw-item.warn b { color: var(--amber); } .gw-item.bad b { color: var(--red); }
+.gw-foot { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: 12px; }
+.gw-foot .muted { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gw-ctl { display: flex; align-items: center; gap: 4px; color: var(--muted); white-space: nowrap; }
+.mini { font: 600 11px var(--sans); color: var(--ink); background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.mini:hover { background: #2a3746; }
+.fault.pre .code { color: var(--amber); }
+@media (min-width: 1600px) {
+  .gw-items { grid-template-columns: repeat(4, 1fr); }   /* one row on the projector: the fault cards stay visible below */
+  .gw-item { padding: 5px 8px; }
+  .gw-item .k { font-size: 11.5px; } .gw-item b { font-size: 17px; } .gw-item small { font-size: 11.5px; }
+  .gw-foot { font-size: 13px; } .mini { font-size: 13px; padding: 4px 10px; }
+}
 
 /* toast, footer */
 .toast { position: fixed; right: 20px; bottom: 44px; max-width: 46vw; background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 8px; font-weight: 600; box-shadow: 0 6px 24px rgba(0,0,0,.4); z-index: 9; }
