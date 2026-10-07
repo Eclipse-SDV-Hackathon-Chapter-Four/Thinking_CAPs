@@ -1,0 +1,27 @@
+Add transportRouter module for diagnostic gateways
+
+TransportRouterSimple sends every request to the local diagnostic
+server and every reply to the bus of the last request, so an OpenBSW
+node cannot forward UDS requests to other ECUs. Add a separate module
+with a router that does this by logical address.
+
+`transport::TransportRouter` implements
+`ITransportMessageProvidingListener` like TransportRouterSimple and
+plugs into the existing DoIP, DoCAN and UDS transport layers:
+
+- routes requests to the local server, to a node of the routing table
+  (`DiagnosticRoute`: address, bus, P2, P2*, maximum length) or to the
+  functional group
+- replaces the tester address towards the node and restores it on the
+  response, so several testers on several buses can share the gateway
+- allows one outstanding request per route, supervises P2 and P2*,
+  passes response pending (NRC 0x78) through and discards late or
+  unsolicited responses
+- sends functional requests to the local server and once per node bus
+- reports busy, too large and unknown targets through
+  `ITransportMessageProvider::ErrorCode`, which DoIP maps to diagnostic
+  message NACKs
+- releases a disconnected tester's requests, counts events in
+  `TransportRouterStatistics` and reports outcomes to `IRouteObserver`
+
+Memory is static. TransportRouterSimple is unchanged.

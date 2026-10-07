@@ -4,18 +4,13 @@
 
 This folder contains all **pre-work** completed before the Eclipse SDV Hackathon Chapter 4 (Oct 6-8, 2026).
 
-**Pre-work includes ONLY:**
-- Research and analysis
-- Architecture design documents
-- Environment setup guides
-- Presentation materials
-- Implementation plans
-
-**Pre-work does NOT include:**
-- Any source code for contributions
-- Any submitted PRs or issues
-- Any patches or code changes
-- Any working demo implementation
+This directory contains planning and reference documents. It does not establish
+that the rest of the repository was developed during the event. Retained
+diagnostics patches include commits dated **2026-09-22**, and campaign evidence
+exists under `evidence/runs/20260925T125437Z`, before the October 6 event start.
+These are pre-existing implementations and measurements. Event additions must
+be identified by their actual revisions and dates; competition eligibility
+requires the organizers' published rules and has not been established.
 
 ---
 
@@ -75,22 +70,19 @@ This folder contains all **pre-work** completed before the Eclipse SDV Hackathon
 
 | Contribution | Repository | Type | Status |
 |--------------|------------|------|--------|
-| CDA #543 | eclipse-opensovd/classic-diagnostic-adapter | Bug fix | To be done Day 1 |
+| CDA #543 | eclipse-opensovd/classic-diagnostic-adapter | Bug fix | Pre-existing patch; published PR #601, review/ECA pending |
 | Issue #553 | eclipse-opensovd/opensovd-core | API fixes | To be done Day 1 |
-| PR #16 | eclipse-score/inc_diagnostics | New adapter | To be done Day 2 |
+| Issue #16 | eclipse-score/inc_diagnostics | New adapter | Pre-existing implementation; published PR #40, review/ECA/DCO pending |
 | Demo | Our repository | Integration | To be done Day 2 |
 
 ---
 
 ## Team Declaration
 
-We declare that:
-
-1. All materials in this `PREWORK_DECLARATION/` folder are **research, design, and documentation only**
-2. **No source code** for contributions was written before the hackathon
-3. **No PRs or issues** were submitted before the hackathon
-4. **No patches** were created before the hackathon
-5. All actual coding will be done **during the 2-day hackathon** (Oct 6-8, 2026)
+The previous assertion that no code or patches existed before the event is
+superseded by the retained pre-event evidence above. This correction records
+provenance; it supplies no organizer eligibility decision. Preserve original
+commit/test dates and distinguish later work from the earlier implementation.
 
 ---
 

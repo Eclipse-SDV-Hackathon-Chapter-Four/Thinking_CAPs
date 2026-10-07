@@ -20,9 +20,18 @@ and advisory review, followed by local owner approval and an upstream-template P
 The earlier zero-provider-call preparation is retained separately. Two legacy raw
 transport envelopes are missing; native outputs/usage remain and the corrected
 transport's final guarded proof has complete records. Live B1–B5 savings, QNX and full
-native impact/export closure remain unmeasured. Diagnostics #16 is tracked as an evidence
-recovery item and is excluded from the completed-contribution count.
+native impact/export closure remain unmeasured. Diagnostics #16 retains recovered
+historical patches and a separate published native PR #40; it is excluded from the
+completed-contribution count. CDA #543 is published as native PR #601. Both native
+PRs currently fail their actual contributor's ECA check, and diagnostics needs
+that author's DCO sign-offs. Jefferson confirmed Claude Opus 5.5 assistance on both.
 
 Before submitting, add the confirmed competition entry details and actual upstream
-PR URLs. Local verification, upstream acceptance and full issue closure are recorded
+PR statuses. Local verification, upstream acceptance and full issue closure are recorded
 separately. Use [the submission checklist](README.md) to finalize this draft.
+
+Use [the current compliance preparation](../compliance/2026-10-07/README.md) for
+corrected submission patches, AI disclosures and unresolved legal/review/IP/native
+gates. All unresolved registry candidate flags are false. The lifecycle notice
+amendment is a new prepared revision; the original 113-case result and owner decision
+remain historical. This draft's compliance correction was assisted by OpenAI Codex.

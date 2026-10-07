@@ -1,0 +1,290 @@
+From 494d7b78612a3f3c2c75711b7ec3e5a6a75651cd Mon Sep 17 00:00:00 2001
+From: Jefferson Nascimento <jnsagai@gmail.com>
+Date: Wed, 7 Oct 2026 04:54:16 +0100
+Subject: [PATCH] Rust::com: Add MethodInArgPtr for Rust method arguments
+ (draft)
+
+Addresses #781 (draft, not ready for review).
+
+Add a MethodInArgPtr<T> plumbing type with a LoLa size-check test
+support library. ABI layout and ownership semantics are not yet settled
+and lint evidence is missing.
+
+Implemented with DeepSeek V4 Flash (Fabro).
+
+Assisted-by: Anthropic Claude Opus 5.5 (reported in original metadata)
+Assisted-by: DeepSeek V4 Flash (Fabro)
+Assisted-by: OpenAI Codex (version not retained)
+---
+ score/mw/com/impl/plumbing/rust/BUILD         | 26 ++++-
+ .../impl/plumbing/rust/method_in_arg_ptr.rs   | 94 +++++++++++++++++++
+ .../com/impl/plumbing/rust/test_support/BUILD |  1 +
+ .../rust/test_support/test_helper_size_ffi.rs | 22 ++++-
+ .../test_helper_size_provider.cpp             | 23 +++++
+ .../test_support/test_helper_size_provider.h  |  6 ++
+ 6 files changed, 170 insertions(+), 2 deletions(-)
+ create mode 100644 score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs
+
+diff --git a/score/mw/com/impl/plumbing/rust/BUILD b/score/mw/com/impl/plumbing/rust/BUILD
+index 6185e800..18f89257 100644
+--- a/score/mw/com/impl/plumbing/rust/BUILD
++++ b/score/mw/com/impl/plumbing/rust/BUILD
+@@ -11,7 +11,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # *******************************************************************************
+ 
+-load("@rules_rust//rust:defs.bzl", "rust_library")
++load("@rules_rust//rust:defs.bzl", "rust_doc_test", "rust_library")
+ load("//quality/unit_testing:unit_testing.bzl", "rust_unit_test")
+ 
+ rust_library(
+@@ -72,3 +72,27 @@ rust_unit_test(
+         "@score_communication_crate_index//:libc",
+     ],
+ )
++
++rust_library(
++    name = "method_in_arg_ptr_rs",
++    srcs = ["method_in_arg_ptr.rs"],
++    visibility = [
++        "//score/mw/com:__subpackages__",
++    ],
++    deps = [],
++)
++
++rust_unit_test(
++    name = "method_in_arg_ptr_test_rs",
++    srcs = ["method_in_arg_ptr.rs"],
++    features = ["link_std_cpp_lib"],
++    deps = [
++        "//score/mw/com/impl/plumbing/rust/test_support:test_helper_size_ffi_rs",
++        "//score/mw/com/impl/plumbing/rust/test_support:test_utils_rs",
++    ],
++)
++
++rust_doc_test(
++    name = "method_in_arg_ptr_doc_test",
++    crate = ":method_in_arg_ptr_rs",
++)
+diff --git a/score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs b/score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs
+new file mode 100644
+index 00000000..5d1c854b
+--- /dev/null
++++ b/score/mw/com/impl/plumbing/rust/method_in_arg_ptr.rs
+@@ -0,0 +1,94 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++/// This crate gives the same memory layout as `MethodInArgPtr` in the C++ implementation.
++///
++/// The C++ type is defined in `score/mw/com/impl/methods/method_signature_element_ptr.h` as
++/// `MethodInArgPtr<Type> = MethodSignatureElementPtr<Type>`.
++///
++/// It can be used for FFI bindings where `MethodInArgPtr` is needed. It does not provide any
++/// functionality beyond memory layout compatibility: in particular the C++ type is move-only and
++/// its destructor clears the referenced `ptr_active_` flag. Lifetime management of that flag stays
++/// with the C++ side and must be performed through the C++ operators, not by dropping this
++/// layout-only Rust mirror.
++use core::fmt::Debug;
++
++/// Memory layout mirror of `score::mw::com::impl::MethodSignatureElementPtr<SignatureElement>`.
++///
++/// The C++ members, in declaration order, are:
++/// `SignatureElement* element_ptr_; bool& ptr_active_; std::size_t queue_position_;`
++/// A C++ reference is ABI-equivalent to a pointer, so `ptr_active_` is mirrored as `*mut bool`.
++#[repr(C)]
++pub struct MethodInArgPtr<T> {
++    // `SignatureElement* element_ptr_`
++    _element_ptr: *mut T,
++    // `bool& ptr_active_`
++    _ptr_active: *mut bool,
++    // `std::size_t queue_position_`
++    _queue_position: usize,
++}
++
++impl<T> Debug for MethodInArgPtr<T> {
++    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
++        f.debug_struct("MethodInArgPtr").finish()
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use test_helper_size_ffi_rs::MethodInArgPtrLola;
++    use test_utils_rs::*;
++
++    #[test]
++    fn test_method_in_arg_ptr_int32_size() {
++        let cpp_size = MethodInArgPtrLola::get_int32();
++        verify_size_and_align!(MethodInArgPtr<i32>, cpp_size, "MethodInArgPtr<i32>");
++    }
++
++    #[test]
++    fn test_method_in_arg_ptr_user_defined_type_size() {
++        let cpp_size = MethodInArgPtrLola::get_user_defined_type();
++        verify_size_and_align!(MethodInArgPtr<UserType>, cpp_size, "MethodInArgPtr<UserType>");
++    }
++
++    #[test]
++    fn test_method_in_arg_ptr_layout_independent_of_element_type() {
++        let int32_size = MethodInArgPtrLola::get_int32();
++        let user_defined_type_size = MethodInArgPtrLola::get_user_defined_type();
++        assert_eq!(
++            int32_size.size, user_defined_type_size.size,
++            "MethodInArgPtr size depends on element type!"
++        );
++        assert_eq!(
++            int32_size.align, user_defined_type_size.align,
++            "MethodInArgPtr alignment depends on element type!"
++        );
++    }
++
++    #[test]
++    #[should_panic(expected = "size mismatch")]
++    fn test_negative_method_in_arg_ptr_size_mismatch() {
++        let cpp_size = MethodInArgPtrLola::get_int32();
++        let incorrect = cpp_size.size + 1;
++        assert_eq!(incorrect, cpp_size.size, "MethodInArgPtr size mismatch!");
++    }
++
++    #[test]
++    #[should_panic(expected = "align mismatch")]
++    fn test_negative_method_in_arg_ptr_align_mismatch() {
++        let cpp_size = MethodInArgPtrLola::get_int32();
++        let incorrect = cpp_size.align + 1;
++        assert_eq!(incorrect, cpp_size.align, "MethodInArgPtr align mismatch!");
++    }
++}
+diff --git a/score/mw/com/impl/plumbing/rust/test_support/BUILD b/score/mw/com/impl/plumbing/rust/test_support/BUILD
+index d539caf3..c8eafd3c 100644
+--- a/score/mw/com/impl/plumbing/rust/test_support/BUILD
++++ b/score/mw/com/impl/plumbing/rust/test_support/BUILD
+@@ -21,6 +21,7 @@ cc_library(
+     hdrs = ["test_helper_size_provider.h"],
+     features = COMPILER_WARNING_FEATURES,
+     deps = [
++        "//score/mw/com/impl/methods:method_signature_element_ptr",
+         "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+         "//score/mw/com/impl/plumbing:sample_ptr",
+     ],
+diff --git a/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_ffi.rs b/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_ffi.rs
+index 9df5a8ab..d535a10f 100644
+--- a/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_ffi.rs
++++ b/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_ffi.rs
+@@ -11,7 +11,8 @@
+  * SPDX-License-Identifier: Apache-2.0
+  ********************************************************************************/
+ 
+-/// Unified FFI bindings to C++ TestSizeProvider for both SampleAllocateePtr and SamplePtr size verification
++/// Unified FFI bindings to C++ TestSizeProvider for SampleAllocateePtr, SamplePtr and MethodInArgPtr
++/// size verification
+ use test_utils_rs::SizeInfo;
+ 
+ unsafe extern "C" {
+@@ -36,6 +37,12 @@ unsafe extern "C" {
+     safe fn ffi_get_event_data_control_composite_size() -> SizeInfo;
+     safe fn ffi_get_std_unique_ptr_size() -> SizeInfo;
+     safe fn ffi_get_sample_allocatee_ptr_size() -> SizeInfo;
++
++    // FFI bindings for method_in_arg_ptr.rs struct types
++    // Safety: These functions are safe to call as they are read-only accessors that return constant size information
++    // with no side effects or undefined behavior risks.
++    safe fn ffi_get_method_in_arg_ptr_i32_size() -> SizeInfo;
++    safe fn ffi_get_method_in_arg_ptr_user_defined_type_size() -> SizeInfo;
+ }
+ 
+ /// C++ size provider for SampleAllocateePtr types
+@@ -103,3 +110,16 @@ impl SamplePtrLola {
+         ffi_get_mock_binding_sample_ptr_size()
+     }
+ }
++
++/// C++ size provider for MethodInArgPtr types
++pub struct MethodInArgPtrLola;
++
++impl MethodInArgPtrLola {
++    pub fn get_int32() -> SizeInfo {
++        ffi_get_method_in_arg_ptr_i32_size()
++    }
++
++    pub fn get_user_defined_type() -> SizeInfo {
++        ffi_get_method_in_arg_ptr_user_defined_type_size()
++    }
++}
+diff --git a/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.cpp b/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.cpp
+index 5deefbc5..d8aaa542 100644
+--- a/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.cpp
++++ b/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.cpp
+@@ -11,6 +11,7 @@
+  * SPDX-License-Identifier: Apache-2.0
+  ********************************************************************************/
+ #include "test_helper_size_provider.h"
++#include "score/mw/com/impl/methods/method_signature_element_ptr.h"
+ #include "score/mw/com/impl/plumbing/sample_allocatee_ptr.h"
+ #include "score/mw/com/impl/plumbing/sample_ptr.h"
+ #include <memory>
+@@ -101,6 +102,18 @@ SizeInfo TestSizeProvider::GetMockBindingSamplePtrSize() noexcept
+             alignof(score::mw::com::impl::mock_binding::SamplePtr)};
+ }
+ 
++SizeInfo TestSizeProvider::GetMethodInArgPtrInt32Size() noexcept
++{
++    return {sizeof(score::mw::com::impl::MethodInArgPtr<int32_t>),
++            alignof(score::mw::com::impl::MethodInArgPtr<int32_t>)};
++}
++
++SizeInfo TestSizeProvider::GetMethodInArgPtrUserDefinedTypeSize() noexcept
++{
++    return {sizeof(score::mw::com::impl::MethodInArgPtr<UserType>),
++            alignof(score::mw::com::impl::MethodInArgPtr<UserType>)};
++}
++
+ }  // namespace score::mw::com::impl
+ 
+ // C wrapper functions for FFI
+@@ -176,4 +189,14 @@ score::mw::com::impl::SizeInfo ffi_get_mock_binding_sample_ptr_size() noexcept
+     return score::mw::com::impl::TestSizeProvider::GetMockBindingSamplePtrSize();
+ }
+ 
++score::mw::com::impl::SizeInfo ffi_get_method_in_arg_ptr_i32_size() noexcept
++{
++    return score::mw::com::impl::TestSizeProvider::GetMethodInArgPtrInt32Size();
++}
++
++score::mw::com::impl::SizeInfo ffi_get_method_in_arg_ptr_user_defined_type_size() noexcept
++{
++    return score::mw::com::impl::TestSizeProvider::GetMethodInArgPtrUserDefinedTypeSize();
++}
++
+ }  // extern "C"
+diff --git a/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.h b/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.h
+index 9573a933..f54c6ccd 100644
+--- a/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.h
++++ b/score/mw/com/impl/plumbing/rust/test_support/test_helper_size_provider.h
+@@ -78,6 +78,12 @@ class TestSizeProvider
+ 
+     /// mock_binding::SamplePtr size info
+     static SizeInfo GetMockBindingSamplePtrSize() noexcept;
++
++    /// Get size info for MethodInArgPtr<int32_t>
++    static SizeInfo GetMethodInArgPtrInt32Size() noexcept;
++
++    /// Get size info for MethodInArgPtr<UserType>
++    static SizeInfo GetMethodInArgPtrUserDefinedTypeSize() noexcept;
+ };
+ 
+ }  // namespace score::mw::com::impl
+-- 
+2.34.1
+

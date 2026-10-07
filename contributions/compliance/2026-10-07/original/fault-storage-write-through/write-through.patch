@@ -1,0 +1,278 @@
+diff --git a/src/dfm_lib/src/sovd_fault_storage.rs b/src/dfm_lib/src/sovd_fault_storage.rs
+index a844f70..1f07dc7 100644
+--- a/src/dfm_lib/src/sovd_fault_storage.rs
++++ b/src/dfm_lib/src/sovd_fault_storage.rs
+@@ -318,6 +318,7 @@ pub trait SovdFaultStateStorage: Send + Sync {
+ 
+ pub struct KvsSovdFaultStateStorage {
+     kvs: Mutex<Kvs>,
++    write_through: bool,
+ }
+ 
+ impl KvsSovdFaultStateStorage {
+@@ -335,6 +336,29 @@ impl KvsSovdFaultStateStorage {
+     /// instance ID with a different backend path causes
+     /// `InstanceParametersMismatch` errors.
+     pub fn new(dir: &Path, instance: usize) -> Result<Self, StorageError> {
++        Self::with_write_through(dir, instance, false)
++    }
++
++    /// Create storage that flushes each successful mutation to the backend.
++    ///
++    /// Unlike [`Self::new`], successful put/delete/clear calls acknowledge a
++    /// completed backend flush. A flush error is returned to the caller; the
++    /// in-memory KVS mutation is not rolled back. This is not a power-loss or
++    /// hardware durability guarantee. Flush I/O runs on the calling thread.
++    ///
++    /// # Errors
++    ///
++    /// Returns [`StorageError::Init`] if the backend cannot be created.
++    /// The process-global instance pool restrictions of [`Self::new`] apply.
++    pub fn new_write_through(dir: &Path, instance: usize) -> Result<Self, StorageError> {
++        Self::with_write_through(dir, instance, true)
++    }
++
++    fn with_write_through(
++        dir: &Path,
++        instance: usize,
++        write_through: bool,
++    ) -> Result<Self, StorageError> {
+         let builder = KvsBuilder::new(InstanceId(instance))
+             .backend(Box::new(
+                 JsonBackendBuilder::new()
+@@ -348,6 +372,7 @@ impl KvsSovdFaultStateStorage {
+ 
+         Ok(Self {
+             kvs: Mutex::new(kvs),
++            write_through,
+         })
+     }
+ }
+@@ -363,7 +388,11 @@ impl SovdFaultStateStorage for KvsSovdFaultStateStorage {
+             .kvs
+             .lock()
+             .map_err(|e| StorageError::Backend(format!("lock poisoned: {e}")))?;
+-        let mut states = kvs.get_value_as::<KvsMap>(path).unwrap_or_default();
++        let mut states = match kvs.get_value_as::<KvsMap>(path) {
++            Ok(states) => states,
++            Err(ErrorCode::KeyNotFound) => KvsMap::new(),
++            Err(error) => return Err(StorageError::Backend(format!("{error:?}"))),
++        };
+         states.insert(
+             fault_id_to_key(fault_id),
+             state
+@@ -372,6 +401,10 @@ impl SovdFaultStateStorage for KvsSovdFaultStateStorage {
+         );
+         kvs.set_value(path, states)
+             .map_err(|e| StorageError::Backend(format!("{e:?}")))?;
++        if self.write_through {
++            kvs.flush()
++                .map_err(|e| StorageError::Backend(format!("{e:?}")))?;
++        }
+         Ok(())
+     }
+ 
+@@ -380,8 +413,10 @@ impl SovdFaultStateStorage for KvsSovdFaultStateStorage {
+             .kvs
+             .lock()
+             .map_err(|e| StorageError::Backend(format!("lock poisoned: {e}")))?;
+-        let Ok(states) = kvs.get_value_as::<KvsMap>(path) else {
+-            return Ok(Vec::new());
++        let states = match kvs.get_value_as::<KvsMap>(path) {
++            Ok(states) => states,
++            Err(ErrorCode::KeyNotFound) => return Ok(Vec::new()),
++            Err(error) => return Err(StorageError::Backend(format!("{error:?}"))),
+         };
+         let mut result = Vec::new();
+         for (fault_id_key, state) in &states {
+@@ -401,8 +436,10 @@ impl SovdFaultStateStorage for KvsSovdFaultStateStorage {
+             .kvs
+             .lock()
+             .map_err(|e| StorageError::Backend(format!("lock poisoned: {e}")))?;
+-        let Ok(states) = kvs.get_value_as::<KvsMap>(path) else {
+-            return Ok(None);
++        let states = match kvs.get_value_as::<KvsMap>(path) {
++            Ok(states) => states,
++            Err(ErrorCode::KeyNotFound) => return Ok(None),
++            Err(error) => return Err(StorageError::Backend(format!("{error:?}"))),
+         };
+         match states.get(&fault_id_to_key(fault_id)) {
+             Some(state) => {
+@@ -421,6 +458,10 @@ impl SovdFaultStateStorage for KvsSovdFaultStateStorage {
+             .map_err(|e| StorageError::Backend(format!("lock poisoned: {e}")))?;
+         kvs.remove_key(path)
+             .map_err(|e| StorageError::Backend(format!("{e:?}")))?;
++        if self.write_through {
++            kvs.flush()
++                .map_err(|e| StorageError::Backend(format!("{e:?}")))?;
++        }
+         Ok(())
+     }
+ 
+@@ -436,6 +477,10 @@ impl SovdFaultStateStorage for KvsSovdFaultStateStorage {
+         if states.remove(&key).is_some() {
+             kvs.set_value(path, states)
+                 .map_err(|e| StorageError::Backend(format!("{e:?}")))?;
++            if self.write_through {
++                kvs.flush()
++                    .map_err(|e| StorageError::Backend(format!("{e:?}")))?;
++            }
+             Ok(())
+         } else {
+             Err(StorageError::NotFound)
+@@ -639,6 +684,155 @@ mod storage_tests {
+         sovd_fault_storage::{SovdFaultState, SovdFaultStateStorage},
+     };
+ 
++    /// Helper executed in separate OS processes so the global KVS pool cannot
++    /// masquerade as disk persistence. No environment means an ordinary no-op test.
++    #[test]
++    fn write_through_process_child() {
++        use super::{KvsSovdFaultStateStorage, StorageError};
++        let Ok(mode) = std::env::var("SDV_STORAGE_TEST_MODE") else {
++            return;
++        };
++        let directory = std::path::PathBuf::from(std::env::var("SDV_STORAGE_TEST_PATH").unwrap());
++        std::fs::create_dir_all(&directory).unwrap();
++        let storage = KvsSovdFaultStateStorage::new_write_through(&directory, 0).unwrap();
++        let id = FaultId::Numeric(42);
++        let other = FaultId::Numeric(43);
++        match mode.as_str() {
++            "write" => {
++                let state = SovdFaultState {
++                    test_failed: true,
++                    confirmed_dtc: true,
++                    occurrence_counter: 3,
++                    env_data: [("source".into(), "actual-receiver".into())].into(),
++                    ..Default::default()
++                };
++                storage.put("cruise_control", &id, state).unwrap();
++                storage
++                    .put("cruise_control", &other, SovdFaultState::default())
++                    .unwrap();
++            }
++            "read" => {
++                let state = storage.get("cruise_control", &id).unwrap().unwrap();
++                assert!(state.test_failed);
++                assert!(state.confirmed_dtc);
++                assert_eq!(state.occurrence_counter, 3);
++                assert_eq!(
++                    state.env_data.get("source").map(String::as_str),
++                    Some("actual-receiver")
++                );
++                assert!(storage.get("cruise_control", &other).unwrap().is_some());
++            }
++            "delete" => storage.delete("cruise_control", &id).unwrap(),
++            "verify-delete" => {
++                assert!(storage.get("cruise_control", &id).unwrap().is_none());
++                assert!(storage.get("cruise_control", &other).unwrap().is_some());
++            }
++            "clear" => storage.delete_all("cruise_control").unwrap(),
++            "verify-clear" => assert!(storage.get_all("cruise_control").unwrap().is_empty()),
++            "corrupt-map" => {
++                use rust_kvs::prelude::KvsApi;
++                storage
++                    .kvs
++                    .lock()
++                    .unwrap()
++                    .set_value("cruise_control", "invalid-map")
++                    .unwrap();
++                assert!(storage.get("cruise_control", &id).is_err());
++                assert!(storage.get_all("cruise_control").is_err());
++                assert!(
++                    storage
++                        .put("cruise_control", &id, SovdFaultState::default())
++                        .is_err()
++                );
++            }
++            "flush-error" => {
++                let moved = directory.with_extension("moved");
++                std::fs::rename(&directory, moved).unwrap();
++                std::fs::write(&directory, b"blocks backend directory").unwrap();
++                assert!(matches!(
++                    storage.put("cruise_control", &id, SovdFaultState::default()),
++                    Err(StorageError::Backend(_))
++                ));
++            }
++            _ => panic!("unknown child mode"),
++        }
++    }
++
++    /// Put, delete and clear must survive complete OS-process replacement.
++    #[test]
++    fn durable_state_survives_real_process_restart() {
++        let directory = tempfile::tempdir().unwrap();
++        for mode in [
++            "write",
++            "read",
++            "delete",
++            "verify-delete",
++            "clear",
++            "verify-clear",
++        ] {
++            let output = std::process::Command::new(std::env::current_exe().unwrap())
++                .args([
++                    "--exact",
++                    "sovd_fault_storage::storage_tests::write_through_process_child",
++                    "--nocapture",
++                ])
++                .env("SDV_STORAGE_TEST_MODE", mode)
++                .env("SDV_STORAGE_TEST_PATH", directory.path().join("data"))
++                .output()
++                .unwrap();
++            assert!(
++                output.status.success(),
++                "child {mode}: {} {}",
++                String::from_utf8_lossy(&output.stdout),
++                String::from_utf8_lossy(&output.stderr)
++            );
++        }
++    }
++
++    /// A malformed catalog map must not masquerade as absent or cleared faults.
++    #[test]
++    fn corrupt_map_is_not_cleared_or_overwritten() {
++        let directory = tempfile::tempdir().unwrap();
++        let output = std::process::Command::new(std::env::current_exe().unwrap())
++            .args([
++                "--exact",
++                "sovd_fault_storage::storage_tests::write_through_process_child",
++                "--nocapture",
++            ])
++            .env("SDV_STORAGE_TEST_MODE", "corrupt-map")
++            .env("SDV_STORAGE_TEST_PATH", directory.path().join("data"))
++            .output()
++            .unwrap();
++        assert!(
++            output.status.success(),
++            "{} {}",
++            String::from_utf8_lossy(&output.stdout),
++            String::from_utf8_lossy(&output.stderr)
++        );
++    }
++
++    /// A failed flush must not be acknowledged as a successful durable write.
++    #[test]
++    fn write_through_propagates_flush_error() {
++        let directory = tempfile::tempdir().unwrap();
++        let output = std::process::Command::new(std::env::current_exe().unwrap())
++            .args([
++                "--exact",
++                "sovd_fault_storage::storage_tests::write_through_process_child",
++                "--nocapture",
++            ])
++            .env("SDV_STORAGE_TEST_MODE", "flush-error")
++            .env("SDV_STORAGE_TEST_PATH", directory.path().join("data"))
++            .output()
++            .unwrap();
++        assert!(
++            output.status.success(),
++            "{} {}",
++            String::from_utf8_lossy(&output.stdout),
++            String::from_utf8_lossy(&output.stderr)
++        );
++    }
++
+     /// Storage stores and retrieves fault state correctly.
+     #[test]
+     fn storage_put_and_get() {
