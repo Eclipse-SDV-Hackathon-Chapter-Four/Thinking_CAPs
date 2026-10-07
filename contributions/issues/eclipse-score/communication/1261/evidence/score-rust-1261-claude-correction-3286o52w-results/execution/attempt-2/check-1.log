@@ -1,0 +1,65 @@
+$TEST_TMPDIR defined, some defaults will be overridden
+OpenJDK 64-Bit Server VM warning: Options -Xverify:none and -noverify were deprecated in JDK 13 and will likely be removed in a future release.
+WARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.
+Computing main repo mapping: 
+WARNING: The following configs were expanded more than once: [linux_x64_gcc_15]. For repeatable flags, repeats are counted twice and may lead to unexpected behavior.
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Computing main repo mapping: 
+Loading: 
+Loading: 5 packages loaded
+Analyzing: 4 targets (9 packages loaded, 0 targets configured)
+Analyzing: 4 targets (9 packages loaded, 0 targets configured)
+
+Analyzing: 4 targets (106 packages loaded, 22 targets configured)
+
+WARNING: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-1261-claude-3286o52w/workspaces/1261/MODULE.bazel:196:20: The module extension apt defined in @rules_distroless//apt:extensions.bzl reported incorrect imports of repositories via use_repo():
+
+Imported, but reported as indirect dependencies by the extension:
+    ubuntu24_04_sysroot_resolve
+
+Fix the use_repo calls by running 'bazel mod tidy'.
+Analyzing: 4 targets (478 packages loaded, 15368 targets configured)
+
+Analyzing: 4 targets (589 packages loaded, 22236 targets configured)
+
+INFO: Analyzed 4 targets (605 packages loaded, 23045 targets configured).
+[88 / 1,361] checking cached actions
+[455 / 1,750] [Scann] Compiling score/mw/com/test/common_test_resources/child_process_guard.cpp
+[1,592 / 1,750] Compiling score/mw/com/test/common_test_resources/timeout_supervisor.cpp; 0s linux-sandbox ... (2 actions, 1 running)
+ERROR: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-1261-claude-3286o52w/workspaces/1261/score/mw/com/test/basic_rust_api/all_services_stream/BUILD:17:12: Compiling Rust bin all-services-consumer (1 file) failed: (Exit 1): process_wrapper failed: error executing Rustc command (from target //score/mw/com/test/basic_rust_api/all_services_stream:all-services-consumer) bazel-out/k8-opt-exec-ST-d57f47055a04/bin/external/rules_rust+/util/process_wrapper/process_wrapper --arg-file ... (remaining 8 arguments skipped)
+
+Use --sandbox_debug to see verbose messages from the sandbox and retain the sandbox build root for debugging
+error[E0283]: type annotations needed for `LolaRuntimeBuilderImpl<_>`
+   --> score/mw/com/test/basic_rust_api/all_services_stream/consumer_app.rs:176:9
+    |
+176 |     let mut runtime_builder = LolaRuntimeBuilderImpl::new();
+    |         ^^^^^^^^^^^^^^^^^^^   ---------------------- type must be known at this point
+    |
+    = note: cannot satisfy `_: bridge_ffi_rs::FFIBridge`
+help: the trait `bridge_ffi_rs::FFIBridge` is implemented for `bridge_ffi_lola::LolaFFIBridge`
+   --> ./score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs:460:0
+note: required by a bound in `LolaRuntimeBuilderImpl`
+   --> ./score/mw/com/impl/rust/com-api/com-api-runtime-lola/runtime.rs:69:0
+help: consider giving `runtime_builder` an explicit type, where the type for type parameter `B` is specified
+    |
+176 |     let mut runtime_builder: LolaRuntimeBuilderImpl<B> = LolaRuntimeBuilderImpl::new();
+    |                            +++++++++++++++++++++++++++
+
+error: aborting due to 1 previous error
+
+For more information about this error, try `rustc --explain E0283`.
+[1,696 / 1,750] 1 / 4 tests, 1 failed; checking cached actions
+Use --verbose_failures to see the command lines of failed build steps.
+INFO: Elapsed time: 15.205s, Critical Path: 1.83s
+INFO: 7 processes: 1705 action cache hit, 3 internal, 4 linux-sandbox.
+ERROR: Build did NOT complete successfully
+FAILED: 
+//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async NO STATUS
+//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync NO STATUS
+//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics NO STATUS
+//score/mw/com/test/basic_rust_api/all_services_stream/integration_test:test_com_api_all_services_stream FAILED TO BUILD
+
+Executed 0 out of 4 tests: 1 fails to build and 3 were skipped.
+INFO: Build Event Protocol files produced successfully.

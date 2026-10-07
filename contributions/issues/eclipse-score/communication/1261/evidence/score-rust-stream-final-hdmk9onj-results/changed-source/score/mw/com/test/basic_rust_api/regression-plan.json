@@ -1,0 +1,20 @@
+{
+  "checks": [
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "config": "linux_x64",
+      "reason": "Deterministic unit coverage for the new LoLa heterogeneous stream backend in service_stream.rs: full-identity dedup (including distinct interfaces that share an instance id), unchanged-snapshot suppression, empty-withdrawal clearing and re-offer re-emission, global dedup across overlapping watches, never-polled/immediate Drop stopping every watch, partial-start failure rolling back earlier watches, and an empty configured universe that yields a pending (non-terminated) stream. These cases use the Rust FFIBridge mock and do not execute native discovery."
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/all_services_stream/integration_test:test_com_api_all_services_stream"
+      ],
+      "config": "linux_x64",
+      "reason": "Dedicated native integration for the concrete LoLa stream backend: one Runtime::find_all_services() stream must report two different configured interfaces (BigDataInterface and MixedPrimitivesInterface), a pre-existing offer and a delayed offer, a concrete provider instance id (2) that is absent from the consumer's configured instance entries (which contain only id 1), and a second availability item for an identity that was withdrawn and re-offered. The provider and consumer use distinct manifests so the absent-provider-instance condition is discriminating. Native measurement is pending; this plan records the intended targets, not a passing result."
+    }
+  ]
+}

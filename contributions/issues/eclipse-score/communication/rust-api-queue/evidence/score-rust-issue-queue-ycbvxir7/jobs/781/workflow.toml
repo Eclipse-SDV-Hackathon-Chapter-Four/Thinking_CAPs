@@ -1,0 +1,26 @@
+_version = 1
+[workflow]
+graph = "workflow.fabro"
+[run.model]
+name = "deepseek-flash"
+provider = "deepseek"
+[run.model.fallbacks]
+[run.agent]
+fabro_tools = false
+
+[[run.hooks]]
+id = "bound-file-tools"
+event = "pre_tool_use"
+blocking = true
+sandbox = false
+timeout = "5s"
+command = ["/home/jefferson/s-core_sw_fabric/.venv/bin/python", "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tool_guard.py", "781"]
+
+[[run.hooks]]
+id = "bound-agent-workspace"
+event = "stage_start"
+matcher = "^agent$"
+blocking = true
+sandbox = false
+timeout = "5s"
+command = ["/home/jefferson/s-core_sw_fabric/.venv/bin/python", "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/tool_guard.py", "781"]

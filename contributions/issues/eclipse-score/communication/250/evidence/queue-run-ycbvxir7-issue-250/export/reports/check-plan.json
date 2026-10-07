@@ -1,0 +1,129 @@
+{
+  "checks": [
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"
+      ],
+      "reason": "Compile the abstraction surface that declares FindServiceSpecifier and the FFI/backend boundary that would have to carry any-semantics (Rust trait + C++ FFI implementation). Confirms the baseline panic paths compile and bounds any future change to the same crates.",
+      "native_obligation": "score_com_concept/BUILD rust_library; com-api-ffi-lola/BUILD rust_library bridge_ffi_rs and cc_library registry_bridge_macro_cpp; Rust library/API build obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock"
+      ],
+      "reason": "Compile the LoLa runtime (panic site), the test-only mock runtime, and both public aggregate crates so a change to find_service/discovery cannot silently break downstream compilation.",
+      "native_obligation": "com-api-runtime-lola/BUILD rust_library; com-api-runtime-mock/BUILD rust_library; score/mw/com/rust/BUILD rust_library score_com and testonly score_com_mock; downstream compilation obligation from references/native-verification.md (Rust library/API row).",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+      ],
+      "reason": "Run the Linux-only unit tests of the trait/type crate that owns FindServiceSpecifier and InstanceSpecifier, including InstanceSpecifier validation boundaries that constrain any new API; the crate's rust_unit_test target is enumerated explicitly rather than left to a wildcard.",
+      "native_obligation": "score_com_concept/BUILD rust_test score_com_concept-test (target_compatible_with @platforms//os:linux) and rust_unit_test score_com_concept-macros-unit-tests; Rust unit-test obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "Run the Linux-only LoLa runtime unit tests (mockall-backed FFI bridge) that exercise subscriber/receive paths; this is the natural home for any future find-service regression case on the runtime side.",
+      "native_obligation": "com-api-runtime-lola/BUILD rust_test com-api-runtime-lola-tests (Linux only); Communication behavior runtime/mock unit-test obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/example/com-api-example:com-api-example-tokio-integration-test"
+      ],
+      "reason": "Exercise the public COM-API end-to-end through the example crate on Linux; among rust_test targets this is the one that drives discovery and consumption against the real LoLa runtime (the basic_rust_api counterparts are python-driven integration_test targets).",
+      "native_obligation": "com-api-example/BUILD rust_test com-api-example-tokio-integration-test (Linux only, sanitizer-incompatible by native design); communication behavior obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async"
+      ],
+      "reason": "Run the producer/consumer IPC integration tests that today use only FindServiceSpecifier::Specific; they are the regression boundary to prove Specific behavior is unchanged and to host a future ANY integration case.",
+      "native_obligation": "integration_testing.bzl integration_test targets wired to bigdata-com-api-sync-pkg / bigdata-com-api-async-pkg; Communication behavior + producer/consumer IPC integration obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ],
+      "reason": "Run the native C++ any-semantics boundary: one client InstanceSpecifier is passed to TestDataProxy::FindService and the test requires two offered instances, proving LoLa/C++ resolves any-instance semantics. This is the source-discovered regression boundary a future Rust FindServiceSpecifier::Any must match, and it documents why the Rust FFI gap (no any overload, no discovered-identity accessor) is the actual blocker.",
+      "native_obligation": "find_any_semantics/integration_test/BUILD integration_test test_find_any_semantics (filesystem from find_any_semantics:service-pkg / :client-pkg); Communication behavior + service-discovery any-semantics obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/test/find_any_semantics:service",
+        "//score/mw/com/test/find_any_semantics:client",
+        "//score/mw/com/test/find_any_semantics:test_datatype"
+      ],
+      "reason": "Compile the native service/client/test_datatype binaries backing the any-semantics integration test so a future modified boundary cannot silently break the native harness it is measured against.",
+      "native_obligation": "find_any_semantics/BUILD cc_binary service/client and cc_library test_datatype with COMPILER_WARNING_FEATURES; native build obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api:bigdata_com_api_gen_rs",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async",
+        "//score/mw/com/test/basic_rust_api/producer_app:bigdata-producer"
+      ],
+      "reason": "Compile the Rust integration binaries that depend on the public COM-API and generated interface bindings, proving generated-API compatibility is preserved.",
+      "native_obligation": "basic_rust_api/BUILD rust_library bigdata_com_api_gen_rs; consumer/producer BUILD rust_binary targets with link_std_cpp_lib feature; generated-API compatibility obligation from references/dependency-and-macros.md and references/issue-types.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "reason": "Run rustdoc tests for the runtime and the concept/macro crate. These document the FindServiceSpecifier / find_service contract and the LoLa 'Any not supported' note; the concept macro doc-test target carries a native manual tag due to a known rules_rust limitation.",
+      "native_obligation": "com-api-runtime-lola/BUILD rust_doc_test (Linux only) and score_com_concept/BUILD rust_doc_test score_com_concept-macros-tests (tags=[manual]); rustdoc/examples obligation from references/native-verification.md.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs"
+      ],
+      "reason": "Apply the repository-pinned Rust lint policy to the crates whose behavior the issue concerns, to catch any future change (e.g. panic/result handling) under the native clippy_strict aspect rather than a generic lint list.",
+      "native_obligation": "@score_rust_policies//clippy:linters.bzl%clippy_strict selected by quality/static_analysis/static_analysis.bazelrc build:clippy; CI.md 'Linting for Rust (x86-64 linux)'; MODULE.bazel pins score_rust_policies 0.0.5.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"
+      ],
+      "reason": "Enumerate the real dependents of the public COM-API crates to bound the change surface and confirm no consumer already relies on FindServiceSpecifier::Any; aliases and generated targets must come from query output, not assumed names.",
+      "native_obligation": "Reverse-dependency enumeration rooted at the actual public targets above, per references/native-verification.md ('Discover aliases and generated targets from rules/query results'); exact consumer set is unknown until measured.",
+      "config": "linux_x64"
+    }
+  ]
+}

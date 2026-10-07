@@ -1,0 +1,869 @@
+{
+  "title": "Rust queue native hook qualification, Flash only",
+  "spec": {
+    "run_id": "01M48SS7KWTVTCVCRVGE7E84C6",
+    "settings": {
+      "project": {
+        "name": null,
+        "description": null,
+        "metadata": {}
+      },
+      "workflow": {
+        "name": null,
+        "description": null,
+        "graph": "workflow.fabro",
+        "metadata": {}
+      },
+      "run": {
+        "goal": null,
+        "working_dir": null,
+        "metadata": {
+          "queue_id": "score-rust-issue-queue-ycbvxir7",
+          "kind": "native_hook_probe",
+          "models_requested": "deepseek-flash"
+        },
+        "inputs": {},
+        "model": {
+          "provider": "deepseek",
+          "name": "deepseek-flash",
+          "fallbacks": {},
+          "controls": {
+            "reasoning_effort": null,
+            "speed": null
+          }
+        },
+        "git": {
+          "author": null
+        },
+        "prepare": {
+          "steps": [],
+          "timeout_ms": 300000
+        },
+        "execution": {
+          "mode": "normal",
+          "approval": "prompt"
+        },
+        "checkpoint": {
+          "exclude_globs": [],
+          "skip_git_hooks": false,
+          "commit_timeout_ms": 30000
+        },
+        "clone": {
+          "enabled": false,
+          "depth": 100
+        },
+        "run_branch": {
+          "enabled": true,
+          "push": true
+        },
+        "environment": {
+          "id": "default",
+          "provider": "local",
+          "image": {
+            "docker": null,
+            "dockerfile": null
+          },
+          "resources": {
+            "cpu": null,
+            "memory": null,
+            "disk": null
+          },
+          "network": {
+            "mode": "allow_all",
+            "allow": []
+          },
+          "lifecycle": {
+            "preserve": true,
+            "stop_on_terminal": true,
+            "auto_stop": null
+          },
+          "labels": {},
+          "env": {
+            "PATH": "/usr/sbin:/usr/bin:/sbin:/bin"
+          }
+        },
+        "notifications": {},
+        "interviews": {
+          "provider": null,
+          "slack": null
+        },
+        "agent": {
+          "fabro_tools": false,
+          "mcps": {}
+        },
+        "hooks": [
+          {
+            "name": "probe-stage_start",
+            "event": "stage_start",
+            "command": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/hook_capture.py",
+            "matcher": "^(command|agent)$",
+            "blocking": true,
+            "timeout_ms": null,
+            "sandbox": false
+          },
+          {
+            "name": "probe-pre_tool_use",
+            "event": "pre_tool_use",
+            "command": "/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/hook_capture.py",
+            "matcher": null,
+            "blocking": true,
+            "timeout_ms": null,
+            "sandbox": false
+          }
+        ],
+        "scm": {
+          "provider": null,
+          "owner": null,
+          "repository": null,
+          "github": null
+        },
+        "pull_request": null,
+        "artifacts": {
+          "include": []
+        },
+        "integrations": {
+          "github": {
+            "permissions": {}
+          }
+        }
+      }
+    },
+    "graph": {
+      "name": "NativeHookProbe",
+      "goal": "",
+      "nodes": {
+        "exit": {
+          "label": "exit",
+          "kind": "exit"
+        },
+        "inspect": {
+          "label": "inspect",
+          "kind": "command"
+        },
+        "probe": {
+          "label": "probe",
+          "kind": "agent"
+        },
+        "start": {
+          "label": "start",
+          "kind": "start"
+        }
+      },
+      "edges": [
+        {
+          "from": "inspect",
+          "to": "probe"
+        },
+        {
+          "from": "probe",
+          "to": "exit"
+        },
+        {
+          "from": "start",
+          "to": "inspect"
+        }
+      ]
+    },
+    "graph_source": "digraph NativeHookProbe { start [type=\"start\"]; inspect [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/measure.py\", max_retries=0]; probe [type=\"agent\",model=\"deepseek-flash\",provider=\"deepseek\",max_tokens=1024,max_retries=0,output_retries=0,timeout=\"180s\",prompt=\"Runtime boundary verification only. First read .bazelversion with read_file and limit 5. Then attempt one shell call containing true to verify shell is blocked. Do not retry blocked calls. Write no files. Finish with a one-line report. Use only DeepSeek Flash.\"]; exit [type=\"exit\"]; start -> inspect -> probe -> exit; }\n",
+    "workflow_slug": "workflow",
+    "workflow_version_id": "23af5e315848e214022117dc9a7975388a66f52746d39e6d133197185a45430e",
+    "target": {
+      "kind": "folder",
+      "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/source"
+    },
+    "source_directory": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/source",
+    "labels": {
+      "queue_id": "score-rust-issue-queue-ycbvxir7",
+      "models_requested": "deepseek-flash",
+      "kind": "native_hook_probe"
+    },
+    "provenance": {
+      "server": {
+        "version": "0.362.0-nightly.0"
+      },
+      "client": {
+        "user_agent": "Python-urllib/3.12"
+      },
+      "subject": {
+        "kind": "user",
+        "identity": {
+          "issuer": "fabro:dev",
+          "subject": "dev"
+        },
+        "login": "dev",
+        "auth_method": "dev_token"
+      }
+    },
+    "definition_blob": "9de46de46a1072b211ffc2f50c1e5bbd62dc92c22ce94346fd572b148f07dcd7",
+    "spec_blob": "c0cc9b264d9e138b68b4c94f8bbbefb542176d08526834be7a5da6b804d167a3",
+    "git": {
+      "origin_url": "https://github.com/eclipse-score/communication",
+      "branch": "rust-api-queue/20261006",
+      "sha": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+      "dirty": "dirty"
+    },
+    "admission": {
+      "graph": {
+        "blob": "6f6019289facde5ebdac82a9d28a8946373e95a3f0539cf54eaf977b709e1c92",
+        "digest": "6f6019289facde5ebdac82a9d28a8946373e95a3f0539cf54eaf977b709e1c92"
+      }
+    }
+  },
+  "start": {
+    "start_time": "2026-10-06T14:27:19.433Z",
+    "run_branch": "fabro/run/01M48SS7KWTVTCVCRVGE7E84C6",
+    "base_sha": "381d43dec900ab6a9076f3f30e7bfbdee019e26e"
+  },
+  "status": {
+    "kind": "succeeded",
+    "reason": "completed"
+  },
+  "status_updated_at": "2026-10-06T14:27:25.462Z",
+  "last_event_at": "2026-10-06T14:27:25.516Z",
+  "pending_control": null,
+  "checkpoints": [
+    {
+      "seq": 26,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:27:19.809Z",
+        "current_node": "start",
+        "git_commit_sha": "4935a6ae7047a398222cf9d849aa1e2fa6c92617"
+      },
+      "diff": {
+        "patch": "blob://sha256/6065472f536cf051a922535f49b0a738f3f856b4258c20392841d1a428ee3704",
+        "summary": {
+          "files_changed": 1,
+          "additions": 68,
+          "deletions": 1
+        }
+      }
+    },
+    {
+      "seq": 39,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:27:20.054Z",
+        "current_node": "inspect",
+        "git_commit_sha": "2e61bb60e6f06844bb259db25d5f613c5d406dd7"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    },
+    {
+      "seq": 273,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:27:25.158Z",
+        "current_node": "probe",
+        "git_commit_sha": "d3cad0fca66281bd424eb3cbc835ee3f2ea3b6bd"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    },
+    {
+      "seq": 285,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:27:25.238Z",
+        "current_node": "exit",
+        "git_commit_sha": "b54135354390c8e9926e0a973a138b313030ce8a"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    }
+  ],
+  "conclusion": {
+    "timestamp": "2026-10-06T14:27:25.462Z",
+    "status": "succeeded",
+    "timing": {
+      "wall_time_ms": 6029,
+      "inference_time_ms": 4423,
+      "tool_time_ms": 239,
+      "active_time_ms": 4662
+    },
+    "final_git_commit_sha": "b54135354390c8e9926e0a973a138b313030ce8a",
+    "stages": [
+      {
+        "stage_id": "start",
+        "stage_label": "start",
+        "timing": {
+          "wall_time_ms": 0,
+          "inference_time_ms": 0,
+          "tool_time_ms": 0,
+          "active_time_ms": 0
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "inspect",
+        "stage_label": "inspect",
+        "timing": {
+          "wall_time_ms": 64,
+          "inference_time_ms": 0,
+          "tool_time_ms": 64,
+          "active_time_ms": 64
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "probe",
+        "stage_label": "probe",
+        "timing": {
+          "wall_time_ms": 4944,
+          "inference_time_ms": 4423,
+          "tool_time_ms": 175,
+          "active_time_ms": 4598
+        },
+        "usage": {
+          "tokens": {
+            "input": 3459,
+            "output": 210,
+            "reasoning": 156,
+            "cache_read": 6400,
+            "cache_write": 0
+          },
+          "cost": {
+            "usd_micros": 600,
+            "source": "catalog"
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "exit",
+        "stage_label": "exit",
+        "timing": {
+          "wall_time_ms": 0,
+          "inference_time_ms": 0,
+          "tool_time_ms": 0,
+          "active_time_ms": 0
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      }
+    ],
+    "usage": {
+      "tokens": {
+        "input": 3459,
+        "output": 210,
+        "reasoning": 156,
+        "cache_read": 6400,
+        "cache_write": 0
+      },
+      "cost": {
+        "usd_micros": 600,
+        "source": "catalog"
+      }
+    },
+    "total_retries": 0,
+    "diff": {
+      "patch": "blob://sha256/6065472f536cf051a922535f49b0a738f3f856b4258c20392841d1a428ee3704",
+      "summary": {
+        "files_changed": 1,
+        "additions": 68,
+        "deletions": 1
+      }
+    }
+  },
+  "sandbox": {
+    "kind": "ready",
+    "plan": {
+      "provider": "local"
+    },
+    "instance": {
+      "provider": "local",
+      "runtime": {
+        "id": "host-g18dbf6fc1a6c0c26-2424832-0",
+        "working_directory": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/source"
+      },
+      "ready_duration_ms": 27,
+      "retained": true
+    }
+  },
+  "pull_request": null,
+  "superseded_by": null,
+  "git_identity": {
+    "name": "Fabro",
+    "email": "noreply@fabro.sh",
+    "source": "default"
+  },
+  "pending_interviews": {},
+  "stages": {
+    "probe@1": {
+      "first_event_seq": 764,
+      "prompt": null,
+      "response": "`.bazelversion` = 8.7.0 (read_file worked); shell was blocked on the `true` call, confirming the file-tool-only boundary.",
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:27:25.149Z"
+      },
+      "provider_used": {
+        "mode": "agent",
+        "provider": "deepseek",
+        "model": "deepseek-v4-flash"
+      },
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "`.bazelversion` = 8.7.0 (read_file worked); shell was blocked on the `true` call, confirming the file-tool-only boundary.\n",
+      "output_bytes": 122,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:27:20.055Z",
+      "handler": "agent",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 4944,
+        "inference_time_ms": 4423,
+        "tool_time_ms": 175,
+        "active_time_ms": 4598
+      },
+      "usage": {
+        "tokens": {
+          "input": 3459,
+          "output": 210,
+          "reasoning": 156,
+          "cache_read": 6400,
+          "cache_write": 0
+        },
+        "cost": {
+          "usd_micros": 600,
+          "source": "catalog"
+        }
+      },
+      "model": {
+        "provider": "deepseek",
+        "model_id": "deepseek-v4-flash"
+      },
+      "agent_tools": [
+        {
+          "name": "close_agent",
+          "description": "Close a running or completed subagent that is no longer needed.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "subagent",
+          "invoked": false
+        },
+        {
+          "name": "edit_file",
+          "description": "Edit a file by replacing an exact string. The old_string must be an exact match and unique unless replace_all is true; include surrounding context when needed. Read the file first and preserve existing indentation.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        },
+        {
+          "name": "glob",
+          "description": "Find files by search-root-relative path using a glob pattern. Use path to choose the search root. `*` stays within one path segment and `**` searches recursively. Patterns match files, so a trailing `/` is rejected. Prefer this over shell find or ls when locating repository files.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        },
+        {
+          "name": "grep",
+          "description": "Search file contents with a regex pattern. Use path to choose the search root, glob_filter to limit matching files, case_insensitive for case folding, and max_results to cap output.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        },
+        {
+          "name": "read_file",
+          "description": "Read files before editing them. Returns line-numbered text and supports offset/limit for large files. Use this instead of shell cat, head, tail, or sed when inspecting repository files.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": true
+        },
+        {
+          "name": "request_user_input",
+          "description": "Ask the human one or more questions and wait for their answers before continuing this stage.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        },
+        {
+          "name": "send_input",
+          "description": "Send a follow-up message to a subagent. A running agent receives it at a safe turn boundary. A completed agent starts another turn in the same session with its existing history.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "subagent",
+          "invoked": false
+        },
+        {
+          "name": "shell",
+          "description": "Execute Bash commands for terminal operations, package managers, tests and builds. Use dedicated tools for file reads, file edits, filename searches, and content searches. Provide timeout_ms for long-running commands.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": true
+        },
+        {
+          "name": "spawn_agent",
+          "description": "Spawn a subagent for independent work or context isolation. Use it for tasks that can proceed separately, and avoid duplicating the same work in the parent session.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "subagent",
+          "invoked": false
+        },
+        {
+          "name": "update_plan",
+          "description": "Update the multi-step plan for the current task. Submit the entire plan; existing steps are reconciled by exact step text.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        },
+        {
+          "name": "wait",
+          "description": "Wait for a subagent to complete, then use the result to synthesize the outcome for the user. Omit agent_id to wait for every running subagent at once.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "subagent",
+          "invoked": false
+        },
+        {
+          "name": "web_fetch",
+          "description": "Fetch content from a URL that starts with http:// or https://. Pass a prompt to extract specific information or summarize the page; omit prompt to return the page content.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        },
+        {
+          "name": "write_file",
+          "description": "Create new files, or overwrite an existing file only when replacement is explicitly intended. Prefer edit_file for targeted changes to existing files because write_file overwrites the full file content.",
+          "source": {
+            "kind": "native"
+          },
+          "category": "other",
+          "invoked": false
+        }
+      ],
+      "agent": {
+        "root_session_id": "ses_ab1d532a-e38b-4753-9cb7-2ec10c3197fa",
+        "route": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash"
+        },
+        "activity": "ended",
+        "usage": {
+          "tokens": {
+            "input": 3459,
+            "output": 210,
+            "reasoning": 156,
+            "cache_read": 6400,
+            "cache_write": 0
+          },
+          "cost": {
+            "usd_micros": 600,
+            "source": "catalog"
+          }
+        },
+        "messages": 3,
+        "context_window": {
+          "provider": "deepseek",
+          "model": "deepseek-v4-flash",
+          "context_window_tokens": 1048576,
+          "input_tokens": 3429,
+          "usage_percent": 0.3270149230957031,
+          "count_method": "response_usage_scaled_breakdown",
+          "staleness": "live",
+          "generated_at": "2026-10-06T14:27:25.065Z",
+          "breakdown": [
+            {
+              "category": "system_prompt",
+              "tokens": 1175,
+              "usage_percent": 0.11205673217773438
+            },
+            {
+              "category": "tools",
+              "tokens": 1763,
+              "usage_percent": 0.16813278198242188
+            },
+            {
+              "category": "conversation",
+              "tokens": 485,
+              "usage_percent": 0.046253204345703125
+            },
+            {
+              "category": "other",
+              "tokens": 6,
+              "usage_percent": 0.00057220458984375
+            }
+          ],
+          "warnings": []
+        },
+        "retries": 0,
+        "descendants": {},
+        "subagent_counts": {
+          "spawned": 0,
+          "turns_started": 0,
+          "completed": 0,
+          "failed": 0,
+          "closed": 0
+        },
+        "compactions": [],
+        "files_touched": [],
+        "last_file_touched": null,
+        "tools": {
+          "read_file": {
+            "calls": 1,
+            "errors": 0,
+            "open": 0
+          },
+          "shell": {
+            "calls": 1,
+            "errors": 1,
+            "open": 0
+          }
+        },
+        "mcp_servers": {},
+        "skills": {
+          "available": [],
+          "activated": []
+        },
+        "todos": {},
+        "subagents": [],
+        "failovers": [],
+        "prompts": 1,
+        "prompt": {
+          "completed": true,
+          "usage": {
+            "tokens": {
+              "input": 3459,
+              "output": 210,
+              "reasoning": 156,
+              "cache_read": 6400,
+              "cache_write": 0
+            },
+            "cost": {
+              "usd_micros": 600,
+              "source": "catalog"
+            }
+          },
+          "messages": 3,
+          "context_window": {
+            "provider": "deepseek",
+            "model": "deepseek-v4-flash",
+            "context_window_tokens": 1048576,
+            "input_tokens": 3429,
+            "usage_percent": 0.3270149230957031,
+            "count_method": "response_usage_scaled_breakdown",
+            "staleness": "live",
+            "generated_at": "2026-10-06T14:27:25.065Z",
+            "breakdown": [
+              {
+                "category": "system_prompt",
+                "tokens": 1175,
+                "usage_percent": 0.11205673217773438
+              },
+              {
+                "category": "tools",
+                "tokens": 1763,
+                "usage_percent": 0.16813278198242188
+              },
+              {
+                "category": "conversation",
+                "tokens": 485,
+                "usage_percent": 0.046253204345703125
+              },
+              {
+                "category": "other",
+                "tokens": 6,
+                "usage_percent": 0.00057220458984375
+              }
+            ],
+            "warnings": []
+          },
+          "retries": 0,
+          "descendants": {},
+          "subagent_counts": {
+            "spawned": 0,
+            "turns_started": 0,
+            "completed": 0,
+            "failed": 0,
+            "closed": 0
+          },
+          "compactions": [],
+          "files_touched": [],
+          "last_file_touched": null,
+          "tool_calls": 2,
+          "failovers": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "start@1": {
+      "first_event_seq": 150,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:27:19.796Z"
+      },
+      "provider_used": null,
+      "diff": "blob://sha256/6065472f536cf051a922535f49b0a738f3f856b4258c20392841d1a428ee3704",
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "checkout: [run.clone] is disabled; the workspace starts empty\n",
+      "output_bytes": 62,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:27:19.441Z",
+      "handler": "start",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 2,
+        "inference_time_ms": 0,
+        "tool_time_ms": 0,
+        "active_time_ms": 0
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "inspect@1": {
+      "first_event_seq": 519,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:27:20.045Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "",
+      "output_bytes": 0,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:27:19.810Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 64,
+        "inference_time_ms": 0,
+        "tool_time_ms": 64,
+        "active_time_ms": 64
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "exit@1": {
+      "first_event_seq": 5868,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:27:25.229Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": null,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:27:25.159Z",
+      "handler": "exit",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 0,
+        "inference_time_ms": 0,
+        "tool_time_ms": 0,
+        "active_time_ms": 0
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    }
+  }
+}

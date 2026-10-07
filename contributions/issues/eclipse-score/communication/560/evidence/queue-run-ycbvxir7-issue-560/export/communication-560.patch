@@ -1,0 +1,768 @@
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
+index c9d7ebd..5978ffb 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi.rs
+@@ -222,6 +222,30 @@ pub trait FFIBridge: Send + Sync + Clone + Debug + 'static + Unpin + Default {
+     /// still held by the caller.
+     unsafe fn unsubscribe_to_event(&self, event_ptr: *mut ProxyEventBase);
+ 
++    /// # Safety
++    /// `event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
++    /// `get_event_from_proxy`. The returned value is the raw
++    /// `score::mw::com::impl::SubscriptionState` enumeration value.
++    unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8;
++
++    /// # Safety
++    /// `event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
++    /// `get_event_from_proxy`. `handler` must be a valid `FatPtr` referencing a live
++    /// `FnMut(u8) -> bool` closure. Ownership of the closure is transferred to the middleware,
++    /// which disposes it when the handler is unregistered, when it returns `false`, or when the
++    /// event is destroyed. If the call returns `false`, ownership has not been transferred and
++    /// the caller must reclaim the closure.
++    unsafe fn set_subscription_state_change_handler(
++        &self,
++        event_ptr: *mut ProxyEventBase,
++        handler: &FatPtr,
++    ) -> bool;
++
++    /// # Safety
++    /// `event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
++    /// `get_event_from_proxy`.
++    unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool;
++
+     /// # Safety
+     /// `proxy_event_ptr` must be a valid pointer to a `ProxyEventBase` obtained from
+     /// `get_event_from_proxy`. `handler` must be a valid `FatPtr` referencing a callable
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
+index 0ec941b..f20be6e 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_lola.rs
+@@ -127,6 +127,53 @@ unsafe extern "C" fn mw_com_impl_call_dyn_ref_fnmut_find_service(
+     }
+ }
+ 
++/// Rust closure invocation for subscription state change notifications.
++///
++/// Called by C++ when the subscription state of a proxy event changes. The stored closure has
++/// the signature `FnMut(u8) -> bool` (raw `SubscriptionState`); the returned `bool` tells the
++/// middleware whether the handler shall be kept (`true`) or unregistered (`false`).
++///
++/// # Safety
++/// - `ptr` must point to a valid `FatPtr` whose payload is a live
++///   `Box<dyn FnMut(u8) -> bool + Send + 'static>` that has not yet been dropped.
++/// - `new_state` must be one of the raw `SubscriptionState` enumeration values.
++#[unsafe(no_mangle)]
++unsafe extern "C" fn mw_com_impl_call_dyn_ref_fnmut_subscription_state(ptr: *const FatPtr, new_state: u8) -> bool {
++    if ptr.is_null() {
++        return false;
++    }
++    // SAFETY: caller guarantees ptr is a valid FatPtr created from a
++    // Box<dyn FnMut(u8) -> bool + Send + 'static>; transmute reconstructs the fat pointer.
++    let callable: &mut dyn FnMut(u8) -> bool = unsafe { std::mem::transmute(*ptr) };
++    match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| callable(new_state))) {
++        Ok(keep) => keep,
++        Err(_) => {
++            log::error!(
++                "Panic caught in mw_com_impl_call_dyn_ref_fnmut_subscription_state: aborting to prevent unwind across FFI boundary"
++            );
++            // Abort to prevent unwinding across FFI boundary
++            std::process::abort();
++        },
++    }
++}
++
++/// Drops a boxed `FnMut(u8) -> bool` subscription state change handler.
++///
++/// Called by C++ (`RustBoxedCallable<bool, SubscriptionState>::dispose`) when the handler is
++/// unregistered or overridden. It must use the same closure type that
++/// [`mw_com_impl_call_dyn_ref_fnmut_subscription_state`] expects so that the drop glue and
++/// allocation layout are reconstructed for the correct trait object type.
++///
++/// # Safety
++/// `ptr` must point to the same `FatPtr` that was previously passed to
++/// `mw_com_proxy_event_set_subscription_state_change_handler`, and must only be called once.
++#[unsafe(no_mangle)]
++unsafe extern "C" fn mw_com_impl_delete_boxed_fnmut_subscription_state(ptr: *mut FatPtr) {
++    // SAFETY: caller guarantees ptr is valid and this is the single dispose call.
++    let dyn_fnmut: *mut (dyn FnMut(u8) -> bool + Send + 'static) = unsafe { std::mem::transmute(*ptr) };
++    drop(unsafe { Box::from_raw(dyn_fnmut) });
++}
++
+ // FFI declarations for C++ functions implemented in registry_bridge_macro.cpp
+ unsafe extern "C" {
+ 
+@@ -372,6 +419,37 @@ unsafe extern "C" {
+     /// * `event_ptr` - Opaque event pointer
+     fn mw_com_proxy_event_unsubscribe(event_ptr: *mut ProxyEventBase);
+ 
++    /// Get the current subscription state of a proxy event
++    ///
++    /// # Arguments
++    /// * `event_ptr` - Opaque proxy event pointer
++    ///
++    /// # Returns
++    /// Raw `SubscriptionState` enumeration value
++    fn mw_com_proxy_event_get_subscription_state(event_ptr: *mut ProxyEventBase) -> u8;
++
++    /// Register a subscription state change handler for a proxy event
++    ///
++    /// # Arguments
++    /// * `event_ptr` - Opaque proxy event pointer
++    /// * `handler` - FatPtr to the Rust `FnMut(u8) -> bool` handler
++    ///
++    /// # Returns
++    /// true if the handler was registered, false otherwise
++    fn mw_com_proxy_event_set_subscription_state_change_handler(
++        event_ptr: *mut ProxyEventBase,
++        handler: *const FatPtr,
++    ) -> bool;
++
++    /// Unregister the subscription state change handler of a proxy event
++    ///
++    /// # Arguments
++    /// * `event_ptr` - Opaque proxy event pointer
++    ///
++    /// # Returns
++    /// true if the handler was unregistered, false otherwise
++    fn mw_com_proxy_event_unset_subscription_state_change_handler(event_ptr: *mut ProxyEventBase) -> bool;
++
+     /// Get type operations instance for a given interface and member
+     ///
+     /// # Arguments
+@@ -788,6 +866,36 @@ impl FFIBridge for LolaFFIBridge {
+         }
+     }
+ 
++    /// Unsafe wrapper around mw_com_proxy_event_get_subscription_state
++    ///
++    /// # Safety
++    /// event_ptr must be a valid pointer to a ProxyEventBase previously obtained from
++    /// get_event_from_proxy().
++    unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8 {
++        // SAFETY: event_ptr is guaranteed to be valid per the caller's contract.
++        unsafe { mw_com_proxy_event_get_subscription_state(event_ptr) }
++    }
++
++    /// Unsafe wrapper around mw_com_proxy_event_set_subscription_state_change_handler
++    ///
++    /// # Safety
++    /// event_ptr must be valid; handler must reference a live `FnMut(u8) -> bool` closure whose
++    /// ownership is transferred to the middleware on success.
++    unsafe fn set_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase, handler: &FatPtr) -> bool {
++        // SAFETY: both pointers are valid per the caller's contract.
++        unsafe { mw_com_proxy_event_set_subscription_state_change_handler(event_ptr, handler) }
++    }
++
++    /// Unsafe wrapper around mw_com_proxy_event_unset_subscription_state_change_handler
++    ///
++    /// # Safety
++    /// event_ptr must be a valid pointer to a ProxyEventBase previously obtained from
++    /// get_event_from_proxy().
++    unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool {
++        // SAFETY: event_ptr is guaranteed to be valid per the caller's contract.
++        unsafe { mw_com_proxy_event_unset_subscription_state_change_handler(event_ptr) }
++    }
++
+     /// Unsafe wrapper around mw_com_proxy_set_event_receive_handler
+     ///
+     /// # Arguments
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
+index 01c455f..217e898 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/bridge_ffi_mock.rs
+@@ -171,6 +171,16 @@ mock! {
+ 
+         unsafe fn unsubscribe_to_event(&self, event_ptr: *mut ProxyEventBase);
+ 
++        unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8;
++
++        unsafe fn set_subscription_state_change_handler(
++            &self,
++            event_ptr: *mut ProxyEventBase,
++            handler: &FatPtr,
++        ) -> bool;
++
++        unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool;
++
+         unsafe fn set_event_receive_handler(
+             &self,
+             proxy_event_ptr: *mut ProxyEventBase,
+@@ -356,6 +366,25 @@ impl bridge_ffi_rs::FFIBridge for SharedMockBridge {
+         unsafe { self.locked().unsubscribe_to_event(event_ptr) }
+     }
+ 
++    unsafe fn get_subscription_state(&self, event_ptr: *mut ProxyEventBase) -> u8 {
++        //Safety: This is just forwarding the call to the inner mock, which is expected to be configured correctly in tests using mockall's expectations.
++        unsafe { self.locked().get_subscription_state(event_ptr) }
++    }
++
++    unsafe fn set_subscription_state_change_handler(
++        &self,
++        event_ptr: *mut ProxyEventBase,
++        handler: &FatPtr,
++    ) -> bool {
++        //Safety: This is just forwarding the call to the inner mock, which is expected to be configured correctly in tests using mockall's expectations.
++        unsafe { self.locked().set_subscription_state_change_handler(event_ptr, handler) }
++    }
++
++    unsafe fn unset_subscription_state_change_handler(&self, event_ptr: *mut ProxyEventBase) -> bool {
++        //Safety: This is just forwarding the call to the inner mock, which is expected to be configured correctly in tests using mockall's expectations.
++        unsafe { self.locked().unset_subscription_state_change_handler(event_ptr) }
++    }
++
+     unsafe fn get_samples_from_event(
+         &self,
+         event_ptr: *mut ProxyEventBase,
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
+index e3a273a..daab7c9 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.cpp
+@@ -379,6 +379,47 @@ void mw_com_proxy_clear_event_receive_handler(ProxyEventBase* event_ptr)
+     score::cpp::ignore = event_ptr->UnsetReceiveHandler();
+ }
+ 
++/// \brief Get the current subscription state of a proxy event
++/// \param event_ptr Opaque proxy event pointer (ProxyEventBase*)
++/// \return Raw SubscriptionState enumeration value; kNotSubscribed for a null pointer
++std::uint8_t mw_com_proxy_event_get_subscription_state(ProxyEventBase* event_ptr)
++{
++    if (event_ptr == nullptr)
++    {
++        return static_cast<std::uint8_t>(SubscriptionState::kNotSubscribed);
++    }
++    return static_cast<std::uint8_t>(event_ptr->GetSubscriptionState());
++}
++
++/// \brief Register a subscription state change handler for a proxy event
++/// \param event_ptr Opaque proxy event pointer (ProxyEventBase*)
++/// \param boxed_handler Pointer to FatPtr containing the Rust FnMut(u8) -> bool handler
++/// \return true if the handler was registered, false otherwise
++bool mw_com_proxy_event_set_subscription_state_change_handler(ProxyEventBase* event_ptr, const FatPtr* boxed_handler)
++{
++    if (event_ptr == nullptr || boxed_handler == nullptr)
++    {
++        return false;
++    }
++
++    auto result = event_ptr->SetSubscriptionStateChangeHandler(
++        RustFnMutCallable<RustBoxedCallable, bool, SubscriptionState>{*boxed_handler});
++    return result.has_value();
++}
++
++/// \brief Unregister the subscription state change handler of a proxy event
++/// \param event_ptr Opaque proxy event pointer (ProxyEventBase*)
++/// \return true if the handler was unregistered, false otherwise
++bool mw_com_proxy_event_unset_subscription_state_change_handler(ProxyEventBase* event_ptr)
++{
++    if (event_ptr == nullptr)
++    {
++        return false;
++    }
++    auto result = event_ptr->UnsetSubscriptionStateChangeHandler();
++    return result.has_value();
++}
++
+ /// \brief Start asynchronous service discovery with a callback
+ /// \details Initiates a service discovery operation using a Rust callback. The callback will be invoked
+ /// when matching services are found. The callback signature is:
+diff --git a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
+index f4c8a3d..fa88b43 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
++++ b/score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h
+@@ -147,6 +147,22 @@ void mw_com_impl_call_dyn_ref_fnmut_find_service(
+     const ::score::mw::com::impl::rust::FatPtr* boxed_fnmut,
+     void* service_handles,
+     ::score::mw::com::impl::FindServiceHandle find_service_handle) noexcept;
++
++/// \brief Rust closure invocation for subscription state change notifications
++/// \details This function is called by C++ whenever the subscription state of a proxy event
++/// changes. The invoked Rust closure returns a bool telling the middleware whether the handler
++/// shall be kept (true) or unregistered (false).
++/// \param boxed_fnmut Pointer to FatPtr representing the Rust FnMut closure
++/// \param new_state Raw SubscriptionState enumeration value
++/// \return true if the handler shall be kept, false if it shall be unregistered
++bool mw_com_impl_call_dyn_ref_fnmut_subscription_state(const FatPtr* boxed_fnmut, std::uint8_t new_state) noexcept;
++
++/// \brief Rust closure deletion for subscription state change handlers
++/// \details Drops the boxed Rust `FnMut(u8) -> bool` closure. Kept separate from
++/// mw_com_impl_delete_boxed_fnmut because the reconstructed trait object type must match the one
++/// the closure was created with.
++/// \param boxed_fnmut Pointer to FatPtr representing the Rust FnMut closure to be deleted
++void mw_com_impl_delete_boxed_fnmut_subscription_state(const FatPtr* boxed_fnmut) noexcept;
+ }
+ 
+ /// \brief Template specialization of RustBoxedCallable for void return type
+@@ -189,6 +205,25 @@ class RustBoxedCallable<void,
+     static void dispose(FatPtr) noexcept {}
+ };
+ 
++/// \brief Specialization of RustBoxedCallable for subscription state change notifications
++/// \details The invoked Rust closure returns a bool telling the middleware whether the handler
++/// shall be kept (true) or unregistered (false). Disposal drops the boxed closure through the
++/// matching typed deleter.
++template <>
++class RustBoxedCallable<bool, ::score::mw::com::impl::SubscriptionState>
++{
++  public:
++    static bool invoke(FatPtr ptr_, ::score::mw::com::impl::SubscriptionState new_state) noexcept
++    {
++        return mw_com_impl_call_dyn_ref_fnmut_subscription_state(&ptr_, static_cast<std::uint8_t>(new_state));
++    }
++
++    static void dispose(FatPtr ptr_) noexcept
++    {
++        mw_com_impl_delete_boxed_fnmut_subscription_state(&ptr_);
++    }
++};
++
+ /// Base class for Rust FnMut callable wrappers
+ template <template <typename, typename...> class FnMutHandler, typename R, typename... Args>
+ class RustFnMutCallableBase
+diff --git a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
+index 3292d14..1ead79d 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-lola/consumer.rs
+@@ -49,7 +49,7 @@ use score_log as log;
+ use score_com_concept::{
+     Builder, CommData, Consumer, ConsumerBuilder, ConsumerDescriptor, ConsumerFailedReason, Error, EventFailedReason,
+     InstanceSpecifier, Interface, ReceiveFailedReason, Result, Sample, SampleContainer, ServiceDiscovery,
+-    ServiceFailedReason, Subscriber, Subscription,
++    ServiceFailedReason, Subscriber, Subscription, SubscriptionState,
+ };
+ 
+ use bridge_ffi_rs::*;
+@@ -382,6 +382,7 @@ impl<T: CommData + Debug, B: FFIBridge> Subscriber<T, LolaRuntimeImpl<B>> for Lo
+             instance_info,
+             waker_storage: Arc::default(),
+             async_init_status: std::sync::OnceLock::new(),
++            subscription_state_handler_set: AtomicBool::new(false),
+             type_ops,
+             _proxy: self.proxy_instance.clone(),
+             _phantom: PhantomData,
+@@ -486,6 +487,9 @@ where
+     instance_info: LolaConsumerInfo<B>,
+     waker_storage: Arc<AtomicWaker>,
+     async_init_status: std::sync::OnceLock<()>,
++    /// Tracks whether a subscription state change handler is currently registered so that
++    /// `Drop` only unregisters when needed (and never unregisters twice).
++    subscription_state_handler_set: AtomicBool,
+     type_ops: TypeOperationsManager,
+     _proxy: ProxyInstanceManager<B>,
+     _phantom: PhantomData<T>,
+@@ -505,6 +509,19 @@ impl<T: CommData + Debug, B: FFIBridge> Drop for LolaSubscriberImpl<T, B> {
+             {
+                 self.instance_info.bridge.clear_event_receive_handler(guard.deref_mut());
+             }
++            // Unregister the subscription state change handler (if any) before unsubscribing so
++            // that it cannot be invoked while the subscription is being torn down. Calling the
++            // bridge directly reuses the guard we already hold (calling the public trait method
++            // would attempt to acquire the guard again and panic).
++            if self
++                .subscription_state_handler_set
++                .load(std::sync::atomic::Ordering::Acquire)
++            {
++                let _ = self
++                    .instance_info
++                    .bridge
++                    .unset_subscription_state_change_handler(guard.deref_mut());
++            }
+             self.instance_info.bridge.unsubscribe_to_event(guard.deref_mut());
+         }
+     }
+@@ -687,6 +704,65 @@ where
+             sample_container: SampleContainer::new(self.max_num_samples),
+         }
+     }
++
++    fn get_subscription_state(&self) -> SubscriptionState {
++        // SAFETY: the event pointer is valid for the lifetime of the subscription and the
++        // ProxyEventManager guard serialises access to it.
++        let raw = unsafe {
++            self.instance_info
++                .bridge
++                .get_subscription_state(self.event.get_proxy_event().deref_mut())
++        };
++        SubscriptionState::from(raw)
++    }
++
++    fn set_subscription_state_change_handler(
++        &self,
++        handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
++    ) -> Result<()> {
++        // Adapt the typed user handler to the raw `u8` ABI used at the FFI boundary.
++        let adapted = move |raw_state: u8| -> bool { handler(SubscriptionState::from(raw_state)) };
++        let boxed: Box<dyn FnMut(u8) -> bool + Send + 'static> = Box::new(adapted);
++        let raw_ptr = Box::into_raw(boxed);
++        // SAFETY: `raw_ptr` is a live fat pointer to `dyn FnMut(u8) -> bool + Send`; FatPtr is its
++        // binary representation (data pointer + vtable pointer), as used by the existing
++        // trampolines.
++        let fat_ptr: FatPtr = unsafe { std::mem::transmute(raw_ptr) };
++        // SAFETY: the event pointer is valid for the subscription lifetime; `fat_ptr` references a
++        // closure that stays alive until the middleware disposes it (on unset, on a `false` return,
++        // or on event destruction). C++ only refuses the handler on a null argument, before it
++        // takes ownership, so a `false` result means we still own the box.
++        let status = unsafe {
++            self.instance_info
++                .bridge
++                .set_subscription_state_change_handler(self.event.get_proxy_event().deref_mut(), &fat_ptr)
++        };
++        if !status {
++            // SAFETY: `raw_ptr` came from `Box::into_raw` above and was not consumed by the
++            // middleware because the call failed.
++            drop(unsafe { Box::from_raw(raw_ptr) });
++            return Err(Error::EventError(EventFailedReason::SubscriptionStateChangeHandlerFailed));
++        }
++        self.subscription_state_handler_set
++            .store(true, std::sync::atomic::Ordering::Release);
++        Ok(())
++    }
++
++    fn unset_subscription_state_change_handler(&self) -> Result<()> {
++        // SAFETY: the event pointer is valid for the subscription lifetime and the guard
++        // serialises access to it.
++        let status = unsafe {
++            self.instance_info
++                .bridge
++                .unset_subscription_state_change_handler(self.event.get_proxy_event().deref_mut())
++        };
++        if !status {
++            return Err(Error::EventError(EventFailedReason::SubscriptionStateChangeHandlerFailed));
++        }
++        self.subscription_state_handler_set
++            .store(false, std::sync::atomic::Ordering::Release);
++        Ok(())
++    }
+ }
+ 
+ // The ReceiveFuture struct encapsulates the state and logic for asynchronously receiving samples
+@@ -1412,4 +1488,121 @@ mod test {
+ 
+         proxy_alloc.assert_all_freed();
+     }
++
++    // Builds a subscribed `LolaSubscriberImpl` with the standard proxy/event/type-ops mock setup
++    // and the common teardown expectations. Test-specific expectations for the subscription-state
++    // methods must be registered on `mock` by the caller before calling this helper.
++    fn make_subscribed(
++        mut mock: MockFFIBridge,
++    ) -> (
++        LolaSubscriberImpl<TestData, SharedMockBridge>,
++        MockPointerAllocator<ProxyBase>,
++        MockPointerAllocator<ProxyEventBase>,
++    ) {
++        let proxy_alloc = MockPointerAllocator::<ProxyBase>::new();
++        let event_alloc = MockPointerAllocator::<ProxyEventBase>::new();
++        let type_ops_alloc = MockPointerAllocator::<TypeOperations>::new();
++        let prox = proxy_alloc.clone();
++        let evt = event_alloc.clone();
++        mock.expect_create_proxy().returning(move |_, _| prox.allocate());
++        mock.expect_get_event_from_proxy().returning(move |_, _, _| evt.allocate());
++        mock.expect_subscribe_to_event().returning(|_, _| true);
++        mock.expect_get_type_ops_instance().returning(move |_, _| {
++            Some(TypeOperationsManager::new(
++                NonNull::new(type_ops_alloc.allocate()).expect("Failed to allocate TypeOperations"),
++            ))
++        });
++        let evt_cleanup = event_alloc.clone();
++        mock.expect_unsubscribe_to_event().returning(move |ptr| {
++            assert!(evt_cleanup.free(ptr), "unsubscribe_to_event called with unknown pointer");
++        });
++        let prox_cleanup = proxy_alloc.clone();
++        mock.expect_destroy_proxy().returning(move |ptr| {
++            assert!(prox_cleanup.free(ptr), "destroy_proxy called with unknown pointer");
++        });
++
++        let bridge = SharedMockBridge::new(mock);
++        let subscribable = LolaSubscribableImpl::<TestData, SharedMockBridge> {
++            identifier: "TestEvent",
++            instance_info: make_instance_info(bridge.clone()),
++            proxy_instance: make_proxy_instance(bridge.clone(), "TestInterface"),
++            data: PhantomData,
++        };
++        let subscriber = subscribable.subscribe(3).expect("subscribe should succeed");
++        (subscriber, proxy_alloc, event_alloc)
++    }
++
++    #[test]
++    fn test_get_subscription_state_maps_raw_values() {
++        for (raw, expected) in [
++            (0u8, SubscriptionState::Subscribed),
++            (1u8, SubscriptionState::NotSubscribed),
++            (2u8, SubscriptionState::SubscriptionPending),
++            (255u8, SubscriptionState::NotSubscribed),
++        ] {
++            let mut mock = MockFFIBridge::new();
++            mock.expect_get_subscription_state().returning(move |_| raw);
++            let (subscriber, proxy_alloc, event_alloc) = make_subscribed(mock);
++            assert_eq!(subscriber.get_subscription_state(), expected, "raw value {raw}");
++            drop(subscriber.unsubscribe());
++            proxy_alloc.assert_all_freed();
++            event_alloc.assert_all_freed();
++        }
++    }
++
++    #[test]
++    fn test_set_and_unset_subscription_state_change_handler() {
++        let mut mock = MockFFIBridge::new();
++        mock.expect_set_subscription_state_change_handler()
++            .returning(|_, _| true);
++        mock.expect_unset_subscription_state_change_handler()
++            .times(1)
++            .returning(|_| true);
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock);
++
++        subscriber
++            .set_subscription_state_change_handler(|_state| true)
++            .expect("registering the handler should succeed");
++        subscriber
++            .unset_subscription_state_change_handler()
++            .expect("unregistering the handler should succeed");
++        // Explicit unset clears the flag, so Drop must NOT call unset a second time (times(1)).
++        drop(subscriber.unsubscribe());
++    }
++
++    #[test]
++    fn test_set_handler_failure_is_reported_and_box_reclaimed() {
++        let mut mock = MockFFIBridge::new();
++        mock.expect_set_subscription_state_change_handler()
++            .returning(|_, _| false);
++        // No unset expectation: the flag stays false, so Drop must not call unset.
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock);
++
++        let err = subscriber
++            .set_subscription_state_change_handler(|_state| true)
++            .expect_err("a failed registration must be reported");
++        assert!(matches!(
++            err,
++            Error::EventError(EventFailedReason::SubscriptionStateChangeHandlerFailed)
++        ));
++        drop(subscriber.unsubscribe());
++    }
++
++    #[test]
++    fn test_drop_unregisters_registered_state_handler() {
++        let mut mock = MockFFIBridge::new();
++        mock.expect_set_subscription_state_change_handler()
++            .returning(|_, _| true);
++        mock.expect_unset_subscription_state_change_handler()
++            .times(1)
++            .returning(|_| true);
++        let (subscriber, _proxy_alloc, _event_alloc) = make_subscribed(mock);
++
++        subscriber
++            .set_subscription_state_change_handler(|_state| true)
++            .expect("registering the handler should succeed");
++        // Teardown must unregister exactly once before unsubscribe; the `times(1)` expectation
++        // fails the test if unset is called zero or more than one time.
++        drop(subscriber);
++    }
+ }
+diff --git a/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs b/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs
+index e0bc1e5..4173df0 100644
+--- a/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs
++++ b/score/mw/com/impl/rust/com-api/com-api-runtime-mock/runtime.rs
+@@ -38,7 +38,7 @@ use std::path::Path;
+ use score_com_concept::{
+     Builder, CommData, Consumer, ConsumerBuilder, ConsumerDescriptor, FindServiceSpecifier, InstanceSpecifier,
+     Interface, Producer, ProducerBuilder, ProviderInfo, Publisher, Result, Runtime, RuntimeBuilder, Sample,
+-    SampleContainer, SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription,
++    SampleContainer, SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription, SubscriptionState,
+ };
+ 
+ pub struct MockRuntimeImpl {}
+@@ -337,6 +337,23 @@ where
+     fn to_stream<'a>(&'a mut self) -> impl Stream<Item = Result<Self::Sample<'a>>> + Unpin + 'a {
+         stream::empty()
+     }
++
++    fn get_subscription_state(&self) -> SubscriptionState {
++        // The mock runtime does not model subscription state transitions; there is no active
++        // subscription, so the documented default state is returned.
++        SubscriptionState::NotSubscribed
++    }
++
++    fn set_subscription_state_change_handler(
++        &self,
++        _handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
++    ) -> Result<()> {
++        Ok(())
++    }
++
++    fn unset_subscription_state_change_handler(&self) -> Result<()> {
++        Ok(())
++    }
+ }
+ 
+ pub struct MockPublisher<T> {
+diff --git a/score/mw/com/rust/design/high_level_design_detail.md b/score/mw/com/rust/design/high_level_design_detail.md
+index 5dd621f..68d937f 100644
+--- a/score/mw/com/rust/design/high_level_design_detail.md
++++ b/score/mw/com/rust/design/high_level_design_detail.md
+@@ -95,6 +95,7 @@ The LoLa Runtime is responsible for translating generic trait operations into co
+ - **Type-safe interface generation**: Automatic code generation from interface definitions ensures compile-time correctness through Rust's type system.
+ - **Zero-copy data handling**: Leverages shared memory backend through `Sample<T>` and `SampleMaybeUninit<T>` types for efficient data access.
+ - **Automated resource lifecycle management**: Manages lifecycle of C++ LoLa proxies and skeletons through automatic cleanup via Rust's `Drop` trait.
++- **Subscription state observation**: synchronously queries the event subscription state (`SubscriptionState`) and registers state-change notifications, mirroring the C++ `GetSubscriptionState()` / `SetSubscriptionStateChangeHandler()` APIs.
+ 
+ **Supported score_com_concept Traits by LoLa Runtime**
+ 
+diff --git a/score/mw/com/rust/doc/user_facing_api_examples.md b/score/mw/com/rust/doc/user_facing_api_examples.md
+index b7ac6ad..27d3fc4 100644
+--- a/score/mw/com/rust/doc/user_facing_api_examples.md
++++ b/score/mw/com/rust/doc/user_facing_api_examples.md
+@@ -432,6 +432,42 @@ async fn read_tire_data_stream<R: Runtime>(
+ 
+ ---
+ 
++### Subscription State Query and Change Notification
++
++**Key Points**:
++- `get_subscription_state()` returns the current `SubscriptionState` synchronously and may be called at any time.
++- `set_subscription_state_change_handler()` registers a callback invoked whenever the state changes; an existing handler is replaced silently.
++- Returning `false` from the handler unregisters it (same effect as `unset_subscription_state_change_handler()`).
++- The handler may run on a middleware thread while an internal lock is held: keep it short and do not call back into the same subscription (this may deadlock).
++
++<details>
++<summary>Examples:</summary>
++
++```rust
++use score_com::{Result, Runtime, Subscription, SubscriptionState};
++use com_api_gen::Tire;
++
++// Query the current subscription state (can be called at any time)
++fn report_state<R: Runtime>(subscription: &impl Subscription<Tire, R>) -> SubscriptionState {
++    subscription.get_subscription_state()
++}
++
++// Register a state-change notification and unregister it later
++fn watch_state<R: Runtime>(subscription: &impl Subscription<Tire, R>) -> Result<()> {
++    subscription.set_subscription_state_change_handler(|new_state| {
++        println!("subscription state changed to {new_state:?}");
++        true // keep the handler registered; return false to unregister it
++    })?;
++
++    // ... later, if needed:
++    subscription.unset_subscription_state_change_handler()?;
++    Ok(())
++}
++```
++</details>
++
++---
++
+ ## Producer API
+ 
+ A producer is constructed by calling `Runtime::producer_builder()` with an `InstanceSpecifier`, then `build()` to create the producer, and finally `offer()` to make the service visible to consumers. While offered, the producer holds typed `Publisher` fields for each event defined in the interface.
+diff --git a/score/mw/com/rust/score_com.rs b/score/mw/com/rust/score_com.rs
+index 4e16222..67b4c14 100644
+--- a/score/mw/com/rust/score_com.rs
++++ b/score/mw/com/rust/score_com.rs
+@@ -138,7 +138,7 @@ pub use score_com_concept::{
+     interface, interface_common, interface_consumer, interface_producer, Builder, CommData, Consumer, ConsumerBuilder,
+     ConsumerDescriptor, Error, FindServiceSpecifier, InstanceSpecifier, Interface, OfferedProducer, PlacementDefault,
+     Producer, ProducerBuilder, ProviderInfo, Publisher, Reloc, Result, Runtime, RuntimeBuilder, SampleContainer,
+-    SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription,
++    SampleMaybeUninit, SampleMut, ServiceDiscovery, Subscriber, Subscription, SubscriptionState,
+ };
+ 
+ #[doc(hidden)]
+diff --git a/score/mw/com/rust/score_com_concept/concept.rs b/score/mw/com/rust/score_com_concept/concept.rs
+index b46055c..fec285a 100644
+--- a/score/mw/com/rust/score_com_concept/concept.rs
++++ b/score/mw/com/rust/score_com_concept/concept.rs
+@@ -61,6 +61,41 @@ use std::path::Path;
+ /// Result type alias with `std::result::Result` using `score_com::Error` as error type
+ pub type Result<T> = core::result::Result<T, Error>;
+ 
++/// State of an event subscription.
++///
++/// This mirrors the C++ middleware enumeration `score::mw::com::impl::SubscriptionState`
++/// (AUTOSAR `SWS_CM_00310`). The discriminants form part of the ABI contract with the C++
++/// implementation and must not be changed.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++#[repr(u8)]
++pub enum SubscriptionState {
++    /// The subscription has been successfully acknowledged by the provider side and the
++    /// consumer has not been notified that the service is no longer offered.
++    Subscribed = 0,
++    /// No subscription exists: `subscribe` has not been called yet or the last successful
++    /// subscription was withdrawn/rejected, or the provider cancelled it.
++    NotSubscribed = 1,
++    /// The subscription request is being dispatched/acknowledged by the provider, or the
++    /// provider has stopped offering and the consumer is waiting to auto-reconnect.
++    SubscriptionPending = 2,
++}
++
++impl From<u8> for SubscriptionState {
++    /// Converts the raw enumeration value received from the middleware.
++    ///
++    /// Unknown values are mapped to [`SubscriptionState::NotSubscribed`] because an unknown
++    /// value cannot represent an active subscription; a value outside of the documented
++    /// contract indicates an ABI mismatch between the Rust and C++ layers.
++    fn from(value: u8) -> Self {
++        match value {
++            0 => Self::Subscribed,
++            2 => Self::SubscriptionPending,
++            // 1 and any out-of-contract value mean "no active subscription".
++            _ => Self::NotSubscribed,
++        }
++    }
++}
++
+ /// A factory-like trait for constructing complex objects through a builder pattern.
+ ///
+ /// This trait enables type-safe construction of objects by moving self during the build phase,
+@@ -929,6 +964,40 @@ pub trait Subscription<T: CommData + Debug, R: Runtime + ?Sized> {
+     /// The stream only terminates when the subscription is unsubscribed or dropped or if the stream is explicitly dropped by the user.
+     /// With this design, users can handle errors on it side and take appropriate actions.
+     fn to_stream<'a>(&'a mut self) -> impl Stream<Item = Result<Self::Sample<'a>>> + Unpin + 'a;
++
++    /// Returns the current subscription state of this event.
++    ///
++    /// This mirrors the C++ `ProxyEventBase::GetSubscriptionState()` API and can be called at
++    /// any time regardless of the state of the subscription.
++    fn get_subscription_state(&self) -> SubscriptionState;
++
++    /// Registers a handler that is called whenever the subscription state of this event changes.
++    ///
++    /// An already registered handler is silently replaced. The handler receives the new
++    /// [`SubscriptionState`] and returns `true` to stay registered or `false` to unregister
++    /// itself (mirroring the C++ `SubscriptionStateChangeHandler` contract).
++    ///
++    /// The handler may be invoked from a middleware thread while an internal state-machine lock
++    /// is held. It must therefore be `Send`, must not perform long-running work, and must not
++    /// call back into this subscription (for example `try_receive`, `get_subscription_state`,
++    /// this method or [`Subscription::unset_subscription_state_change_handler`]) because doing so
++    /// can deadlock.
++    ///
++    /// # Errors
++    /// Returns [`Error::EventError`] if the handler cannot be registered.
++    fn set_subscription_state_change_handler(
++        &self,
++        handler: impl FnMut(SubscriptionState) -> bool + Send + 'static,
++    ) -> Result<()>;
++
++    /// Unregisters the subscription state change handler, if any.
++    ///
++    /// After this method returns it is guaranteed that a previously registered handler is no
++    /// longer active and will not be called.
++    ///
++    /// # Errors
++    /// Returns [`Error::EventError`] if the handler cannot be unregistered.
++    fn unset_subscription_state_change_handler(&self) -> Result<()>;
+ }
+ 
+ /// A trait for types that can be default-constructed in place, skipping intermediate moves.
+diff --git a/score/mw/com/rust/score_com_concept/error.rs b/score/mw/com/rust/score_com_concept/error.rs
+index 79e49eb..1d1a484 100644
+--- a/score/mw/com/rust/score_com_concept/error.rs
++++ b/score/mw/com/rust/score_com_concept/error.rs
+@@ -108,6 +108,8 @@ pub enum EventFailedReason {
+     InvalidMaxSamples,
+     #[error("Sample count out of bounds, expected at most {max}, but got {requested}")]
+     MaxSampleOutOfBounds { max: usize, requested: usize },
++    #[error("Failed to register or unregister the subscription state change handler")]
++    SubscriptionStateChangeHandlerFailed,
+ }
+ 
+ /// Error enumeration for different failure cases in the Consumer/Producer/Runtime APIs.

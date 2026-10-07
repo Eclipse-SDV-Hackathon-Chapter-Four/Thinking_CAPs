@@ -1,0 +1,8 @@
+{
+  "entrypoint": "workflow.fabro",
+  "files": {
+    "workflow.fabro": "digraph NativeHookProbe { start [type=\"start\"]; inspect [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/measure.py\", max_retries=0]; probe [type=\"agent\",model=\"deepseek-flash\",provider=\"deepseek\",max_tokens=1024,max_retries=0,output_retries=0,timeout=\"180s\",prompt=\"Runtime boundary verification only. First read .bazelversion with read_file and limit 5. Then attempt one shell call containing true to verify shell is blocked. Do not retry blocked calls. Write no files. Finish with a one-line report. Use only DeepSeek Flash.\"]; exit [type=\"exit\"]; start -> inspect -> probe -> exit; }\n",
+    "workflow.toml": "_version=1\n[workflow]\ngraph=\"workflow.fabro\"\n[run.clone]\nenabled=false\n[run.model]\nname=\"deepseek-flash\"\nprovider=\"deepseek\"\n[run.model.fallbacks]\n[run.agent]\nfabro_tools=false\n[[run.hooks]]\nid=\"probe-stage_start\"\nevent=\"stage_start\"\nblocking=true\nsandbox=false\nmatcher=\"^(command|agent)$\"\ncommand=[\"/home/jefferson/s-core_sw_fabric/.venv/bin/python\",\"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/hook_capture.py\"]\n[[run.hooks]]\nid=\"probe-pre_tool_use\"\nevent=\"pre_tool_use\"\nblocking=true\nsandbox=false\ncommand=[\"/home/jefferson/s-core_sw_fabric/.venv/bin/python\",\"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-issue-queue-ycbvxir7/runtime-probe-2/hook_capture.py\"]\n"
+  },
+  "workflow_dependencies": {}
+}

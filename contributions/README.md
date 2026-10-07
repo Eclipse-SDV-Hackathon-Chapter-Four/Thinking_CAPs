@@ -28,6 +28,10 @@ handoffs and this repository; add other completed work as its artifacts are reco
 - [Native fault-storage write-through packet](fault-storage-write-through/README.md):
   new local preparation, separate from the historic completed-fix inventory above;
   exported patch, native regressions and upstream PR draft, with publication pending.
+- [Communication Rust API queue](issues/eclipse-score/communication/rust-api-queue/README.md):
+  12 per-issue folders (#1261, #250, #560, #781, #490, #173, #1264, #1263, #794, #782, #1062, #741)
+  with sealed evidence, upstream snapshots and PR drafts; portable branch bundles for #1261, #250,
+  #560 (Linux-verified) and #781, #490 (drafts). Nothing pushed upstream; acceptance pending.
 - [Submission checklist](submission/README.md) and [hackathon PR draft](submission/hackathon-pr-description.md).
 
 ## Verify the evidence

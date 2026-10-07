@@ -1,0 +1,15 @@
+{
+  "url": "https://github.com/eclipse-score/communication/issues/1263",
+  "issue_number": 1263,
+  "state": "open",
+  "captured_on": "2026-10-07",
+  "updated_at": "2026-10-04T11:11:54Z",
+  "title": "Improvement: `futures` crate usage in the Rust COM API",
+  "labels": [
+    "rust-api"
+  ],
+  "assignees": [],
+  "body": "### What\n\nThe Rust COM API uses futures for asynchronous stream and notification support. The public Subscription::to_stream() API returns a futures::Stream; the LoLa runtime uses futures::task::AtomicWaker to notify pending receives when samples arrive. The mock runtime also uses stream helpers and an executor in its support code.\n\nThis is used in API/runtime behavior, unlike a build-only procedural macro dependency. The COM API does not require application users to adopt a particular executor.\n\nAcceptance criteria\n\n- Record the pinned crate version, enabled features, and direct COM API call sites.\n- Distinguish production runtime use from mock/test-only use.\n- Review crate provenance, license, maintenance status, and safety relevance.\n- Document whether to retain futures, reduce its use, or replace specific functionality, and record the required qualification artifacts.\n\n### How\n\n_No response_\n\n### Estimates for realization\n\n_No response_\n\n### Category\n\n- [ ] Affects Detailed Design\n\n### Requirements / Architecture\n\n- [x] Requirements / Architecture are not affected by this change?",
+  "comments": [],
+  "source": "gh issue view (read-only), 2026-10-07"
+}
