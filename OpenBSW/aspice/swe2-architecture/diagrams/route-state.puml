@@ -2,25 +2,25 @@
 !theme plain
 skinparam defaultFontName "DejaVu Sans"
 skinparam shadowing false
-title Behaviour — pending-request state of one DoCAN route (ZonalRouter, ARC-03)
+title Behaviour — pending-request state of one DoCAN route (TransportRouter, ARC-03)
 
 [*] --> Idle
 
-Idle --> Transmitting : physical request accepted\n[buffer free]
+Idle --> Transmitting : physical request accepted\n[buffer free] / DoIP ACK
 Idle --> Idle : unsolicited response /\ndiscard, count (SWR-042)
 
-Transmitting --> WaitResponse : ISO-TP TX done /\nDoIP ACK, start P2
-Transmitting --> Idle : N_As / N_Bs timeout /\nNACK 0x06, count (SWR-018)
+Transmitting --> WaitResponse : ISO-TP TX done /\nstart P2
+Transmitting --> Idle : N_As / N_Bs timeout /\ncount tx failure (SWR-018)
 Transmitting --> Idle : tester disconnected /\nabort TX (SWR-041)
 
-WaitResponse --> Idle : final response /\nforward, monitor.responded()
+WaitResponse --> Idle : final response /\nforward, observer.routeResponded()
 WaitResponse --> WaitPending : NRC 0x78 /\nforward, start P2*
-WaitResponse --> Idle : P2 expired /\ncount, monitor.timedOut() (SWR-016)
+WaitResponse --> Idle : P2 expired /\ncount, observer.routeTimedOut() (SWR-016)
 WaitResponse --> Idle : tester disconnected /\nrelease (SWR-041)
 
 WaitPending --> WaitPending : NRC 0x78 /\nforward, restart P2*
-WaitPending --> Idle : final response /\nforward, monitor.responded()
-WaitPending --> Idle : P2* expired /\ncount, monitor.timedOut()
+WaitPending --> Idle : final response /\nforward, observer.routeResponded()
+WaitPending --> Idle : P2* expired /\ncount, observer.routeTimedOut()
 WaitPending --> Idle : tester disconnected /\nrelease
 
 state Idle : request to this route while not Idle\n→ NACK 0x05 (SWR-015)

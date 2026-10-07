@@ -8,7 +8,7 @@ autonumber
 actor "SOVD client" as U
 participant "OpenSOVD\n+ CDA" as CDA
 participant "DoIpServerSystem\nARC-01" as DoIp
-participant "ZonalRouter\nARC-03" as R
+participant "TransportRouter\nARC-03" as R
 participant "RoutingTable\nARC-04" as T
 participant "DoCanSystem\nARC-02" as Tp
 participant "ThreadX rear\nlighting ECU" as ECU
@@ -29,12 +29,11 @@ alt route has a pending request or no buffer is free
   R --> DoIp : rejected
   DoIp --> CDA : NACK 0x05 (SWR-015)
 else route free
-  R -> Tp : send on 0x7E1
-  Tp -> ECU : SF 03 22 F1 95 (padded 0xCC)
-  Tp --> R : processed OK
-  R --> DoIp : processed OK
+  R -> Tp : send on 0x7E1 (source 0x0E10)
+  R --> DoIp : accepted
   DoIp --> CDA : ACK 0x8002 (SWR-003)
-  R -> R : start P2 (150 ms)
+  Tp -> ECU : SF 03 22 F1 95 (padded 0xCC)
+  Tp --> R : processed OK → P2 starts
   opt ECU needs more time
     ECU -> Tp : 7F 22 78
     Tp -> R : messageReceived(0x7E9)
@@ -47,11 +46,11 @@ else route free
     Tp -> R : messageReceived(0x7E9)
     R -> DoIp : forward to tester 0x0E80
     DoIp -> CDA : diag msg 0x1020 → 0x0E80\n62 F1 95 ...
-    R -> M : responded(0x1020)
+    R -> M : routeResponded(0)
     CDA --> U : 200 {"sw_version": ...}
   else timeout
     R -> R : release pending, count timeout (SWR-016)
-    R -> M : timedOut(0x1020)
+    R -> M : routeTimedOut(0)
     note right of M : 3 consecutive → U0140 testFailed\n(SWR-024)
     CDA --> U : error (CDA's own timeout)
   end

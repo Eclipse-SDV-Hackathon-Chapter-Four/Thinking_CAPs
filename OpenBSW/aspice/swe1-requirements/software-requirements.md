@@ -2,9 +2,9 @@
 
 | Item | Value |
 | --- | --- |
-| Software | OpenBSW zonal diagnostic gateway, `OpenBSW/src` (planned) |
+| Software | OpenBSW zonal diagnostic gateway: `OpenBSW/gateway` (application, gateway units) and the contributed module `OpenBSW/contrib/libs/bsw/transportRouter` |
 | Inputs | [System requirements](system-requirements.md), [README](../../README.md), ISO 13400-2 (DoIP), ISO 14229-1 (UDS), ISO 15765-2 (ISO-TP), [ThreadX CAN contract](../../../ThreadX/docs/can-lighting-contract.md), Eclipse OpenBSW `libs/bsw/{doip,docan,uds,transport,transportRouterSimple}` |
-| Status | Draft for review, 6 October 2026 |
+| Status | Baselined for the hackathon demonstration, 6 October 2026 (revised after implementation) |
 
 Each requirement has:
 
@@ -26,7 +26,7 @@ Each requirement has:
 | Gateway address | DoIP logical address of the gateway's own UDS server | `0x1010` |
 | Tester addresses | Source addresses allowed to activate routing | `0x0E00`–`0x0EFF` |
 | Functional address | DoIP target address for the "all zonal ECUs" group | `0xE400` |
-| Route | A routing-table entry: logical address, name, transport (`local` or `docan`), CAN request/response IDs, P2/P2\* timeouts, ISO-TP STmin | see below |
+| Route | A routing-table entry: logical address, name, transport (`docan`), CAN request/response IDs, P2/P2\* timeouts, maximum length, lost-communication DTC | see below |
 | Rear lighting route | ThreadX rear lighting ECU | `0x1020`, request `0x7E1`, response `0x7E9` |
 | Front zone route | Reserved for a future front-zone ECU | `0x1030`, request `0x7E2`, response `0x7EA` |
 | Functional CAN ID | ISO-TP functional request identifier | `0x7DF` |
@@ -63,23 +63,24 @@ tester connections.
 
 ### SWR-003 Diagnostic message acknowledgement
 For each DoIP diagnostic message from an activated tester, the software shall
-send a positive acknowledgement (`0x8002`) once the request has been handed
-to its target: delivered to the local UDS server, or fully transmitted on
-ISO-TP. Otherwise it shall send a negative acknowledgement (`0x8003`) with:
+send a positive acknowledgement (`0x8002`) once the router has accepted the
+request and handed it to the target's transport layer: the local UDS server
+or the route's ISO-TP layer. The OpenBSW DoIP server sends the acknowledgement
+synchronously with this hand-over; a later ISO-TP failure is counted
+(SWR-018), not acknowledged. Otherwise it shall send a negative
+acknowledgement (`0x8003`) with:
 
 - `0x02` source address not activated on this connection
 - `0x03` unknown target address
 - `0x04` message larger than the route's limit
-- `0x05` no routing resource free
-- `0x06` target unreachable (ISO-TP transmission failed)
-- `0x08` transport protocol error
+- `0x05` route busy or no routing buffer free
 
 | Attribute | Value |
 | --- | --- |
 | Type | Interface |
 | Derived from | SYS-02, SYS-03, SYS-07 |
 | Verification | UT, IT |
-| Criterion | Each listed case produces the specified (N)ACK code; a single-frame request is acknowledged within 50 ms. |
+| Criterion | Unknown target gives `0x03`, too large `0x04`, busy route `0x05`; a single-frame request is acknowledged within 50 ms. |
 
 ### SWR-004 Connection lifecycle
 The software shall close a TCP connection without routing activation after
@@ -118,7 +119,8 @@ logical address. Each entry holds:
 - ISO-TP STmin and maximum message length
 
 At initialisation the software shall reject the table, and not start, if any
-of these occur:
+of these occur (checked both by the generator, SWR-052, and at start-up by the
+gateway table and by the router configuration check):
 
 - duplicate logical addresses or CAN identifiers
 - an identifier outside `0x7DF`–`0x7EF`
@@ -129,7 +131,7 @@ of these occur:
 | Type | Functional |
 | Derived from | SYS-03, SYS-09 |
 | Verification | UT |
-| Criterion | Valid tables load; each listed invalid table makes start-up fail with a message that names the conflicting entry. |
+| Criterion | Valid tables load; each listed invalid table is rejected with an error that names the conflicting entry. |
 
 ### SWR-011 Physical routing to the gateway
 A diagnostic message with the gateway address as target shall go to the
@@ -227,18 +229,20 @@ On CAN the software shall use:
 
 - ISO-TP normal 11-bit addressing
 - classic CAN frames with DLC 8, padded with `0xCC`
-- block size 0 when receiving, and the route's STmin (default 5 ms, chosen for SLCAN ECUs at 115200 baud)
+- block size 0 and STmin 5 ms in its flow control when receiving (chosen for
+  SLCAN ECUs at 115200 baud; one value for all routes)
 - N_As, N_Bs and N_Cr timeouts of 1000 ms
 
-A transmission that fails with N_As or N_Bs shall result in NACK `0x06`. A
-reception that fails with N_Cr shall be discarded and counted.
+A transmission that fails with N_As or N_Bs shall free the route, be counted
+as a transmission failure and be reported to the node monitor. A reception
+that fails with N_Cr shall be discarded.
 
 | Attribute | Value |
 | --- | --- |
 | Type | Interface |
 | Derived from | SYS-02 |
 | Verification | UT, IT |
-| Criterion | candump of a multi-frame exchange shows padded 8-byte frames, the configured flow control and STmin; a missing flow control produces NACK `0x06` after N_Bs. |
+| Criterion | candump of a single- and a multi-frame exchange shows padded 8-byte frames and the gateway's flow control (BS 0, STmin 5 ms); a failed delivery frees the route and is counted. |
 
 ## Gateway UDS server
 
@@ -502,15 +506,16 @@ On SIGINT/SIGTERM it shall, within 1 s:
 The software shall build and run on Linux x86_64 using the OpenBSW POSIX
 platform:
 
-- **CAN:** SocketCAN, interface selectable, default `vcan0`
-- **Ethernet:** lwIP on a TAP interface, with DoIP reachable on port 13400 from the CDA container network
+- **CAN:** SocketCAN, interface selectable with `ZGW_CAN_INTERFACE`, default `vcan0`
+- **Ethernet:** lwIP on a TAP interface selectable with `ZGW_TAP_INTERFACE`
+  (default `tap0`), with DoIP reachable on port 13400 from the host
 
 | Attribute | Value |
 | --- | --- |
 | Type | Constraint |
 | Derived from | SYS-06 |
 | Verification | IT, QT |
-| Criterion | The CDA container reaches the gateway; the gateway exchanges ISO-TP with the ThreadX Linux build on `vcan0`. |
+| Criterion | A host DoIP tester reaches the gateway on TAP; the gateway exchanges ISO-TP with simulated ECUs on `vcan0`; the CDA container path is qualified separately. |
 
 ### SWR-051 Embedded portability
 The gateway application code shall use only OpenBSW abstractions: `async`,
@@ -556,15 +561,19 @@ scheme as ThreadX `dependencies.lock.json`.
 The software shall log through the OpenBSW logger:
 
 - at start-up: its version, OpenBSW revision and routing-table hash
-- every 30 s and at shutdown: the statistics
+- every 30 s: the routing statistics
 - at debug level: each routing event (source, target, SID, result)
+
+On SIGINT/SIGTERM the POSIX platform exits at once (SWR-044), so no final
+statistics line is written; the counters stay readable through `FD01` while
+the gateway runs.
 
 | Attribute | Value |
 | --- | --- |
 | Type | Functional |
 | Derived from | SYS-04 |
 | Verification | IT |
-| Criterion | Log lines appear as specified and the counters equal `FD01`. |
+| Criterion | The start-up line names the routing-table hash; a statistics line appears within 35 s of start-up and matches `FD01`. |
 
 ## Timing
 
@@ -601,5 +610,6 @@ gateway shall add at most 10 ms in each direction at the 95th percentile:
 
 - **OP-1:** confirm the DoIP logical addresses and functional address the CDA expects, and author the MDD for `0x1010` and `0x1020` (SWR-001, SWR-052).
 - **OP-2:** the ThreadX rear lighting ECU needs a UDS-on-CAN server for SWR-012 and SWR-024 to be qualified end to end. Until then, IT uses a simulated ECU.
-- **OP-3:** confirm that OpenBSW `TransportRouterSimple` (3 × 4095-byte physical buffers, 8-byte functional buffers) can be configured or extended to route by logical address (see AD-02 in the [architecture](../swe2-architecture/architecture.md)).
+- **OP-3 (closed):** `TransportRouterSimple` cannot route by logical address. The router is a new OpenBSW module, `transportRouter`, prepared as an upstream contribution (AD-02).
 - **OP-4:** `U0140`/`U0141` are illustrative fault codes; align them with the MDD.
+- **OP-5:** ISO-TP STmin and block size are one setting for all routes (OpenBSW DoCAN parameters are per transport layer); per-route values need an upstream DoCAN extension.
