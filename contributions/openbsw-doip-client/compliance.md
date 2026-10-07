@@ -59,4 +59,4 @@ confirm it), **open** (to do at submission).
 
 The [transportRouter packet](../openbsw-transport-router/README.md) was brought to the same
 rules on 7 October 2026 ([its compliance check](../openbsw-transport-router/compliance.md));
-its feature issue is a draft for the author's review.
+its feature issue is #664.

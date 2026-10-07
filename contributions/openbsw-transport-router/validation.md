@@ -2,13 +2,13 @@
 
 All checks ran on 7 October 2026 in a git worktree of OpenBSW `main` at
 `b0550871b7a44ae47bb9b7c68af84fb9115bfa77` with the module added, using
-`OBSW_BASE=b0550871… OpenBSW/scripts/openbsw-pr.sh all` from this repository. Nothing
-has been submitted publicly, and no maintainer approval or merge is claimed.
+`OBSW_BASE=b0550871… OpenBSW/scripts/openbsw-pr.sh all` from this repository. The feature
+issue is #664; no pull request is open, and no maintainer approval or merge is claimed.
 
 | Item | Value |
 | --- | --- |
 | Source of the change | `OpenBSW/contrib/libs/bsw/transportRouter` in this repository (the zonal gateway builds from the same files) |
-| Commit on the PR branch | `08904a2031b6…` ([commit.txt](evidence/commit.txt)), author Jefferson Nascimento, `Signed-off-by`, `Assisted-by` |
+| Commit on the PR branch | `2fb0310793b6…` ([commit.txt](evidence/commit.txt)), author Jefferson Nascimento, `Signed-off-by`, `Assisted-by` |
 | Patch | [0001-transport-router.patch](0001-transport-router.patch), 17 files, +2586 lines |
 | Reproduce | `OpenBSW/scripts/bootstrap.sh`, `OpenBSW/scripts/openbsw-pr.sh tools`, then `OBSW_BASE=<main sha> OpenBSW/scripts/openbsw-pr.sh all` (needs the external build volume) |
 
@@ -22,7 +22,7 @@ has been submitted publicly, and no maintainer approval or merge is claimed.
 | clang-tidy | repository `.clang-tidy` on the three sources | 0 findings | [clang-tidy.txt](evidence/clang-tidy.txt) |
 | Bazel | `bazel test //libs/bsw/transportRouter/... //libs/bsw/transportRouterSimple/...` (bazelisk 1.29.0) | 2/2 | [bazel-test.txt](evidence/bazel-test.txt) |
 | Documentation | `make html` in `doc/dev` (requirements of `doc/dev/requirements.txt`, Python 3.10, PlantUML 1.2024.7) | built, no warnings | [docs-build.log](evidence/docs-build.log) |
-| Commit message | `gitlint` with the repository `.gitlint` | ok | [gitlint.txt](evidence/gitlint.txt) |
+| Commit message (with `Resolves: #664`) | `gitlint` with the repository `.gitlint` | ok | [gitlint.txt](evidence/gitlint.txt) |
 | Patch | `git format-patch -1`; `git am` onto a fresh `b0550871` worktree | applies; identical tree `c2f3e2f63d9a…` | [commit.txt](evidence/commit.txt) |
 
 Tools: treefmt 2.1.0, clang-format 17.0.6, cmake-format 0.6.13, buildifier 8.5.1 (SHA-256
@@ -68,9 +68,8 @@ ECUs):
   - The full `tests-posix-*` matrix and the clang/C++23 CI configurations were not run.
 
   The CI run on the pull request is authoritative.
-- **Not yet done:** the feature issue is not filed. The commit and the PR description
-  reference it as `#TBD`; before the PR, replace that with the issue number and
-  regenerate the patch on the then-current `main`.
+- **Before the PR:** regenerate the patch on the then-current `main` once the
+  committers agree in #664.
 - **Design limits** (both listed in the PR description):
   - DoCAN STmin and block size are per transport layer.
   - The DoIP acknowledgement is sent when the router accepts the message.

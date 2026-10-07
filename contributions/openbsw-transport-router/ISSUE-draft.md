@@ -1,6 +1,7 @@
 # Issue — eclipse-openbsw/openbsw (feature request)
 
-**Status:** draft for the author's review; not filed.
+**Filed:** 7 October 2026 as https://github.com/eclipse-openbsw/openbsw/issues/664, after the
+author's review.
 
 Open this issue first and agree on the approach before the pull request
 (CONTRIBUTING.md: "talk with the team through an issue"; `pull_request.rst`: a

@@ -16,19 +16,19 @@ confirm it), **open** (to do at submission).
 | Author covered by the Eclipse Contributor Agreement, with the same email as the commits | CONTRIBUTING.md; handbook "Eclipse Contributor Agreement" | met | ECA signed under the Eclipse account `jnascimento6p0`; the author confirmed on 7 October 2026 that the commit email `jnsagai@gmail.com` is that account's address. |
 | Contributor (or employer) holds the copyright; header `Copyright (c) {year} {owner}` with a legal entity | Handbook "Copyright Headers" | met | The author confirmed on 7 October 2026 that they hold the copyright personally; headers name `Jefferson Nascimento`, 2026. |
 | Disclose generative AI use | Handbook "Using Artificial Intelligence" → "Disclosure"; genai guidelines "Be transparent" | met | Every new file except the one-line `module.spec` has an AI disclosure comment below the header; the commit has `Assisted-by: Anthropic Claude Opus 5.5`. No `Co-authored-by` for the tool, which has no ECA. |
-| Human review and verification of AI-generated content | Genai guidelines "Verify accuracy and vet output" | author | Tests and gates pass (below). The author's review statement of 7 October 2026 covered `doipClient`; confirm it for this module before filing the issue. |
+| Human review and verification of AI-generated content | Genai guidelines "Verify accuracy and vet output" | met | The author approved the module and the issue on 7 October 2026; tests and gates pass (below). |
 | Use of the AI platform consistent with the employer's policy and the platform's terms | Genai guidelines "Responsibilities" | met | Confirmed by the author on 7 October 2026. |
-| AI-generated portions: optional `CC0-1.0` dedication (`Apache-2.0 AND CC0-1.0`) | Handbook disclosure template ("could use") | open | Not applied: OpenBSW's `cr_checker` expects `SPDX-License-Identifier: Apache-2.0`. Asked in #663 and in the [issue draft](ISSUE-draft.md); follow the committers' answer. |
+| AI-generated portions: optional `CC0-1.0` dedication (`Apache-2.0 AND CC0-1.0`) | Handbook disclosure template ("could use") | open | Not applied: OpenBSW's `cr_checker` expects `SPDX-License-Identifier: Apache-2.0`. Asked in #663 and #664; follow the committers' answer. |
 | No third-party content without IP review | Handbook "Third Party Content" | met | Only new code; dependencies are OpenBSW modules and ETL already in the repository. |
 
 ## OpenBSW
 
 | Rule | Source | Status | Evidence / action |
 | --- | --- | --- | --- |
-| Discuss a new feature in an issue before the PR | CONTRIBUTING.md; `pull_request.rst` ("adding a completely new feature" must be discussed) | open | [ISSUE-draft.md](ISSUE-draft.md), ready for the author's review; not filed. Open the PR after the committers agree. |
+| Discuss a new feature in an issue before the PR | CONTRIBUTING.md; `pull_request.rst` ("adding a completely new feature" must be discussed) | open (in progress) | Issue #664 opened on 7 October 2026; open the PR after the committers agree. |
 | Fork, branch, commit, push, open PR | CONTRIBUTING.md | open | Steps in [README.md](README.md). |
 | Commit message: subject ≤ 72, capital, imperative, no period; body ≤ 72; what and why | `commit_message.rst`, `.gitlint` | met | [evidence/gitlint.txt](evidence/gitlint.txt) |
-| Reference the ticket in the commit body | `commit_message.rst` "Reference Tickets" | open | `Resolves:` with the placeholder `#TBD`; replace it with the issue number and regenerate the patch |
+| Reference the ticket in the commit body | `commit_message.rst` "Reference Tickets" | met | `Resolves: #664` in the commit; [evidence/gitlint.txt](evidence/gitlint.txt) |
 | PR description follows the template; one commit → may equal the commit message | `pull_request.rst`, PR template | met | [PR-description.md](PR-description.md) |
 | `tested_on_hw` or `no_hw_test_required` tag | `pull_request.rst` "Tags" | met (to set) | Tested on the S32K148EVB through the gateway (16 board tests); tag `tested_on_hw`. |
 | Module structure: `include/`, `src/` by namespace, `doc/index.rst`, `test/`, `mock/gmock/include`, `module.spec`, `CMakeLists.txt` | `module.rst` | met | Patch file list; `module.spec` as `transportRouterSimple` |
@@ -52,5 +52,5 @@ confirm it), **open** (to do at submission).
 | --- | --- | --- |
 | Packet with README, issue draft, signed-off patch, commit message, PR description, validation, evidence | packet layout as [openbsw-doip-client](../openbsw-doip-client/README.md) | met |
 | SHA-256 artifact manifest checked by `scripts/verify_contributions.py` | [contributions/README.md](../README.md) | met ([artifact-manifest.json](artifact-manifest.json)) |
-| Registry entry once an upstream issue exists | [contributions/README.md](../README.md) step 4 | open | Add it when the issue is filed |
+| Registry entry once an upstream issue exists | [contributions/README.md](../README.md) step 4 | met | `eclipse-openbsw/openbsw#664` in [registry.json](../registry.json) |
 | No claim of submission, approval or merge | packet convention | met |

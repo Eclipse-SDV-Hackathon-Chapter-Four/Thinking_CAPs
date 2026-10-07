@@ -1,8 +1,9 @@
 # Prepared OpenBSW contribution: transportRouter (diagnostic gateway router)
 
 Prepared on 6 October 2026 and brought up to the OpenBSW and Eclipse Foundation rules on
-7 October 2026. Nothing has been submitted publicly: the feature issue is a draft for the
-author's review, and no maintainer approval or merge is claimed.
+7 October 2026. The feature issue is open as
+[eclipse-openbsw/openbsw#664](https://github.com/eclipse-openbsw/openbsw/issues/664); the pull
+request is not opened yet, and no maintainer approval or merge is claimed.
 
 - **Upstream:** [eclipse-openbsw/openbsw](https://github.com/eclipse-openbsw/openbsw),
   base `main` at `b0550871b7a44ae47bb9b7c68af84fb9115bfa77`.
@@ -21,9 +22,10 @@ same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRout
 | Artifact | Content |
 | --- | --- |
 | [compliance.md](compliance.md) | Every OpenBSW, Eclipse Foundation and repository rule checked, with status and evidence |
-| [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template, to open first (CONTRIBUTING.md); not filed |
+| [ISSUE-draft.md](ISSUE-draft.md) | Feature request in the OpenBSW issue template; filed as #664 |
+| [upstream-snapshot.json](upstream-snapshot.json) | State of #664 when recorded |
 | [0001-transport-router.patch](0001-transport-router.patch) | `git format-patch` of the signed-off commit, with `Assisted-by` trailer |
-| [commit-message.txt](commit-message.txt) | Commit message (gitlint-checked); `Resolves: #TBD` until the issue exists |
+| [commit-message.txt](commit-message.txt) | Commit message (gitlint-checked) with `Resolves: #664` |
 | [PR-description.md](PR-description.md) | Pull request title and body in the OpenBSW template |
 | [validation.md](validation.md) | Checks performed, tools, results and limitations |
 | [evidence/](evidence/) | Unit test, coverage, format, copyright, clang-tidy, Bazel, docs and gitlint outputs |
@@ -44,14 +46,11 @@ same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRout
 
 ## Before submitting (author)
 
-1. Review the code (AI-assisted, see [compliance.md](compliance.md)) and confirm it as for
-   `doipClient`. ECA (`jnascimento6p0`, `jnsagai@gmail.com`), copyright owner and AI-use
-   policy are already confirmed.
-2. Review and open the issue from [ISSUE-draft.md](ISSUE-draft.md). Wait for the
-   committers to agree on the approach.
-3. Replace `#TBD` with the issue number in [commit-message.txt](commit-message.txt) and
-   [PR-description.md](PR-description.md), then regenerate the patch on the then-current
-   `main`:
+1. Review: approved by the author on 7 October 2026. ECA (`jnascimento6p0`,
+   `jnsagai@gmail.com`), copyright owner and AI-use policy are confirmed.
+2. Issue opened: #664 (7 October 2026). Wait for the committers to agree on the approach.
+3. The commit references #664 (`Resolves:`). Before the PR, regenerate the patch on the
+   then-current `main`:
 
    ```bash
    OBSW_BASE=<main sha> OpenBSW/scripts/openbsw-pr.sh all

@@ -8,9 +8,7 @@
 **Tag:** `tested_on_hw` (S32K148EVB, see Test Plan)
 
 The body below follows `.github/PULL_REQUEST_TEMPLATE/PULL_REQUEST_TEMPLATE.md`. Open it
-once the committers have agreed on the approach in the [issue](ISSUE-draft.md). Before
-that, replace `#TBD` with the issue number here and in [commit-message.txt](commit-message.txt),
-and regenerate the patch.
+once the committers have agreed on the approach in #664.
 
 ---
 
@@ -75,7 +73,7 @@ Foundation generative AI guidelines).
 
 **Related Issues**
 
-Resolves #TBD (feature request: Add a diagnostic gateway router that routes UDS by
+Resolves #664 (feature request: Add a diagnostic gateway router that routes UDS by
 logical address)
 
 Related: #663 (DoIP client transport layer, which this router uses to reach Ethernet ECUs
