@@ -1,0 +1,32 @@
+{
+  "patch_sha256": "2c6178e6adf315451f9a38e9879a9ae282c1f91cd456759ec15ae4e0c17e5a6e",
+  "verdict": "pass",
+  "findings": [
+    {
+      "severity": "info",
+      "message": "Frozen patch matches the actual candidate and uses the correct recorded main base.",
+      "evidence": "SHA-256 of evidence/docs-contribution.patch and the candidate git diff both match docs-freeze.json and docs-verification.json. Docs HEAD, main and origin/main all equal 9ccc71c0548ac04becef597c4585a3cad5f9337b, matching docs-admission.json."
+    },
+    {
+      "severity": "info",
+      "message": "Wording correctly describes pointer-width preservation, alignment, reservations and both feature flags.",
+      "evidence": "docs-source/rtos-docs/threadx/modules/ROOT/pages/chapter4.adoc:3648 matches evidence/contribution.patch and source/common/src/tx_thread_create.c:126-150: under TX_ENABLE_STACK_CHECKING, size is rounded down and reduced by sizeof(ULONG), start is aligned upward, and another sizeof(ULONG) is deducted when alignment changes. Both pointer conversions use ALIGN_TYPE without a TX_MISRA_ENABLE split, preserving address width while allowing alignment adjustment. evidence/issue.json identifies the original narrowing defect."
+    },
+    {
+      "severity": "info",
+      "message": "Pointer guidance preserves the public API contract and the change remains focused without duplicating docs#79.",
+      "evidence": "source/common/inc/tx_api.h:1702 and :1739 declare stack_start as VOID *. The candidate adds only one Description paragraph; git diff --check passes. Merged docs#79, commit 47658062ecc05d62d54b24a6733d70405ef80984, is an ancestor of the docs base and changes ULONG type explanations in the two about-this-guide pages; this patch leaves those explanations untouched."
+    },
+    {
+      "severity": "info",
+      "message": "Actual candidate HTML render evidence is present and current.",
+      "evidence": "evidence/documentation/render.log records npm run build:html with the docs-html destination; render.log.json records exit_code 0 from docs-source. evidence/docs-html/threadx/main/chapter4.html:7036 contains the exact added paragraph under tx_thread_create Description with correctly rendered emphasis. HTML modification time follows both candidate source and patch; docs-verification.json identifies this page and the matching frozen digest."
+    },
+    {
+      "severity": "info",
+      "message": "Pass establishes suitability for actual human review as unpublished preparation only.",
+      "evidence": "docs-source/CONTRIBUTING.md:58-67 requires an ECA associated with the commit author email; this review does not establish that match or human provenance review. docs-verification.json explicitly leaves upstream maintainer review unclaimed. Local render and test evidence do not establish upstream CI or maintainer approval."
+    }
+  ],
+  "readiness_blockers": []
+}

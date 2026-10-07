@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-10-07T19:13:29Z",
+  "kernel_patch_sha256": "20e8f835c769f33dd69cae1bff51824b7f26e8b158c67ba01d62006ece3eb80e",
+  "baseline_sha": "e73752681bd405deddf247d1cf2b899d502dceaa",
+  "image_id": "sha256:a8a3d92ee0ba622304a79ce1dcc51aba1ad1d0ac52767c71b7c1e158520275cc",
+  "test": "threadx_smp_random_resume_suspend_exclusion_pt_test",
+  "assertion": "ERROR #7",
+  "common_profile": {
+    "compiler": "GCC14.2",
+    "language": "C99",
+    "word_size_flag": "-m32",
+    "TX_COVERAGE": "ON",
+    "BUILD_SHARED_LIBS": "ON",
+    "user": "1000:1000",
+    "cap_add": "SYS_NICE",
+    "rtprio": "3:3",
+    "baseline_run_timeout_seconds": 10
+  },
+  "binding": {
+    "freeze": {
+      "path": "freeze.json",
+      "sha256": "879e633a1aa77796b782bd6c064f3d490feabcf24243af1adcae7aa6e4af6ae7"
+    },
+    "current_patch": {
+      "path": "contribution.patch",
+      "sha256": "20e8f835c769f33dd69cae1bff51824b7f26e8b158c67ba01d62006ece3eb80e"
+    }
+  },
+  "historical_failures": [
+    {
+      "configuration": "default_build_coverage",
+      "historical_evidence": {
+        "path": "history/2026-10-07T143232Z-7a6232fcfcfa/verification/smp-test.log",
+        "sha256": "73c96f124a5821c68ddad389aa6a5f367754435d04c3ef83afd083f44d47e789"
+      },
+      "historical_failure_line_1based": 150,
+      "historical_command": "COMMAND [\"docker\", \"run\", \"--rm\", \"--network\", \"none\", \"--cpuset-cpus\", \"0,1,2,3\", \"--user\", \"1000:1000\", \"--cap-add\", \"SYS_NICE\", \"--ulimit\", \"rtprio=3:3\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/source:/work\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/evidence:/evidence\", \"-w\", \"/work\", \"threadx-contribution-checks:744\", \"env\", \"TX_COVERAGE=ON\", \"CTEST_REPEAT_FAIL=1\", \"CTEST_TIMEOUT=120\", \"bash\", \"scripts/test_smp.sh\"]",
+      "historical_cpuset": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "historical_affinity_note": "explicit Docker cpuset",
+      "original_baseline_summary": {
+        "path": "diagnostics/baseline-smp-default/summary.json",
+        "sha256": "eba85a6c231307d87f842dd773e2578c3b2eb13269a1970c32bf9aeec7fa2b14"
+      },
+      "original_baseline_cpuset": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "original_baseline_runs": 8,
+      "matching_error_reproduced": true,
+      "original_failure_log": {
+        "path": "diagnostics/baseline-smp-default/run-08.log",
+        "sha256": "9c4401e651697c0bd3c874bf45943f27294aa506897d6c85d184bd4c688aafc6"
+      },
+      "classification": "Same assertion reproduced on original baseline in same feature configuration and recorded affinity profile."
+    },
+    {
+      "configuration": "disable_notify_callbacks_build",
+      "historical_evidence": {
+        "path": "history/2026-10-07T133556Z-7a6232fcfcfa/verification/smp-test.log",
+        "sha256": "b369a1e36a9d074aa0305f89239bce88ce82fb3229feb000cafddb58e8c71dc2"
+      },
+      "historical_failure_line_1based": 399,
+      "historical_command": "COMMAND [\"docker\", \"run\", \"--rm\", \"--network\", \"none\", \"--user\", \"1000:1000\", \"--cap-add\", \"SYS_NICE\", \"--ulimit\", \"rtprio=3:3\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/source:/work\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/evidence:/evidence\", \"-w\", \"/work\", \"threadx-contribution-checks:744\", \"env\", \"TX_COVERAGE=ON\", \"CTEST_REPEAT_FAIL=1\", \"CTEST_TIMEOUT=120\", \"bash\", \"scripts/test_smp.sh\"]",
+      "historical_cpuset": null,
+      "historical_affinity_note": "no Docker cpuset override in retained command; no historical host CPU set inferred",
+      "original_baseline_summary": {
+        "path": "diagnostics/baseline-smp-disable-notify/summary.json",
+        "sha256": "8853e52caaf90ff774daa420529515122929fe813fd79d1faff9c08d62123360"
+      },
+      "original_baseline_cpuset": null,
+      "original_baseline_runs": 5,
+      "matching_error_reproduced": true,
+      "original_failure_log": {
+        "path": "diagnostics/baseline-smp-disable-notify/run-05.log",
+        "sha256": "9c4401e651697c0bd3c874bf45943f27294aa506897d6c85d184bd4c688aafc6"
+      },
+      "classification": "Same assertion reproduced on original baseline in same feature configuration and recorded affinity profile."
+    },
+    {
+      "configuration": "trace_build",
+      "historical_evidence": {
+        "path": "history/2026-10-07T141718Z-7a6232fcfcfa/verification/smp-test.log",
+        "sha256": "0d2e5b95ce6f3a7e9c5b04af5c8138a6bc34bcbd7dcc26789e414de0e879da0d"
+      },
+      "historical_failure_line_1based": 1146,
+      "historical_command": "COMMAND [\"docker\", \"run\", \"--rm\", \"--network\", \"none\", \"--cpuset-cpus\", \"0,1,2,3\", \"--user\", \"1000:1000\", \"--cap-add\", \"SYS_NICE\", \"--ulimit\", \"rtprio=3:3\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/source:/work\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/evidence:/evidence\", \"-w\", \"/work\", \"threadx-contribution-checks:744\", \"env\", \"TX_COVERAGE=ON\", \"CTEST_REPEAT_FAIL=1\", \"CTEST_TIMEOUT=120\", \"bash\", \"scripts/test_smp.sh\"]",
+      "historical_cpuset": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "historical_affinity_note": "explicit Docker cpuset",
+      "original_baseline_summary": {
+        "path": "diagnostics/baseline-smp-trace-four-logical/summary.json",
+        "sha256": "6fbd462268a809936919167a3e9ec5f705fd8289c9705cf6facff166666a2fbb"
+      },
+      "original_baseline_cpuset": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "original_baseline_runs": 10,
+      "matching_error_reproduced": false,
+      "classification": "Exact historical trace affinity has no reproduced baseline failure in ten bounded runs; do not call this historical profile baseline-proven.",
+      "separate_four_physical_core_proof": {
+        "affinity": [
+          0,
+          2,
+          4,
+          6
+        ],
+        "summary": {
+          "path": "diagnostics/paired-smp/summary.json",
+          "sha256": "17db624b8f7b3cb17d56b2c165326382bd1069693b193aed8dc05f40f1359b89"
+        },
+        "original_failure_log": {
+          "path": "diagnostics/paired-smp/pair-04-baseline.log",
+          "sha256": "9c4401e651697c0bd3c874bf45943f27294aa506897d6c85d184bd4c688aafc6"
+        },
+        "candidate_failure_log": {
+          "path": "diagnostics/paired-smp/pair-06-candidate.log",
+          "sha256": "76b65320bebe44f21c7875b2cfe3e49c61892510ecd386ad755e1c4b06ed4a60"
+        },
+        "interpretation": "Baseline and candidate failed same trace assertion on a different affinity; compile/link commands match after build-path normalization."
+      }
+    },
+    {
+      "test": "threadx_event_flag_suspension_timeout_test",
+      "assertion": "ERROR #7",
+      "assertion_meaning": "After sleeping 63 ticks, ERROR #7 occurs if thread_1_counter is outside {32,33} or thread_2_counter is outside {13,14}",
+      "configuration": "trace_build",
+      "historical_evidence": {
+        "path": "history/2026-10-07T174833Z-750dbf4e5707/verification/smp-test.log",
+        "sha256": "3d95a2e80e15bd641aca2752af00d73e7fb42ea1ea0b24d58eb625c1d5469846"
+      },
+      "historical_failure_line_1based": 1062,
+      "historical_command": "COMMAND [\"docker\", \"run\", \"--rm\", \"--network\", \"none\", \"--cpuset-cpus\", \"0,2,4,6\", \"--user\", \"1000:1000\", \"--cap-add\", \"SYS_NICE\", \"--ulimit\", \"rtprio=3:3\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/source:/work\", \"-v\", \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/evidence:/evidence\", \"-w\", \"/work\", \"sha256:a8a3d92ee0ba622304a79ce1dcc51aba1ad1d0ac52767c71b7c1e158520275cc\", \"env\", \"TX_COVERAGE=ON\", \"CTEST_REPEAT_FAIL=1\", \"CTEST_TIMEOUT=120\", \"bash\", \"scripts/test_smp.sh\"]",
+      "historical_cpuset": [
+        0,
+        2,
+        4,
+        6
+      ],
+      "historical_affinity_note": "Four physical cores; recorded Docker cpuset",
+      "original_baseline_summary": {
+        "path": "diagnostics/baseline-smp-event-flag-timeout/summary.json",
+        "sha256": "d2448abad2be6b28e773562fcf35881e81e97d7fc0d88f27c36b49ca98a3717a"
+      },
+      "original_baseline_cpuset": [
+        0,
+        2,
+        4,
+        6
+      ],
+      "original_baseline_runs": 10,
+      "matching_error_reproduced": false,
+      "classification": "Original baseline passed all ten bounded attempts. No baseline waiver for this historical event-flag failure; distinct from the randomized preemption-threshold assertion.",
+      "evidence_limit": "Candidate exact Ninja command comparison unavailable after next verification cleaned its build directory; measured original commands and unchanged tracked SMP/shared/toolchain inputs retained."
+    }
+  ],
+  "current_verification": {
+    "record": {
+      "path": "verification.json",
+      "sha256": "9f8ac816e6a9cb0df0878755e8adaaf3484f48b3cc5f2bd5fcd1b2c3efdd571b"
+    },
+    "status": "prepared-with-baseline-failure",
+    "smp_status": "baseline-failure",
+    "smp_test_exit_code": 8,
+    "smp_test_log": {
+      "path": "verification/smp-test.log",
+      "sha256": "03c18afd5f8c7b7272a25c7a604d1e90ca0461895a0368a5cbdfbe76a1dbf997"
+    },
+    "smp_cpuset": [
+      0,
+      2,
+      4,
+      6
+    ],
+    "all_passed_configuration_test_counts": [],
+    "total_tests_in_all_passed_summaries": 0,
+    "patch_sha256": "20e8f835c769f33dd69cae1bff51824b7f26e8b158c67ba01d62006ece3eb80e",
+    "distinction": "Current measured results are separate from retained historical failures. No historical failure or original baseline proof is rewritten."
+  }
+}

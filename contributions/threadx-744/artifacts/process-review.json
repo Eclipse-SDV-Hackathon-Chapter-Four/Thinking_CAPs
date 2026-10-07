@@ -1,0 +1,56 @@
+{
+  "patch_sha256": "20e8f835c769f33dd69cae1bff51824b7f26e8b158c67ba01d62006ece3eb80e",
+  "verdict": "pass",
+  "findings": [
+    {
+      "severity": "info",
+      "message": "The finalized patch and current process evidence are suitable for contributor review. Publication and merge readiness remain conditional.",
+      "evidence": "The frozen contribution.patch and git diff HEAD --binary both match freeze.json and verification.json. The companion documentation diff matches docs-freeze.json and docs-verification.json. All 28 audited files and 12 recorded exemptions match their license-headers.json hashes."
+    },
+    {
+      "severity": "info",
+      "message": "Recorded human confirmation supports the finalized human-reviewed headers; it is not an agent-generated attestation.",
+      "evidence": "human-review-conversation.json records the original messages 'I agree' and 'email is jnsagai@gmail.com'. artifacts/fabro-run-status.json binds the human_provenance question to reviewed patch 750dbf4e5707e7072c20aa04872908f44b30d1310a4b3bbb6cae565bbcb9a5d2. Comparing its retained frozen patch with the current patch shows only the three approved header wording changes and resulting blob identifiers. human-review.json binds the finalized kernel and unchanged documentation hashes. Current verification followed finalization. Generic pending-human-review statements retained in verification and documentation text do not supersede this receipt. This review does not independently certify copyright ownership, employer permission, or maintainer approval."
+    },
+    {
+      "severity": "info",
+      "message": "Current upstream file headers use the appropriate project licenses and preserve existing provenance.",
+      "evidence": "All five kernel patch headers were read. LICENSE.txt is MIT; the existing kernel copyright lines and single AI marker are preserved. The edited parent test/tx/cmake/CMakeLists.txt now has a MIT header and exactly one AI marker. The three new files name Codex (gpt-6.1-sol), contain the guide's completed-human-review wording, and use MIT AND CC0-1.0. The documentation project is MIT and its existing Microsoft, contributor and initial-author notices are preserved. Local workflow infrastructure uses Apache-2.0 AND CC0-1.0 consistently with Thinking_CAPs/LICENSE and is excluded from both upstream patches. Historical snapshots retain their notices through explicit exemptions."
+    },
+    {
+      "severity": "info",
+      "message": "The patch remains within #744 scope, with no outstanding code dependency or observed competing fix.",
+      "evidence": "Live issue timeline and all-state searches for 744, MISRA, stack and stack-pointer truncation found no superseding #744 proposal. Merged #742 explicitly excludes #744 and is an ancestor of the admitted base, as are #747, #746, #749, #751, #705, #727, #666 and #732. Closed, unmerged #105 concerns separate alignment arithmetic. Open #798 changes tx_timer_initialize.c rather than this create path. Callback, POSIX, clock and module-manager defects remain outside scope. Merged documentation #79 addresses ULONG semantics and does not replace the required #744 companion."
+    },
+    {
+      "severity": "info",
+      "message": "Branch targets and contribution coordination are supported by current evidence.",
+      "evidence": "Live GitHub branch reads confirm ThreadX dev equals e73752681bd405deddf247d1cf2b899d502dceaa and documentation main equals 9ccc71c0548ac04becef597c4585a3cad5f9337b, matching the freezes and admissions. Live workflow blob identifiers match the inspected local workflows. The actual jnsagai coordination comment is present at https://github.com/eclipse-threadx/threadx/issues/744#issuecomment-6044950779. dependencies.json is explicitly a planning record; its earlier unsatisfied coordination and implementation entries are superseded by current evidence. CONTRIBUTING.md requires a matching documentation PR for this behavior change."
+    },
+    {
+      "severity": "info",
+      "message": "Proposed author metadata is recorded, but final commit-email ECA validation remains pending. No separate Signed-off-by requirement was observed.",
+      "evidence": "admission.json proposes Jefferson Nascimento <jnsagai@gmail.com>, GitHub jnsagai; the conversation receipt supplies that email and Eclipse username jnascimento6p0. publication-preflight.json records the matching authenticated GitHub account. eca-prepublication.json records a successful username lookup, without claiming email validation. The [ECA API documentation](https://webdev.eclipse.org/docs/api/git-eca-rest-api/) documents lookup success separately from contribution validation. CONTRIBUTING.md states that an ECA associated with the commit Author email fulfills the DCO sign-off requirement. Proposed commit construction includes Assisted-by: Codex (gpt-6.1-sol) <noreply@openai.com>; no signed-off identity is fabricated."
+    },
+    {
+      "severity": "info",
+      "message": "Regression artifacts are portable and measured limitations are disclosed accurately.",
+      "evidence": "Neither frozen upstream patch contains the local workspace or artifact paths. Regression CMake paths derive from CMAKE_CURRENT_LIST_DIR and repository-relative sources. Current focused verification passes 6/6 tests; unchanged code fails five relevant cases. Single-core verification passes. Current SMP default_build_coverage fails randomized preemption-threshold ERROR #7, reproduced on unchanged baseline with the same image, CPU affinity and configuration in smp-baseline-reproduction.json. Earlier trace and disabled-notification failures are separate historical diagnostics and provide no waiver. FreeRTOS validation uses TX_ENABLE_CONST_NAMES; stock upstream validation remains pending."
+    },
+    {
+      "severity": "info",
+      "message": "Required remote checks and additional applicable workflows are identified; upstream final-head results are not yet available.",
+      "evidence": "Live active dev ruleset 23985797 requires eclipsefdn/eca, tx / run_tests, smp / run_tests, freertos / run_tests and riscv / run_tests, plus one approving review and code-owner review. This common/** change also triggers gcc_check job gnu, clang_check job atfe, Cortex M0/M3/M4/M7 build jobs, ports_arch_check jobs cortex-m and cortex-a, r52_fvp job r52, and repo_checks job checks. Kernel/SMP merged line coverage floors are 99%; FVP execution is conditional on model configuration. Documentation workflows have no pull_request trigger: HTML publishing is limited to upstream non-main branches or manual dispatch, and PDF generation is manual. No automatic documentation render check is claimed."
+    }
+  ],
+  "readiness_blockers": [
+    "Prepare finalized kernel PR title/body and refresh companion text with current recorded human confirmation, measured coverage and SMP limitations; leave real-hardware validation unchecked because none is evidenced.",
+    "Run the publisher's publication-phase license gate before any submission, including a draft PR. license-headers-final.json is not present; the preparation audit does not establish that this final gate passed.",
+    "Preserve the recorded human-reviewed patch binding. Any substantive change requires genuine renewed human technical/provenance review, appropriate finalized headers, a new freeze, verification and independent review.",
+    "Publish and cross-link the required documentation PR against main and kernel PR against dev only after prepublication gates pass. Neither PR currently exists.",
+    "After PR creation, obtain final-head eclipsefdn/eca success for both contributions and verify every actual commit Author email matches the contributor's Eclipse account. Username lookup does not establish this.",
+    "Monitor final-head tx / run_tests, smp / run_tests, freertos / run_tests and riscv / run_tests, including kernel/SMP coverage gates. All must pass before requesting review or claiming merge readiness; baseline reproduction does not waive SMP.",
+    "Monitor applicable gnu, atfe, Cortex M0/M3/M4/M7 build, cortex-m, cortex-a, r52 and checks jobs. Complete stock FreeRTOS and generated-port validation; count FVP execution only if actually performed. Upstream PR checks and any required fork-workflow authorization await a PR.",
+    "Obtain the required upstream approving and code-owner reviews, and documentation maintainer review. No maintainer endorsement or approval is presently evidenced."
+  ]
+}

@@ -1,0 +1,23 @@
+COMMAND ["docker", "run", "--rm", "--network", "none", "--user", "1000:1000", "--cap-add", "SYS_NICE", "--ulimit", "rtprio=3:3", "-v", "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/source:/work", "-v", "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/evidence:/evidence", "-w", "/work", "sha256:a8a3d92ee0ba622304a79ce1dcc51aba1ad1d0ac52767c71b7c1e158520275cc", "bash", "scripts/check_ports.sh", "--no-regen"]
+
+== Generated ports are reproducible from ports_arch ==
+  skipped (--no-regen)
+
+== Preprocessor directives balance ==
+  ok: every port header balances
+
+== No code at file scope in port headers ==
+  ok: no port header carries code at file scope
+
+== GNU assembly using the preprocessor is named .S ==
+  ok: no .s file under a gnu tree uses the preprocessor
+
+== Cortex-R5 execution-profile guards accept both symbols ==
+  ok: every Cortex-R5 profiling hook accepts both symbols
+
+== Families with no copy script (report only) ==
+  ports/cortex_m0: "dsb sy" present in ac6 gnu iar but absent in ac5 keil
+  ports/cortex_m0: "isb sy" present in ac6 gnu iar but absent in ac5 keil
+  (nothing above means the toolchains within each family agree)
+
+All port consistency checks passed.

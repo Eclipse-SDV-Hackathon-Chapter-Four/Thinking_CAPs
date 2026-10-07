@@ -1,13 +1,85 @@
-test_export_preserves_blocked_status (test_gates.ReadinessTests.test_export_preserves_blocked_status) ... ok
-test_green_ci_does_not_replace_human_approval (test_gates.ReadinessTests.test_green_ci_does_not_replace_human_approval) ... ok
-test_blocking_finding_overrides_a_pass_verdict (test_gates.ReviewGateTests.test_blocking_finding_overrides_a_pass_verdict) ... ok
-test_failed_independent_review_blocks_publication (test_gates.ReviewGateTests.test_failed_independent_review_blocks_publication) ... ok
-test_failed_measured_verification_overrides_agent_passes (test_gates.ReviewGateTests.test_failed_measured_verification_overrides_agent_passes) ... ok
-test_stale_approval_cannot_accept_a_new_patch (test_gates.ReviewGateTests.test_stale_approval_cannot_accept_a_new_patch) ... ok
+test_different_patch_base_image_or_cpu_profile_is_rejected (test_baseline_classification.BaselineClassificationTests) ... ok
+test_disclosed_matching_baseline_failure_permits_only_preparation (test_baseline_classification.BaselineClassificationTests) ... ok
+test_no_baseline_failure_or_wrong_configuration_is_rejected (test_baseline_classification.BaselineClassificationTests) ... ok
+test_other_assertions_and_tests_cannot_use_this_classification (test_baseline_classification.BaselineClassificationTests) ... ok
+test_other_local_failures_are_never_waived (test_baseline_classification.BaselineClassificationTests) ... ok
+test_top_level_pass_cannot_hide_failed_or_missing_checks (test_baseline_classification.BaselineClassificationTests) ... ok
+test_changed_manifest_cannot_certify_changed_execution_files (test_execution_binding.ExecutionBindingTests) ... ok
+test_new_freeze_retires_prior_draft_and_mirrors_without_erasing_human_receipt (test_execution_binding.ExecutionBindingTests) ... ok
+test_registered_graph_executes_snapshot_and_ignores_later_workspace_edits (test_execution_binding.ExecutionBindingTests) ... ok
+test_aggregate_changes_requested_cannot_be_overridden_by_an_approval (test_gates.CompanionApprovalTests) ... ok
+test_authorized_changes_requested_blocks_another_maintainer_approval (test_gates.CompanionApprovalTests) ... ok
+test_community_approval_does_not_replace_maintainer_approval (test_gates.CompanionApprovalTests) ... ok
+test_current_head_approval_from_repository_writer_is_accepted (test_gates.CompanionApprovalTests) ... ok
+test_old_head_or_later_dismissal_invalidates_maintainer_approval (test_gates.CompanionApprovalTests) ... ok
+test_changed_hash_head_or_base_cannot_reuse_an_old_companion (test_gates.CompanionPublicationTests) ... ok
+test_exact_reviewed_companion_is_accepted (test_gates.CompanionPublicationTests) ... ok
+test_remote_head_or_base_must_match_publication (test_gates.CompanionPublicationTests) ... ok
+test_changed_canonical_header_invalidates_finalization_proof (test_gates.ConsentFinalizationTests) ... ok
+test_changed_docs_invalidates_finalized_confirmation (test_gates.ConsentFinalizationTests) ... ok
+test_only_canonical_c_and_cmake_header_text_changes (test_gates.ConsentFinalizationTests) ... ok
+test_unfinalized_human_confirmation_cannot_enable_publication (test_gates.ConsentFinalizationTests) ... ok
+test_unsupported_header_does_not_partially_finalize_other_files (test_gates.ConsentFinalizationTests) ... ok
+test_actual_conversation_preserves_messages_without_inventing_reviewed_text (test_gates.HumanReviewTests) ... ok
+test_automatic_approval_cannot_certify_human_review (test_gates.HumanReviewTests) ... ok
+test_confirmation_of_a_different_patch_is_rejected (test_gates.HumanReviewTests) ... ok
+test_conversation_rejects_automatic_ambiguous_or_negative_agreement (test_gates.HumanReviewTests) ... ok
+test_conversation_rejects_changed_kernel_or_companion (test_gates.HumanReviewTests) ... ok
+test_conversation_rejects_missing_or_malformed_email (test_gates.HumanReviewTests) ... ok
+test_conversation_rejects_unrelated_native_question (test_gates.HumanReviewTests) ... ok
+test_fork_or_wrong_repository_url_cannot_represent_upstream_publication (test_gates.KernelPublicationTests) ... ok
+test_kernel_head_and_all_three_digests_must_match (test_gates.KernelPublicationTests) ... ok
+test_ambient_author_email_override_and_wrong_commit_email_are_rejected (test_gates.PublicationIdentityTests) ... ok
+test_changed_github_identity_is_rejected_before_publication (test_gates.PublicationIdentityTests) ... ok
+test_confirmed_identity_is_accepted_before_and_after_commit (test_gates.PublicationIdentityTests) ... ok
+test_publisher_rejects_unfinalized_or_stale_docs_consent_before_external_actions (test_gates.PublicationIdentityTests) ... ok
+test_eca_is_mandatory_even_when_branch_rules_return_no_contexts (test_gates.ReadinessTests) ... ok
+test_exact_approved_current_pair_with_green_checks_is_ready (test_gates.ReadinessTests) ... ok
+test_export_preserves_blocked_status (test_gates.ReadinessTests) ... ok
+test_green_ci_does_not_replace_human_approval (test_gates.ReadinessTests) ... ok
+test_missing_required_companion_blocks_even_a_green_approved_kernel_pr (test_gates.ReadinessTests) ... ok
+test_pending_applicable_check_blocks_readiness (test_gates.ReadinessTests) ... ok
+test_protected_branch_block_cannot_be_reported_ready (test_gates.ReadinessTests) ... ok
+test_smp_must_execute_successfully_even_when_branch_rules_return_no_contexts (test_gates.ReadinessTests) ... ok
+test_stale_human_consent_blocks_an_already_nondraft_approved_pair (test_gates.ReadinessTests) ... ok
+test_stale_kernel_publication_blocks_an_otherwise_ready_pair (test_gates.ReadinessTests) ... ok
+test_blocking_finding_overrides_a_pass_verdict (test_gates.ReviewGateTests) ... ok
+test_bound_runner_and_image_must_match_measured_verification (test_gates.ReviewGateTests) ... ok
+test_failed_independent_review_blocks_publication (test_gates.ReviewGateTests) ... ok
+test_failed_measured_verification_overrides_agent_passes (test_gates.ReviewGateTests) ... ok
+test_matching_immutable_runner_image_and_reviews_are_accepted (test_gates.ReviewGateTests) ... ok
+test_missing_or_failed_license_audit_cannot_be_waived_by_reviews (test_gates.ReviewGateTests) ... ok
+test_stale_approval_cannot_accept_a_new_patch (test_gates.ReviewGateTests) ... ok
+test_stale_companion_review_blocks_publication (test_gates.ReviewGateTests) ... ok
+test_canonical_upstream_header_is_required_for_publication (test_license_headers.HeaderTests) ... ok
+test_conflicting_pending_and_reviewed_claims_are_rejected (test_license_headers.HeaderTests) ... ok
+test_duplicate_human_review_statements_are_rejected (test_license_headers.HeaderTests) ... ok
+test_existing_ascii_doc_mit_header_accepts_its_original_license_url (test_license_headers.HeaderTests) ... ok
+test_hash_comment_cmake_header_and_assembly_follow_same_new_file_policy (test_license_headers.HeaderTests) ... ok
+test_license_text_after_code_or_sixty_lines_cannot_fake_a_header (test_license_headers.HeaderTests) ... ok
+test_local_pending_header_remains_valid_in_both_phases (test_license_headers.HeaderTests) ... ok
+test_missing_copyright_license_url_or_model_attribution_is_rejected (test_license_headers.HeaderTests) ... ok
+test_missing_wrong_or_duplicate_license_identifier_is_rejected (test_license_headers.HeaderTests) ... ok
+test_original_copyright_and_disclosure_cannot_be_removed_or_modified (test_license_headers.HeaderTests) ... ok
+test_pending_upstream_header_passes_preparation_but_not_publication (test_license_headers.HeaderTests) ... ok
+test_invalid_git_base_does_not_emit_success (test_license_headers.InventoryTests) ... ok
+test_inventory_includes_untracked_source_and_authored_probe_and_enumerates_generated_exemptions (test_license_headers.InventoryTests) ... ok
+test_symlinked_authored_source_cannot_redirect_inventory (test_license_headers.InventoryTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 6 tests in 0.003s
+Ran 67 tests in 0.166s
 
 OK
-Exported contribution artifacts: /tmp/tmp2mxv7m7l/artifacts
-PR readiness: blocked ['Draft awaits human contributor provenance review', 'Required upstream human/code-owner approval is pending']
+PR readiness: blocked ['Final-head SMP regression CI has not executed successfully', 'Final-head Eclipse ECA check is not passing']
+PR readiness: ready []
+Exported contribution artifacts: /tmp/tmp6us7r2lg/artifacts
+PR readiness: blocked ['Current human review or canonical header finalization is absent or stale', "'freeze.json'", 'PR remains a draft', 'Required upstream human/code-owner approval is pending', 'GitHub protected-branch merge state is not clean: None', 'Required companion documentation publication is absent']
+PR readiness: blocked ['Current human review or canonical header finalization is absent or stale', "'freeze.json'", 'Required companion documentation publication is absent']
+PR readiness: blocked ['Current human review or canonical header finalization is absent or stale', "'freeze.json'", 'Applicable check is still pending: Arm compiler', 'Required companion documentation publication is absent']
+PR readiness: blocked ['Current human review or canonical header finalization is absent or stale', "'freeze.json'", 'GitHub protected-branch merge state is not clean: BLOCKED', 'Required companion documentation publication is absent']
+PR readiness: blocked ['Final-head SMP regression CI has not executed successfully']
+PR readiness: blocked ['Final-head SMP regression CI has not executed successfully']
+PR readiness: blocked ['Current human review or canonical header finalization is absent or stale']
+PR readiness: blocked ['Kernel publication differs from reviewed snapshot']
+{"outcome": "succeeded", "context_updates": {"consent_ready": false}}
+{"status": "fail", "counts": {}, "output": "/tmp/tmpbno95632/report.json"}
