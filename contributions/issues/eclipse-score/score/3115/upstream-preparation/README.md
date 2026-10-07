@@ -1,5 +1,7 @@
 # Current native proposal and measured verification
 
+> Historical preparation: the inherited failure below is resolved on the updated PR by upstream commit `6122462`. See [fresh passing verification](../review-preparation/README.md). These original failed runs remain unchanged.
+
 The current candidate is [DR-010-infra.rst](DR-010-infra.rst), placed at
 `docs/design_decisions/infrastructure/DR-010-infra.rst` on native baseline
 `fdc04f75a2251fcd8cbfd01585fba158c4e09756`. It preserves the ID from PR #3140,
