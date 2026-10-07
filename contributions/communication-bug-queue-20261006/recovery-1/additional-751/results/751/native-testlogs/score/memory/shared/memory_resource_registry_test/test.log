@@ -1,0 +1,60 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:memory_resource_registry_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 18 tests from 4 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m3 tests from MemoryResourceRegistryDeathTest
+[0;32m[ RUN      ] [mMemoryResourceRegistryDeathTest.InsertingANullMemoryResourceTerminates
+2026/10/06 21:32:33.2353184 903328341 000 ECU1 NONE shm log fatal verbose 1 Could not insert resource into MemoryResourceRegistry: Input resource is a nullptr. 
+[0;32m[       OK ] [mMemoryResourceRegistryDeathTest.InsertingANullMemoryResourceTerminates (80 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryDeathTest.InsertingAMemoryResourceWithNullStartingAddressTerminates
+2026/10/06 21:32:33.2353265 903329146 000 ECU1 NONE shm log fatal verbose 5 Could not insert resource into MemoryResourceRegistry: The memory address range: [ False : True cannot contain a nullptr. 
+[0;32m[       OK ] [mMemoryResourceRegistryDeathTest.InsertingAMemoryResourceWithNullStartingAddressTerminates (80 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryDeathTest.InsertingAMemoryResourceWithNullEndingAddressTerminates
+2026/10/06 21:32:33.2353345 903329953 000 ECU1 NONE shm log fatal verbose 5 Could not insert resource into MemoryResourceRegistry: The memory address range: [ True : False cannot contain a nullptr. 
+[0;32m[       OK ] [mMemoryResourceRegistryDeathTest.InsertingAMemoryResourceWithNullEndingAddressTerminates (76 ms)
+[0;32m[----------] [m3 tests from MemoryResourceRegistryDeathTest (237 ms total)
+
+[0;32m[----------] [m5 tests from MemoryResourceRegistryTest
+[0;32m[ RUN      ] [mMemoryResourceRegistryTest.CanInsertAndReturnAMemoryResource
+[0;32m[       OK ] [mMemoryResourceRegistryTest.CanInsertAndReturnAMemoryResource (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryTest.CanRemoveAMemoryResource
+[0;32m[       OK ] [mMemoryResourceRegistryTest.CanRemoveAMemoryResource (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryTest.CanFailOverwriteResourceOnSecondInsert
+[0;32m[       OK ] [mMemoryResourceRegistryTest.CanFailOverwriteResourceOnSecondInsert (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryTest.ReturnsNullptrOnNonExistingIdentifier
+[0;32m[       OK ] [mMemoryResourceRegistryTest.ReturnsNullptrOnNonExistingIdentifier (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryTest.IsThreadSafe
+[0;32m[       OK ] [mMemoryResourceRegistryTest.IsThreadSafe (10 ms)
+[0;32m[----------] [m5 tests from MemoryResourceRegistryTest (10 ms total)
+
+[0;32m[----------] [m7 tests from MemoryResourceRegistryMemoryBoundsTest
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsNullMemoryBoundsIfRegistryIsEmpty
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsNullMemoryBoundsIfRegistryIsEmpty (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsMemoryBoundsForPointersInBounds
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsMemoryBoundsForPointersInBounds (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsMemoryBoundsForPointersAsIntegersInBounds
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsMemoryBoundsForPointersAsIntegersInBounds (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsNullMemoryBoundsForPointersOutOfBounds
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsNullMemoryBoundsForPointersOutOfBounds (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsNullMemoryBoundsForPointersAsIntegersOutOfBounds
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsNullMemoryBoundsForPointersAsIntegersOutOfBounds (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsMemoryBoundsFromIdentifier
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsMemoryBoundsFromIdentifier (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsErrorForInvalidIdentifier
+[0;32m[       OK ] [mMemoryResourceRegistryMemoryBoundsTest.ReturnsErrorForInvalidIdentifier (0 ms)
+[0;32m[----------] [m7 tests from MemoryResourceRegistryMemoryBoundsTest (0 ms total)
+
+[0;32m[----------] [m3 tests from MemoryResourceRegistryOverlappingMemoryBoundsTest
+[0;32m[ RUN      ] [mMemoryResourceRegistryOverlappingMemoryBoundsTest.CannotInsertResourcesWithOverlappingMemoryBounds
+[0;32m[       OK ] [mMemoryResourceRegistryOverlappingMemoryBoundsTest.CannotInsertResourcesWithOverlappingMemoryBounds (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryOverlappingMemoryBoundsTest.CanInsertResourcesWithOverlappingMemoryBoundsForBoundsBypassingResource
+[0;32m[       OK ] [mMemoryResourceRegistryOverlappingMemoryBoundsTest.CanInsertResourcesWithOverlappingMemoryBoundsForBoundsBypassingResource (0 ms)
+[0;32m[ RUN      ] [mMemoryResourceRegistryOverlappingMemoryBoundsTest.CannotGetBoundsWithPointerForBoundsCheckingBypassingResource
+[0;32m[       OK ] [mMemoryResourceRegistryOverlappingMemoryBoundsTest.CannotGetBoundsWithPointerForBoundsCheckingBypassingResource (0 ms)
+[0;32m[----------] [m3 tests from MemoryResourceRegistryOverlappingMemoryBoundsTest (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m18 tests from 4 test suites ran. (248 ms total)
+[0;32m[  PASSED  ] [m18 tests.

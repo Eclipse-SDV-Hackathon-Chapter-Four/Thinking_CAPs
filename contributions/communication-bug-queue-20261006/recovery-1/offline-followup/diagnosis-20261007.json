@@ -1,0 +1,99 @@
+{
+ "recorded_at": "2026-10-07",
+ "kind": "offline_diagnosis_no_source_change",
+ "engineering_acceptance": "pending_offline_review",
+ "paid_calls": 0,
+ "model_tokens": 0,
+ "source_changed": false,
+ "native_run_started": false,
+ "storage": {
+  "device": "/dev/loop1",
+  "backing_file": "/media/jefferson/Lexar/.s-core-build/build-volume-v1.ext4",
+  "ext4_uuid": "11c42dee-73a3-4c2b-ab42-a0440011d9e0",
+  "mount_options": "rw,nosuid,nodev,relatime,errors=remount-ro",
+  "verified": "findmnt+losetup at session start"
+ },
+ "issue_1104_extraction_failure": {
+  "failed_record": {
+   "path": "recovery-1/results/1104/evidence/codeql-create.stderr",
+   "sha256": "84a7dbe54ecafce90f492131c9d38bf0001e7d4592237d5f90abcd6aa05c27fa",
+   "failing_action": "score/mw/com/impl/util/test/BUILD:57 arithmetic_utils_multiplication_build_error_test__0__0/compile_output (Exit 2, bash)",
+   "target_pattern": "//score/mw/com/impl/... (issue #1104's own reproduction pattern)"
+  },
+  "contrast_record": {
+   "path": "recovery-1/results/1104/evidence/codeql-create-nightly-projection.json",
+   "target_pattern": "//score/message_passing //score/mw/com",
+   "exit_code": 0
+  },
+  "invocation": {
+   "rule": "rules_build_error 0.11.0 (dev_dependency) cc_build_error_test",
+   "mechanism": "ctx.actions.run_shell(command=LIST_ALL_ARGS='\"$@\"', arguments=[try_build.bash, ...]) -> bash -c '\"$@\"' '' try_build.bash ...",
+   "build_error_bzl_sha256": "1e104aafcebdb28f988120ac1a4aa9de5eb6fbfafec3b7c2e873798aa86b6fab",
+   "general_build_actions_bzl_sha256": "eedc92a2cc33793090606bdbc168eccebae337d332e816a994b55cab0e21f640",
+   "try_build_bash_sha256": "a6dca8069cc54eb2ec58e29aa4d10e0d48737b21cd61eb56d9dd94809da6728f",
+   "script_mode": "-rwxr-xr-x",
+   "script_shebang": null,
+   "sibling_scripts_without_shebang": [
+    "check_each_message.bash",
+    "check_emptiness.bash"
+   ]
+  },
+  "image": {
+   "id": "sha256:8332c7a66af3f1cfdb04ce803ce4b7711a976fb2bcbdda3cdae598c96c11fa88",
+   "bin_sh": "/usr/bin/dash",
+   "bash": "5.2.21(1)-release",
+   "os": "Ubuntu 24.04.4 LTS"
+  },
+  "minimal_repro": {
+   "dir": "recovery-1/offline-followup/1104-tracer-shell-repro-20261007",
+   "codeql": "pinned codeql-bundle-v2.21.4 (MODULE.bazel sha256 a94f674bb3c23ea5e9a2ad06b64847dd0277b15014d2517ecd9c41c88e6caa65), CLI 2.21.4",
+   "untraced": {
+    "result": "bash interpreted script (BASH_VERSION set), exit 0",
+    "sha256": "ffbb60c084a615bc5a4bab6b95cf1e853c3e48365823d00ff4a2f38b9af92935"
+   },
+   "traced": {
+    "command": "codeql database create --language=cpp --command=driver.sh",
+    "result": "./noshebang.sh: 1: set: Illegal option -o pipefail; exit=2",
+    "sha256": "d8f107ed8a99fd8ae4a2dbe3354e14500319a3d78834cbd01434074b0d44465a"
+   },
+   "limits": "Run outside Bazel process-wrapper/sandbox; demonstrates tracer-induced /bin/sh interpretation of a shebang-less script exec'd by bash. Tracer internals were not inspected."
+  },
+  "conclusion": "Under the pinned CodeQL tracer, bash's exec of the shebang-less try_build.bash is interpreted by /bin/sh (dash), which rejects 'set -o pipefail'. Untraced builds use bash's own ENOEXEC fallback and pass. The failure is triggered only when the traced target set includes cc_build_error_test targets (2 under //score/mw/com/impl/...).",
+  "still_unresolved": [
+   "Lost SARIF locations ('file:/') themselves have not been reproduced on the pristine baseline",
+   "Tracer-internal reason for /bin/sh fallback not inspected",
+   "Whether upstream CI/devcontainer runs ever traced build_error targets"
+  ]
+ },
+ "issue_751_archive_delta": {
+  "old_db": {
+   "dir": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/codeql-candidate/751",
+   "init_logs": {
+    "20261006.164900 (failed repair-2 attempt, exit 1)": "5ffcc45db9d64296cd915d97e54455d4059c5537196adbeead8a8458e077d01b",
+    "20261006.183954 (measured run, same command)": "61d3420183eda622b3e3e16df4fc35255673a927e963ddaa010b552aa00a3aa3"
+   },
+   "build_tracer_log_sha256": "e383bf126a80041405826937ff2d9bf3bb71c60497089a77057ec06c194f9f7b",
+   "finalize_log_sha256": "0b6d80960c4dcece99bd8b8b1176d49578a81e648098498a3f32cd22a9d500b6",
+   "trap_files_scanned": 187655
+  },
+  "new_db": {
+   "dir": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/additional-751/codeql-candidate/751",
+   "init_logs": 1,
+   "build_tracer_log_sha256": "3026cccaa9b66ee8d7123b9da9754e9b7c158a56477ef0459e1a7fe9bfaab24e",
+   "finalize_log_sha256": "f56917189c35eaeb052f135566dfac65638486c11ab072357fb7fac39e9d7c36",
+   "trap_files_scanned": 187652
+  },
+  "observations": [
+   "thread_local_guard.cpp is compiled (k8-fastbuild-codeql, thread_local_guard.pic.o) only at 16:56 during the failed repair-2 session that shared the old DB directory",
+   "Neither the 18:39 measured session (same DB dir) nor the new 21:03 session compiles thread_local_guard.cpp; both compile other score_baselibs+/score/mw/log/detail/*.cpp sources",
+   "Old finalize at 18:47 imported thread_local_guard.cpp.1032f42b_0.trap.tar.zst produced at 16:56",
+   "Scanned TRAP totals differ by 3 (187655 vs 187652)"
+  ],
+  "conclusion": "The 1,659-vs-1,658 archive delta is explained by residue from a failed prior attempt carried into the old database, not by a source lost from the latest candidate's traced build.",
+  "still_unresolved": [
+   "Why the failed repair-2 session's graph compiled thread_local_guard.cpp",
+   "Whether the production closure should include it; complete external dependency coverage remains unproven",
+   "Why 'database init --overwrite' left that TRAP tarball in place was not investigated"
+  ]
+ }
+}

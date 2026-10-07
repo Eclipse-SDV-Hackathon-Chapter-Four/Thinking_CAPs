@@ -1,0 +1,46 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/gateway/transport_layer/sample:pending_request_tracker_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 14 tests from 1 test suite.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m14 tests from PendingRequestTrackerFixture
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.GetNextSequenceNumberReturnsIncrementingValues
+[0;32m[       OK ] [mPendingRequestTrackerFixture.GetNextSequenceNumberReturnsIncrementingValues (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.RegisterPendingRequestMakesItFindable
+[0;32m[       OK ] [mPendingRequestTrackerFixture.RegisterPendingRequestMakesItFindable (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.ErasePendingRequestRemovesIt
+[0;32m[       OK ] [mPendingRequestTrackerFixture.ErasePendingRequestRemovesIt (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.ErasePendingRequestForNonExistentSequenceIsNoOp
+[0;32m[       OK ] [mPendingRequestTrackerFixture.ErasePendingRequestForNonExistentSequenceIsNoOp (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.HasPendingRequestReturnsFalseForUnknownSequence
+[0;32m[       OK ] [mPendingRequestTrackerFixture.HasPendingRequestReturnsFalseForUnknownSequence (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.ResetAcknowledgementResetsAckedFlag
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 20:39:11.9151263 871309125 000 ECU1 NONE DFLT log error verbose 2 PendingRequestTracker: timeout waiting for ack for sequence  5 
+[0;32m[       OK ] [mPendingRequestTrackerFixture.ResetAcknowledgementResetsAckedFlag (10 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.ResetAcknowledgementForNonExistentSequenceIsNoOp
+[0;32m[       OK ] [mPendingRequestTrackerFixture.ResetAcknowledgementForNonExistentSequenceIsNoOp (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.AcknowledgeSetsFlagAndWakesWaitingThread
+[0;32m[       OK ] [mPendingRequestTrackerFixture.AcknowledgeSetsFlagAndWakesWaitingThread (10 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.AcknowledgeForNonExistentSequenceIsNoOp
+[0;32m[       OK ] [mPendingRequestTrackerFixture.AcknowledgeForNonExistentSequenceIsNoOp (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.WaitForAckReturnsSuccessWhenAlreadyAcknowledged
+[0;32m[       OK ] [mPendingRequestTrackerFixture.WaitForAckReturnsSuccessWhenAlreadyAcknowledged (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.WaitForAckReturnsSendFailureForUnknownSequence
+2026/10/06 20:39:11.9151273 871309230 000 ECU1 NONE DFLT log error verbose 2 PendingRequestTracker: pending request not found for sequence  99 
+[0;32m[       OK ] [mPendingRequestTrackerFixture.WaitForAckReturnsSendFailureForUnknownSequence (0 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.WaitForAckReturnsNotConnectedWhenDisconnected
+2026/10/06 20:39:11.9151283 871309332 000 ECU1 NONE DFLT log error verbose 2 PendingRequestTracker: connection lost while waiting for ack for sequence  8 
+[0;32m[       OK ] [mPendingRequestTrackerFixture.WaitForAckReturnsNotConnectedWhenDisconnected (10 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.WaitForAckReturnsTimeoutWhenNoAckAndStillConnected
+2026/10/06 20:39:11.9151294 871309434 000 ECU1 NONE DFLT log error verbose 2 PendingRequestTracker: timeout waiting for ack for sequence  9 
+[0;32m[       OK ] [mPendingRequestTrackerFixture.WaitForAckReturnsTimeoutWhenNoAckAndStillConnected (10 ms)
+[0;32m[ RUN      ] [mPendingRequestTrackerFixture.NotifyAllWakesUpWaitingThreads
+2026/10/06 20:39:11.9151304 871309537 000 ECU1 NONE DFLT log error verbose 2 PendingRequestTracker: connection lost while waiting for ack for sequence  11 
+[0;32m[       OK ] [mPendingRequestTrackerFixture.NotifyAllWakesUpWaitingThreads (10 ms)
+[0;32m[----------] [m14 tests from PendingRequestTrackerFixture (51 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m14 tests from 1 test suite ran. (51 ms total)
+[0;32m[  PASSED  ] [m14 tests.

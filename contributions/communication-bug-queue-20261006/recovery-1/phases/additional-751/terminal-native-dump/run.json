@@ -1,0 +1,637 @@
+{
+  "title": "Communication bug queue recovery: additional-751; zero model calls",
+  "parent_id": "01M48JSQSJRXB3YBSQPY69D3KM",
+  "spec": {
+    "run_id": "01M49GDJJ4DN4GV2Q07RQF4WRX",
+    "settings": {
+      "project": {
+        "name": null,
+        "description": null,
+        "metadata": {}
+      },
+      "workflow": {
+        "name": null,
+        "description": null,
+        "graph": "workflow.fabro",
+        "metadata": {}
+      },
+      "run": {
+        "goal": {
+          "type": "inline",
+          "value": "Execute reviewed S-CORE obligations"
+        },
+        "working_dir": null,
+        "metadata": {
+          "total_budget_usd": "10",
+          "project": "s-core_sw_fabric",
+          "model_policy": "flash-only",
+          "task": "communication-bug-queue-recovery-additional-751"
+        },
+        "inputs": {},
+        "model": {
+          "provider": "deepseek",
+          "name": "deepseek-flash",
+          "fallbacks": {
+            "deepseek-flash": []
+          },
+          "controls": {
+            "reasoning_effort": "medium",
+            "speed": null
+          }
+        },
+        "git": {
+          "author": null
+        },
+        "prepare": {
+          "steps": [],
+          "timeout_ms": 300000
+        },
+        "execution": {
+          "mode": "normal",
+          "approval": "prompt"
+        },
+        "checkpoint": {
+          "exclude_globs": [],
+          "skip_git_hooks": false,
+          "commit_timeout_ms": 30000
+        },
+        "clone": {
+          "enabled": false,
+          "depth": 100
+        },
+        "run_branch": {
+          "enabled": true,
+          "push": true
+        },
+        "environment": {
+          "id": "local",
+          "provider": "local",
+          "image": {
+            "docker": null,
+            "dockerfile": null
+          },
+          "resources": {
+            "cpu": null,
+            "memory": null,
+            "disk": null
+          },
+          "network": {
+            "mode": "allow_all",
+            "allow": []
+          },
+          "lifecycle": {
+            "preserve": false,
+            "stop_on_terminal": true,
+            "auto_stop": null
+          },
+          "labels": {},
+          "env": {}
+        },
+        "notifications": {},
+        "interviews": {
+          "provider": null,
+          "slack": null
+        },
+        "agent": {
+          "fabro_tools": false,
+          "mcps": {}
+        },
+        "hooks": [],
+        "scm": {
+          "provider": null,
+          "owner": null,
+          "repository": null,
+          "github": null
+        },
+        "pull_request": null,
+        "artifacts": {
+          "include": []
+        },
+        "integrations": {
+          "github": {
+            "permissions": {}
+          }
+        }
+      }
+    },
+    "graph": {
+      "name": "SCoreWorkflow",
+      "goal": "Execute reviewed S-CORE obligations",
+      "nodes": {
+        "exit": {
+          "label": "Exit",
+          "kind": "exit"
+        },
+        "node_877a47458c825c123551e8df": {
+          "label": "apply_expected_order",
+          "kind": "command"
+        },
+        "node_bcfd8e304cd9d983b339ba1d": {
+          "label": "export",
+          "kind": "command"
+        },
+        "node_e58d76c033172bae4e25410b": {
+          "label": "verify_751",
+          "kind": "command"
+        },
+        "start": {
+          "label": "Start",
+          "kind": "start"
+        }
+      },
+      "edges": [
+        {
+          "from": "node_877a47458c825c123551e8df",
+          "to": "node_bcfd8e304cd9d983b339ba1d"
+        },
+        {
+          "from": "node_877a47458c825c123551e8df",
+          "to": "node_e58d76c033172bae4e25410b"
+        },
+        {
+          "from": "node_bcfd8e304cd9d983b339ba1d",
+          "to": "exit"
+        },
+        {
+          "from": "node_bcfd8e304cd9d983b339ba1d",
+          "to": "exit"
+        },
+        {
+          "from": "node_e58d76c033172bae4e25410b",
+          "to": "node_bcfd8e304cd9d983b339ba1d"
+        },
+        {
+          "from": "node_e58d76c033172bae4e25410b",
+          "to": "node_bcfd8e304cd9d983b339ba1d"
+        },
+        {
+          "from": "start",
+          "to": "node_877a47458c825c123551e8df"
+        }
+      ]
+    },
+    "graph_source": "digraph SCoreWorkflow {\n  graph [goal=\"Execute reviewed S-CORE obligations\", max_node_visits=20, on_failure=\"route\"];\n  rankdir=LR;\n  exit [label=\"Exit\", type=\"exit\"];\n  node_877a47458c825c123551e8df [allow_partial=false, label=\"apply_expected_order\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/additional751.py apply_expected_order\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_bcfd8e304cd9d983b339ba1d [allow_partial=false, label=\"export\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/additional751.py export\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_e58d76c033172bae4e25410b [allow_partial=false, label=\"verify_751\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/additional751.py verify_751\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  start [label=\"Start\", type=\"start\"];\n  node_877a47458c825c123551e8df -> node_bcfd8e304cd9d983b339ba1d [condition=\"outcome=failed\"];\n  start -> node_877a47458c825c123551e8df;\n  node_bcfd8e304cd9d983b339ba1d -> exit;\n  node_bcfd8e304cd9d983b339ba1d -> exit [condition=\"outcome=failed\"];\n  node_877a47458c825c123551e8df -> node_e58d76c033172bae4e25410b;\n  node_e58d76c033172bae4e25410b -> node_bcfd8e304cd9d983b339ba1d;\n  node_e58d76c033172bae4e25410b -> node_bcfd8e304cd9d983b339ba1d [condition=\"outcome=failed\"];\n}\n",
+    "workflow_slug": "workflow",
+    "workflow_version_id": "78f6ce2634f2826320db0991f048d4ba6d59ad336bdf2a59d071fd648db59e6b",
+    "target": {
+      "kind": "folder",
+      "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/runtime-target"
+    },
+    "source_directory": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/runtime-target",
+    "labels": {
+      "project": "s-core_sw_fabric",
+      "task": "communication-bug-queue-recovery-additional-751",
+      "total_budget_usd": "10",
+      "model_policy": "flash-only"
+    },
+    "provenance": {
+      "server": {
+        "version": "0.362.0-nightly.0"
+      },
+      "client": {
+        "user_agent": "Python-urllib/3.12"
+      },
+      "subject": {
+        "kind": "user",
+        "identity": {
+          "issuer": "fabro:dev",
+          "subject": "dev"
+        },
+        "login": "dev",
+        "auth_method": "dev_token"
+      }
+    },
+    "definition_blob": "595783c38cb09baaa8627dd6b6b90a3b76edfca74ab5bc47861bb77bb05cb082",
+    "spec_blob": "3035db416e7c1c76f2bb0f85e34763a9dbf4113aa2249e6859e976d69a4eda07",
+    "admission": {
+      "graph": {
+        "blob": "d9f23774bf93e7dfe59b46b5f2867746dd7f0d60c018f3fa27b0cdb18f500259",
+        "digest": "d9f23774bf93e7dfe59b46b5f2867746dd7f0d60c018f3fa27b0cdb18f500259"
+      }
+    }
+  },
+  "web_url": "http://172.18.17.0:43916/runs/01M49GDJJ4DN4GV2Q07RQF4WRX",
+  "start": {
+    "start_time": "2026-10-06T21:02:54.728Z",
+    "run_branch": "fabro/run/01M49GDJJ4DN4GV2Q07RQF4WRX",
+    "base_sha": "34e375e8ed3e6bce609d4c9386a11ddf8b927a5b"
+  },
+  "status": {
+    "kind": "succeeded",
+    "reason": "completed"
+  },
+  "status_updated_at": "2026-10-06T21:34:56.031Z",
+  "last_event_at": "2026-10-06T21:34:56.047Z",
+  "pending_control": null,
+  "checkpoints": [
+    {
+      "seq": 26,
+      "checkpoint": {
+        "timestamp": "2026-10-06T21:02:54.841Z",
+        "current_node": "start",
+        "git_commit_sha": "34e375e8ed3e6bce609d4c9386a11ddf8b927a5b"
+      },
+      "diff": {}
+    },
+    {
+      "seq": 39,
+      "checkpoint": {
+        "timestamp": "2026-10-06T21:02:56.594Z",
+        "current_node": "node_877a47458c825c123551e8df",
+        "git_commit_sha": "f60ae5558ee9b1feb26156ab534f877cfb90cbed"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    },
+    {
+      "seq": 52,
+      "checkpoint": {
+        "timestamp": "2026-10-06T21:34:47.198Z",
+        "current_node": "node_e58d76c033172bae4e25410b",
+        "git_commit_sha": "67abbc11d5c67ee3051d2e3715c8cde46d74bc03"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    },
+    {
+      "seq": 65,
+      "checkpoint": {
+        "timestamp": "2026-10-06T21:34:55.872Z",
+        "current_node": "node_bcfd8e304cd9d983b339ba1d",
+        "git_commit_sha": "ce39dc2d29eca93851a416987961697cfb826838"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    },
+    {
+      "seq": 77,
+      "checkpoint": {
+        "timestamp": "2026-10-06T21:34:55.900Z",
+        "current_node": "exit",
+        "git_commit_sha": "a10bc9c35a7e501fe9f14d743ef3d5da66bc7b87"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    }
+  ],
+  "conclusion": {
+    "timestamp": "2026-10-06T21:34:56.031Z",
+    "status": "succeeded",
+    "timing": {
+      "wall_time_ms": 1921303,
+      "inference_time_ms": 0,
+      "tool_time_ms": 1920889,
+      "active_time_ms": 1920889
+    },
+    "final_git_commit_sha": "a10bc9c35a7e501fe9f14d743ef3d5da66bc7b87",
+    "stages": [
+      {
+        "stage_id": "start",
+        "stage_label": "start",
+        "timing": {
+          "wall_time_ms": 0,
+          "inference_time_ms": 0,
+          "tool_time_ms": 0,
+          "active_time_ms": 0
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "node_877a47458c825c123551e8df",
+        "stage_label": "node_877a47458c825c123551e8df",
+        "timing": {
+          "wall_time_ms": 1701,
+          "inference_time_ms": 0,
+          "tool_time_ms": 1701,
+          "active_time_ms": 1701
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "node_e58d76c033172bae4e25410b",
+        "stage_label": "node_e58d76c033172bae4e25410b",
+        "timing": {
+          "wall_time_ms": 1910555,
+          "inference_time_ms": 0,
+          "tool_time_ms": 1910555,
+          "active_time_ms": 1910555
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "node_bcfd8e304cd9d983b339ba1d",
+        "stage_label": "node_bcfd8e304cd9d983b339ba1d",
+        "timing": {
+          "wall_time_ms": 8633,
+          "inference_time_ms": 0,
+          "tool_time_ms": 8633,
+          "active_time_ms": 8633
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      },
+      {
+        "stage_id": "exit",
+        "stage_label": "exit",
+        "timing": {
+          "wall_time_ms": 0,
+          "inference_time_ms": 0,
+          "tool_time_ms": 0,
+          "active_time_ms": 0
+        },
+        "usage": {
+          "tokens": {
+            "input": 0,
+            "output": 0,
+            "reasoning": 0,
+            "cache_read": 0,
+            "cache_write": 0
+          }
+        },
+        "retries": 0
+      }
+    ],
+    "total_retries": 0,
+    "diff": {
+      "summary": {
+        "files_changed": 0,
+        "additions": 0,
+        "deletions": 0
+      }
+    }
+  },
+  "sandbox": {
+    "kind": "ready",
+    "plan": {
+      "provider": "local"
+    },
+    "instance": {
+      "provider": "local",
+      "runtime": {
+        "id": "host-g18dc0c9269420b0d-3805555-0",
+        "working_directory": "/home/jefferson/.local/state/s-core/fabro/someip84-server/storage/scratch/20261006-01M49GDJJ4DN4GV2Q07RQF4WRX/petri/scopes/invocation-0-scope-0/work"
+      },
+      "ready_duration_ms": 33,
+      "retained": true
+    }
+  },
+  "pull_request": null,
+  "superseded_by": null,
+  "git_identity": {
+    "name": "Fabro",
+    "email": "noreply@fabro.sh",
+    "source": "default"
+  },
+  "pending_interviews": {},
+  "stages": {
+    "start@1": {
+      "first_event_seq": 215,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T21:02:54.835Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": null,
+      "output_bytes": 62,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T21:02:54.746Z",
+      "handler": "start",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 1,
+        "inference_time_ms": 0,
+        "tool_time_ms": 0,
+        "active_time_ms": 0
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "node_bcfd8e304cd9d983b339ba1d@1": {
+      "first_event_seq": 1912668,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T21:34:55.863Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": null,
+      "output_bytes": 60,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T21:34:47.199Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 8633,
+        "inference_time_ms": 0,
+        "tool_time_ms": 8633,
+        "active_time_ms": 8633
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "exit@1": {
+      "first_event_seq": 1921342,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T21:34:55.895Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": null,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T21:34:55.873Z",
+      "handler": "exit",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 0,
+        "inference_time_ms": 0,
+        "tool_time_ms": 0,
+        "active_time_ms": 0
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "node_e58d76c033172bae4e25410b@1": {
+      "first_event_seq": 2065,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "failed",
+        "notes": null,
+        "failure_reason": "script exited with status 1\n{\"stage\": \"verify_751\", \"status\": \"failed\", \"reason\": \"Failed or missing native checks retained\"}",
+        "timestamp": "2026-10-06T21:34:47.192Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": null,
+      "output_bytes": 98,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T21:02:56.596Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 1910555,
+        "inference_time_ms": 0,
+        "tool_time_ms": 1910555,
+        "active_time_ms": 1910555
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "failed"
+    },
+    "node_877a47458c825c123551e8df@1": {
+      "first_event_seq": 312,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T21:02:56.585Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": null,
+      "output_bytes": 74,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T21:02:54.843Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 1701,
+        "inference_time_ms": 0,
+        "tool_time_ms": 1701,
+        "active_time_ms": 1701
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    }
+  }
+}
