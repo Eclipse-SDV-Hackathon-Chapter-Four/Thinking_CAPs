@@ -7,10 +7,46 @@ OpenSOVD diagnostics, openDuT testing, ECU integrations and upstream contributio
 records. Use the guide below to find the part you need; the full PR inventory,
 demonstration walkthrough, team plan and working agreements remain in this README.
 
+## Pre-Work: What Existed Before the Event
+
+The team started the hackathon with the following upstream repositories and
+existing software assets. These formed our pre-event baseline; they are not
+presented as work developed during the event. Event development builds on this
+baseline through integrations, features, fixes and verification.
+
+### Standard Upstream Repositories
+
+These are the existing open-source projects used as starting dependencies:
+
+| Project | Pre-event baseline |
+| --- | --- |
+| CARLA | Default CARLA repository |
+| Eclipse S-CORE | Standard project repository |
+| Eclipse OpenSOVD | Standard project repository |
+| Eclipse openDuT | Standard project repository |
+| Eclipse ThreadX | Standard project repository |
+| Eclipse OpenBSW | Standard project repository |
+| Eclipse Zenoh | Standard project repository |
+
+### Existing Team Assets
+
+The following assets were already developed or available before the event:
+
+| Asset | Pre-event version |
+| --- | --- |
+| X-Verse Lite | Standard X-Verse Lite version |
+| S-CORE Software Factory | First draft release |
+| AAOS IVI Application | Existing Android Automotive OS (AAOS) in-vehicle infotainment (IVI) application |
+| OTA Manager | Existing C++ implementation |
+
+See [Development Baseline and Event Work](#development-baseline-and-event-work)
+for the distinction between the starting baseline and the planned event work.
+
 ## Start Here
 
 | Your goal | Where to go |
 | --- | --- |
+| Identify what was available before the event | [Pre-Work](#pre-work-what-existed-before-the-event) |
 | Find a PR, patch or contribution status | [Contribution Status](#contribution-status) and [contribution records](contributions/README.md) |
 | Understand the folders and find source code | [Repository Structure](#repository-structure) |
 | Understand the integrated system | [How the Pieces Fit Together](#how-the-pieces-fit-together) and [architecture documents](docs/architecture/README.md) |
