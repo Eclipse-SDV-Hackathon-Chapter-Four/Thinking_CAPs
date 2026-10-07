@@ -1,0 +1,125 @@
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 17%]
+........................................................................ [ 23%]
+........................................................ssssssssss...... [ 28%]
+........................................................................ [ 34%]
+........................................................................ [ 40%]
+........................................................................ [ 46%]
+........................................................................ [ 52%]
+........................................................................ [ 57%]
+...................................................................FFFF. [ 63%]
+........................................................................ [ 69%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 86%]
+........................................................................ [ 92%]
+........................................................................ [ 98%]
+....................                                                     [100%]
+=================================== FAILURES ===================================
+__________________________ test_render_without_enable __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_render_without_enable0')
+fake_path = ({'SHELL': '/bin/bash', 'ROS_VERSION': '2', 'SESSION_MANAGER': 'local/master:@/tmp/.ICE-unix/3949,unix/master:/tmp/.IC...alenv/etc/pyenv.d', ...}, PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_render_without_enable0/systemctl-called'))
+
+    def test_render_without_enable(tmp_path: Path, fake_path: tuple[dict[str, str], Path]) -> None:
+        env, marker = fake_path
+        units = tmp_path / "units"
+        result = _run(env, "--unit-dir", str(units), "--no-enable", "--interval", "5min")
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: missing /tmp/score-chatbot-2850-j2tmu3pc/.venv/bin/score-assistant; run 'uv sync' first
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/tmp/score-chatbot-2850-j2tmu3pc/scripts/install_refresh_timer.sh', '--unit-dir', '/tmp/pytest...ncode=2, stdout='', stderr="missing /tmp/score-chatbot-2850-j2tmu3pc/.venv/bin/score-assistant; run 'uv sync' first\n").returncode
+
+tests/unit/test_install_refresh_timer.py:38: AssertionError
+__________________________ test_rendered_units_verify __________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_rendered_units_verify0')
+fake_path = ({'SHELL': '/bin/bash', 'ROS_VERSION': '2', 'SESSION_MANAGER': 'local/master:@/tmp/.ICE-unix/3949,unix/master:/tmp/.IC...alenv/etc/pyenv.d', ...}, PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_rendered_units_verify0/systemctl-called'))
+
+    @pytest.mark.skipif(shutil.which("systemd-analyze") is None, reason="systemd-analyze not installed")
+    def test_rendered_units_verify(tmp_path: Path, fake_path: tuple[dict[str, str], Path]) -> None:
+        env, _ = fake_path
+        units = tmp_path / "units"
+        _run(env, "--unit-dir", str(units), "--no-enable")
+        result = subprocess.run(
+            [
+                "systemd-analyze",
+                "verify",
+                "--user",
+                str(units / f"{NAME}.service"),
+                str(units / f"{NAME}.timer"),
+            ],
+            capture_output=True,
+            text=True,
+        )
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: Unit score-assistant-refresh.service not found.
+E         Unit score-assistant-refresh.timer not found.
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['systemd-analyze', 'verify', '--user', '/tmp/pytest-of-jefferson/pytest-27/test_rendered_units_..., stdout='', stderr='Unit score-assistant-refresh.service not found.\nUnit score-assistant-refresh.timer not found.\n').returncode
+
+tests/unit/test_install_refresh_timer.py:67: AssertionError
+_______________________ test_enable_calls_systemctl_user _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_enable_calls_systemctl_us0')
+fake_path = ({'SHELL': '/bin/bash', 'ROS_VERSION': '2', 'SESSION_MANAGER': 'local/master:@/tmp/.ICE-unix/3949,unix/master:/tmp/.IC...v/etc/pyenv.d', ...}, PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_enable_calls_systemctl_us0/systemctl-called'))
+
+    def test_enable_calls_systemctl_user(
+        tmp_path: Path, fake_path: tuple[dict[str, str], Path]
+    ) -> None:
+        env, marker = fake_path
+        result = _run(env, "--unit-dir", str(tmp_path / "units"))
+>       assert result.returncode == 0, result.stderr
+E       AssertionError: missing /tmp/score-chatbot-2850-j2tmu3pc/.venv/bin/score-assistant; run 'uv sync' first
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/tmp/score-chatbot-2850-j2tmu3pc/scripts/install_refresh_timer.sh', '--unit-dir', '/tmp/pytest...ncode=2, stdout='', stderr="missing /tmp/score-chatbot-2850-j2tmu3pc/.venv/bin/score-assistant; run 'uv sync' first\n").returncode
+
+tests/unit/test_install_refresh_timer.py:75: AssertionError
+_________________________ test_uninstall_removes_files _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_uninstall_removes_files0')
+fake_path = ({'SHELL': '/bin/bash', 'ROS_VERSION': '2', 'SESSION_MANAGER': 'local/master:@/tmp/.ICE-unix/3949,unix/master:/tmp/.IC...env/etc/pyenv.d', ...}, PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_uninstall_removes_files0/systemctl-called'))
+
+    def test_uninstall_removes_files(tmp_path: Path, fake_path: tuple[dict[str, str], Path]) -> None:
+        env, marker = fake_path
+        units = tmp_path / "units"
+        _run(env, "--unit-dir", str(units), "--no-enable")
+        result = _run(env, "--unit-dir", str(units), "--uninstall", "--no-enable")
+        assert result.returncode == 0, result.stderr
+>       assert list(units.iterdir()) == [] and not marker.exists()
+               ^^^^^^^^^^^^^^^^^^^^^
+
+tests/unit/test_install_refresh_timer.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-jefferson/pytest-27/test_uninstall_removes_files0/units')
+
+    def iterdir(self):
+        """Yield path objects of the directory contents.
+    
+        The children are yielded in arbitrary order, and the
+        special entries '.' and '..' are not included.
+        """
+>       for name in os.listdir(self):
+                    ^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-jefferson/pytest-27/test_uninstall_removes_files0/units'
+
+/home/jefferson/.local/share/uv/python/cpython-3.12.14-linux-x86_64-gnu/lib/python3.12/pathlib.py:1056: FileNotFoundError
+=============================== warnings summary ===============================
+tests/contract/test_chat_api.py:9
+  /tmp/score-chatbot-2850-j2tmu3pc/tests/contract/test_chat_api.py:9: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/integration/test_real_network_sync.py:22: contacts GitHub (SCORE_ASSISTANT_REAL_NETWORK=1); not run
+SKIPPED [9] tests/integration/test_real_runtime.py: requires a real Ollama runtime (SCORE_ASSISTANT_REAL_RUNTIME=1); not run
+FAILED tests/unit/test_install_refresh_timer.py::test_render_without_enable
+FAILED tests/unit/test_install_refresh_timer.py::test_rendered_units_verify
+FAILED tests/unit/test_install_refresh_timer.py::test_enable_calls_systemctl_user
+FAILED tests/unit/test_install_refresh_timer.py::test_uninstall_removes_files
+4 failed, 1230 passed, 10 skipped, 1 warning in 257.72s (0:04:17)
