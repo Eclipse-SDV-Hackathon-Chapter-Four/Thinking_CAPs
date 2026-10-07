@@ -84,16 +84,3 @@ Elsewhere, recreate the branch from the bundle:
 
 Agents drafted the code (DeepSeek V4 Flash via Fabro, with Codex/Claude corrections where noted);
 deterministic tools measured it. No GitHub comment, push, PR or issue change was made.
-
-## Readiness follow-up — 2026-10-07
-
-The follow-up supplies an explicit `FatPtr` conversion annotation. D1/D6, the appended-virtual ABI migration and inherited callback/analysis obligations remain pending.
-
-See the [shared readiness review](../rust-api-queue/readiness-review-20261007/README.md) for
-corrective/full candidate patches, exact verification, native trace, expected checks
-and pending human/IP decisions. Original patches and bundles above are historical
-measured subjects and do not contain the new corrections. Historical run budgets
-are preserved; this follow-up responds to the new user request. Fresh results for
-changed subjects are recorded separately from the original Result section.
-
-Final review artifacts: [merge requirements](../rust-api-queue/readiness-review-20261007/MERGE-ARTIFACTS.md), [current PR draft](../rust-api-queue/readiness-review-20261007/pr-drafts/1261.md) and [source-bound verification](../rust-api-queue/readiness-review-20261007/verification.json).
