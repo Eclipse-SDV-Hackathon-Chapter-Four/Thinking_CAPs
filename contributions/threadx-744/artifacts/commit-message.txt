@@ -1,0 +1,13 @@
+Fixed MISRA stack alignment on ports with 64-bit pointers
+
+MISRA stack checking converted the stack address through 32-bit ULONG.
+
+Preserved ALIGN_TYPE width in both stack-alignment conversions. Added a
+native-width behavioral regression that fails on the original code.
+
+Focused and single-core checks passed. Local SMP ERROR #7 also occurred
+on the unchanged baseline; final-head upstream SMP CI remains required.
+The human contributor reviewed and confirmed the contribution.
+
+Fixes: eclipse-threadx/threadx#744
+Assisted-by: Codex (gpt-6.1-sol) <noreply@openai.com>

@@ -1,0 +1,11 @@
+# Trace event-flag timeout diagnostic
+
+Header-only candidate attempt `01M4BQPCTNG120D4AJJBA3VBJ5` failed `trace_build::threadx_event_flag_suspension_timeout_test` with ERROR #7. The retained record is `history/2026-10-07T174833Z-750dbf4e5707/verification/smp-test.log`. After sleeping 63 ticks, the assertion accepts thread 1 counters 32 or 33 and thread 2 counters 13 or 14; either counter outside its allowed set triggers ERROR #7. It is distinct from the randomized preemption-threshold test's ERROR #7. Prior randomized-test evidence does not classify it.
+
+The original baseline `e73752681bd405deddf247d1cf2b899d502dceaa` was tested using the same pinned GCC 14.2 image, trace feature flags, C99, `-m32`, shared-library build, coverage enabled, Docker affinity `0,2,4,6`, UID/GID 1000, SYS_NICE, and rtprio 3. The existing separately configured original-baseline trace build was verified from its cache and measured compiler commands, and only the event-flag test target was added. The original library hash remained unchanged.
+
+Build passed. All ten independent executions passed within their separate ten-second limits. Testing stopped at the authorized bound. **No matching ERROR #7 was reproduced on the original baseline.** This bounded diagnostic supports no baseline-failure waiver for the historical event-flag failure. The failed verification remains retained, separately from any later verification of the unchanged candidate.
+
+Baseline source remained tracked-clean. Candidate SMP, Linux SMP port, SMP tests, shared harness, common headers, and toolchain had no tracked modifications. Candidate exact Ninja comparison was unavailable because its build directory was removed by the next verification before diagnostic capture. The retained historical build log confirms the stock trace/GCC 14 profile; the actual original-baseline compile/link commands and source hashes are preserved without claiming an unavailable exact comparison.
+
+Concise commands, compiler definitions, input hashes, baseline state, and all ten logs are in `artifacts/diagnostics/baseline-smp-event-flag-timeout`. Full raw build evidence remains on loop4 `evidence/diagnostics/baseline-smp-event-flag-timeout`; no binary or generated source tree was exported. Source, driver, gates, current verification, native frozen records, and the existing failure index were not modified.

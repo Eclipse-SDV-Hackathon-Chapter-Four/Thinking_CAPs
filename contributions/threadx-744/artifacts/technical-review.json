@@ -1,0 +1,41 @@
+{
+  "patch_sha256": "20e8f835c769f33dd69cae1bff51824b7f26e8b158c67ba01d62006ece3eb80e",
+  "verdict": "pass",
+  "findings": [
+    {
+      "severity": "info",
+      "message": "The frozen patch, current source diff and verification record have the same SHA-256. All digest bindings in the retained SMP evidence index match their files.",
+      "evidence": "evidence/freeze.json; evidence/contribution.patch; evidence/verification.json; evidence/diagnostics/smp-retained-failures-index.json; independently computed git diff HEAD digest"
+    },
+    {
+      "severity": "info",
+      "message": "The conversions preserve addresses using ALIGN_TYPE, whose documented contract requires pointer capacity. ULONG remains port-specific and the existing ULONG helpers remain unchanged. Alignment and guard reservations retain existing behavior for valid supplied stacks; no new overflow issue was found. The casts match SMP creation and explicitly document the MISRA deviation; formal MISRA compliance is not established.",
+      "evidence": "common/src/tx_thread_create.c:95,126-149,178-181; common/inc/tx_api.h:315-320,1959-1960,2020-2023; common/src/tx_misra.c:108-111,166-169; ports/linux/gnu/inc/tx_port.h:123-139; common_smp/src/tx_thread_create.c:127-147; common/src/txe_thread_create.c:231-237"
+    },
+    {
+      "severity": "info",
+      "message": "The behavioral regression tests use independent remainder arithmetic, require actual high-address storage, and check metadata, size, fill boundaries, padding and creation state. The original tree documents 64 failed metadata assertions across 16 MISRA cases and four safe scheduling failures; its control passes. The frozen candidate passes all six tests, including host-suite discovery.",
+      "evidence": "test/tx/thread_stack_alignment/threadx_thread_stack_alignment_test.c:119-228; test/tx/thread_stack_alignment/threadx_thread_stack_alignment_schedule_test.c:47-154; test/tx/cmake/thread_stack_alignment/CMakeLists.txt:29-89; evidence/verification/baseline.xml; evidence/verification/focused.xml; evidence/verification/tx/default_build_coverage-default_build_coverage.xml"
+    },
+    {
+      "severity": "warning",
+      "message": "Current verification is prepared-with-baseline-failure, not fully passing. SMP has one failed randomized preemption-threshold assertion among 590 tests. The unchanged baseline independently fails the same assertion with matching image, configuration, affinity and normalized compile/link commands. This supports draft preparation only; upstream final-head SMP CI remains mandatory. Single-core has 807 passing tests; the explicitly qualified FreeRTOS profile has three.",
+      "evidence": "evidence/verification.json; evidence/verification/smp-test.log:143-152; evidence/verification/baseline-smp-default_build_coverage-1.log; evidence/build/baseline-smp-default_build_coverage/build.ninja; test/smp/cmake/build/default_build_coverage/build.ninja; evidence/verification/tx/*.xml; evidence/verification/freertos.xml"
+    },
+    {
+      "severity": "warning",
+      "message": "Historical failures remain separate. Default affinity 0,1,2,3 and disabled-notification assertions reproduce on baseline. Historical trace affinity 0,1,2,3 passes all ten baseline attempts, so exact-affinity equivalence is unproven; paired trace failures establish only affinity 0,2,4,6. The historical event-flag timeout also lacks baseline reproduction after ten attempts and has unavailable exact candidate command comparison. None of these failed suites is relabeled passed.",
+      "evidence": "evidence/diagnostics/baseline-smp-default/summary.json and run-08.log; evidence/diagnostics/baseline-smp-disable-notify/summary.json and run-05.log; evidence/diagnostics/baseline-smp-trace-four-logical/summary.json and run-01.log through run-10.log; evidence/diagnostics/paired-smp/pair-04-baseline.log and pair-06-candidate.log; evidence/diagnostics/baseline-smp-event-flag-timeout/summary.json; historical logs referenced by smp-retained-failures-index.json"
+    },
+    {
+      "severity": "info",
+      "message": "Scheduling tests exercise genuine Linux creation, sleep/wake and completion, while execution stacks remain pthread-owned. They establish simulator metadata and scheduling behavior, not execution on the supplied hardware stack. Unavailable target execution, reference-toolchain checks and formal MISRA analysis remain unavailable.",
+      "evidence": "ports/linux/gnu/src/tx_thread_stack_build.c:102,125-134; test/tx/thread_stack_alignment/threadx_thread_stack_alignment_schedule_test.c:89-109; evidence/verification.json limitations; CONTRIBUTING.md:139-153"
+    }
+  ],
+  "readiness_blockers": [
+    "Upstream final-head SMP CI must pass before requesting review or claiming merge readiness, including the trace profiles with retained unproven historical failures.",
+    "Complete applicable upstream target/toolchain checks, stock FreeRTOS validation and generated-port regeneration; count FVP execution only when actually performed.",
+    "Resolve the pending human contributor provenance requirement recorded in verification.json; human-review.json records approval of the header wording."
+  ]
+}

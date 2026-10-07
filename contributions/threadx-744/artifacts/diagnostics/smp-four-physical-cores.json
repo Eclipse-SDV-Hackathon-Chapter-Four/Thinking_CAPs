@@ -1,0 +1,29 @@
+{
+  "argv": [
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--cpuset-cpus",
+    "0,2,4,6",
+    "--user",
+    "1000:1000",
+    "--cap-add",
+    "SYS_NICE",
+    "--ulimit",
+    "rtprio=3:3",
+    "-v",
+    "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/source:/work",
+    "-w",
+    "/work",
+    "sha256:a8a3d92ee0ba622304a79ce1dcc51aba1ad1d0ac52767c71b7c1e158520275cc",
+    "python3",
+    "-c",
+    "import subprocess,sys\nfor i in range(10):\n print('RUN',i+1,flush=True)\n p=subprocess.run(['test/smp/cmake/build/trace_build/regression/threadx_smp_random_resume_suspend_exclusion_pt_test'],timeout=10)\n if p.returncode: sys.exit(p.returncode)\n"
+  ],
+  "exit_code": 1,
+  "seconds": 9.43956995010376,
+  "acceptance": false,
+  "purpose": "bounded timing diagnostic; full fresh suite still required"
+}
