@@ -43,9 +43,9 @@ which builds from the same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/
 ## Before submitting (author)
 
 1. Code review: done by the author (7 October 2026).
-2. Confirm that `jnsagai@gmail.com` is an email of the Eclipse account `jnascimento6p0`
-   (ECA signed), the copyright owner, and that the use of the AI assistant matches the
-   employer's policy ([compliance.md](compliance.md)).
+2. ECA: confirmed (`jnascimento6p0`, `jnsagai@gmail.com`). Still to confirm: the copyright
+   owner, and that the use of the AI assistant matches the employer's policy
+   ([compliance.md](compliance.md)).
 3. Open the issue from [ISSUE-draft.md](ISSUE-draft.md) and agree on the approach. The
    three [related issues](related-issues/) are already filed (#660, #661, #662).
 4. Add `Resolves:` with the issue number to [commit-message.txt](commit-message.txt) and
