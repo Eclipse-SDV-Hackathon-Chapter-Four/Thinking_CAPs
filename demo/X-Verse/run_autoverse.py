@@ -154,6 +154,28 @@ def build_steps(
             "startup_delay_sec": 2.0,
         })
 
+    # ThreadX zonal lighting controller on the MXChip AZ3166 board (USB,
+    # SLCAN over the ST-LINK serial port).  Only added when the board is
+    # plugged in.  Its ctl.sh runs the unchanged Zenoh2CAN bridge, which maps
+    # vcu/control/{brake,reverse}_sts to CAN 0x1F1 and the board's 0x1F4
+    # replies to vehicle/lights/*_cmd (applied to CARLA by the virtual
+    # vehicle), plus a watchdog that restarts it when the board re-enumerates.
+    # Started before the VCU so it sees the VCU's first status changes.
+    # Overrides: AZ3166_PORT (serial device), THREADX_DIR (solution folder).
+    threadx_dir = os.path.expandvars(os.environ.get("THREADX_DIR", "$HOME/Thinking_CAPs/ThreadX"))
+    az3166_ports = sorted(Path("/dev/serial/by-id").glob("usb-STMicroelectronics_STM32_STLink_*-if02"))
+    az3166_port = os.environ.get("AZ3166_PORT") or (str(az3166_ports[0]) if az3166_ports else "")
+    if az3166_port and os.path.exists(az3166_port) and os.path.isfile(os.path.join(threadx_dir, "ctl.sh")):
+        steps.append({
+            "name": "ThreadX zonal lights (AZ3166)",
+            "detached": True,
+            "cwd": threadx_dir,
+            "cmd": ["./ctl.sh", "start"],
+            "stp": ["./ctl.sh", "down"],
+            "kill_patterns": [],
+            "startup_delay_sec": 1.0,
+        })
+
     # Conditionally add modules based on the communication protocol
     if only_zenoh_modules:
         steps.append({
@@ -233,12 +255,16 @@ def build_steps(
     # OTA stack -  EOL backend + RTCU vECU, from
     # vecu/ota/docker-compose.yaml (one-shot certgen runs first).  The X-Verse APK is
     # delivered ONLY through this OTA plane — cuttlefish ctl.sh no longer
-    # installs it at container-creation time.
+    # installs it at container-creation time.  The backend is the Java 21 /
+    # Spring Boot rewrite: compose builds it from backend/Dockerfile (maven
+    # multi-stage), so --build keeps it in sync with the sources.  ctl.sh up
+    # also waits for https://localhost:9444 and opens it in the browser.
     steps.append({
         "name": "OTA stack: EOL backend + RTCU (APK installer)",
+        "containers": ["ota-backend", "ota-rtcu"],
         "cwd": "$HOME/autoverse/vecu/ota",
-        "cmd": ["docker", "compose", "up", "-d"],
-        "stp": ["docker", "compose", "stop"],
+        "cmd": ["./ctl.sh", "up"],      # compose up -d --build + opens EOL console
+        "stp": ["./ctl.sh", "stop"],
         "kill_patterns": [],
         "startup_delay_sec": 1.0,
     })
@@ -1035,7 +1061,9 @@ def main() -> int:
                 step["name"], step["cwd"], step["cmd"], step3_monitor=step3_monitor
             )
             children.append((step["name"], proc))
-            if "containers" in step:
+            # Control scripts (containers or a detached service) return once
+            # the component is up; their stp command stops it at shutdown.
+            if "containers" in step or step.get("detached"):
                 returncode = proc.wait(timeout=CONTROL_START_TIMEOUT)
                 if returncode:
                     raise RuntimeError(f"Start command exited with {returncode}. See {err_log}")
@@ -1045,6 +1073,9 @@ def main() -> int:
                 children.remove((step["name"], proc))
                 managed_containers.append(step)
                 ok(f"{step['name']}: containers are running")
+            elif step.get("detached"):
+                children.remove((step["name"], proc))
+                ok(f"{step['name']}: running (managed by its control script)")
         except Exception as e:
             err(f"Failed to start {step['name']}: {e}")
             if "containers" in step:

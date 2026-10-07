@@ -147,6 +147,39 @@ class LauncherTests(unittest.TestCase):
             self.assertEqual(runner.children, [])
             runner.shutdown_all.assert_called_once()
 
+    def test_detached_step_waits_for_start_script_and_is_not_supervised(self):
+        marker = self.root / "stopped"
+        stop = [sys.executable, "-c",
+                "import pathlib, sys; pathlib.Path(sys.argv[1]).touch()", str(marker)]
+        start = [sys.executable, "-c",
+                 "import pathlib, sys, time; time.sleep(0.2); raise SystemExit(0 if "
+                 "pathlib.Path(sys.argv[1]).exists() else 7)", str(marker)]
+        step = {"name": "test service", "cwd": str(self.root), "stp": stop,
+                "cmd": start, "kill_patterns": [], "detached": True}
+        lock = runner.acquire_runner_lock()
+        self.addCleanup(lock.close)
+        out = io.StringIO()
+        with contextlib.ExitStack() as stack:
+            for patch in (
+                    mock.patch.object(sys, "argv", ["run_autoverse.py"]),
+                    mock.patch.object(runner, "acquire_runner_lock", return_value=lock),
+                    mock.patch.object(runner, "select_python", return_value=sys.executable, create=True),
+                    mock.patch.object(runner, "build_steps", return_value=[step]),
+                    mock.patch.object(runner, "kill_carla_processes"),
+                    mock.patch.object(runner, "detect_second_monitor", return_value=None),
+                    mock.patch.object(runner.signal, "signal"),
+                    mock.patch.object(runner.atexit, "register",
+                              side_effect=self.register_temporary_cleanup),
+                    mock.patch.object(runner, "children", []),
+                    mock.patch.object(runner, "CONTROL_STEPS", []),
+                    contextlib.redirect_stdout(out)):
+                stack.enter_context(patch)
+            # Only a detached step: nothing is left for the supervisor to watch.
+            self.assertEqual(runner.main(), 1)
+            self.assertEqual(runner.children, [])
+        self.assertIn("test service: running (managed by its control script)", out.getvalue())
+        self.assertNotIn("Failed to start", out.getvalue())
+
     def test_failed_stop_prevents_start(self):
         step = {"name": "test container", "cwd": str(self.root),
                 "stp": [sys.executable, "-c", "raise SystemExit(7)"],

@@ -1,0 +1,384 @@
+<title>Receiver Diagnostics on S-CORE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  /* Layout: single doc column, max ~60rem; state encoded in tinted chips; tabular data lines up */
+  --bg:#f4f6f8; --surface:#ffffff; --fg:#182430; --muted:#5c6b7a; --line:#d8dfe6;
+  --accent:#0e5fa8; --accent-soft:#e8f1fa;
+  --ok:#0e7a4d; --ok-soft:#e5f4ec; --bad:#b3261e; --bad-soft:#fbe9e7; --warn:#a45500; --warn-soft:#fdf0e0;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]){
+    --bg:#0f141b; --surface:#171f28; --fg:#e2e9f0; --muted:#93a1af; --line:#2b3542;
+    --accent:#6fb1e8; --accent-soft:#1a2836;
+    --ok:#5ec492; --ok-soft:#15301f; --bad:#e8766f; --bad-soft:#38201a; --warn:#e0a05a; --warn-soft:#332612;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --surface:#171f28; --fg:#e2e9f0; --muted:#93a1af; --line:#2b3542;
+  --accent:#6fb1e8; --accent-soft:#1a2836;
+  --ok:#5ec492; --ok-soft:#15301f; --bad:#e8766f; --bad-soft:#38201a; --warn:#e0a05a; --warn-soft:#332612;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 "Source Sans 3",system-ui,sans-serif;
+  padding:0 16px 64px}
+main{max-width:60rem;margin:0 auto}
+h1{font-family:"Archivo",system-ui,sans-serif;font-weight:700;font-size:2rem;
+  letter-spacing:-.01em;text-wrap:balance;margin:2.6rem 0 .3rem}
+h2{font-family:"Archivo",system-ui,sans-serif;font-weight:600;font-size:1.28rem;
+  margin:2.6rem 0 .6rem;padding-top:.9rem;border-top:1px solid var(--line)}
+h3{font-weight:600;font-size:1.02rem;margin:1.5rem 0 .35rem}
+p{max-width:66ch}
+.meta{color:var(--muted);font-size:.9rem;margin-top:.2rem}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem;margin:.8rem 0 0;padding:0}
+.chip{font-family:var(--mono);font-size:.72rem;font-weight:600;letter-spacing:.04em;
+  padding:.2rem .55rem;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.chip.pass{background:var(--ok-soft);color:var(--ok)}
+a{color:var(--accent)}
+nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:1rem 1.4rem;margin-top:1.6rem;font-size:.95rem;max-width:44rem}
+nav.toc ol{margin:.3rem 0 0;padding-left:1.3rem}
+nav.toc a{text-decoration:none}
+table{border-collapse:collapse;width:100%;font-size:.92rem;margin:.9rem 0}
+th,td{border:1px solid var(--line);padding:.45rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--accent-soft);font-weight:600}
+.scroll{overflow-x:auto}
+table{font-variant-numeric:tabular-nums}
+code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);
+  border-radius:4px;padding:.08em .35em}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:.85rem 1rem;overflow-x:auto;font-variant-numeric:tabular-nums}
+pre code{background:none;border:none;padding:0;font-size:.82rem}
+.mermaid{background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:1rem;margin:1rem 0;overflow-x:auto}
+.pass{color:var(--ok);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+.badn{color:var(--bad);font-weight:600}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 8px 8px 0;padding:.7rem 1rem;margin:1rem 0;max-width:66ch}
+ul{padding-left:1.3rem}
+li{max-width:66ch;margin-bottom:.3rem}
+</style>
+<main>
+<h1>Receiver Diagnostics &amp; SOVD on the S-CORE ADAS ECU</h1>
+<p class="meta">ADAS cruise-control ECU · <code>docker_setup-adas_score-1</code> · autoverse / vecu / s-core · SDV Hackathon 2026</p>
+<div class="chips">
+  <span class="chip pass">E2E PASS · 2026-10-06</span>
+  <span class="chip">SOVD :7691</span>
+  <span class="chip">CC.LostCommunication</span>
+  <span class="chip">related: inc_diagnostics #16</span>
+</div>
+
+<nav class="toc"><b>Contents</b>
+<ol>
+<li><a href="#overview">Feature overview</a></li>
+<li><a href="#arch">Architecture</a></li>
+<li><a href="#inventory">Component inventory</a></li>
+<li><a href="#build">Build &amp; deployment</a></li>
+<li><a href="#test">E2E test — the I-press</a></li>
+<li><a href="#evidence">Recorded run</a></li>
+<li><a href="#guarantees">Guarantees &amp; limitations</a></li>
+<li><a href="#pr16">Appendix A · PR-16 mapping</a></li>
+</ol></nav>
+
+<h2 id="overview">1 · Feature overview</h2>
+<p>The ADAS S-CORE ECU (cruise control) now carries a <b>receiver-diagnostics vertical served
+through the Eclipse openSOVD stack</b>. The ECU stamps every speed-signal reception and
+acceptance inside its control loop and, on each 50&nbsp;ms control tick, emits a compact
+diagnostic observation over a Unix datagram socket. The app stays a <b>pure detector</b>
+— it only reports what it received and accepted. Everything diagnostic lives in
+<code>score::mw::diag</code> / openSOVD: the application-owned <b><code>cruise-control-diag</code></b>
+server, built only on the public <b><code>eclipse-score/inc_diagnostics</code></b> platform API
+(PR&nbsp;#16 branch; the platform <code>opensovd-gateway</code> stays unchanged) consumes the observation stream, applies
+<b>TimeBased debounce semantics from <code>score::mw::diag::dtc</code></b>, qualifies DTC
+<code>CC.LostCommunication</code> and serves it — with the live speed and cruise state — as
+<code>diag_api</code> <code>DataResource</code>s through the <b>opensovd-server</b> SOVD HTTP
+API, adapted by PR-16's <code>sovd_adapter</code>. Emission is strictly non-blocking: a dead
+or missing diagnostics peer can never stall the controller.</p>
+<p><b>Demonstrated live</b> with the real Zenoh→SOME/IP simulation: an <code>I</code>-press in
+manual controls dropped the speed message from the network → within ~1&nbsp;s the DTC went
+<span class="pass">confirmed / failed</span>; restoring the signal healed it back to
+<span class="pass">passed</span>. Recorded timelines (f005 through the inc_diagnostics
+gateway); control behaviour untouched.</p>
+
+<h2 id="arch">2 · Architecture</h2>
+
+<h3>2.1 Deployment view</h3>
+<pre class="mermaid">
+flowchart TB
+    subgraph SIM["Simulation — Zenoh domain"]
+        CARLA["Carla / manual controls"]
+        PUB["vehicle/status/clock_status<br/>vehicle/status/velocity_status<br/>vcu/control/cc_engage_sts"]
+        CARLA --> PUB
+    end
+    BRIDGE["zenoh-someip-bridge<br/>gateway, id 0x0101<br/>service 4660 · events 30500–30504"]
+    subgraph ECU["docker_setup-adas_score-1 — S-CORE ADAS ECU (host network)"]
+        subgraph entry["entrypoint.sh — start order · SDV_DIAG_APP=eclipse"]
+        P1["1 · cruise-control-diag (app-owned)<br/>on inc_diagnostics diag_api + sovd_adapter (PR #16)<br/>SOVD HTTP :7691"]
+        P2["2 · gatewayd · LoLa"]
+        P3["3 · someipd · app 0x0100<br/>service 3000 · events 30600/30601"]
+        P4["4 · cruise_control_main<br/>instrumented ECU"]
+        end
+    end
+    APP["SOVD client<br/>tester · judge · app"]
+    SDAPI["Eclipse S-CORE diag stack<br/>score::mw::diag · diag_api · sovd_adapter<br/>opensovd-core / opensovd-server"]
+    PUB -- "Zenoh" --> BRIDGE
+    BRIDGE -- "SOME/IP · UDS /tmp/vsomeip-0 + SD multicast" --> P3
+    P3 -- "LoLa IPC · /tmp/mw_com_lola" --> P2
+    P2 -- "mw::com events" --> P4
+    P4 -- "observation JSON datagram<br/>/tmp/score-xverse/diagnostics.sock" --> P1
+    P1 --- SDAPI
+    SDAPI -- "GET /sovd/v1 (HTTP)" --> APP
+</pre>
+<p><code>setarch -R</code> on the entrypoint keeps the S-CORE binaries' behaviour stable; the
+same diagnostics-socket contract (env-gated <code>SCORE_DIAGNOSTIC_SOCKET</code>) is what both
+provider modes (<code>eclipse</code> / <code>legacy</code>) bind.</p>
+
+<h3>2.2 Observation data flow</h3>
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant SIM as Simulation (Zenoh)
+    participant B as zenoh-someip-bridge
+    participant S as someipd 0x0100
+    participant G as gatewayd
+    participant CC as cruise_control_main
+    participant DP as cruise-control-diag
+    SIM->>B: velocity_status @ 50 ms
+    B->>S: SOME/IP event 30501
+    S->>G: dispatch — same UDS domain
+    G->>CC: mw::com sample delivery
+    CC->>CC: speed_received_ns = CLOCK_MONOTONIC now · decoded OK?
+    CC-->>DP: 50 ms tick · observation JSON
+</pre>
+<p><code>received / accepted</code> clocks are stamped per event inside the input receive
+handler; <code>observed_at</code> at emission. The ordering the provider validates
+(<code>received ≤ accepted ≤ observed</code>) therefore holds by construction. Datagrams are
+≈600&nbsp;B against a 4096&nbsp;B cap that both ends enforce. If the socket is missing, full
+or closed, the non-blocking send just drops the sample — the control loop keeps running.</p>
+
+<h3>2.3 Fault lifecycle — <code>CC.LostCommunication</code></h3>
+<pre class="mermaid">
+stateDiagram-v2
+    [*] --> unknown
+    unknown --> startup : power-on grace · 2000 ms
+    startup --> healthy : heartbeat + speed budget met
+    startup --> failed : no accepted speed after grace — cold stack expectation
+    healthy --> pending_failure : freshness stale · speed budget 1000 ms
+    pending_failure --> failed : debounce · 100 ms
+    pending_failure --> healthy : signal returns
+    failed --> pending_recovery : signal returns
+    pending_recovery --> healthy : recovery hold · 150 ms
+</pre>
+<div class="scroll"><table>
+<tr><th>Parameter (env at container start)</th><th>Default</th><th>Meaning</th></tr>
+<tr><td><code>CRUISE_SIGNAL_BUDGET_MS</code></td><td>1000</td><td>accepted-speed freshness budget</td></tr>
+<tr><td><code>CRUISE_STARTUP_GRACE_MS</code></td><td>2000</td><td>no fault during boot</td></tr>
+<tr><td><code>CRUISE_DEBOUNCE_FAILED_MS</code></td><td>100</td><td>TimeBased debounce before failed</td></tr>
+<tr><td><code>CRUISE_DEBOUNCE_PASSED_MS</code></td><td>150</td><td>recovery hold before recovered</td></tr>
+</table></div>
+<p>The debounce is <code>score::mw::diag::dtc::Debounce::TimeBased</code> semantics implemented
+on top of diag_api in <code>score/examples/cruise_control_diag/src/lib.rs</code> — not a bespoke state machine. An observation
+whose speed field is <code>null</code> (datagram landed, nothing accepted in that tick)
+<b>prefails immediately</b> (the receiver sees the stream, not the signal); a datagram older
+than the signal budget fails; nothing at all after the boot grace fails. The eclipse gateway
+is stateless in-memory (fault read from the observation link on every request) — persisting
+DTC state across ECU restarts is future <code>diag_api</code> work.</p>
+
+<h3>2.4 Software identity &amp; provenance</h3>
+<p>Every observation carries <code>software_identity: sha256:&lt;digest&gt;</code> of the
+running <code>cruise_control_main</code>, computed by the entrypoint at every container start
+(<code>SCORE_BUILD_IDENTITY</code>) — it cannot drift from the deployed binary. The gateway
+validates each datagram (schema&nbsp;1, matching <code>source_instance=cruise-control</code>,
+matching the current <code>boot_id</code>, monotonic clock ordering
+<code>received ≤ accepted ≤ observed</code>) and rejects foreign or malformed datagrams before
+they can touch the fault lifecycle.</p>
+
+<h3>2.5 Eclipse alignment — S-CORE-native vs. interim seam</h3>
+<div class="scroll"><table>
+<tr><th>Layer</th><th>End-state S-CORE shape</th><th>This release</th></tr>
+<tr><td>app → diag</td><td>app reports observations in-process via its component's diagnostic port</td><td><b>interim</b>: env-gated Unix-datagram link (<code>SCORE_DIAGNOSTIC_SOCKET</code>), non-blocking, dormant by default</td></tr>
+<tr><td>qualification</td><td><code>diag_api</code> (<code>Debounce::TimeBased</code>) inside mw::diag</td><td>identical — <code>diag_api</code> Rust crate, unchanged semantics</td></tr>
+<tr><td>DTC state</td><td>diag stack owns it; app never holds DTC state</td><td>identical — the app holds <b>no</b> DTC state, only per-sample facts</td></tr>
+<tr><td>serving</td><td>shared openSOVD server across components</td><td>identical — PR-16 <code>sovd_adapter</code> → <code>opensovd-server</code></td></tr>
+</table></div>
+<p><code>diag_api</code> is Rust-only today and the ECU app is C++ (no C++ binding, no
+<code>mw/diag</code> in the ECU tree yet), so a transport between the two is required; the
+datagram link is that interim seam. When S-CORE ships a C++ diag report port, the app
+instrumentation stays as-is and the gateway integration collapses into diag-stack
+configuration.</p>
+
+<h2 id="inventory">3 · Component inventory</h2>
+<div class="scroll"><table>
+<tr><th>Component</th><th>Location</th><th>Language</th><th>Role</th></tr>
+<tr><td><code>diagnostic_publisher.h</code></td><td><code>cc_s-core/score/cruise_control/src/</code></td><td>C++ header</td><td>non-blocking observation emitter, env-gated</td></tr>
+<tr><td>instrumented input handlers</td><td><code>cruise_control.{cpp,h}</code></td><td>C++</td><td>received/accepted speed clocks per event</td></tr>
+<tr><td><code>cruise_control_diag</code> library</td><td><code>third_party/inc_diagnostics/score/examples/cruise_control_diag/src/</code></td><td>Rust</td><td>socket receiver · validation · <code>CC.LostCommunication</code> TimeBased debounce · diag_api resources</td></tr>
+<tr><td><code>cruise-control-diag</code> (app-owned server)</td><td>upstream <code>inc_diagnostics</code> + PR16 patches + demo <code>inc_diagnostics/0001</code></td><td>Rust / bazel</td><td>SOVD HTTP server via <code>sovd_adapter</code> → <code>opensovd-server</code></td></tr>
+<tr><td><code>sdv-receiver-diagnostics</code> (legacy option)</td><td><code>OpenSOVD/integration/diagnostics/</code></td><td>Rust</td><td>standalone provider incl. KVS storage — still selectable</td></tr>
+<tr><td>deployment wiring</td><td><code>cc_s-core/deployment/xverse/docker_setup/</code></td><td>Bash / YAML</td><td>start order · mounts · env (<code>SDV_DIAG_APP</code>)</td></tr>
+<tr><td>fault catalog</td><td><code>OpenSOVD/config/faults/cruise-control.json</code></td><td>JSON</td><td><code>CC.LostCommunication</code> definition</td></tr>
+</table></div>
+<p>Base revision <code>cc_s-core @ 93f8ea1</code> with the observation patch applied.</p>
+
+<h2 id="build">4 · Build &amp; deployment — one-time (already applied in this checkout)</h2>
+<h3>4.1 Build the diagnostic gateway (Eclipse inc_diagnostics, PR-16)</h3>
+<pre><code># inside the s-core devcontainer (third_party/inc_diagnostics = the clone,
+# branch feat/16-sovd-data-provider, based on PR-16 head b975ed4)
+cd /workspaces/s-core &amp;&amp; bash third_party/build-diag-gateway.sh
+# -> bazel test  //score/mw/diag/sovd_adapter:all
+# -> bazel test  //score/examples/cruise_control_diag:all   (15 unit tests)
+# -> bazel build //score/examples/cruise_control_diag:cruise-control-diag
+# -> stages the binary to .local/cruise-gateway/cruise-control-diag</code></pre>
+<p>Patches live in <code>third_party/cruise_diag/patches/</code>: <code>pr16_sovd_data_provider/</code>
+(the upstream PR-16 contribution) and <code>demo_enable_dtc_set_and_disable_cruise_control/</code>
+(app-owned diagnostics server, ECU deployment, DTC set and cruise disable — see Appendix A). The script documents the toolchain-sysroot
+workaround needed for the aws-lc-sys (opensovd-server TLS chain) C build probe.</p>
+<h3>4.2 Patch and rebuild the ECU</h3>
+<pre><code>git -C /home/randd/autoverse/vecu/s-core apply \
+  OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch
+cd /home/randd/autoverse/vecu/s-core
+source ./prepare.sh &amp;&amp; ./make.sh    # builds //score/cruise_control:cruise_control_main</code></pre>
+<h3>4.3 Deployment wiring — already in place</h3>
+<p>Compose binds <code>OpenSOVD/.local/fault-profile → /home/diagnostics:ro</code> and
+<code>score-fault-storage → /home/fault-storage</code>. The entrypoint's
+speed-signal contract (<code>CRUISE_SIGNAL_BUDGET_MS</code>, <code>CRUISE_DEBOUNCE_FAILED_MS</code>)
+is declared once for app and server; <code>SDV_DIAG_APP</code> selects the provider:
+<code>eclipse</code> (<code>cruise-control-diag</code>, staged at
+<code>.local/cruise-gateway/cruise-control-diag</code> — the default) or
+<code>legacy</code> (the standalone <code>sdv-receiver-diagnostics</code> binary). Both bind
+the same observation socket and the same <code>:7691</code> SOVD listener.</p>
+<h3>4.4 Start the stack</h3>
+<pre><code>docker run --rm -v /tmp:/tmp alpine sh -c 'rm -f /tmp/vsomeip.lck /tmp/vsomeip-101'
+cd /home/randd/autoverse/vecu/s-core &amp;&amp; \
+  SOURCE_DIR=/home/randd/autoverse/vecu/s-core/cc_s-core ./ctl.sh up
+docker logs docker_setup-adas_score-1 | \
+  grep -E "Started cruise-control-diag|Speed-signal loss threshold"</code></pre>
+<p class="note"><b>Gotcha:</b> the compose mounts <code>${SOURCE_DIR:-../../..}</code> at
+<code>/home/source</code> and the entrypoint paths expect the workspace root there — pass
+<code>SOURCE_DIR=…/s-core/cc_s-core</code>, not the repo root.</p>
+
+<h2 id="test">5 · E2E test — the I-press</h2>
+<h3>5.1 Record the timeline</h3>
+<pre><code>RUN_DIR=/home/randd/eclipse_sdv_hackathon_2026/OpenSOVD/evidence/f005-e2e-sovd-ipress-$(date +%Y%m%dT%H%M%S)
+mkdir -p "$RUN_DIR" &amp;&amp; cp OpenSOVD/evidence/recorder3.py "$RUN_DIR/" &amp;&amp; rm -f /tmp/STOP_RECORDER
+timeout 3600 python3 "$RUN_DIR/recorder3.py" "$RUN_DIR/timeline.jsonl" &amp;
+tail -f "$RUN_DIR/timeline.jsonl"</code></pre>
+<h3>5.2 Baseline (10–30 s)</h3><p>Simulation drives the ECU: <code>vehicle_speed</code> live,
+<code>cruise_state</code> live, fault <span class="pass">passed</span>.</p>
+<h3>5.3 Press I — drop the speed message</h3><p>Within ≈1.1 s (1000 ms budget + 100 ms
+debounce + 1 Hz poll):</p>
+<pre><code>{"fault":"CC.LostCommunication","status":"failed","confirmed":true}</code></pre>
+<h3>5.4 Keep it dropped</h3><p>Stays <span class="badn">failed / confirmed</span>
+(10–20 s hold recommended).</p>
+<h3>5.5 Press again — restore the feed</h3><p><span class="pass">passed</span>,
+<code>confirmed = false</code> after the 150 ms recovery hold; <code>vehicle_speed</code> live
+again.</p>
+<h3>5.6 Invariants — all must hold</h3>
+<div class="scroll"><table>
+<tr><th>Assertion</th><th>Expected</th></tr>
+<tr><td>DTC code</td><td><code>CC.LostCommunication</code></td></tr>
+<tr><td>control preserved</td><td>cruise behaviour unchanged during the run</td></tr>
+<tr><td>detector decoupled</td><td>killed gateway ⇒ control keeps running, container stays up</td></tr>
+<tr><td>tampering rejected (unit)</td><td>foreign boot_id / wrong schema / non-numeric speed rejected by <code>cruise_control_diag</code></td></tr>
+</table></div>
+<h3>5.7 Raw endpoints a judge can curl</h3>
+<pre><code>curl -fsS http://127.0.0.1:7691/sovd/v1
+curl -fsS http://127.0.0.1:7691/sovd/v1/components
+curl -fsS http://127.0.0.1:7691/sovd/v1/components/cruise_control
+curl -fsS http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/vehicle_speed
+curl -fsS http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/cruise_state
+curl -fsS http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/cc_lost_communication
+curl -fsS http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/cc_fault_injection</code></pre>
+
+<h2 id="evidence">6 · Recorded E2E runs</h2>
+<h3>6.1 Option 3 — the Eclipse inc_diagnostics gateway stack (f005)</h3>
+<p>Artifact: <code>OpenSOVD/evidence/f005-e2e-sovd-ipress-20261006T200230/</code> —
+<code>timeline.jsonl</code> (1 Hz samples of the four SOVD data resources),
+<code>verdict.md</code>, <code>recorder3.py</code>.</p>
+<div class="scroll"><table>
+<tr><th>Wall (local)</th><th>Speed</th><th><code>cc_lost_communication</code></th></tr>
+<tr><td>21:10:18</td><td>45.341385 km/h</td><td class="pass">passed</td></tr>
+<tr><td>21:10:19</td><td>45.341385 (frozen — <b>I</b> pressed)</td><td class="warn">prefailed</td></tr>
+<tr><td>21:10:20</td><td>45.341385 (frozen)</td><td class="badn">failed, confirmed → CC.LostCommunication SET</td></tr>
+<tr><td>21:10:21–37</td><td>45.341385 (frozen, ~19 s)</td><td class="badn">stays failed / confirmed</td></tr>
+<tr><td>21:10:38</td><td>43.9 km/h live</td><td class="warn">prepassed (recovery hold)</td></tr>
+<tr><td>21:10:39</td><td>live</td><td class="pass">passed · confirmed = false → healed</td></tr>
+</table></div>
+<p>Timings: detection ≤ 1 s after freeze onset (1 Hz poll resolution), <code>TimeBased</code>
+debounce 100 ms, recovery hold 150 ms — all within documented budgets. Policy proven by this
+run: the datagram stream kept flowing throughout the drop (<code>vehicle_speed</code>
+answered with low <code>age_ms</code> the whole time) — the DTC tripped because the policy
+reads the <b>ECU-declared accepted age</b> (<code>accepted_lag_ns</code>) from each
+observation. An earlier binary (20:30:15–20:30:24, same file) held <code>passed</code> under
+an identical freeze and is retained in this timeline as the pre-fix finding; covered by unit
+test <code>declared_staleness_fails_even_on_a_live_stream</code>. Log hygiene: zero
+rejected/dropped observations across the run; binary sha256 <code>ec198779b93c96ac…</code>
+= Bazel artifact = staged copy; tests 15/15.</p>
+<h3>6.2 Workstream A — the standalone provider (f004)</h3>
+<p>Artifact: <code>OpenSOVD/evidence/f004-e2e-ipress-20261006T155209/</code> —
+<code>timeline2.jsonl</code> (71 samples at 1 Hz), <code>verdict.md</code>, recorder script.</p>
+<div class="scroll"><table>
+<tr><th>t (s)</th><th>Speed</th><th>freshness</th><th>fault</th></tr>
+<tr><td>0.0–30.3</td><td>82→52 km/h live</td><td>fresh</td><td class="pass">healthy / passed</td></tr>
+<tr><td><b>31.3</b></td><td>signal dropped</td><td class="warn">stale</td><td class="badn">failed (confirmed)</td></tr>
+<tr><td>31.3–46.5</td><td>—</td><td>stale</td><td class="badn">failed</td></tr>
+<tr><td><b>47.5</b></td><td>feed restored</td><td class="pass">fresh</td><td class="pass">healthy / passed</td></tr>
+</table></div>
+
+<h2 id="guarantees">7 · Design guarantees &amp; limitations</h2>
+<ul>
+<li><b>Control is never blocked or altered</b> — non-blocking datagrams, best-effort delivery;
+controller decisions, acceptance semantics and throttle behaviour untouched by the patch.</li>
+<li><b>Acceptance is decode-level</b> — <code>decoded_by_consumer</code>, explicitly not E2E
+or functional plausibility approval.</li>
+<li><b>Provenance is verifiable</b> — boot_id, monotonic clock domain, binary sha256;
+tampered or foreign observations are rejected and counted.</li>
+<li><b>Fail-safe defaults</b> — unset <code>SCORE_DIAGNOSTIC_SOCKET</code>
+⇒ instrumentation fully dormant.</li>
+</ul>
+<div class="note"><b>State openly to judges:</b> freshness budgets are provisional; the
+catalog contains one fault (<code>CC.LostCommunication</code>), served as a diag_api resource
+under <code>/components/cruise_control/data/cc_lost_communication</code>, not native
+<code>/faults</code>; sequence IDs and native E2E protection not yet on this path; a cold stack
+with no simulation attached trips the fault after boot grace — by design, not a defect;
+the eclipse gateway holds DTC state in memory only (no KVS persistence yet), a restart starts
+clean; data endpoints return HTTP 500 until the first observation arrives;
+<code>cc_fault_injection</code> provides deterministic test forcing.</div>
+
+<h2 id="pr16">Appendix A · PR-16 sovd_adapter mapping</h2>
+<p>Patches live in <code>third_party/cruise_diag/patches/</code> (s-core tree), split by audience —
+tracking <a href="https://github.com/eclipse-score/inc_diagnostics/issues/16">inc_diagnostics issue #16</a>;
+gateway patches exported from the clone <code>third_party/inc_diagnostics</code>, branch
+<code>feat/16-sovd-data-provider</code>, based on PR-16 head <code>b975ed4</code>.</p>
+<p><b>Upstream contribution — <code>patches/pr16_sovd_data_provider/</code></b> (generic, no demo code)</p>
+<div class="scroll"><table>
+<tr><th>Patch</th><th>Purpose</th><th>Commit</th></tr>
+<tr><td>0001 build-bazel</td><td>cargo-bazel lock fix</td><td><code>5aafb8b</code></td></tr>
+<tr><td>0002 build-bazel</td><td>expose tokio/serde deps</td><td><code>7a8c203</code></td></tr>
+<tr><td>0003 diag_api</td><td>re-export <code>JsonSchemaRequired</code></td><td><code>775f95c</code></td></tr>
+<tr><td>0004 sovd_adapter</td><td>serve diag_api <code>DataResources</code> as an opensovd <code>DataProvider</code> (DTC exposed as a data resource; no SOVD <code>faults</code> provider yet)</td><td><code>a0802a0</code></td></tr>
+<tr><td>0005 gateway</td><td>wire HVAC diag_api resources into gateway</td><td><code>3ab687b</code></td></tr>
+</table></div>
+<p><b>Hackathon demo — <code>patches/demo_enable_dtc_set_and_disable_cruise_control/</code></b> (on top of PR16; not upstreamed)</p>
+<div class="scroll"><table>
+<tr><th>Folder / patch</th><th>Purpose</th></tr>
+<tr><td><code>inc_diagnostics/0001</code></td><td><b>app-owned diagnostics server</b> <code>score/examples/cruise_control_diag</code> (new files only): observation link + validation, CC.LostCommunication TimeBased debounce, <code>cruise-control-diag</code> binary on <code>sovd_adapter</code> + opensovd server. Platform <code>opensovd-gateway</code> and <code>sovd_adapter</code> unchanged.</td></tr>
+<tr><td><code>s-core/0001</code></td><td>ECU deployment: <code>SDV_DIAG_APP=eclipse</code> mode switch, speed-signal contract declared once + compose</td></tr>
+<tr><td><code>s-core/0002</code></td><td>refactor: component into <code>score::cruise_control</code></td></tr>
+<tr><td><code>s-core/0003</code></td><td>cruise_control: publish speed-signal observations — <b>DTC set</b></td></tr>
+<tr><td><code>s-core/0004</code></td><td>cruise_control: cancel cruise on lost speed signal — <b>disable cruise</b> (<code>adas_cc_cancel_req</code>, SOME/IP 3000/30603), speed plausibility, fail closed without contract</td></tr>
+<tr><td><code>s-core/0005</code></td><td>docs-as-code traceability (8/8 requirements, 15/15 tests fully linked) + root <code>BUILD</code> fix</td></tr>
+<tr><td><code>zenoh-someip-bridge/0001</code></td><td>route 30603 → zenoh <code>adas/cruise_control/cancel_req</code></td></tr>
+<tr><td><code>vcu_zenoh/0001</code></td><td>VCU disengages on the cancel request (HUD shows DISENGAGED)</td></tr>
+</table></div>
+<p>PR16 applied to upstream <code>b975ed4</code> reproduces <code>3ab687b</code> exactly, and the
+unmodified platform <code>opensovd-gateway</code> builds. PR16 + <code>demo/inc_diagnostics</code>
+reproduces the demo branch; verified with
+<code>bazel test //score/mw/diag/sovd_adapter:all //score/examples/cruise_control_diag:all</code>
+(15/15) and the binary staged to <code>cc_s-core/.local/cruise-gateway/cruise-control-diag</code>.</p>
+</main>

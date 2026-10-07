@@ -608,7 +608,7 @@ flowchart LR
     end
     subgraph OTAStack [OTA stack - ota/docker-compose - three new containers]
         CG[ota-certgen - one-shot PKI - internal CA - server cert - ONE client cert for the RTCU]
-        BE[ota-backend - C++ cpp-httplib + SQLite - mTLS device API port 9443 - operator API and web console port 9444 - artifacts - campaigns - targets table]
+        BE[ota-backend - Java 21 Spring Boot embedded Tomcat + JDK HttpsServer + SQLite - mTLS device API port 9443 - operator API and web console port 9444 - artifacts - campaigns - targets table]
         RT[ota-rtcu - THE ONE RTCU - vehicle OTA agent - client cert CN = vehicle VIN - private adb server port 5038]
     end
     subgraph targets [Android vECU targets managed by the RTCU]
