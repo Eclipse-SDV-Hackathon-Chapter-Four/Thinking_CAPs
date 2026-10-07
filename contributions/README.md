@@ -28,6 +28,9 @@ handoffs and this repository; add other completed work as its artifacts are reco
 - [Native fault-storage write-through packet](fault-storage-write-through/README.md):
   new local preparation, separate from the historic completed-fix inventory above;
   exported patch, native regressions and upstream PR draft, with publication pending.
+- [OpenBSW transportRouter packet](openbsw-transport-router/README.md): prepared upstream
+  contribution of a diagnostic gateway router module for Eclipse OpenBSW (issue draft,
+  signed-off patch, PR description, gate evidence); not yet submitted, no upstream issue yet.
 - [Submission checklist](submission/README.md) and [hackathon PR draft](submission/hackathon-pr-description.md).
 
 ## Verify the evidence
