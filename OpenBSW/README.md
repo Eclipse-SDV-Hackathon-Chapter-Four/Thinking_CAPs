@@ -63,7 +63,7 @@ Open items, all of them visible in the report:
 | `contrib/libs/bsw/transportRouter/` | The contributed OpenBSW module (same tree as upstream) |
 | `scripts/` | Volume, network, bootstrap, SIL suite, integration run, upstream PR preparation |
 | `evidence/` | OpenBSW SIL baseline and gateway integration runs |
-| `aspice/` | ASPICE SWE.1–SWE.6 work products and report generator, in the same layout as [Serial2CAN](../X-Verse/bridges/serial2can/aspice/README.md) and [AZ3166](../ThreadX/az3166/aspice/README.md) |
+| `aspice/` | ASPICE SWE.1–SWE.6 work products and report generator, in the same layout as [Serial2CAN](https://github.com/The-Xverse/zenoh2can_bridge/blob/dev/sdv-hackathon-2026/serial2can-bridge/aspice/README.md) and [AZ3166](../ThreadX/az3166/aspice/README.md) |
 
 ## Virtual environment (SIL)
 
