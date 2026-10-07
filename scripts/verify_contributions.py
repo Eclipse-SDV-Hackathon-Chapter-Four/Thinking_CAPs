@@ -98,6 +98,8 @@ def check_compliance(root, record):
         for relative in value if isinstance(value, list) else [value]:
             if not local_path(root, relative).is_file():
                 raise ValueError(f"Missing prepared artifact: {relative}")
+    if status["artifacts"].get("evidence_manifest"):
+        check_manifest(local_path(root, status["artifacts"]["evidence_manifest"]))
     if status.get("patch_provenance"):
         provenance = status["patch_provenance"]
         original = local_path(root, provenance["original_path"]).read_bytes()

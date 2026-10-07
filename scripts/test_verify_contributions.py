@@ -78,6 +78,22 @@ class PatchIntegrityRegression(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "source diff changed"):
             check_compliance(self.root, self.record)
 
+    def test_rejects_tampered_prepared_native_evidence(self):
+        evidence = b"91 tests passed\n"
+        (self.root / "native-results.json").write_bytes(evidence)
+        (self.root / "manifest.json").write_text(json.dumps({"files": {
+            "native-results.json": hashlib.sha256(evidence).hexdigest()
+        }}))
+        status = {"id": self.record["id"], "ready_for_official_merge": False,
+                  "remaining_gates": ["Human review"],
+                  "artifacts": {"evidence_manifest": "manifest.json"}}
+        (self.root / "status.json").write_text(json.dumps(status))
+        self.record.update(compliance_status="status.json", submission_candidate=False)
+        self.assertFalse(check_compliance(self.root, self.record))
+        (self.root / "native-results.json").write_bytes(b"invented passing results\n")
+        with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
+            check_compliance(self.root, self.record)
+
 
 if __name__ == "__main__":
     unittest.main()
