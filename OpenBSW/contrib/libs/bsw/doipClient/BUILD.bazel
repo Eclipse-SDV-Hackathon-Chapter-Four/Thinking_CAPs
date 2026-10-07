@@ -1,0 +1,55 @@
+# *******************************************************************************
+# Copyright (c) 2026 Jefferson Nascimento
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+# AI disclosure: this file was largely generated with an AI assistant and was reviewed and
+# tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//bazel/config/build_variant:compatibility.bzl", "unit_test_only")
+
+cc_library(
+    name = "doip_client",
+    srcs = [
+        "src/doip/client/DoIpClientConnection.cpp",
+        "src/doip/client/DoIpClientLogger.cpp",
+        "src/doip/client/DoIpClientTransportLayer.cpp",
+    ],
+    hdrs = [
+        "include/doip/client/DoIpClientConnection.h",
+        "include/doip/client/DoIpClientLogger.h",
+        "include/doip/client/DoIpClientTransportLayer.h",
+    ],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//libs/3rdparty/etl",
+        "//libs/bsw/async",
+        "//libs/bsw/cpp2ethernet",
+        "//libs/bsw/doip",
+        "//libs/bsw/transport",
+        "//libs/bsw/util",
+    ],
+)
+
+cc_test(
+    name = "doip_client_test",
+    srcs = ["test/src/DoIpClientTransportLayerTest.cpp"],
+    target_compatible_with = unit_test_only(),
+    deps = [
+        ":doip_client",
+        "//libs/3rdparty/googletest:gtest_main",
+        "//libs/bsw/async:async_mock_impl",
+        "//libs/bsw/bsp:bsp_mock",
+        "//libs/bsw/cpp2ethernet:cpp2ethernet_mock",
+        "//libs/bsw/transport:transport_mock",
+        "//libs/bsw/util:util_mock",
+    ],
+)

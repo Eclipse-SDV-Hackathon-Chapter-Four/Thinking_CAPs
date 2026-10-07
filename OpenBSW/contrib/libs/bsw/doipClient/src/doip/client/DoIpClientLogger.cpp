@@ -8,6 +8,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
+// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
+
 #include "doip/client/DoIpClientLogger.h"
 
 DEFINE_LOGGER_COMPONENT(DOIPCLIENT)

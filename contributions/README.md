@@ -31,6 +31,10 @@ handoffs and this repository; add other completed work as its artifacts are reco
 - [OpenBSW transportRouter packet](openbsw-transport-router/README.md): prepared upstream
   contribution of a diagnostic gateway router module for Eclipse OpenBSW (issue draft,
   signed-off patch, PR description, gate evidence); not yet submitted, no upstream issue yet.
+- [OpenBSW doipClient packet](openbsw-doip-client/README.md): prepared upstream contribution of
+  a DoIP client transport layer, checked against the OpenBSW and Eclipse Foundation contribution
+  rules ([compliance](openbsw-doip-client/compliance.md)), with three related bug reports;
+  not yet submitted, no upstream issue yet.
 - [Submission checklist](submission/README.md) and [hackathon PR draft](submission/hackathon-pr-description.md).
 
 ## Verify the evidence

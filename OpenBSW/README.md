@@ -39,11 +39,11 @@ new module (see [DoIP routes](#doip-routes-ethernet-zonal-ecus)).
 
 | Item | Result |
 | --- | --- |
-| Unit tests | 106/106: 42 `transportRouter` and 19 `doipClient` (OpenBSW unit-test build; the router also in Bazel), 10 gateway units, 31 generator, 4 existing `TransportRouterSimple` |
-| Module coverage | `transportRouter` 100% lines, 99.1% branches; `doipClient` 94.4% lines, 83.3% branches |
+| Unit tests | 107/107: 42 `transportRouter` and 20 `doipClient` (OpenBSW unit-test build; the router also in Bazel), 10 gateway units, 31 generator, 4 existing `TransportRouterSimple` |
+| Module coverage | `transportRouter` 100% lines, 99.1% branches; `doipClient` 94.6% lines, 83.8% branches |
 | Integration tests | 42/42 on the Linux host against simulated CAN ECUs and a simulated Ethernet ECU ([evidence/gateway-it](evidence/gateway-it/results.json)); 15/15 on the S32K148EVB, 5 of them routed over DoIP to the Ethernet ECU ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
-| Forwarding latency (p95) | Linux: DoIP→CAN 5.4 ms, CAN→DoIP 6.1 ms (host load about 50); S32K148EVB: routed DoIP round trip 5.6 ms |
-| Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base. `doipClient`: format, unit tests and clang-tidy pass |
+| Forwarding latency (p95) | Linux: DoIP→CAN 5.4 ms, CAN→DoIP 6.1 ms (host load about 50); S32K148EVB: routed DoIP round trip 4.1 ms |
+| Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base. `doipClient` on current upstream `main`: format, copyright, unit tests, clang-tidy, Bazel, docs build and gitlint pass ([packet](../contributions/openbsw-doip-client/README.md)) |
 | ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 30/39 requirements verified, 7 partially (live campaigns not run), 1 failed (SWR-032), 1 not implemented (SWR-026) |
 
 Open items, all of them visible in the report:
@@ -169,7 +169,9 @@ On the board this gives a routed path end to end, without a CAN adapter.
 
 `scripts/doip-client-test.sh` builds the module's unit tests in the pinned
 OpenBSW tree (the `tests-posix-debug` preset), applies OpenBSW's format, and
-runs gcovr and clang-tidy.
+runs gcovr and clang-tidy. With `all` (and `OBSW_BASE` set to upstream `main`)
+it also runs the copyright check, Bazel and gitlint, and writes the patch of
+the [prepared upstream contribution](../contributions/openbsw-doip-client/README.md).
 
 **OpenBSW finding:** in `DoIpTcpConnection` at `432b9be6`, answering
 `headerReceived()` with the discard continuation for a message with an empty

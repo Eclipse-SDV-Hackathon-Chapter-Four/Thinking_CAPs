@@ -8,326 +8,89 @@
  * SPDX-License-Identifier: Apache-2.0
  ********************************************************************************/
 
+// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
+// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
+
 #include "doip/client/DoIpClientTransportLayer.h"
 
 #include <async/AsyncMock.h>
 #include <async/TestContext.h>
-#include <tcp/IDataListener.h>
-#include <tcp/IDataSendNotificationListener.h>
-#include <tcp/socket/AbstractSocket.h>
-#include <transport/ITransportMessageProcessedListener.h>
-#include <transport/ITransportMessageProvidingListener.h>
+#include <tcp/socket/AbstractSocketMock.h>
+#include <transport/TransportMessageProcessedListenerMock.h>
+#include <transport/TransportMessageProvidingListenerMock.h>
 
 #include <etl/vector.h>
-#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
-#include <deque>
+#include <array>
 #include <vector>
 
 namespace
 {
 using namespace ::doip;
-using ::testing::NiceMock;
+using namespace ::testing;
 using ::transport::AbstractTransportLayer;
 using ::transport::ITransportMessageProcessedListener;
-using ::transport::ITransportMessageProvidingListener;
 using ::transport::TransportMessage;
 using Bytes            = std::vector<uint8_t>;
 using ProcessingResult = ITransportMessageProcessedListener::ProcessingResult;
 using ErrorCode        = AbstractTransportLayer::ErrorCode;
+using SocketError      = ::tcp::AbstractSocket::ErrorCode;
+using ProviderError    = ::transport::ITransportMessageProvider::ErrorCode;
+using ReceiveResult    = ::transport::ITransportMessageListener::ReceiveResult;
 
 uint8_t const BUS          = 5U;
 uint16_t const CLIENT      = 0x0E10U;
 uint16_t const FUNCTIONAL  = 0xE400U;
 uint16_t const NODE_A      = 0x1040U;
 uint16_t const NODE_B      = 0x1050U;
+uint16_t const PORT        = 13400U;
 uint32_t const TIMEOUT_MS  = 1500U;
 uint16_t const MAX_PAYLOAD = 64U;
 
-Bytes frame(uint16_t const type, Bytes const& payload, uint8_t const version = 0x02U)
+Bytes const ACTIVATION_REQUEST
+    = {0x02, 0xFD, 0x00, 0x05, 0x00, 0x00, 0x00, 0x07, 0x0E, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00};
+Bytes const ACTIVATION_OK
+    = {0x02, 0xFD, 0x00, 0x06, 0x00, 0x00, 0x00, 0x09, 0x0E, 0x10, 0x10, 0x40, 0x10, 0, 0, 0, 0};
+Bytes const ACTIVATION_REFUSED
+    = {0x02, 0xFD, 0x00, 0x06, 0x00, 0x00, 0x00, 0x09, 0x0E, 0x10, 0x10, 0x40, 0x00, 0, 0, 0, 0};
+Bytes const ACK_A  = {0x02, 0xFD, 0x80, 0x02, 0x00, 0x00, 0x00, 0x05, 0x10, 0x40, 0x0E, 0x10, 0x00};
+Bytes const NACK_A = {0x02, 0xFD, 0x80, 0x03, 0x00, 0x00, 0x00, 0x05, 0x10, 0x40, 0x0E, 0x10, 0x06};
+/// 3E 00 from the client to NODE_A, and to the functional address
+Bytes const REQUEST_A
+    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x0E, 0x10, 0x10, 0x40, 0x3E, 0x00};
+Bytes const REQUEST_FUNCTIONAL
+    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x0E, 0x10, 0xE4, 0x00, 0x3E, 0x00};
+/// 7E 00 from NODE_A to the client
+Bytes const RESPONSE_A
+    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x10, 0x40, 0x0E, 0x10, 0x7E, 0x00};
+Bytes const RESPONSE_TO_OTHER_TESTER
+    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x10, 0x40, 0x0E, 0x80, 0x7E, 0x00};
+Bytes const ALIVE_CHECK_REQUEST  = {0x02, 0xFD, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00};
+Bytes const ALIVE_CHECK_RESPONSE = {0x02, 0xFD, 0x00, 0x08, 0x00, 0x00, 0x00, 0x02, 0x0E, 0x10};
+
+/** Collects what a socket mock sends, and how much of it the TCP peer has not acknowledged. */
+struct SentData
 {
-    auto const length = static_cast<uint32_t>(payload.size());
-    Bytes data{
-        version,
-        static_cast<uint8_t>(~version),
-        static_cast<uint8_t>(type >> 8U),
-        static_cast<uint8_t>(type),
-        static_cast<uint8_t>(length >> 24U),
-        static_cast<uint8_t>(length >> 16U),
-        static_cast<uint8_t>(length >> 8U),
-        static_cast<uint8_t>(length)};
-    data.insert(data.end(), payload.begin(), payload.end());
-    return data;
-}
-
-Bytes diagnostic(uint16_t const source, uint16_t const target, Bytes const& userData)
-{
-    Bytes payload{
-        static_cast<uint8_t>(source >> 8U),
-        static_cast<uint8_t>(source),
-        static_cast<uint8_t>(target >> 8U),
-        static_cast<uint8_t>(target)};
-    payload.insert(payload.end(), userData.begin(), userData.end());
-    return frame(0x8001U, payload);
-}
-
-Bytes ack(uint16_t const source, uint16_t const type = 0x8002U, uint8_t const code = 0x00U)
-{
-    return frame(
-        type,
-        {static_cast<uint8_t>(source >> 8U),
-         static_cast<uint8_t>(source),
-         static_cast<uint8_t>(CLIENT >> 8U),
-         static_cast<uint8_t>(CLIENT),
-         code});
-}
-
-Bytes activationResponse(uint16_t const entity, uint8_t const code = 0x10U)
-{
-    return frame(
-        0x0006U,
-        {static_cast<uint8_t>(CLIENT >> 8U),
-         static_cast<uint8_t>(CLIENT),
-         static_cast<uint8_t>(entity >> 8U),
-         static_cast<uint8_t>(entity),
-         code,
-         0U,
-         0U,
-         0U,
-         0U});
-}
-
-Bytes const ACTIVATION_REQUEST = frame(0x0005U, {0x0EU, 0x10U, 0x00U, 0U, 0U, 0U, 0U});
-
-/** TCP socket in memory: records connects and sent bytes, delivers received bytes. */
-class FakeSocket : public ::tcp::AbstractSocket
-{
-public:
-    ErrorCode bind(::ip::IPAddress const&, uint16_t) override { return ErrorCode::SOCKET_ERR_OK; }
-
-    ErrorCode connect(
-        ::ip::IPAddress const& address, uint16_t const port, ConnectedDelegate delegate) override
+    SocketError send(::etl::span<uint8_t const> const& data)
     {
-        ++connects;
-        lastAddress = address;
-        lastPort    = port;
-        if (!acceptConnect)
-        {
-            return ErrorCode::SOCKET_ERR_NOT_OK;
-        }
-        _delegate = delegate;
-        _open     = true;
-        return ErrorCode::SOCKET_ERR_OK;
+        bytes.insert(bytes.end(), data.begin(), data.end());
+        unacknowledged += data.size();
+        return SocketError::SOCKET_ERR_OK;
     }
 
-    /// Completes the connection attempt (TCP handshake done or failed).
-    void completeConnect(bool const success)
+    Bytes take()
     {
-        _established = success;
-        _open        = success;
-        _delegate(success ? ErrorCode::SOCKET_ERR_OK : ErrorCode::SOCKET_ERR_NOT_OK);
+        Bytes result;
+        result.swap(bytes);
+        return result;
     }
 
-    ErrorCode close() override
-    {
-        ++closes;
-        _open = _established = false;
-        rx.clear();
-        return ErrorCode::SOCKET_ERR_OK;
-    }
-
-    void abort() override
-    {
-        ++aborts;
-        _open = _established = false;
-        rx.clear();
-    }
-
-    ErrorCode flush() override { return ErrorCode::SOCKET_ERR_OK; }
-
-    void discardData() override { rx.clear(); }
-
-    size_t available() override { return 2920U; }
-
-    uint8_t read(uint8_t& byte) override { return static_cast<uint8_t>(read(&byte, 1U)); }
-
-    size_t read(uint8_t* const buffer, size_t const n) override
-    {
-        size_t const count = (n < rx.size()) ? n : rx.size();
-        for (size_t i = 0U; i < count; ++i)
-        {
-            if (buffer != nullptr)
-            {
-                buffer[i] = rx.front();
-            }
-            rx.pop_front();
-        }
-        return count;
-    }
-
-    ErrorCode send(::etl::span<uint8_t const> const& data) override
-    {
-        tx.insert(tx.end(), data.begin(), data.end());
-        _unacknowledged += data.size();
-        return ErrorCode::SOCKET_ERR_OK;
-    }
-
-    ::ip::IPAddress getRemoteIPAddress() const override { return lastAddress; }
-
-    ::ip::IPAddress getLocalIPAddress() const override { return {}; }
-
-    uint16_t getRemotePort() const override { return lastPort; }
-
-    uint16_t getLocalPort() const override { return 50000U; }
-
-    bool isClosed() const override { return !_open; }
-
-    bool isEstablished() const override { return _established; }
-
-    void disableNagleAlgorithm() override { nagleDisabled = true; }
-
-    void enableKeepAlive(uint32_t, uint32_t, uint32_t) override {}
-
-    void disableKeepAlive() override {}
-
-    /// Delivers bytes from the node.
-    void receive(Bytes const& data)
-    {
-        rx.insert(rx.end(), data.begin(), data.end());
-        getDataListener()->dataReceived(static_cast<uint16_t>(data.size()));
-    }
-
-    /// The TCP peer acknowledged everything sent so far.
-    void acknowledge()
-    {
-        if (_unacknowledged > 0U)
-        {
-            auto const length = static_cast<uint16_t>(_unacknowledged);
-            _unacknowledged   = 0U;
-            getSendNotificationListener()->dataSent(
-                length, ::tcp::IDataSendNotificationListener::SendResult::DATA_SENT);
-        }
-    }
-
-    /// The node closed the connection.
-    void remoteClose()
-    {
-        _open = _established = false;
-        getDataListener()->connectionClosed(::tcp::IDataListener::ErrorCode::ERR_CONNECTION_CLOSED);
-    }
-
-    Bytes takeSent()
-    {
-        Bytes data;
-        data.swap(tx);
-        return data;
-    }
-
-    bool acceptConnect = true;
-    bool nagleDisabled = false;
-    int connects       = 0;
-    int closes         = 0;
-    int aborts         = 0;
-    ::ip::IPAddress lastAddress;
-    uint16_t lastPort = 0U;
-    std::deque<uint8_t> rx;
-    Bytes tx;
-
-private:
-    ConnectedDelegate _delegate;
-    size_t _unacknowledged = 0U;
-    bool _open             = false;
-    bool _established      = false;
+    Bytes bytes;
+    size_t unacknowledged = 0U;
 };
 
-/** Message provider and listener: hands out buffers and records the messages received. */
-class Provider : public ITransportMessageProvidingListener
-{
-public:
-    ErrorCode getTransportMessage(
-        uint8_t const busId,
-        uint16_t const source,
-        uint16_t const target,
-        uint16_t const size,
-        ::etl::span<uint8_t const> const& /* peek */,
-        TransportMessage*& message) override
-    {
-        requested.push_back({busId, source, target, size});
-        if (!accept || allocated)
-        {
-            message = nullptr;
-            return ErrorCode::TPMSG_NOT_RESPONSIBLE;
-        }
-        _message.init(_buffer, sizeof(_buffer));
-        allocated = true;
-        message   = &_message;
-        return ErrorCode::TPMSG_OK;
-    }
-
-    void releaseTransportMessage(TransportMessage& /* message */) override
-    {
-        allocated = false;
-        ++releases;
-    }
-
-    ReceiveResult messageReceived(
-        uint8_t const busId,
-        TransportMessage& message,
-        ITransportMessageProcessedListener* const listener) override
-    {
-        received.push_back(
-            {busId,
-             message.getSourceId(),
-             message.getTargetId(),
-             Bytes(message.getPayload(), message.getPayload() + message.getPayloadLength())});
-        listener->transportMessageProcessed(message, ProcessingResult::PROCESSED_NO_ERROR);
-        return ReceiveResult::RECEIVED_NO_ERROR;
-    }
-
-    void dump() override {}
-
-    struct Request
-    {
-        uint8_t busId;
-        uint16_t source;
-        uint16_t target;
-        uint16_t size;
-    };
-
-    struct Received
-    {
-        uint8_t busId;
-        uint16_t source;
-        uint16_t target;
-        Bytes payload;
-    };
-
-    bool accept    = true;
-    bool allocated = false;
-    int releases   = 0;
-    std::vector<Request> requested;
-    std::vector<Received> received;
-
-private:
-    TransportMessage _message;
-    uint8_t _buffer[MAX_PAYLOAD];
-};
-
-class ProcessedRecorder : public ITransportMessageProcessedListener
-{
-public:
-    void
-    transportMessageProcessed(TransportMessage& message, ProcessingResult const result) override
-    {
-        results.push_back(result);
-        messages.push_back(&message);
-    }
-
-    std::vector<ProcessingResult> results;
-    std::vector<TransportMessage*> messages;
-};
-
-class DoIpClientTransportLayerTest : public ::testing::Test
+class DoIpClientTransportLayerTest : public Test
 {
 public:
     DoIpClientTransportLayerTest()
@@ -344,7 +107,7 @@ public:
               CLIENT,
               FUNCTIONAL,
               DoIpConstants::ProtocolVersion::version02Iso2012,
-              13400U,
+              PORT,
               TIMEOUT_MS,
               MAX_PAYLOAD},
           connections,
@@ -354,348 +117,494 @@ public:
         for (size_t i = 0U; i < nodes.size(); ++i)
         {
             connections.emplace_back(layer, nodes[i], sockets[i], asyncContext);
+            // AbstractSocketMock starts with an empty read window without data pointer, which
+            // inject() would extend; an empty read resets both windows to the injection buffer
+            (void)sockets[i].readImplementation(nullptr, 0U);
+            EXPECT_CALL(sockets[i], read(_, _))
+                .Times(AnyNumber())
+                .WillRepeatedly(
+                    Invoke(&sockets[i], &::tcp::AbstractSocketMock::readImplementation));
+            EXPECT_CALL(sockets[i], send(_))
+                .Times(AnyNumber())
+                .WillRepeatedly(Invoke(&sent[i], &SentData::send));
+            EXPECT_CALL(sockets[i], flush())
+                .Times(AnyNumber())
+                .WillRepeatedly(Return(SocketError::SOCKET_ERR_OK));
         }
         layer.fProvidingListenerHelper.fpMessageProvider = &provider;
         layer.fProvidingListenerHelper.fpMessageListener = &provider;
+        responseMessage.init(responseBuffer, sizeof(responseBuffer));
     }
 
     void SetUp() override { testContext.handleAll(); }
 
     uint32_t nowMs() { return now; }
 
-    /// Runs the queued send jobs of the connections.
+    /// Runs the send jobs queued on the connections.
     void run() { testContext.expireAndExecute(); }
 
-    TransportMessage& message(uint16_t const target, Bytes const& payload)
+    TransportMessage& message(uint16_t const target)
     {
+        uint8_t const payload[] = {0x3E, 0x00};
         requestMessage.init(requestBuffer, sizeof(requestBuffer));
         requestMessage.setSourceAddress(CLIENT);
         requestMessage.setTargetAddress(target);
-        requestMessage.setPayloadLength(static_cast<uint16_t>(payload.size()));
-        (void)requestMessage.append(payload.data(), static_cast<uint16_t>(payload.size()));
+        requestMessage.setPayloadLength(sizeof(payload));
+        (void)requestMessage.append(payload, sizeof(payload));
         return requestMessage;
     }
 
-    /// Opens the connection to node index 0 (NODE_A) with a first request, up to the
-    /// diagnostic message on the wire (not yet acknowledged).
-    void openWithRequest(Bytes const& payload)
+    void expectConnect(size_t const index)
     {
-        ASSERT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, payload), &processed));
-        sockets[0].completeConnect(true);
-        run();
-        ASSERT_EQ(ACTIVATION_REQUEST, sockets[0].takeSent());
-        sockets[0].acknowledge();
-        sockets[0].receive(activationResponse(NODE_A));
-        run();
-        ASSERT_EQ(diagnostic(CLIENT, NODE_A, payload), sockets[0].takeSent());
+        EXPECT_CALL(sockets[index], isClosed()).WillOnce(Return(true));
+        EXPECT_CALL(sockets[index], connect(nodes[index].address, PORT, _))
+            .WillOnce(DoAll(SaveArg<2>(&connected[index]), Return(SocketError::SOCKET_ERR_OK)));
     }
 
-    NiceMock<::async::AsyncMock> asyncMock;
+    void completeConnect(size_t const index)
+    {
+        EXPECT_CALL(sockets[index], disableNagleAlgorithm());
+        EXPECT_CALL(sockets[index], isEstablished()).WillOnce(Return(true));
+        connected[index](SocketError::SOCKET_ERR_OK);
+    }
+
+    void receive(size_t const index, Bytes const& data)
+    {
+        (void)sockets[index].inject(::etl::span<uint8_t const>(data.data(), data.size()));
+    }
+
+    /// The TCP peer acknowledges everything sent so far.
+    void acknowledgeTcp(size_t const index)
+    {
+        size_t const length        = sent[index].unacknowledged;
+        sent[index].unacknowledged = 0U;
+        sockets[index].signalDataSent(length);
+    }
+
+    /// Opens the connection to NODE_A with a request for it, up to the diagnostic message on
+    /// the wire (neither released by TCP nor acknowledged by the node).
+    void openWithRequest()
+    {
+        expectConnect(0U);
+        ASSERT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
+        completeConnect(0U);
+        run();
+        ASSERT_EQ(ACTIVATION_REQUEST, sent[0].take());
+        acknowledgeTcp(0U);
+        receive(0U, ACTIVATION_OK);
+        run();
+        ASSERT_EQ(REQUEST_A, sent[0].take());
+    }
+
+    /// openWithRequest(), completed by the TCP release and the node's acknowledgement.
+    void openAndComplete()
+    {
+        openWithRequest();
+        EXPECT_CALL(
+            processed,
+            transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
+        acknowledgeTcp(0U);
+        receive(0U, ACK_A);
+        Mock::VerifyAndClearExpectations(&processed);
+    }
+
+    StrictMock<::async::AsyncMock> asyncMock;
     ::async::ContextType asyncContext;
     ::async::TestContext testContext;
     uint32_t now = 1000U;
     std::array<DoIpClientNode, 2U> nodes;
-    FakeSocket sockets[2];
+    StrictMock<::tcp::AbstractSocketMock> sockets[2];
+    SentData sent[2];
+    ::tcp::AbstractSocket::ConnectedDelegate connected[2];
     ::etl::vector<DoIpClientConnection, 2U> connections;
     DoIpClientTransportLayer layer;
-    Provider provider;
-    ProcessedRecorder processed;
+    StrictMock<::transport::TransportMessageProvidingListenerMock> provider{false};
+    StrictMock<::transport::TransportMessageProcessedListenerMock> processed;
     TransportMessage requestMessage;
     uint8_t requestBuffer[MAX_PAYLOAD];
+    TransportMessage responseMessage;
+    uint8_t responseBuffer[MAX_PAYLOAD];
 };
 
 // --- connection set-up and requests --------------------------------------------------------
 
-TEST_F(DoIpClientTransportLayerTest, firstRequestConnectsActivatesAndSends)
+/**
+ * Test that the first request to a node opens the connection and activates routing.
+ *
+ * The client connects to the node's address on the configured port, disables Nagle's
+ * algorithm, requests routing activation with its own address and type 0x00, and sends the
+ * request as a diagnostic message once the node accepts the activation (code 0x10). The
+ * request is processed successfully when TCP has released it and the node acknowledged it.
+ */
+TEST_F(DoIpClientTransportLayerTest, FirstRequestConnectsActivatesAndSends)
 {
     EXPECT_EQ(ErrorCode::TP_OK, layer.init());
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x22U, 0xF1U, 0x95U}), &processed));
-    EXPECT_EQ(1, sockets[0].connects);
-    EXPECT_EQ(::ip::make_ip4(0xC0A8001EU), sockets[0].lastAddress);
-    EXPECT_EQ(13400U, sockets[0].lastPort);
+    expectConnect(0U);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
     EXPECT_EQ(DoIpClientConnection::State::CONNECTING, connections[0].state());
 
-    sockets[0].completeConnect(true);
-    EXPECT_TRUE(sockets[0].nagleDisabled);
+    completeConnect(0U);
     EXPECT_EQ(DoIpClientConnection::State::ACTIVATING, connections[0].state());
     run();
-    EXPECT_EQ(ACTIVATION_REQUEST, sockets[0].takeSent());
+    EXPECT_EQ(ACTIVATION_REQUEST, sent[0].take());
 
-    sockets[0].receive(activationResponse(NODE_A));
+    acknowledgeTcp(0U);
+    receive(0U, ACTIVATION_OK);
     EXPECT_EQ(DoIpClientConnection::State::ACTIVE, connections[0].state());
     run();
-    EXPECT_EQ(diagnostic(CLIENT, NODE_A, {0x22U, 0xF1U, 0x95U}), sockets[0].takeSent());
-    EXPECT_TRUE(processed.results.empty());
+    EXPECT_EQ(REQUEST_A, sent[0].take());
 
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_NO_ERROR, processed.results[0]);
-    EXPECT_EQ(&requestMessage, processed.messages[0]);
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
+    acknowledgeTcp(0U);
+    receive(0U, ACK_A);
     EXPECT_FALSE(connections[0].hasRequest());
 }
 
-TEST_F(DoIpClientTransportLayerTest, connectionIsReusedForLaterRequests)
+/**
+ * Test that later requests reuse the open connection without a new routing activation.
+ */
+TEST_F(DoIpClientTransportLayerTest, ConnectionIsReusedForLaterRequests)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x10U, 0x03U}), &processed));
+    openAndComplete();
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
     run();
-    EXPECT_EQ(diagnostic(CLIENT, NODE_A, {0x10U, 0x03U}), sockets[0].takeSent());
-    EXPECT_EQ(1, sockets[0].connects);
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-    EXPECT_EQ(2U, processed.results.size());
+    EXPECT_EQ(REQUEST_A, sent[0].take());
 }
 
-TEST_F(DoIpClientTransportLayerTest, acknowledgementBeforeTcpReleaseWaitsForTheRelease)
+/**
+ * Test that a request is processed only after both the TCP release and the node's ACK.
+ *
+ * The send job references the request buffer until TCP releases it, so an acknowledgement
+ * that arrives first must not complete the request.
+ */
+TEST_F(DoIpClientTransportLayerTest, AcknowledgementBeforeTcpReleaseWaitsForTheRelease)
 {
-    openWithRequest({0x3EU, 0x00U});
-    // the node's ACK arrives before the send job is released: the message buffer is in use
-    sockets[0].receive(ack(NODE_A));
-    EXPECT_TRUE(processed.results.empty());
-    sockets[0].acknowledge();
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_NO_ERROR, processed.results[0]);
+    openWithRequest();
+    receive(0U, ACK_A);
+    EXPECT_TRUE(connections[0].hasRequest());
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
+    acknowledgeTcp(0U);
 }
 
-TEST_F(DoIpClientTransportLayerTest, negativeAcknowledgementFailsTheRequest)
+/**
+ * Test that a negative acknowledgement of the node fails the request and keeps the
+ * connection open.
+ */
+TEST_F(DoIpClientTransportLayerTest, NegativeAcknowledgementFailsTheRequest)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A, 0x8003U, 0x06U));
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
-    // the connection stays open
+    openWithRequest();
+    acknowledgeTcp(0U);
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
+    receive(0U, NACK_A);
     EXPECT_EQ(DoIpClientConnection::State::ACTIVE, connections[0].state());
 }
 
-TEST_F(DoIpClientTransportLayerTest, oneRequestPerNodeAndUnknownTargetsAreRejected)
+/**
+ * Test that a node takes one request at a time and that unknown targets are rejected.
+ */
+TEST_F(DoIpClientTransportLayerTest, OneRequestPerNodeAndUnknownTargetsAreRejected)
 {
-    openWithRequest({0x3EU, 0x00U});
-    EXPECT_EQ(
-        ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS,
-        layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
-    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(0x1099U, {0x3EU, 0x00U}), &processed));
+    openWithRequest();
+    EXPECT_EQ(ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS, layer.send(message(NODE_A), &processed));
+    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(0x1099U), &processed));
     EXPECT_EQ(nullptr, layer.findConnection(0x1099U));
     EXPECT_EQ(&connections[1], layer.findConnection(NODE_B));
     EXPECT_EQ(2U, layer.connections().size());
 }
 
-TEST_F(DoIpClientTransportLayerTest, connectNotStartedIsReportedToTheCaller)
+// --- connection failures --------------------------------------------------------------------
+
+/**
+ * Test that a connect that cannot be started is reported to the caller of send().
+ */
+TEST_F(DoIpClientTransportLayerTest, ConnectNotStartedIsReportedToTheCaller)
 {
-    sockets[0].acceptConnect = false;
-    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
-    EXPECT_TRUE(processed.results.empty());
+    EXPECT_CALL(sockets[0], isClosed()).WillOnce(Return(true));
+    EXPECT_CALL(sockets[0], connect(_, PORT, _)).WillOnce(Return(SocketError::SOCKET_ERR_NOT_OK));
+    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(NODE_A), &processed));
     EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
     EXPECT_FALSE(connections[0].hasRequest());
 }
 
-TEST_F(DoIpClientTransportLayerTest, refusedConnectionFailsTheRequestAndAllowsARetry)
+/**
+ * Test that a refused connection fails the request and that the next request connects again.
+ *
+ * A late connect callback after the failure is ignored.
+ */
+TEST_F(DoIpClientTransportLayerTest, RefusedConnectionFailsTheRequestAndAllowsARetry)
 {
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
-    sockets[0].completeConnect(false);
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
+    expectConnect(0U);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
+    EXPECT_CALL(sockets[0], abort());
+    connected[0](SocketError::SOCKET_ERR_NOT_OK);
     EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
-    // a late connect callback is ignored
-    sockets[0].completeConnect(false);
-    EXPECT_EQ(1U, processed.results.size());
+    connected[0](SocketError::SOCKET_ERR_NOT_OK);
 
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
-    EXPECT_EQ(2, sockets[0].connects);
+    expectConnect(0U);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
 }
 
-TEST_F(DoIpClientTransportLayerTest, rejectedRoutingActivationFailsTheRequestAndCloses)
+/**
+ * Test that a refused routing activation fails the request and closes the connection.
+ */
+TEST_F(DoIpClientTransportLayerTest, RejectedRoutingActivationFailsTheRequestAndCloses)
 {
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
-    sockets[0].completeConnect(true);
+    expectConnect(0U);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
+    completeConnect(0U);
     run();
-    sockets[0].acknowledge();
-    sockets[0].receive(activationResponse(NODE_A, 0x00U));
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
+    acknowledgeTcp(0U);
+    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
+    receive(0U, ACTIVATION_REFUSED);
     EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
-    EXPECT_EQ(1, sockets[0].closes);
 }
 
-TEST_F(DoIpClientTransportLayerTest, deadlineFailsTheRequestAndClosesTheConnection)
+/**
+ * Test that a request without acknowledgement fails at its deadline and closes the
+ * connection.
+ */
+TEST_F(DoIpClientTransportLayerTest, DeadlineFailsTheRequestAndClosesTheConnection)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
+    openWithRequest();
+    acknowledgeTcp(0U);
     now += TIMEOUT_MS - 1U;
     layer.cyclic();
-    EXPECT_TRUE(processed.results.empty());
+    EXPECT_TRUE(connections[0].hasRequest());
+
+    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
     now += 1U;
     layer.cyclic();
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
     EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
-    EXPECT_EQ(1, sockets[0].closes);
 }
 
-TEST_F(DoIpClientTransportLayerTest, deadlineCoversConnectionSetUp)
+/**
+ * Test that the deadline also covers the connection set-up.
+ */
+TEST_F(DoIpClientTransportLayerTest, DeadlineCoversConnectionSetUp)
 {
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
+    expectConnect(0U);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
+    EXPECT_CALL(sockets[0], abort());
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
     now += TIMEOUT_MS;
     layer.cyclic();
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
-    EXPECT_EQ(1, sockets[0].aborts);
+    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
 }
 
-TEST_F(DoIpClientTransportLayerTest, remoteCloseFailsThePendingRequestAndTheNextRequestReconnects)
+/**
+ * Test that a connection closed by the node fails the pending request and that the next
+ * request connects again.
+ */
+TEST_F(DoIpClientTransportLayerTest, RemoteCloseFailsThePendingRequestAndTheNextRequestReconnects)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].remoteClose();
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
+    openWithRequest();
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
+    sockets[0].signalClosed(::tcp::IDataListener::ErrorCode::ERR_CONNECTION_CLOSED);
     EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
 
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
-    EXPECT_EQ(2, sockets[0].connects);
+    expectConnect(0U);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
 }
 
-TEST_F(DoIpClientTransportLayerTest, shutdownClosesEveryConnection)
+/**
+ * Test that shutdown closes every connection and fails a request in progress.
+ */
+TEST_F(DoIpClientTransportLayerTest, ShutdownClosesEveryConnection)
 {
-    openWithRequest({0x3EU, 0x00U});
+    openWithRequest();
+    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
     EXPECT_TRUE(layer.shutdown(AbstractTransportLayer::ShutdownDelegate()));
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_ERROR, processed.results[0]);
     EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
 }
 
 // --- messages from the node ----------------------------------------------------------------
 
-TEST_F(DoIpClientTransportLayerTest, diagnosticMessageFromTheNodeIsPassedToTheProvider)
+/**
+ * Test that a diagnostic message of the node is passed to the provider.
+ *
+ * The message gets the node as source and the client as target; when the provider reports
+ * it as processed, it is released.
+ */
+TEST_F(DoIpClientTransportLayerTest, DiagnosticMessageFromTheNodeIsPassedToTheProvider)
 {
-    openWithRequest({0x22U, 0xF1U, 0x95U});
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-    sockets[0].receive(diagnostic(NODE_A, CLIENT, {0x62U, 0xF1U, 0x95U, 0x01U}));
-    ASSERT_EQ(1U, provider.received.size());
-    EXPECT_EQ(BUS, provider.received[0].busId);
-    EXPECT_EQ(NODE_A, provider.received[0].source);
-    EXPECT_EQ(CLIENT, provider.received[0].target);
-    EXPECT_EQ((Bytes{0x62U, 0xF1U, 0x95U, 0x01U}), provider.received[0].payload);
-    EXPECT_EQ(4U, provider.requested[0].size);
-    EXPECT_EQ(1, provider.releases);
+    openAndComplete();
+    ITransportMessageProcessedListener* listener = nullptr;
+    EXPECT_CALL(provider, getTransportMessage(BUS, NODE_A, CLIENT, 2U, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(&responseMessage), Return(ProviderError::TPMSG_OK)));
+    EXPECT_CALL(provider, messageReceived(BUS, Ref(responseMessage), _))
+        .WillOnce(DoAll(SaveArg<2>(&listener), Return(ReceiveResult::RECEIVED_NO_ERROR)));
+    receive(0U, RESPONSE_A);
+    EXPECT_EQ(NODE_A, responseMessage.getSourceId());
+    EXPECT_EQ(CLIENT, responseMessage.getTargetId());
+    EXPECT_EQ(
+        (Bytes{0x7E, 0x00}), Bytes(responseMessage.getPayload(), responseMessage.getPayload() + 2));
+
+    EXPECT_CALL(provider, releaseTransportMessage(Ref(responseMessage)));
+    listener->transportMessageProcessed(responseMessage, ProcessingResult::PROCESSED_NO_ERROR);
 }
 
-TEST_F(DoIpClientTransportLayerTest, messagesNotForTheClientOrNotWantedAreDiscarded)
+/**
+ * Test that a message the provider does not take is released when its listener refuses it.
+ */
+TEST_F(DoIpClientTransportLayerTest, MessageRefusedByTheListenerIsReleased)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    // another target address
-    sockets[0].receive(diagnostic(NODE_A, 0x0E80U, {0x7EU, 0x00U}));
-    EXPECT_TRUE(provider.requested.empty());
-    // the provider has no buffer for it (e.g. unsolicited)
-    provider.accept = false;
-    sockets[0].receive(diagnostic(NODE_A, CLIENT, {0x7EU, 0x00U}));
-    EXPECT_EQ(1U, provider.requested.size());
-    EXPECT_TRUE(provider.received.empty());
-    // too large, unknown payload type, generic NACK and wrong protocol version are skipped
-    sockets[0].receive(diagnostic(NODE_A, CLIENT, Bytes(MAX_PAYLOAD + 1U, 0x11U)));
-    sockets[0].receive(frame(0x4002U, {0x01U, 0x02U, 0x03U}));
-    sockets[0].receive(frame(0x0000U, {0x02U}));
-    sockets[0].receive(frame(0x0006U, {0x01U, 0x02U}));
-    sockets[0].receive(frame(0x8002U, {0x01U}));
-    sockets[0].receive(diagnostic(NODE_A, CLIENT, {}));
-    sockets[0].receive(frame(0x8002U, {0x10U, 0x40U, 0x0EU, 0x10U, 0x00U}, 0x03U));
-    EXPECT_EQ(1U, provider.requested.size());
-    EXPECT_TRUE(processed.results.empty());
-    // the stream is still in sync: the request's ACK is processed
-    sockets[0].receive(ack(NODE_A));
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_NO_ERROR, processed.results[0]);
-    // responses are taken again
-    provider.accept = true;
-    sockets[0].receive(diagnostic(NODE_A, CLIENT, {0x7EU, 0x00U}));
-    EXPECT_EQ(1U, provider.received.size());
+    openAndComplete();
+    EXPECT_CALL(provider, getTransportMessage(BUS, NODE_A, CLIENT, 2U, _, _))
+        .WillOnce(DoAll(SetArgReferee<5>(&responseMessage), Return(ProviderError::TPMSG_OK)));
+    EXPECT_CALL(provider, messageReceived(BUS, Ref(responseMessage), _))
+        .WillOnce(Return(ReceiveResult::RECEIVED_ERROR));
+    EXPECT_CALL(provider, releaseTransportMessage(Ref(responseMessage)));
+    receive(0U, RESPONSE_A);
 }
 
-TEST_F(DoIpClientTransportLayerTest, aliveCheckIsAnsweredAndTheStreamStaysInSync)
+/**
+ * Test that messages the client does not process are skipped and the stream stays in sync.
+ *
+ * Skipped: a diagnostic message to another tester, one the provider does not want, one larger
+ * than the maximum payload, one without user data, an unknown payload type, a generic header
+ * NACK, a too short activation response or acknowledgement, and a wrong protocol version. The
+ * acknowledgement that follows them still completes the request.
+ */
+TEST_F(DoIpClientTransportLayerTest, MessagesNotForTheClientOrNotWantedAreSkipped)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    // empty payload: the next header must still be read
-    sockets[0].receive(frame(0x0007U, {}));
+    openWithRequest();
+    acknowledgeTcp(0U);
+    receive(0U, RESPONSE_TO_OTHER_TESTER);
+    EXPECT_CALL(provider, getTransportMessage(BUS, NODE_A, CLIENT, 2U, _, _))
+        .WillOnce(Return(ProviderError::TPMSG_NOT_RESPONSIBLE));
+    receive(0U, RESPONSE_A);
+    Bytes tooLarge
+        = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, MAX_PAYLOAD + 5U, 0x10, 0x40, 0x0E, 0x10};
+    tooLarge.resize(tooLarge.size() + MAX_PAYLOAD + 1U, 0x11U);
+    receive(0U, tooLarge);
+    receive(0U, {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x04, 0x10, 0x40, 0x0E, 0x10});
+    receive(0U, {0x02, 0xFD, 0x40, 0x02, 0x00, 0x00, 0x00, 0x03, 0x01, 0x02, 0x03});
+    receive(0U, {0x02, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02});
+    receive(0U, {0x02, 0xFD, 0x00, 0x06, 0x00, 0x00, 0x00, 0x02, 0x01, 0x02});
+    receive(0U, {0x02, 0xFD, 0x80, 0x02, 0x00, 0x00, 0x00, 0x01, 0x01});
+    receive(0U, {0x03, 0xFC, 0x80, 0x02, 0x00, 0x00, 0x00, 0x05, 0x10, 0x40, 0x0E, 0x10, 0x00});
+    EXPECT_TRUE(connections[0].hasRequest());
+
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
+    receive(0U, ACK_A);
+}
+
+/**
+ * Test that an alive check request is answered and that the following message is read.
+ *
+ * The alive check request has an empty payload; skipping it must not stop the reception.
+ */
+TEST_F(DoIpClientTransportLayerTest, AliveCheckIsAnsweredAndTheStreamStaysInSync)
+{
+    openWithRequest();
+    acknowledgeTcp(0U);
+    receive(0U, ALIVE_CHECK_REQUEST);
     run();
-    EXPECT_EQ(frame(0x0008U, {0x0EU, 0x10U}), sockets[0].takeSent());
-    sockets[0].receive(ack(NODE_A));
-    ASSERT_EQ(1U, processed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_NO_ERROR, processed.results[0]);
+    EXPECT_EQ(ALIVE_CHECK_RESPONSE, sent[0].take());
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
+    receive(0U, ACK_A);
 }
 
-TEST_F(DoIpClientTransportLayerTest, unexpectedAcknowledgementsAreIgnored)
+/**
+ * Test that acknowledgements and activation responses that nothing waits for are ignored.
+ */
+TEST_F(DoIpClientTransportLayerTest, UnexpectedAcknowledgementsAreIgnored)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-    // no message waits for an acknowledgement
-    sockets[0].receive(ack(NODE_A));
-    EXPECT_EQ(1U, processed.results.size());
-    // an activation response outside the activation is ignored
-    sockets[0].receive(activationResponse(NODE_A, 0x00U));
+    openAndComplete();
+    receive(0U, ACK_A);
+    receive(0U, ACTIVATION_REFUSED);
     EXPECT_EQ(DoIpClientConnection::State::ACTIVE, connections[0].state());
 }
 
 // --- functional requests -------------------------------------------------------------------
 
-TEST_F(DoIpClientTransportLayerTest, functionalRequestGoesToNodesWithActiveRouting)
+/**
+ * Test that a functional request goes to every node with active routing.
+ *
+ * Node B is not connected and gets no copy. The message is processed when every copy is
+ * released by TCP, and a second functional request is rejected until then. The node's
+ * acknowledgement of the functional copy comes before the one of the next physical request
+ * and does not complete it.
+ */
+TEST_F(DoIpClientTransportLayerTest, FunctionalRequestGoesToNodesWithActiveRouting)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-
-    ProcessedRecorder functionalProcessed;
+    openAndComplete();
+    StrictMock<::transport::TransportMessageProcessedListenerMock> functionalProcessed;
+    TransportMessage& functional = message(FUNCTIONAL);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(functional, &functionalProcessed));
     EXPECT_EQ(
-        ErrorCode::TP_OK, layer.send(message(FUNCTIONAL, {0x3EU, 0x00U}), &functionalProcessed));
-    EXPECT_EQ(0, sockets[1].connects); // node B is not connected: not part of it
-    EXPECT_EQ(
-        ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS,
-        layer.send(message(FUNCTIONAL, {0x3EU, 0x00U}), &functionalProcessed));
+        ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS, layer.send(functional, &functionalProcessed));
     run();
-    EXPECT_EQ(diagnostic(CLIENT, FUNCTIONAL, {0x3EU, 0x00U}), sockets[0].takeSent());
-    EXPECT_TRUE(functionalProcessed.results.empty());
-    sockets[0].acknowledge();
-    ASSERT_EQ(1U, functionalProcessed.results.size());
-    EXPECT_EQ(ProcessingResult::PROCESSED_NO_ERROR, functionalProcessed.results[0]);
+    EXPECT_EQ(REQUEST_FUNCTIONAL, sent[0].take());
 
-    // the functional ACK comes first; it does not complete the next physical request
-    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A, {0x3EU, 0x00U}), &processed));
+    EXPECT_CALL(
+        functionalProcessed,
+        transportMessageProcessed(Ref(functional), ProcessingResult::PROCESSED_NO_ERROR));
+    acknowledgeTcp(0U);
+
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
     run();
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-    EXPECT_EQ(1U, processed.results.size());
-    sockets[0].receive(ack(NODE_A));
-    EXPECT_EQ(2U, processed.results.size());
+    acknowledgeTcp(0U);
+    receive(0U, ACK_A);
+    EXPECT_TRUE(connections[0].hasRequest());
+    EXPECT_CALL(
+        processed,
+        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
+    receive(0U, ACK_A);
 }
 
-TEST_F(DoIpClientTransportLayerTest, functionalRequestWithoutActiveRoutingIsNotSent)
+/**
+ * Test that a functional request is not sent without a node with active routing and no
+ * request in progress.
+ */
+TEST_F(DoIpClientTransportLayerTest, FunctionalRequestWithoutActiveRoutingIsNotSent)
 {
-    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(FUNCTIONAL, {0x3EU, 0x00U}), &processed));
-    // a node with a request in progress is skipped as well
-    openWithRequest({0x3EU, 0x00U});
-    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(FUNCTIONAL, {0x3EU, 0x00U}), &processed));
-    EXPECT_TRUE(processed.results.empty());
+    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(FUNCTIONAL), &processed));
+    openWithRequest();
+    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(FUNCTIONAL), &processed));
 }
 
-TEST_F(DoIpClientTransportLayerTest, functionalCopyReleasedByACloseCompletesTheMessage)
+/**
+ * Test that a functional copy released by a closed connection completes the message once.
+ */
+TEST_F(DoIpClientTransportLayerTest, FunctionalCopyReleasedByACloseCompletesTheMessage)
 {
-    openWithRequest({0x3EU, 0x00U});
-    sockets[0].acknowledge();
-    sockets[0].receive(ack(NODE_A));
-    ProcessedRecorder functionalProcessed;
-    EXPECT_EQ(
-        ErrorCode::TP_OK, layer.send(message(FUNCTIONAL, {0x3EU, 0x00U}), &functionalProcessed));
+    openAndComplete();
+    StrictMock<::transport::TransportMessageProcessedListenerMock> functionalProcessed;
+    TransportMessage& functional = message(FUNCTIONAL);
+    EXPECT_EQ(ErrorCode::TP_OK, layer.send(functional, &functionalProcessed));
+    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
+    EXPECT_CALL(
+        functionalProcessed,
+        transportMessageProcessed(Ref(functional), ProcessingResult::PROCESSED_NO_ERROR));
     connections[0].close();
-    ASSERT_EQ(1U, functionalProcessed.results.size());
-    // released copies count once only
     layer.functionalCopyReleased();
-    EXPECT_EQ(1U, functionalProcessed.results.size());
 }
 
 } // namespace

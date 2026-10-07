@@ -1,0 +1,28 @@
+Add doipClient module for DoIP client connections
+
+OpenBSW provides the server side of DoIP only. Add the client side
+(external test equipment, ISO 13400-2), so an OpenBSW node can send
+diagnostic messages to other DoIP entities. A diagnostic gateway can
+then route requests from its DoIP server to Ethernet ECUs, in the same
+way as to CAN ECUs through DoCAN.
+
+`doip::DoIpClientTransportLayer` is an `AbstractTransportLayer`:
+
+- opens one TCP connection per configured node with the first message
+  and activates routing (activation type 0x00); the connection is kept
+- reports a message as processed when the node acknowledges it
+  (0x8002 success, 0x8003 error), once TCP has released its buffer
+- fails a message whose connection set-up, routing activation or
+  acknowledgement exceeds the configured delivery budget
+- sends functional messages to every node with active routing
+- passes the nodes' diagnostic messages to the transport message
+  provider and listener, and answers alive check requests
+
+It reuses `DoIpTcpConnection` and the send jobs of `doip`. Messages
+the client does not process are skipped with `endReceiveMessage()`:
+the discard continuation of `headerReceived()` does not leave the
+discard state for a message with an empty payload.
+
+Memory is static. No existing module changes.
+
+Assisted-by: Anthropic Claude Opus 5.5

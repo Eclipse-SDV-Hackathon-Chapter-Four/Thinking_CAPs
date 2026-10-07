@@ -1,0 +1,2125 @@
+From 60c73cd408851e2bb561be078dd9c48edabead49 Mon Sep 17 00:00:00 2001
+From: Jefferson Nascimento <jnsagai@gmail.com>
+Date: Wed, 7 Oct 2026 16:20:51 +0100
+Subject: [PATCH] Add doipClient module for DoIP client connections
+
+OpenBSW provides the server side of DoIP only. Add the client side
+(external test equipment, ISO 13400-2), so an OpenBSW node can send
+diagnostic messages to other DoIP entities. A diagnostic gateway can
+then route requests from its DoIP server to Ethernet ECUs, in the same
+way as to CAN ECUs through DoCAN.
+
+`doip::DoIpClientTransportLayer` is an `AbstractTransportLayer`:
+
+- opens one TCP connection per configured node with the first message
+  and activates routing (activation type 0x00); the connection is kept
+- reports a message as processed when the node acknowledges it
+  (0x8002 success, 0x8003 error), once TCP has released its buffer
+- fails a message whose connection set-up, routing activation or
+  acknowledgement exceeds the configured delivery budget
+- sends functional messages to every node with active routing
+- passes the nodes' diagnostic messages to the transport message
+  provider and listener, and answers alive check requests
+
+It reuses `DoIpTcpConnection` and the send jobs of `doip`. Messages
+the client does not process are skipped with `endReceiveMessage()`:
+the discard continuation of `headerReceived()` does not leave the
+discard state for a message with an empty payload.
+
+Memory is static. No existing module changes.
+
+Assisted-by: Anthropic Claude Opus 5.5
+Signed-off-by: Jefferson Nascimento <jnsagai@gmail.com>
+---
+ CMakeLists.txt                                |   1 +
+ libs/bsw/CMakeLists.txt                       |   1 +
+ libs/bsw/doipClient/BUILD.bazel               |  55 ++
+ libs/bsw/doipClient/CMakeLists.txt            |  22 +
+ libs/bsw/doipClient/doc/index.rst             | 145 +++++
+ .../doip/client/DoIpClientConnection.h        | 195 ++++++
+ .../include/doip/client/DoIpClientLogger.h    |  18 +
+ .../doip/client/DoIpClientTransportLayer.h    | 134 ++++
+ libs/bsw/doipClient/module.spec               |   1 +
+ .../src/doip/client/DoIpClientConnection.cpp  | 598 +++++++++++++++++
+ .../src/doip/client/DoIpClientLogger.cpp      |  16 +
+ .../doip/client/DoIpClientTransportLayer.cpp  | 141 ++++
+ libs/bsw/doipClient/test/CMakeLists.txt       |  30 +
+ .../test/src/DoIpClientTransportLayerTest.cpp | 610 ++++++++++++++++++
+ 14 files changed, 1967 insertions(+)
+ create mode 100644 libs/bsw/doipClient/BUILD.bazel
+ create mode 100644 libs/bsw/doipClient/CMakeLists.txt
+ create mode 100644 libs/bsw/doipClient/doc/index.rst
+ create mode 100644 libs/bsw/doipClient/include/doip/client/DoIpClientConnection.h
+ create mode 100644 libs/bsw/doipClient/include/doip/client/DoIpClientLogger.h
+ create mode 100644 libs/bsw/doipClient/include/doip/client/DoIpClientTransportLayer.h
+ create mode 100644 libs/bsw/doipClient/module.spec
+ create mode 100644 libs/bsw/doipClient/src/doip/client/DoIpClientConnection.cpp
+ create mode 100644 libs/bsw/doipClient/src/doip/client/DoIpClientLogger.cpp
+ create mode 100644 libs/bsw/doipClient/src/doip/client/DoIpClientTransportLayer.cpp
+ create mode 100644 libs/bsw/doipClient/test/CMakeLists.txt
+ create mode 100644 libs/bsw/doipClient/test/src/DoIpClientTransportLayerTest.cpp
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index eea88b6..6077ded 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -175,6 +175,7 @@ if (BUILD_EXECUTABLE STREQUAL "unitTest")
+         add_subdirectory(libs/bsw/cpp2someip/test)
+         add_subdirectory(libs/bsw/docan/test)
+         add_subdirectory(libs/bsw/doip/test)
++        add_subdirectory(libs/bsw/doipClient/test)
+         add_subdirectory(libs/bsw/io/examples)
+         add_subdirectory(libs/bsw/io/test)
+         add_subdirectory(libs/bsw/lifecycle/examples)
+diff --git a/libs/bsw/CMakeLists.txt b/libs/bsw/CMakeLists.txt
+index 583337b..c06ad29 100644
+--- a/libs/bsw/CMakeLists.txt
++++ b/libs/bsw/CMakeLists.txt
+@@ -41,6 +41,7 @@ if (OPENBSW_CONFIGURE_GENERIC_BSW)
+     add_subdirectory(cpp2someip)
+     add_subdirectory(docan)
+     add_subdirectory(doip)
++    add_subdirectory(doipClient)
+     add_subdirectory(loggerIntegration)
+     add_subdirectory(lwipSocket)
+     add_subdirectory(middleware)
+diff --git a/libs/bsw/doipClient/BUILD.bazel b/libs/bsw/doipClient/BUILD.bazel
+new file mode 100644
+index 0000000..7de7d6e
+--- /dev/null
++++ b/libs/bsw/doipClient/BUILD.bazel
+@@ -0,0 +1,55 @@
++# *******************************************************************************
++# Copyright (c) 2026 Jefferson Nascimento
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++# AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++# tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("//bazel/config/build_variant:compatibility.bzl", "unit_test_only")
++
++cc_library(
++    name = "doip_client",
++    srcs = [
++        "src/doip/client/DoIpClientConnection.cpp",
++        "src/doip/client/DoIpClientLogger.cpp",
++        "src/doip/client/DoIpClientTransportLayer.cpp",
++    ],
++    hdrs = [
++        "include/doip/client/DoIpClientConnection.h",
++        "include/doip/client/DoIpClientLogger.h",
++        "include/doip/client/DoIpClientTransportLayer.h",
++    ],
++    strip_include_prefix = "include",
++    visibility = ["//visibility:public"],
++    deps = [
++        "//libs/3rdparty/etl",
++        "//libs/bsw/async",
++        "//libs/bsw/cpp2ethernet",
++        "//libs/bsw/doip",
++        "//libs/bsw/transport",
++        "//libs/bsw/util",
++    ],
++)
++
++cc_test(
++    name = "doip_client_test",
++    srcs = ["test/src/DoIpClientTransportLayerTest.cpp"],
++    target_compatible_with = unit_test_only(),
++    deps = [
++        ":doip_client",
++        "//libs/3rdparty/googletest:gtest_main",
++        "//libs/bsw/async:async_mock_impl",
++        "//libs/bsw/bsp:bsp_mock",
++        "//libs/bsw/cpp2ethernet:cpp2ethernet_mock",
++        "//libs/bsw/transport:transport_mock",
++        "//libs/bsw/util:util_mock",
++    ],
++)
+diff --git a/libs/bsw/doipClient/CMakeLists.txt b/libs/bsw/doipClient/CMakeLists.txt
+new file mode 100644
+index 0000000..c86f91c
+--- /dev/null
++++ b/libs/bsw/doipClient/CMakeLists.txt
+@@ -0,0 +1,22 @@
++# *******************************************************************************
++# Copyright (c) 2026 Jefferson Nascimento
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++# AI disclosure: this file was largely generated with an AI assistant and was
++# reviewed and tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++add_library(
++    doipClient
++    src/doip/client/DoIpClientConnection.cpp
++    src/doip/client/DoIpClientLogger.cpp
++    src/doip/client/DoIpClientTransportLayer.cpp)
++
++target_include_directories(doipClient PUBLIC include)
++
++target_link_libraries(doipClient PUBLIC doip transport cpp2ethernet etl)
+diff --git a/libs/bsw/doipClient/doc/index.rst b/libs/bsw/doipClient/doc/index.rst
+new file mode 100644
+index 0000000..3c69490
+--- /dev/null
++++ b/libs/bsw/doipClient/doc/index.rst
+@@ -0,0 +1,145 @@
++..
++   *******************************************************************************
++   Copyright (c) 2026 Jefferson Nascimento
++
++   This program and the accompanying materials are made available under the
++   terms of the Apache License Version 2.0 which is available at
++   https://www.apache.org/licenses/LICENSE-2.0
++
++   SPDX-License-Identifier: Apache-2.0
++   *******************************************************************************
++
++..
++   AI disclosure: this file was largely generated with an AI assistant and was reviewed by
++   the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++doipClient
++==========
++
++Introduction
++------------
++
++``doip::DoIpClientTransportLayer`` is the client side of DoIP (ISO 13400-2): it lets an
++OpenBSW node act as external test equipment towards other DoIP entities. The ``doip``
++module provides the server side, which accepts testers; this module opens connections to
++DoIP nodes, activates routing and exchanges diagnostic messages with them.
++
++It is an ``AbstractTransportLayer``, so a transport router can reach Ethernet ECUs in the
++same way as CAN ECUs through DoCAN. For example, a diagnostic gateway can forward requests
++from its DoIP server to a node behind it:
++
++.. code-block:: none
++
++    tester --DoIP--> DoIpServerTransportLayer --> router --> DoIpClientTransportLayer --DoIP--> node
++
++The module reuses ``doip::DoIpTcpConnection`` and the send jobs of the ``doip`` module for
++framing, and any ``tcp::AbstractSocket`` (for example ``tcp::LwipSocket``) for TCP.
++
++Features
++--------
++
++- **Connection on demand:** the first message to a node opens a TCP connection to the
++  node's address and port, and requests routing activation with the client's logical
++  address and activation type ``0x00``. Diagnostic messages are sent after a positive
++  activation response (code ``0x10``). The connection is kept for later messages.
++- **Delivery confirmation:** a physical message is reported as processed to its
++  ``ITransportMessageProcessedListener`` when the node has acknowledged it: positive
++  acknowledgement (``0x8002``) as success, negative acknowledgement (``0x8003``) as error.
++  The report always waits until the TCP stack has released the message buffer.
++- **Delivery budget:** connection set-up, routing activation and acknowledgement must
++  complete within a configured time. Otherwise the connection is closed and the message is
++  reported as failed. A refused connection or activation and a connection closed by the
++  node fail the message at once; the next message connects again.
++- **One message per node:** a node takes one physical message at a time; a second one is
++  rejected with ``TP_MESSAGE_ALREADY_IN_PROGRESS``.
++- **Functional messages:** a message to the configured functional address is sent to every
++  node whose routing is active and which has no message in progress. It is reported as
++  processed when every copy has been released by TCP.
++- **Messages from nodes:** a diagnostic message from a node to the client's address is
++  passed to the transport message provider and listener with the node as source. Other
++  messages (other target addresses, unknown payload types, wrong protocol version, too large
++  payloads) are skipped without losing the stream position.
++- **Alive check:** alive check requests of a node are answered with the client's address.
++- **Static resources:** connections, sockets and send jobs are allocated with the layer.
++
++Integration Guide
++-----------------
++
++- Create a ``doip::declare::DoIpClientTransportLayer<NodeCount, SocketType>`` with the bus
++  ID, the parameters, the nodes, the asynchronous context and a millisecond clock, and add
++  it to the transport system (for example ``ITransportSystem::addTransportLayer``).
++- Call ``send()``, ``cyclic()`` and ``shutdown()`` in the context of the TCP stack (for lwIP,
++  the Ethernet task); all socket callbacks arrive in that context.
++- Call ``cyclic()`` periodically, for example every 10 ms, for the delivery budget.
++- Choose a delivery budget shorter than the supervision of the component that calls
++  ``send()``. A router must not reuse a message buffer that the client still sends.
++- Each node needs one TCP connection (one ``tcp_pcb`` with lwIP) besides those of the DoIP
++  server.
++
++Configuration
++-------------
++
++``doip::DoIpClientParameters``:
++
++.. list-table::
++   :header-rows: 1
++
++   * - Field
++     - Meaning
++   * - ``sourceAddress``
++     - Logical address of the client; source of all messages and of the routing activation.
++   * - ``functionalAddress``
++     - Target address that selects the functional message handling.
++   * - ``protocolVersion``
++     - DoIP protocol version of the generic header, e.g. ``version02Iso2012``.
++   * - ``port``
++     - TCP port of the nodes, normally ``DoIpConstants::Ports::TCP_DATA`` (13400).
++   * - ``deliveryTimeoutMs``
++     - Budget from ``send()`` to the node's acknowledgement, including connection set-up.
++   * - ``maxPayloadLength``
++     - Largest diagnostic message payload accepted from a node.
++
++``doip::DoIpClientNode`` holds the node's logical address, IP address and an optional name
++for log output.
++
++Public API
++----------
++
++- ``DoIpClientTransportLayer::send()`` sends a message to the node named by its target
++  address, or to all nodes for the functional address. ``TP_SEND_FAIL`` means that no
++  connection could be started or no node took a functional message; the caller keeps the
++  message.
++- ``DoIpClientTransportLayer::cyclic()`` supervises the delivery budget.
++- ``DoIpClientTransportLayer::connections()`` and ``DoIpClientConnection::state()`` give the
++  connection states (``CLOSED``, ``CONNECTING``, ``ACTIVATING``, ``ACTIVE``).
++
++Usage Example
++-------------
++
++.. code-block:: cpp
++
++    ::doip::DoIpClientNode const nodes[] = {
++        {0x1040U, ::ip::make_ip4(0xC0A8001EU), "ethZone"}};
++
++    ::doip::DoIpClientParameters const parameters{
++        0x0E10U, // client address
++        0xE400U, // functional address
++        ::doip::DoIpConstants::ProtocolVersion::version02Iso2012,
++        ::doip::DoIpConstants::Ports::TCP_DATA,
++        1500U, // delivery budget in ms
++        4095U};
++
++    ::doip::declare::DoIpClientTransportLayer<1U, ::tcp::LwipSocket> client(
++        busId, parameters, nodes, ethernetContext, nowMs);
++
++    transportSystem.addTransportLayer(client);
++    // every 10 ms in the Ethernet context:
++    client.cyclic();
++
++Limitations
++-----------
++
++- Plain TCP only; DoIP over TLS is not supported.
++- Node addresses are configured; vehicle discovery over UDP is not used.
++- One connection per node: several logical addresses behind one DoIP entity need one node
++  entry each, and the entity must accept a second routing activation from the same source.
+diff --git a/libs/bsw/doipClient/include/doip/client/DoIpClientConnection.h b/libs/bsw/doipClient/include/doip/client/DoIpClientConnection.h
+new file mode 100644
+index 0000000..d94ec14
+--- /dev/null
++++ b/libs/bsw/doipClient/include/doip/client/DoIpClientConnection.h
+@@ -0,0 +1,195 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#pragma once
++
++#include <async/Types.h>
++#include <doip/common/DoIpConstants.h>
++#include <doip/common/DoIpStaticPayloadSendJob.h>
++#include <doip/common/DoIpTcpConnection.h>
++#include <doip/common/DoIpTransportMessageSendJob.h>
++#include <doip/common/IDoIpConnectionHandler.h>
++#include <doip/common/IDoIpSendJobCallback.h>
++#include <ip/IPAddress.h>
++#include <tcp/socket/AbstractSocket.h>
++#include <transport/ITransportMessageProcessedListener.h>
++#include <transport/TransportMessage.h>
++
++#include <etl/optional.h>
++#include <etl/queue.h>
++#include <etl/span.h>
++#include <etl/uncopyable.h>
++
++#include <cstdint>
++
++namespace doip
++{
++class DoIpClientTransportLayer;
++
++/** A DoIP node reached by the client. */
++struct DoIpClientNode
++{
++    /// Logical address of the node: target of requests, source of its responses.
++    uint16_t logicalAddress;
++    /// IP address of the DoIP entity that hosts the node.
++    ::ip::IPAddress address;
++    /// Name used in log output; may be nullptr.
++    char const* name;
++};
++
++/** Parameters shared by all connections of a DoIpClientTransportLayer. */
++struct DoIpClientParameters
++{
++    /// Logical address of the client (external test equipment), source of all requests.
++    uint16_t sourceAddress;
++    /// Target address of functional requests.
++    uint16_t functionalAddress;
++    DoIpConstants::ProtocolVersion protocolVersion;
++    /// TCP port of the nodes (DoIpConstants::Ports::TCP_DATA).
++    uint16_t port;
++    /// Time from send() to the node's acknowledgement, including connection set-up.
++    uint32_t deliveryTimeoutMs;
++    /// Largest diagnostic message payload accepted from a node.
++    uint16_t maxPayloadLength;
++};
++
++/**
++ * Client connection to one DoIP node. Created and driven by DoIpClientTransportLayer.
++ */
++class DoIpClientConnection
++: public IDoIpConnectionHandler
++, public IDoIpSendJobCallback<DoIpTransportMessageSendJob>
++, public ::transport::ITransportMessageProcessedListener
++, public ::etl::uncopyable
++{
++public:
++    enum class State : uint8_t
++    {
++        CLOSED,
++        CONNECTING,
++        ACTIVATING,
++        ACTIVE
++    };
++
++    DoIpClientConnection(
++        DoIpClientTransportLayer& layer,
++        DoIpClientNode const& node,
++        ::tcp::AbstractSocket& socket,
++        ::async::ContextType context);
++
++    DoIpClientNode const& node() const { return _node; }
++
++    State state() const { return _state; }
++
++    bool hasRequest() const { return _request != nullptr; }
++
++    /**
++     * Takes a physical request; it is reported as processed to listener on acknowledgement,
++     * error or deadline. Returns false if a request is already in progress.
++     */
++    bool request(
++        ::transport::TransportMessage& message,
++        ::transport::ITransportMessageProcessedListener* listener,
++        uint32_t deadline);
++
++    /**
++     * Sends a copy of a functional request if routing is active and no request is in
++     * progress. Returns true if the copy was queued; its release is reported to the layer.
++     */
++    bool functional(::transport::TransportMessage& message);
++
++    /// Deadline supervision.
++    void cyclic(uint32_t now);
++
++    /// Closes the connection; a request in progress fails.
++    void close();
++
++    // IDoIpConnectionHandler
++    void connectionClosed(bool closedByRemotePeer) override;
++    HeaderReceivedContinuation headerReceived(DoIpHeader const& header) override;
++
++    // IDoIpSendJobCallback
++    void releaseSendJob(DoIpTransportMessageSendJob& sendJob, bool success) override;
++
++    // ITransportMessageProcessedListener: a node response was handled by the provider
++    void transportMessageProcessed(
++        ::transport::TransportMessage& transportMessage, ProcessingResult result) override;
++
++private:
++    enum class Ack : uint8_t
++    {
++        REQUEST,
++        FUNCTIONAL
++    };
++
++    static constexpr size_t ACTIVATION_REQUEST_LENGTH  = 7U;
++    static constexpr size_t ACTIVATION_RESPONSE_LENGTH = 9U;
++    static constexpr size_t ACK_LENGTH                 = 5U;
++    static constexpr size_t ADDRESS_INFO_LENGTH        = 4U;
++    static constexpr size_t MAX_PENDING_ACKS           = 4U;
++
++    using StaticJob = DoIpStaticPayloadSendJob;
++
++    void connect();
++    void connected(::tcp::AbstractSocket::ErrorCode result);
++    void sendActivation();
++    void sendRequest();
++    void tryFinishRequest();
++    void finishRequest(bool success);
++    void closeAndFail(char const* reason);
++    void sendAliveCheckResponse();
++
++    void activationJobReleased(StaticJob& job, bool success);
++    void aliveJobReleased(StaticJob& job, bool success);
++
++    void activationResponseReceived(::etl::span<uint8_t const> payload);
++    void ackReceived(::etl::span<uint8_t const> payload);
++    void addressInfoReceived(::etl::span<uint8_t const> payload);
++    void diagnosticPayloadReceived(::etl::span<uint8_t const> payload);
++
++    static IDoIpConnection::PayloadDiscardedCallbackType discard();
++    HeaderReceivedContinuation skipPayload();
++
++    DoIpClientTransportLayer& _layer;
++    DoIpClientNode const& _node;
++    ::tcp::AbstractSocket& _socket;
++    uint8_t _writeBuffer[DoIpConstants::DOIP_HEADER_LENGTH];
++    DoIpTcpConnection _connection;
++    declare::DoIpStaticPayloadSendJob<ACTIVATION_REQUEST_LENGTH> _activationJob;
++    declare::DoIpStaticPayloadSendJob<2U> _aliveJob;
++    ::etl::optional<DoIpTransportMessageSendJob> _requestJob;
++    ::etl::optional<DoIpTransportMessageSendJob> _functionalJob;
++    ::etl::queue<Ack, MAX_PENDING_ACKS> _pendingAcks;
++
++    ::transport::TransportMessage* _request;
++    ::transport::ITransportMessageProcessedListener* _requestListener;
++    uint32_t _deadline;
++    bool _requestSent;
++    bool _requestReleased;
++    bool _ackReceived;
++    bool _ackPositive;
++
++    bool _activationJobBusy;
++    bool _aliveJobBusy;
++    bool _functionalJobBusy;
++
++    uint8_t _rxBuffer[ACTIVATION_RESPONSE_LENGTH];
++    uint16_t _rxPayloadType;
++    uint16_t _rxLength;
++    uint16_t _rxSource;
++    ::transport::TransportMessage* _rxMessage;
++
++    State _state;
++};
++
++} // namespace doip
+diff --git a/libs/bsw/doipClient/include/doip/client/DoIpClientLogger.h b/libs/bsw/doipClient/include/doip/client/DoIpClientLogger.h
+new file mode 100644
+index 0000000..76e5246
+--- /dev/null
++++ b/libs/bsw/doipClient/include/doip/client/DoIpClientLogger.h
+@@ -0,0 +1,18 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#pragma once
++
++#include "util/logger/Logger.h"
++
++DECLARE_LOGGER_COMPONENT(DOIPCLIENT)
+diff --git a/libs/bsw/doipClient/include/doip/client/DoIpClientTransportLayer.h b/libs/bsw/doipClient/include/doip/client/DoIpClientTransportLayer.h
+new file mode 100644
+index 0000000..a564e5c
+--- /dev/null
++++ b/libs/bsw/doipClient/include/doip/client/DoIpClientTransportLayer.h
+@@ -0,0 +1,134 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#pragma once
++
++#include "doip/client/DoIpClientConnection.h"
++
++#include <transport/AbstractTransportLayer.h>
++#include <transport/ITransportMessageProcessedListener.h>
++#include <transport/TransportMessage.h>
++
++#include <etl/delegate.h>
++#include <etl/span.h>
++#include <etl/uncopyable.h>
++#include <etl/vector.h>
++
++#include <cstdint>
++
++namespace doip
++{
++/**
++ * DoIP client transport layer (ISO 13400-2, external test equipment role).
++ *
++ * Sends diagnostic messages to DoIP nodes over TCP and passes their diagnostic messages to
++ * the transport message provider, so a router (for example transport::TransportRouter) can
++ * reach Ethernet ECUs in the same way as CAN ECUs through DoCAN:
++ *
++ * - send() with a node's logical address as target: the connection to that node is opened on
++ *   demand (TCP, then routing activation with type 0x00), the message is sent as a diagnostic
++ *   message, and the message is reported as processed once the node acknowledges it (0x8002:
++ *   success, 0x8003: error). One request per node at a time.
++ * - send() with the functional address as target: the message is sent to every node whose
++ *   routing is active and which has no request in progress; it is reported as processed when
++ *   every copy has been handed to TCP.
++ * - Diagnostic messages from a node to the client address are passed to the provider with
++ *   the node as source; alive check requests are answered.
++ *
++ * Every send() is reported as processed within DoIpClientParameters::deliveryTimeoutMs; a
++ * node that does not connect, activate or acknowledge in time is disconnected. Choose a
++ * timeout shorter than the receiver's own supervision (for example the TransportRouter
++ * transfer budget).
++ *
++ * All calls, including send(), must be made in the context of the TCP stack (for lwIP, the
++ * Ethernet task). Call cyclic() periodically (for example every 10 ms) in that context.
++ */
++class DoIpClientTransportLayer
++: public ::transport::AbstractTransportLayer
++, public ::etl::uncopyable
++{
++public:
++    using NowMsType = ::etl::delegate<uint32_t()>;
++
++    DoIpClientTransportLayer(
++        uint8_t busId,
++        DoIpClientParameters const& parameters,
++        ::etl::ivector<DoIpClientConnection>& connections,
++        NowMsType nowMs);
++
++    ErrorCode init() override;
++    bool shutdown(ShutdownDelegate delegate) override;
++    ErrorCode send(
++        ::transport::TransportMessage& transportMessage,
++        ::transport::ITransportMessageProcessedListener* pNotificationListener) override;
++
++    /// Supervision of connection set-up and acknowledgements.
++    void cyclic();
++
++    DoIpClientParameters const& parameters() const { return _parameters; }
++
++    ::etl::span<DoIpClientConnection const> connections() const
++    {
++        return ::etl::span<DoIpClientConnection const>(_connections.data(), _connections.size());
++    }
++
++    DoIpClientConnection* findConnection(uint16_t logicalAddress);
++
++    uint32_t nowMs() const { return _nowMs(); }
++
++    /// Called by a connection when its copy of the functional message has been released.
++    void functionalCopyReleased();
++
++private:
++    DoIpClientParameters _parameters;
++    ::etl::ivector<DoIpClientConnection>& _connections;
++    NowMsType _nowMs;
++    ::transport::TransportMessage* _functionalMessage;
++    ::transport::ITransportMessageProcessedListener* _functionalListener;
++    size_t _functionalCopies;
++};
++
++namespace declare
++{
++/**
++ * DoIP client transport layer with storage for NodeCount connections, each with its own
++ * socket of type SocketType (for example tcp::LwipSocket).
++ */
++template<size_t NodeCount, class SocketType>
++class DoIpClientTransportLayer : public ::doip::DoIpClientTransportLayer
++{
++public:
++    DoIpClientTransportLayer(
++        uint8_t busId,
++        DoIpClientParameters const& parameters,
++        ::etl::span<DoIpClientNode const> nodes,
++        ::async::ContextType context,
++        NowMsType nowMs)
++    : ::doip::DoIpClientTransportLayer(busId, parameters, _connectionStorage, nowMs)
++    , _sockets()
++    , _connectionStorage()
++    {
++        size_t const count = (nodes.size() < NodeCount) ? nodes.size() : NodeCount;
++        for (size_t i = 0U; i < count; ++i)
++        {
++            _connectionStorage.emplace_back(*this, nodes[i], _sockets[i], context);
++        }
++    }
++
++private:
++    SocketType _sockets[NodeCount];
++    ::etl::vector<DoIpClientConnection, NodeCount> _connectionStorage;
++};
++} // namespace declare
++
++} // namespace doip
+diff --git a/libs/bsw/doipClient/module.spec b/libs/bsw/doipClient/module.spec
+new file mode 100644
+index 0000000..87faef8
+--- /dev/null
++++ b/libs/bsw/doipClient/module.spec
+@@ -0,0 +1 @@
++oss: true
+diff --git a/libs/bsw/doipClient/src/doip/client/DoIpClientConnection.cpp b/libs/bsw/doipClient/src/doip/client/DoIpClientConnection.cpp
+new file mode 100644
+index 0000000..c26912b
+--- /dev/null
++++ b/libs/bsw/doipClient/src/doip/client/DoIpClientConnection.cpp
+@@ -0,0 +1,598 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#include "doip/client/DoIpClientConnection.h"
++
++#include "doip/client/DoIpClientLogger.h"
++#include "doip/client/DoIpClientTransportLayer.h"
++
++#include <doip/common/DoIpHeader.h>
++
++// NOLINTBEGIN(cppcoreguidelines-pro-type-vararg): Logger API is variadic by design.
++
++namespace doip
++{
++using ::transport::ITransportMessageProcessedListener;
++using ::transport::TransportMessage;
++using ::util::logger::DOIPCLIENT;
++using ::util::logger::Logger;
++
++namespace
++{
++uint16_t read16(::etl::span<uint8_t const> const data, size_t const offset)
++{
++    return static_cast<uint16_t>(
++        (static_cast<uint16_t>(data[offset]) << 8U) | static_cast<uint16_t>(data[offset + 1U]));
++}
++
++void write16(::etl::span<uint8_t> const data, size_t const offset, uint16_t const value)
++{
++    data[offset]      = static_cast<uint8_t>(value >> 8U);
++    data[offset + 1U] = static_cast<uint8_t>(value & 0xFFU);
++}
++
++bool expired(uint32_t const now, uint32_t const deadline)
++{
++    return static_cast<int32_t>(now - deadline) >= 0;
++}
++
++char const* nameOf(DoIpClientNode const& node) { return (node.name != nullptr) ? node.name : ""; }
++} // namespace
++
++DoIpClientConnection::DoIpClientConnection(
++    DoIpClientTransportLayer& layer,
++    DoIpClientNode const& node,
++    ::tcp::AbstractSocket& socket,
++    ::async::ContextType const context)
++: _layer(layer)
++, _node(node)
++, _socket(socket)
++, _writeBuffer()
++, _connection(context, socket, ::etl::span<uint8_t>(_writeBuffer))
++, _activationJob(
++      static_cast<uint8_t>(layer.parameters().protocolVersion),
++      DoIpConstants::PayloadTypes::ROUTING_ACTIVATION_REQUEST,
++      ACTIVATION_REQUEST_LENGTH,
++      StaticJob::ReleaseCallbackType::
++          create<DoIpClientConnection, &DoIpClientConnection::activationJobReleased>(*this))
++, _aliveJob(
++      static_cast<uint8_t>(layer.parameters().protocolVersion),
++      DoIpConstants::PayloadTypes::ALIVE_CHECK_RESPONSE,
++      2U,
++      StaticJob::ReleaseCallbackType::
++          create<DoIpClientConnection, &DoIpClientConnection::aliveJobReleased>(*this))
++, _requestJob()
++, _functionalJob()
++, _pendingAcks()
++, _request(nullptr)
++, _requestListener(nullptr)
++, _deadline(0U)
++, _requestSent(false)
++, _requestReleased(false)
++, _ackReceived(false)
++, _ackPositive(false)
++, _activationJobBusy(false)
++, _aliveJobBusy(false)
++, _functionalJobBusy(false)
++, _rxBuffer()
++, _rxPayloadType(0U)
++, _rxLength(0U)
++, _rxSource(0U)
++, _rxMessage(nullptr)
++, _state(State::CLOSED)
++{
++    uint16_t const source                 = layer.parameters().sourceAddress;
++    // routing activation request: source address, activation type 0x00 (default), reserved
++    ::etl::span<uint8_t> const activation = _activationJob.accessPayloadBuffer();
++    write16(activation, 0U, source);
++    for (size_t i = 2U; i < ACTIVATION_REQUEST_LENGTH; ++i)
++    {
++        activation[i] = 0U;
++    }
++    write16(_aliveJob.accessPayloadBuffer(), 0U, source);
++}
++
++bool DoIpClientConnection::request(
++    TransportMessage& message,
++    ITransportMessageProcessedListener* const listener,
++    uint32_t const deadline)
++{
++    if (_request != nullptr)
++    {
++        return false;
++    }
++    _request         = &message;
++    _requestListener = listener;
++    _deadline        = deadline;
++    _requestSent     = false;
++    _requestReleased = false;
++    _ackReceived     = false;
++    _ackPositive     = false;
++    switch (_state)
++    {
++        case State::CLOSED:
++        {
++            connect();
++            if (_state == State::CLOSED)
++            {
++                // not started: the caller reports the failure
++                _request         = nullptr;
++                _requestListener = nullptr;
++                return false;
++            }
++            break;
++        }
++        case State::ACTIVE:
++        {
++            sendRequest();
++            break;
++        }
++        default:
++        {
++            // sent once routing is active
++            break;
++        }
++    }
++    return true;
++}
++
++bool DoIpClientConnection::functional(TransportMessage& message)
++{
++    if ((_state != State::ACTIVE) || (_request != nullptr) || _functionalJobBusy
++        || _pendingAcks.full())
++    {
++        return false;
++    }
++    DoIpClientParameters const& parameters = _layer.parameters();
++    (void)_functionalJob.emplace(
++        parameters.protocolVersion,
++        message,
++        nullptr,
++        parameters.sourceAddress,
++        parameters.functionalAddress,
++        *this);
++    if (!_connection.sendMessage(*_functionalJob))
++    {
++        return false;
++    }
++    _functionalJobBusy = true;
++    _pendingAcks.push(Ack::FUNCTIONAL);
++    return true;
++}
++
++void DoIpClientConnection::cyclic(uint32_t const now)
++{
++    if ((_request != nullptr) && expired(now, _deadline))
++    {
++        closeAndFail(
++            (_state == State::ACTIVE) ? "no acknowledgement in time"
++                                      : "no routing activation in time");
++    }
++}
++
++void DoIpClientConnection::close()
++{
++    State const previous = _state;
++    _state               = State::CLOSED;
++    if (previous == State::CONNECTING)
++    {
++        _socket.abort();
++    }
++    else if (previous != State::CLOSED)
++    {
++        // releases the queued send jobs and calls connectionClosed()
++        _connection.close();
++    }
++    else
++    {
++        // nothing open
++    }
++    _pendingAcks.clear();
++    if (_request != nullptr)
++    {
++        finishRequest(false);
++    }
++}
++
++void DoIpClientConnection::connect()
++{
++    if (!_socket.isClosed())
++    {
++        _socket.abort();
++    }
++    _state                                        = State::CONNECTING;
++    DoIpClientParameters const& parameters        = _layer.parameters();
++    ::tcp::AbstractSocket::ErrorCode const result = _socket.connect(
++        _node.address,
++        parameters.port,
++        ::tcp::AbstractSocket::ConnectedDelegate::
++            create<DoIpClientConnection, &DoIpClientConnection::connected>(*this));
++    if (result != ::tcp::AbstractSocket::ErrorCode::SOCKET_ERR_OK)
++    {
++        Logger::warn(
++            DOIPCLIENT, "0x%04x (%s): connect not started", _node.logicalAddress, nameOf(_node));
++        _state = State::CLOSED;
++    }
++}
++
++void DoIpClientConnection::connected(::tcp::AbstractSocket::ErrorCode const result)
++{
++    if (_state != State::CONNECTING)
++    {
++        return;
++    }
++    if (result != ::tcp::AbstractSocket::ErrorCode::SOCKET_ERR_OK)
++    {
++        closeAndFail("connection refused or unreachable");
++        return;
++    }
++    _state = State::ACTIVATING;
++    // diagnostic messages are small: send them without waiting for earlier data to be acknowledged
++    _socket.disableNagleAlgorithm();
++    // calls connectionClosed() if the socket is not established
++    _connection.init(*this);
++    if (_state == State::ACTIVATING)
++    {
++        sendActivation();
++    }
++}
++
++void DoIpClientConnection::sendActivation()
++{
++    if (_activationJobBusy || (!_connection.sendMessage(_activationJob)))
++    {
++        closeAndFail("routing activation request not sent");
++        return;
++    }
++    _activationJobBusy = true;
++}
++
++void DoIpClientConnection::sendRequest()
++{
++    if (_pendingAcks.full())
++    {
++        closeAndFail("too many unacknowledged messages");
++        return;
++    }
++    DoIpClientParameters const& parameters = _layer.parameters();
++    (void)_requestJob.emplace(
++        parameters.protocolVersion,
++        *_request,
++        nullptr,
++        parameters.sourceAddress,
++        _node.logicalAddress,
++        *this);
++    if (!_connection.sendMessage(*_requestJob))
++    {
++        closeAndFail("diagnostic message not sent");
++        return;
++    }
++    _requestSent = true;
++    _pendingAcks.push(Ack::REQUEST);
++}
++
++void DoIpClientConnection::tryFinishRequest()
++{
++    // the send job references the message buffer until it is released
++    if (_requestReleased && _ackReceived)
++    {
++        finishRequest(_ackPositive);
++    }
++}
++
++void DoIpClientConnection::finishRequest(bool const success)
++{
++    TransportMessage* const message                    = _request;
++    ITransportMessageProcessedListener* const listener = _requestListener;
++    _request                                           = nullptr;
++    _requestListener                                   = nullptr;
++    _requestSent                                       = false;
++    if ((listener != nullptr) && (message != nullptr))
++    {
++        listener->transportMessageProcessed(
++            *message,
++            success ? ITransportMessageProcessedListener::ProcessingResult::PROCESSED_NO_ERROR
++                    : ITransportMessageProcessedListener::ProcessingResult::PROCESSED_ERROR);
++    }
++}
++
++void DoIpClientConnection::closeAndFail(char const* const reason)
++{
++    Logger::warn(DOIPCLIENT, "0x%04x (%s): %s", _node.logicalAddress, nameOf(_node), reason);
++    close();
++}
++
++void DoIpClientConnection::sendAliveCheckResponse()
++{
++    if ((!_aliveJobBusy) && ((_state == State::ACTIVATING) || (_state == State::ACTIVE)))
++    {
++        _aliveJobBusy = _connection.sendMessage(_aliveJob);
++    }
++}
++
++void DoIpClientConnection::activationJobReleased(StaticJob& /* job */, bool const /* success */)
++{
++    _activationJobBusy = false;
++}
++
++void DoIpClientConnection::aliveJobReleased(StaticJob& /* job */, bool const /* success */)
++{
++    _aliveJobBusy = false;
++}
++
++void DoIpClientConnection::connectionClosed(bool const closedByRemotePeer)
++{
++    bool const wasOpen = (_state != State::CLOSED);
++    _state             = State::CLOSED;
++    _pendingAcks.clear();
++    if (_rxMessage != nullptr)
++    {
++        _layer.fProvidingListenerHelper.releaseTransportMessage(*_rxMessage);
++        _rxMessage = nullptr;
++    }
++    if (wasOpen && closedByRemotePeer)
++    {
++        Logger::info(
++            DOIPCLIENT,
++            "0x%04x (%s): connection closed by the node",
++            _node.logicalAddress,
++            nameOf(_node));
++    }
++    if (_request != nullptr)
++    {
++        finishRequest(false);
++    }
++}
++
++IDoIpConnectionHandler::HeaderReceivedContinuation
++DoIpClientConnection::headerReceived(DoIpHeader const& header)
++{
++    uint16_t const payloadType   = header.payloadType;
++    uint32_t const payloadLength = header.payloadLength;
++    if (!checkProtocolVersion(header, static_cast<uint8_t>(_layer.parameters().protocolVersion)))
++    {
++        Logger::warn(
++            DOIPCLIENT,
++            "0x%04x (%s): protocol version 0x%02x ignored",
++            _node.logicalAddress,
++            nameOf(_node),
++            header.protocolVersion);
++        return skipPayload();
++    }
++    switch (payloadType)
++    {
++        case DoIpConstants::PayloadTypes::ROUTING_ACTIVATION_RESPONSE:
++        {
++            if (payloadLength >= ACTIVATION_RESPONSE_LENGTH)
++            {
++                (void)_connection.receivePayload(
++                    ::etl::span<uint8_t>(_rxBuffer).subspan(0U, ACTIVATION_RESPONSE_LENGTH),
++                    IDoIpConnection::PayloadReceivedCallbackType::create<
++                        DoIpClientConnection,
++                        &DoIpClientConnection::activationResponseReceived>(*this));
++                return HandledByThisHandler{};
++            }
++            break;
++        }
++        case DoIpConstants::PayloadTypes::DIAGNOSTIC_MESSAGE_POSITIVE_ACK:
++        case DoIpConstants::PayloadTypes::DIAGNOSTIC_MESSAGE_NEGATIVE_ACK:
++        {
++            if (payloadLength >= ACK_LENGTH)
++            {
++                _rxPayloadType = payloadType;
++                (void)_connection.receivePayload(
++                    ::etl::span<uint8_t>(_rxBuffer).subspan(0U, ACK_LENGTH),
++                    IDoIpConnection::PayloadReceivedCallbackType::
++                        create<DoIpClientConnection, &DoIpClientConnection::ackReceived>(*this));
++                return HandledByThisHandler{};
++            }
++            break;
++        }
++        case DoIpConstants::PayloadTypes::DIAGNOSTIC_MESSAGE:
++        {
++            if ((payloadLength > ADDRESS_INFO_LENGTH)
++                && ((payloadLength - ADDRESS_INFO_LENGTH) <= _layer.parameters().maxPayloadLength))
++            {
++                _rxLength = static_cast<uint16_t>(payloadLength - ADDRESS_INFO_LENGTH);
++                (void)_connection.receivePayload(
++                    ::etl::span<uint8_t>(_rxBuffer).subspan(0U, ADDRESS_INFO_LENGTH),
++                    IDoIpConnection::PayloadReceivedCallbackType::
++                        create<DoIpClientConnection, &DoIpClientConnection::addressInfoReceived>(
++                            *this));
++                return HandledByThisHandler{};
++            }
++            Logger::warn(
++                DOIPCLIENT,
++                "0x%04x (%s): diagnostic message of %d bytes discarded",
++                _node.logicalAddress,
++                nameOf(_node),
++                static_cast<int>(payloadLength));
++            break;
++        }
++        case DoIpConstants::PayloadTypes::ALIVE_CHECK_REQUEST:
++        {
++            sendAliveCheckResponse();
++            break;
++        }
++        case DoIpConstants::PayloadTypes::NEGATIVE_ACK:
++        {
++            Logger::warn(
++                DOIPCLIENT,
++                "0x%04x (%s): generic header negative acknowledgement",
++                _node.logicalAddress,
++                nameOf(_node));
++            break;
++        }
++        default:
++        {
++            break;
++        }
++    }
++    return skipPayload();
++}
++
++void DoIpClientConnection::activationResponseReceived(::etl::span<uint8_t const> const payload)
++{
++    _connection.endReceiveMessage(discard());
++    if (_state != State::ACTIVATING)
++    {
++        return;
++    }
++    uint16_t const tester = read16(payload, 0U);
++    uint16_t const entity = read16(payload, 2U);
++    uint8_t const code    = payload[4U];
++    if ((code != DoIpConstants::RoutingResponseCodes::ROUTING_SUCCESS)
++        || (tester != _layer.parameters().sourceAddress))
++    {
++        Logger::warn(
++            DOIPCLIENT,
++            "0x%04x (%s): routing activation rejected, code 0x%02x",
++            _node.logicalAddress,
++            nameOf(_node),
++            code);
++        close();
++        return;
++    }
++    _state = State::ACTIVE;
++    Logger::info(
++        DOIPCLIENT,
++        "0x%04x (%s): routing active, DoIP entity 0x%04x",
++        _node.logicalAddress,
++        nameOf(_node),
++        entity);
++    if ((_request != nullptr) && (!_requestSent))
++    {
++        sendRequest();
++    }
++}
++
++void DoIpClientConnection::ackReceived(::etl::span<uint8_t const> const payload)
++{
++    _connection.endReceiveMessage(discard());
++    if (_pendingAcks.empty())
++    {
++        return;
++    }
++    Ack const kind = _pendingAcks.front();
++    _pendingAcks.pop();
++    if ((kind != Ack::REQUEST) || (_request == nullptr))
++    {
++        return;
++    }
++    _ackReceived = true;
++    _ackPositive = (_rxPayloadType == DoIpConstants::PayloadTypes::DIAGNOSTIC_MESSAGE_POSITIVE_ACK);
++    if (!_ackPositive)
++    {
++        Logger::warn(
++            DOIPCLIENT,
++            "0x%04x (%s): diagnostic message rejected, code 0x%02x",
++            _node.logicalAddress,
++            nameOf(_node),
++            payload[4U]);
++    }
++    tryFinishRequest();
++}
++
++void DoIpClientConnection::addressInfoReceived(::etl::span<uint8_t const> const payload)
++{
++    _rxSource                 = read16(payload, 0U);
++    uint16_t const target     = read16(payload, 2U);
++    TransportMessage* message = nullptr;
++    if ((_state == State::ACTIVE) && (target == _layer.parameters().sourceAddress))
++    {
++        (void)_layer.fProvidingListenerHelper.getTransportMessage(
++            _layer.getBusId(), _rxSource, target, _rxLength, {}, message);
++    }
++    if (message == nullptr)
++    {
++        // not addressed to the client or not wanted by the provider (e.g. unsolicited)
++        _connection.endReceiveMessage(discard());
++        return;
++    }
++    message->resetValidBytes();
++    message->setSourceAddress(_rxSource);
++    message->setTargetAddress(target);
++    message->setPayloadLength(_rxLength);
++    _rxMessage = message;
++    (void)_connection.receivePayload(
++        ::etl::span<uint8_t>(message->getBuffer(), _rxLength),
++        IDoIpConnection::PayloadReceivedCallbackType::
++            create<DoIpClientConnection, &DoIpClientConnection::diagnosticPayloadReceived>(*this));
++}
++
++void DoIpClientConnection::diagnosticPayloadReceived(::etl::span<uint8_t const> const /* payload */)
++{
++    TransportMessage* const message = _rxMessage;
++    _rxMessage                      = nullptr;
++    _connection.endReceiveMessage(discard());
++    if (message == nullptr)
++    {
++        return;
++    }
++    (void)message->increaseValidBytes(_rxLength);
++    if (_layer.fProvidingListenerHelper.messageReceived(_layer.getBusId(), *message, this)
++        != ::transport::ITransportMessageListener::ReceiveResult::RECEIVED_NO_ERROR)
++    {
++        _layer.fProvidingListenerHelper.releaseTransportMessage(*message);
++    }
++}
++
++void DoIpClientConnection::releaseSendJob(DoIpTransportMessageSendJob& sendJob, bool const success)
++{
++    if (_requestJob.has_value() && (&sendJob == &(*_requestJob)))
++    {
++        if (_request == nullptr)
++        {
++            return;
++        }
++        _requestReleased = true;
++        if (!success)
++        {
++            finishRequest(false);
++            return;
++        }
++        tryFinishRequest();
++    }
++    else if (_functionalJob.has_value() && (&sendJob == &(*_functionalJob)))
++    {
++        _functionalJobBusy = false;
++        _layer.functionalCopyReleased();
++    }
++    else
++    {
++        // not a job of this connection
++    }
++}
++
++void DoIpClientConnection::transportMessageProcessed(
++    TransportMessage& transportMessage, ProcessingResult const /* result */)
++{
++    _layer.fProvidingListenerHelper.releaseTransportMessage(transportMessage);
++}
++
++IDoIpConnection::PayloadDiscardedCallbackType DoIpClientConnection::discard()
++{
++    return IDoIpConnection::PayloadDiscardedCallbackType{};
++}
++
++IDoIpConnectionHandler::HeaderReceivedContinuation DoIpClientConnection::skipPayload()
++{
++    // endReceiveMessage() also handles an empty payload (e.g. an alive check request); the
++    // discard continuation of headerReceived() does not leave the discard state in that case
++    _connection.endReceiveMessage(discard());
++    return HandledByThisHandler{};
++}
++
++} // namespace doip
++
++// NOLINTEND(cppcoreguidelines-pro-type-vararg)
+diff --git a/libs/bsw/doipClient/src/doip/client/DoIpClientLogger.cpp b/libs/bsw/doipClient/src/doip/client/DoIpClientLogger.cpp
+new file mode 100644
+index 0000000..0b1f2b6
+--- /dev/null
++++ b/libs/bsw/doipClient/src/doip/client/DoIpClientLogger.cpp
+@@ -0,0 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#include "doip/client/DoIpClientLogger.h"
++
++DEFINE_LOGGER_COMPONENT(DOIPCLIENT)
+diff --git a/libs/bsw/doipClient/src/doip/client/DoIpClientTransportLayer.cpp b/libs/bsw/doipClient/src/doip/client/DoIpClientTransportLayer.cpp
+new file mode 100644
+index 0000000..574a5ae
+--- /dev/null
++++ b/libs/bsw/doipClient/src/doip/client/DoIpClientTransportLayer.cpp
+@@ -0,0 +1,141 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#include "doip/client/DoIpClientTransportLayer.h"
++
++namespace doip
++{
++using ::transport::ITransportMessageProcessedListener;
++using ::transport::TransportMessage;
++
++DoIpClientTransportLayer::DoIpClientTransportLayer(
++    uint8_t const busId,
++    DoIpClientParameters const& parameters,
++    ::etl::ivector<DoIpClientConnection>& connections,
++    NowMsType const nowMs)
++: AbstractTransportLayer(busId)
++, _parameters(parameters)
++, _connections(connections)
++, _nowMs(nowMs)
++, _functionalMessage(nullptr)
++, _functionalListener(nullptr)
++, _functionalCopies(0U)
++{}
++
++DoIpClientTransportLayer::ErrorCode DoIpClientTransportLayer::init() { return ErrorCode::TP_OK; }
++
++bool DoIpClientTransportLayer::shutdown(ShutdownDelegate /* delegate */)
++{
++    for (DoIpClientConnection& connection : _connections)
++    {
++        connection.close();
++    }
++    return SYNC_SHUTDOWN_COMPLETE;
++}
++
++DoIpClientTransportLayer::ErrorCode DoIpClientTransportLayer::send(
++    TransportMessage& transportMessage,
++    ITransportMessageProcessedListener* const pNotificationListener)
++{
++    uint16_t const target = transportMessage.getTargetId();
++    if (target == _parameters.functionalAddress)
++    {
++        if (_functionalMessage != nullptr)
++        {
++            return ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS;
++        }
++        _functionalMessage  = &transportMessage;
++        _functionalListener = pNotificationListener;
++        // the extra count keeps a copy released early from completing the message
++        _functionalCopies   = 1U;
++        size_t sent         = 0U;
++        for (DoIpClientConnection& connection : _connections)
++        {
++            if (connection.functional(transportMessage))
++            {
++                ++_functionalCopies;
++                ++sent;
++            }
++        }
++        if (sent == 0U)
++        {
++            // no node with active routing: the caller keeps the message
++            _functionalMessage  = nullptr;
++            _functionalListener = nullptr;
++            _functionalCopies   = 0U;
++            return ErrorCode::TP_SEND_FAIL;
++        }
++        functionalCopyReleased();
++        return ErrorCode::TP_OK;
++    }
++
++    DoIpClientConnection* const connection = findConnection(target);
++    if (connection == nullptr)
++    {
++        return ErrorCode::TP_SEND_FAIL;
++    }
++    if (connection->hasRequest())
++    {
++        return ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS;
++    }
++    if (!connection->request(
++            transportMessage, pNotificationListener, _nowMs() + _parameters.deliveryTimeoutMs))
++    {
++        return ErrorCode::TP_SEND_FAIL;
++    }
++    return ErrorCode::TP_OK;
++}
++
++void DoIpClientTransportLayer::cyclic()
++{
++    uint32_t const now = _nowMs();
++    for (DoIpClientConnection& connection : _connections)
++    {
++        connection.cyclic(now);
++    }
++}
++
++DoIpClientConnection* DoIpClientTransportLayer::findConnection(uint16_t const logicalAddress)
++{
++    for (DoIpClientConnection& connection : _connections)
++    {
++        if (connection.node().logicalAddress == logicalAddress)
++        {
++            return &connection;
++        }
++    }
++    return nullptr;
++}
++
++void DoIpClientTransportLayer::functionalCopyReleased()
++{
++    if (_functionalCopies == 0U)
++    {
++        return;
++    }
++    --_functionalCopies;
++    if (_functionalCopies == 0U)
++    {
++        TransportMessage* const message                    = _functionalMessage;
++        ITransportMessageProcessedListener* const listener = _functionalListener;
++        _functionalMessage                                 = nullptr;
++        _functionalListener                                = nullptr;
++        if ((message != nullptr) && (listener != nullptr))
++        {
++            listener->transportMessageProcessed(
++                *message, ITransportMessageProcessedListener::ProcessingResult::PROCESSED_NO_ERROR);
++        }
++    }
++}
++
++} // namespace doip
+diff --git a/libs/bsw/doipClient/test/CMakeLists.txt b/libs/bsw/doipClient/test/CMakeLists.txt
+new file mode 100644
+index 0000000..a178d8b
+--- /dev/null
++++ b/libs/bsw/doipClient/test/CMakeLists.txt
+@@ -0,0 +1,30 @@
++# *******************************************************************************
++# Copyright (c) 2026 Jefferson Nascimento
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++# AI disclosure: this file was largely generated with an AI assistant and was
++# reviewed and tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++add_executable(doipClientTest src/DoIpClientTransportLayerTest.cpp)
++
++target_link_libraries(
++    doipClientTest
++    PRIVATE doipClient
++            doip
++            asyncMockImpl
++            util
++            utilMock
++            cpp2ethernet
++            cpp2ethernetMock
++            transportMock
++            bspMock
++            gmock_main
++            etl)
++
++gtest_discover_tests(doipClientTest PROPERTIES LABELS "doipClientTest")
+diff --git a/libs/bsw/doipClient/test/src/DoIpClientTransportLayerTest.cpp b/libs/bsw/doipClient/test/src/DoIpClientTransportLayerTest.cpp
+new file mode 100644
+index 0000000..789ea72
+--- /dev/null
++++ b/libs/bsw/doipClient/test/src/DoIpClientTransportLayerTest.cpp
+@@ -0,0 +1,610 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++// AI disclosure: this file was largely generated with an AI assistant and was reviewed and
++// tested by the contributor. Assisted-by: Anthropic Claude Opus 5.5
++
++#include "doip/client/DoIpClientTransportLayer.h"
++
++#include <async/AsyncMock.h>
++#include <async/TestContext.h>
++#include <tcp/socket/AbstractSocketMock.h>
++#include <transport/TransportMessageProcessedListenerMock.h>
++#include <transport/TransportMessageProvidingListenerMock.h>
++
++#include <etl/vector.h>
++#include <gmock/gmock.h>
++
++#include <array>
++#include <vector>
++
++namespace
++{
++using namespace ::doip;
++using namespace ::testing;
++using ::transport::AbstractTransportLayer;
++using ::transport::ITransportMessageProcessedListener;
++using ::transport::TransportMessage;
++using Bytes            = std::vector<uint8_t>;
++using ProcessingResult = ITransportMessageProcessedListener::ProcessingResult;
++using ErrorCode        = AbstractTransportLayer::ErrorCode;
++using SocketError      = ::tcp::AbstractSocket::ErrorCode;
++using ProviderError    = ::transport::ITransportMessageProvider::ErrorCode;
++using ReceiveResult    = ::transport::ITransportMessageListener::ReceiveResult;
++
++uint8_t const BUS          = 5U;
++uint16_t const CLIENT      = 0x0E10U;
++uint16_t const FUNCTIONAL  = 0xE400U;
++uint16_t const NODE_A      = 0x1040U;
++uint16_t const NODE_B      = 0x1050U;
++uint16_t const PORT        = 13400U;
++uint32_t const TIMEOUT_MS  = 1500U;
++uint16_t const MAX_PAYLOAD = 64U;
++
++Bytes const ACTIVATION_REQUEST
++    = {0x02, 0xFD, 0x00, 0x05, 0x00, 0x00, 0x00, 0x07, 0x0E, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00};
++Bytes const ACTIVATION_OK
++    = {0x02, 0xFD, 0x00, 0x06, 0x00, 0x00, 0x00, 0x09, 0x0E, 0x10, 0x10, 0x40, 0x10, 0, 0, 0, 0};
++Bytes const ACTIVATION_REFUSED
++    = {0x02, 0xFD, 0x00, 0x06, 0x00, 0x00, 0x00, 0x09, 0x0E, 0x10, 0x10, 0x40, 0x00, 0, 0, 0, 0};
++Bytes const ACK_A  = {0x02, 0xFD, 0x80, 0x02, 0x00, 0x00, 0x00, 0x05, 0x10, 0x40, 0x0E, 0x10, 0x00};
++Bytes const NACK_A = {0x02, 0xFD, 0x80, 0x03, 0x00, 0x00, 0x00, 0x05, 0x10, 0x40, 0x0E, 0x10, 0x06};
++/// 3E 00 from the client to NODE_A, and to the functional address
++Bytes const REQUEST_A
++    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x0E, 0x10, 0x10, 0x40, 0x3E, 0x00};
++Bytes const REQUEST_FUNCTIONAL
++    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x0E, 0x10, 0xE4, 0x00, 0x3E, 0x00};
++/// 7E 00 from NODE_A to the client
++Bytes const RESPONSE_A
++    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x10, 0x40, 0x0E, 0x10, 0x7E, 0x00};
++Bytes const RESPONSE_TO_OTHER_TESTER
++    = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x06, 0x10, 0x40, 0x0E, 0x80, 0x7E, 0x00};
++Bytes const ALIVE_CHECK_REQUEST  = {0x02, 0xFD, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00};
++Bytes const ALIVE_CHECK_RESPONSE = {0x02, 0xFD, 0x00, 0x08, 0x00, 0x00, 0x00, 0x02, 0x0E, 0x10};
++
++/** Collects what a socket mock sends, and how much of it the TCP peer has not acknowledged. */
++struct SentData
++{
++    SocketError send(::etl::span<uint8_t const> const& data)
++    {
++        bytes.insert(bytes.end(), data.begin(), data.end());
++        unacknowledged += data.size();
++        return SocketError::SOCKET_ERR_OK;
++    }
++
++    Bytes take()
++    {
++        Bytes result;
++        result.swap(bytes);
++        return result;
++    }
++
++    Bytes bytes;
++    size_t unacknowledged = 0U;
++};
++
++class DoIpClientTransportLayerTest : public Test
++{
++public:
++    DoIpClientTransportLayerTest()
++    : asyncContext(1U)
++    , testContext(asyncContext)
++    , nodes{{
++          DoIpClientNode{NODE_A, ::ip::make_ip4(0xC0A8001EU), "a"},
++          DoIpClientNode{NODE_B, ::ip::make_ip4(0xC0A8001FU), nullptr},
++      }}
++    , connections()
++    , layer(
++          BUS,
++          DoIpClientParameters{
++              CLIENT,
++              FUNCTIONAL,
++              DoIpConstants::ProtocolVersion::version02Iso2012,
++              PORT,
++              TIMEOUT_MS,
++              MAX_PAYLOAD},
++          connections,
++          DoIpClientTransportLayer::NowMsType::
++              create<DoIpClientTransportLayerTest, &DoIpClientTransportLayerTest::nowMs>(*this))
++    {
++        for (size_t i = 0U; i < nodes.size(); ++i)
++        {
++            connections.emplace_back(layer, nodes[i], sockets[i], asyncContext);
++            // AbstractSocketMock starts with an empty read window without data pointer, which
++            // inject() would extend; an empty read resets both windows to the injection buffer
++            (void)sockets[i].readImplementation(nullptr, 0U);
++            EXPECT_CALL(sockets[i], read(_, _))
++                .Times(AnyNumber())
++                .WillRepeatedly(
++                    Invoke(&sockets[i], &::tcp::AbstractSocketMock::readImplementation));
++            EXPECT_CALL(sockets[i], send(_))
++                .Times(AnyNumber())
++                .WillRepeatedly(Invoke(&sent[i], &SentData::send));
++            EXPECT_CALL(sockets[i], flush())
++                .Times(AnyNumber())
++                .WillRepeatedly(Return(SocketError::SOCKET_ERR_OK));
++        }
++        layer.fProvidingListenerHelper.fpMessageProvider = &provider;
++        layer.fProvidingListenerHelper.fpMessageListener = &provider;
++        responseMessage.init(responseBuffer, sizeof(responseBuffer));
++    }
++
++    void SetUp() override { testContext.handleAll(); }
++
++    uint32_t nowMs() { return now; }
++
++    /// Runs the send jobs queued on the connections.
++    void run() { testContext.expireAndExecute(); }
++
++    TransportMessage& message(uint16_t const target)
++    {
++        uint8_t const payload[] = {0x3E, 0x00};
++        requestMessage.init(requestBuffer, sizeof(requestBuffer));
++        requestMessage.setSourceAddress(CLIENT);
++        requestMessage.setTargetAddress(target);
++        requestMessage.setPayloadLength(sizeof(payload));
++        (void)requestMessage.append(payload, sizeof(payload));
++        return requestMessage;
++    }
++
++    void expectConnect(size_t const index)
++    {
++        EXPECT_CALL(sockets[index], isClosed()).WillOnce(Return(true));
++        EXPECT_CALL(sockets[index], connect(nodes[index].address, PORT, _))
++            .WillOnce(DoAll(SaveArg<2>(&connected[index]), Return(SocketError::SOCKET_ERR_OK)));
++    }
++
++    void completeConnect(size_t const index)
++    {
++        EXPECT_CALL(sockets[index], disableNagleAlgorithm());
++        EXPECT_CALL(sockets[index], isEstablished()).WillOnce(Return(true));
++        connected[index](SocketError::SOCKET_ERR_OK);
++    }
++
++    void receive(size_t const index, Bytes const& data)
++    {
++        (void)sockets[index].inject(::etl::span<uint8_t const>(data.data(), data.size()));
++    }
++
++    /// The TCP peer acknowledges everything sent so far.
++    void acknowledgeTcp(size_t const index)
++    {
++        size_t const length        = sent[index].unacknowledged;
++        sent[index].unacknowledged = 0U;
++        sockets[index].signalDataSent(length);
++    }
++
++    /// Opens the connection to NODE_A with a request for it, up to the diagnostic message on
++    /// the wire (neither released by TCP nor acknowledged by the node).
++    void openWithRequest()
++    {
++        expectConnect(0U);
++        ASSERT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++        completeConnect(0U);
++        run();
++        ASSERT_EQ(ACTIVATION_REQUEST, sent[0].take());
++        acknowledgeTcp(0U);
++        receive(0U, ACTIVATION_OK);
++        run();
++        ASSERT_EQ(REQUEST_A, sent[0].take());
++    }
++
++    /// openWithRequest(), completed by the TCP release and the node's acknowledgement.
++    void openAndComplete()
++    {
++        openWithRequest();
++        EXPECT_CALL(
++            processed,
++            transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
++        acknowledgeTcp(0U);
++        receive(0U, ACK_A);
++        Mock::VerifyAndClearExpectations(&processed);
++    }
++
++    StrictMock<::async::AsyncMock> asyncMock;
++    ::async::ContextType asyncContext;
++    ::async::TestContext testContext;
++    uint32_t now = 1000U;
++    std::array<DoIpClientNode, 2U> nodes;
++    StrictMock<::tcp::AbstractSocketMock> sockets[2];
++    SentData sent[2];
++    ::tcp::AbstractSocket::ConnectedDelegate connected[2];
++    ::etl::vector<DoIpClientConnection, 2U> connections;
++    DoIpClientTransportLayer layer;
++    StrictMock<::transport::TransportMessageProvidingListenerMock> provider{false};
++    StrictMock<::transport::TransportMessageProcessedListenerMock> processed;
++    TransportMessage requestMessage;
++    uint8_t requestBuffer[MAX_PAYLOAD];
++    TransportMessage responseMessage;
++    uint8_t responseBuffer[MAX_PAYLOAD];
++};
++
++// --- connection set-up and requests --------------------------------------------------------
++
++/**
++ * Test that the first request to a node opens the connection and activates routing.
++ *
++ * The client connects to the node's address on the configured port, disables Nagle's
++ * algorithm, requests routing activation with its own address and type 0x00, and sends the
++ * request as a diagnostic message once the node accepts the activation (code 0x10). The
++ * request is processed successfully when TCP has released it and the node acknowledged it.
++ */
++TEST_F(DoIpClientTransportLayerTest, FirstRequestConnectsActivatesAndSends)
++{
++    EXPECT_EQ(ErrorCode::TP_OK, layer.init());
++    expectConnect(0U);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++    EXPECT_EQ(DoIpClientConnection::State::CONNECTING, connections[0].state());
++
++    completeConnect(0U);
++    EXPECT_EQ(DoIpClientConnection::State::ACTIVATING, connections[0].state());
++    run();
++    EXPECT_EQ(ACTIVATION_REQUEST, sent[0].take());
++
++    acknowledgeTcp(0U);
++    receive(0U, ACTIVATION_OK);
++    EXPECT_EQ(DoIpClientConnection::State::ACTIVE, connections[0].state());
++    run();
++    EXPECT_EQ(REQUEST_A, sent[0].take());
++
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
++    acknowledgeTcp(0U);
++    receive(0U, ACK_A);
++    EXPECT_FALSE(connections[0].hasRequest());
++}
++
++/**
++ * Test that later requests reuse the open connection without a new routing activation.
++ */
++TEST_F(DoIpClientTransportLayerTest, ConnectionIsReusedForLaterRequests)
++{
++    openAndComplete();
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++    run();
++    EXPECT_EQ(REQUEST_A, sent[0].take());
++}
++
++/**
++ * Test that a request is processed only after both the TCP release and the node's ACK.
++ *
++ * The send job references the request buffer until TCP releases it, so an acknowledgement
++ * that arrives first must not complete the request.
++ */
++TEST_F(DoIpClientTransportLayerTest, AcknowledgementBeforeTcpReleaseWaitsForTheRelease)
++{
++    openWithRequest();
++    receive(0U, ACK_A);
++    EXPECT_TRUE(connections[0].hasRequest());
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
++    acknowledgeTcp(0U);
++}
++
++/**
++ * Test that a negative acknowledgement of the node fails the request and keeps the
++ * connection open.
++ */
++TEST_F(DoIpClientTransportLayerTest, NegativeAcknowledgementFailsTheRequest)
++{
++    openWithRequest();
++    acknowledgeTcp(0U);
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    receive(0U, NACK_A);
++    EXPECT_EQ(DoIpClientConnection::State::ACTIVE, connections[0].state());
++}
++
++/**
++ * Test that a node takes one request at a time and that unknown targets are rejected.
++ */
++TEST_F(DoIpClientTransportLayerTest, OneRequestPerNodeAndUnknownTargetsAreRejected)
++{
++    openWithRequest();
++    EXPECT_EQ(ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS, layer.send(message(NODE_A), &processed));
++    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(0x1099U), &processed));
++    EXPECT_EQ(nullptr, layer.findConnection(0x1099U));
++    EXPECT_EQ(&connections[1], layer.findConnection(NODE_B));
++    EXPECT_EQ(2U, layer.connections().size());
++}
++
++// --- connection failures --------------------------------------------------------------------
++
++/**
++ * Test that a connect that cannot be started is reported to the caller of send().
++ */
++TEST_F(DoIpClientTransportLayerTest, ConnectNotStartedIsReportedToTheCaller)
++{
++    EXPECT_CALL(sockets[0], isClosed()).WillOnce(Return(true));
++    EXPECT_CALL(sockets[0], connect(_, PORT, _)).WillOnce(Return(SocketError::SOCKET_ERR_NOT_OK));
++    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(NODE_A), &processed));
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++    EXPECT_FALSE(connections[0].hasRequest());
++}
++
++/**
++ * Test that a refused connection fails the request and that the next request connects again.
++ *
++ * A late connect callback after the failure is ignored.
++ */
++TEST_F(DoIpClientTransportLayerTest, RefusedConnectionFailsTheRequestAndAllowsARetry)
++{
++    expectConnect(0U);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    EXPECT_CALL(sockets[0], abort());
++    connected[0](SocketError::SOCKET_ERR_NOT_OK);
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++    connected[0](SocketError::SOCKET_ERR_NOT_OK);
++
++    expectConnect(0U);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++}
++
++/**
++ * Test that a refused routing activation fails the request and closes the connection.
++ */
++TEST_F(DoIpClientTransportLayerTest, RejectedRoutingActivationFailsTheRequestAndCloses)
++{
++    expectConnect(0U);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++    completeConnect(0U);
++    run();
++    acknowledgeTcp(0U);
++    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    receive(0U, ACTIVATION_REFUSED);
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++}
++
++/**
++ * Test that a request without acknowledgement fails at its deadline and closes the
++ * connection.
++ */
++TEST_F(DoIpClientTransportLayerTest, DeadlineFailsTheRequestAndClosesTheConnection)
++{
++    openWithRequest();
++    acknowledgeTcp(0U);
++    now += TIMEOUT_MS - 1U;
++    layer.cyclic();
++    EXPECT_TRUE(connections[0].hasRequest());
++
++    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    now += 1U;
++    layer.cyclic();
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++}
++
++/**
++ * Test that the deadline also covers the connection set-up.
++ */
++TEST_F(DoIpClientTransportLayerTest, DeadlineCoversConnectionSetUp)
++{
++    expectConnect(0U);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++    EXPECT_CALL(sockets[0], abort());
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    now += TIMEOUT_MS;
++    layer.cyclic();
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++}
++
++/**
++ * Test that a connection closed by the node fails the pending request and that the next
++ * request connects again.
++ */
++TEST_F(DoIpClientTransportLayerTest, RemoteCloseFailsThePendingRequestAndTheNextRequestReconnects)
++{
++    openWithRequest();
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    sockets[0].signalClosed(::tcp::IDataListener::ErrorCode::ERR_CONNECTION_CLOSED);
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++
++    expectConnect(0U);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++}
++
++/**
++ * Test that shutdown closes every connection and fails a request in progress.
++ */
++TEST_F(DoIpClientTransportLayerTest, ShutdownClosesEveryConnection)
++{
++    openWithRequest();
++    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_ERROR));
++    EXPECT_TRUE(layer.shutdown(AbstractTransportLayer::ShutdownDelegate()));
++    EXPECT_EQ(DoIpClientConnection::State::CLOSED, connections[0].state());
++}
++
++// --- messages from the node ----------------------------------------------------------------
++
++/**
++ * Test that a diagnostic message of the node is passed to the provider.
++ *
++ * The message gets the node as source and the client as target; when the provider reports
++ * it as processed, it is released.
++ */
++TEST_F(DoIpClientTransportLayerTest, DiagnosticMessageFromTheNodeIsPassedToTheProvider)
++{
++    openAndComplete();
++    ITransportMessageProcessedListener* listener = nullptr;
++    EXPECT_CALL(provider, getTransportMessage(BUS, NODE_A, CLIENT, 2U, _, _))
++        .WillOnce(DoAll(SetArgReferee<5>(&responseMessage), Return(ProviderError::TPMSG_OK)));
++    EXPECT_CALL(provider, messageReceived(BUS, Ref(responseMessage), _))
++        .WillOnce(DoAll(SaveArg<2>(&listener), Return(ReceiveResult::RECEIVED_NO_ERROR)));
++    receive(0U, RESPONSE_A);
++    EXPECT_EQ(NODE_A, responseMessage.getSourceId());
++    EXPECT_EQ(CLIENT, responseMessage.getTargetId());
++    EXPECT_EQ(
++        (Bytes{0x7E, 0x00}), Bytes(responseMessage.getPayload(), responseMessage.getPayload() + 2));
++
++    EXPECT_CALL(provider, releaseTransportMessage(Ref(responseMessage)));
++    listener->transportMessageProcessed(responseMessage, ProcessingResult::PROCESSED_NO_ERROR);
++}
++
++/**
++ * Test that a message the provider does not take is released when its listener refuses it.
++ */
++TEST_F(DoIpClientTransportLayerTest, MessageRefusedByTheListenerIsReleased)
++{
++    openAndComplete();
++    EXPECT_CALL(provider, getTransportMessage(BUS, NODE_A, CLIENT, 2U, _, _))
++        .WillOnce(DoAll(SetArgReferee<5>(&responseMessage), Return(ProviderError::TPMSG_OK)));
++    EXPECT_CALL(provider, messageReceived(BUS, Ref(responseMessage), _))
++        .WillOnce(Return(ReceiveResult::RECEIVED_ERROR));
++    EXPECT_CALL(provider, releaseTransportMessage(Ref(responseMessage)));
++    receive(0U, RESPONSE_A);
++}
++
++/**
++ * Test that messages the client does not process are skipped and the stream stays in sync.
++ *
++ * Skipped: a diagnostic message to another tester, one the provider does not want, one larger
++ * than the maximum payload, one without user data, an unknown payload type, a generic header
++ * NACK, a too short activation response or acknowledgement, and a wrong protocol version. The
++ * acknowledgement that follows them still completes the request.
++ */
++TEST_F(DoIpClientTransportLayerTest, MessagesNotForTheClientOrNotWantedAreSkipped)
++{
++    openWithRequest();
++    acknowledgeTcp(0U);
++    receive(0U, RESPONSE_TO_OTHER_TESTER);
++    EXPECT_CALL(provider, getTransportMessage(BUS, NODE_A, CLIENT, 2U, _, _))
++        .WillOnce(Return(ProviderError::TPMSG_NOT_RESPONSIBLE));
++    receive(0U, RESPONSE_A);
++    Bytes tooLarge
++        = {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, MAX_PAYLOAD + 5U, 0x10, 0x40, 0x0E, 0x10};
++    tooLarge.resize(tooLarge.size() + MAX_PAYLOAD + 1U, 0x11U);
++    receive(0U, tooLarge);
++    receive(0U, {0x02, 0xFD, 0x80, 0x01, 0x00, 0x00, 0x00, 0x04, 0x10, 0x40, 0x0E, 0x10});
++    receive(0U, {0x02, 0xFD, 0x40, 0x02, 0x00, 0x00, 0x00, 0x03, 0x01, 0x02, 0x03});
++    receive(0U, {0x02, 0xFD, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02});
++    receive(0U, {0x02, 0xFD, 0x00, 0x06, 0x00, 0x00, 0x00, 0x02, 0x01, 0x02});
++    receive(0U, {0x02, 0xFD, 0x80, 0x02, 0x00, 0x00, 0x00, 0x01, 0x01});
++    receive(0U, {0x03, 0xFC, 0x80, 0x02, 0x00, 0x00, 0x00, 0x05, 0x10, 0x40, 0x0E, 0x10, 0x00});
++    EXPECT_TRUE(connections[0].hasRequest());
++
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
++    receive(0U, ACK_A);
++}
++
++/**
++ * Test that an alive check request is answered and that the following message is read.
++ *
++ * The alive check request has an empty payload; skipping it must not stop the reception.
++ */
++TEST_F(DoIpClientTransportLayerTest, AliveCheckIsAnsweredAndTheStreamStaysInSync)
++{
++    openWithRequest();
++    acknowledgeTcp(0U);
++    receive(0U, ALIVE_CHECK_REQUEST);
++    run();
++    EXPECT_EQ(ALIVE_CHECK_RESPONSE, sent[0].take());
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
++    receive(0U, ACK_A);
++}
++
++/**
++ * Test that acknowledgements and activation responses that nothing waits for are ignored.
++ */
++TEST_F(DoIpClientTransportLayerTest, UnexpectedAcknowledgementsAreIgnored)
++{
++    openAndComplete();
++    receive(0U, ACK_A);
++    receive(0U, ACTIVATION_REFUSED);
++    EXPECT_EQ(DoIpClientConnection::State::ACTIVE, connections[0].state());
++}
++
++// --- functional requests -------------------------------------------------------------------
++
++/**
++ * Test that a functional request goes to every node with active routing.
++ *
++ * Node B is not connected and gets no copy. The message is processed when every copy is
++ * released by TCP, and a second functional request is rejected until then. The node's
++ * acknowledgement of the functional copy comes before the one of the next physical request
++ * and does not complete it.
++ */
++TEST_F(DoIpClientTransportLayerTest, FunctionalRequestGoesToNodesWithActiveRouting)
++{
++    openAndComplete();
++    StrictMock<::transport::TransportMessageProcessedListenerMock> functionalProcessed;
++    TransportMessage& functional = message(FUNCTIONAL);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(functional, &functionalProcessed));
++    EXPECT_EQ(
++        ErrorCode::TP_MESSAGE_ALREADY_IN_PROGRESS, layer.send(functional, &functionalProcessed));
++    run();
++    EXPECT_EQ(REQUEST_FUNCTIONAL, sent[0].take());
++
++    EXPECT_CALL(
++        functionalProcessed,
++        transportMessageProcessed(Ref(functional), ProcessingResult::PROCESSED_NO_ERROR));
++    acknowledgeTcp(0U);
++
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(message(NODE_A), &processed));
++    run();
++    acknowledgeTcp(0U);
++    receive(0U, ACK_A);
++    EXPECT_TRUE(connections[0].hasRequest());
++    EXPECT_CALL(
++        processed,
++        transportMessageProcessed(Ref(requestMessage), ProcessingResult::PROCESSED_NO_ERROR));
++    receive(0U, ACK_A);
++}
++
++/**
++ * Test that a functional request is not sent without a node with active routing and no
++ * request in progress.
++ */
++TEST_F(DoIpClientTransportLayerTest, FunctionalRequestWithoutActiveRoutingIsNotSent)
++{
++    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(FUNCTIONAL), &processed));
++    openWithRequest();
++    EXPECT_EQ(ErrorCode::TP_SEND_FAIL, layer.send(message(FUNCTIONAL), &processed));
++}
++
++/**
++ * Test that a functional copy released by a closed connection completes the message once.
++ */
++TEST_F(DoIpClientTransportLayerTest, FunctionalCopyReleasedByACloseCompletesTheMessage)
++{
++    openAndComplete();
++    StrictMock<::transport::TransportMessageProcessedListenerMock> functionalProcessed;
++    TransportMessage& functional = message(FUNCTIONAL);
++    EXPECT_EQ(ErrorCode::TP_OK, layer.send(functional, &functionalProcessed));
++    EXPECT_CALL(sockets[0], close()).WillOnce(Return(SocketError::SOCKET_ERR_OK));
++    EXPECT_CALL(
++        functionalProcessed,
++        transportMessageProcessed(Ref(functional), ProcessingResult::PROCESSED_NO_ERROR));
++    connections[0].close();
++    layer.functionalCopyReleased();
++}
++
++} // namespace
+-- 
+2.34.1
+
