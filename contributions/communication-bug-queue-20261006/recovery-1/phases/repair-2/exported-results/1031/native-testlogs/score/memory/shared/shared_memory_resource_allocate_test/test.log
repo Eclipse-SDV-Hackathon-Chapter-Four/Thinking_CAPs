@@ -1,0 +1,122 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/memory/shared:shared_memory_resource_allocate_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 9 tests from 2 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m4 tests from SharedMemoryResourceAllocateDeathTest
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateDeathTest.AllocatingBlockLargerThanAllocatedSharedMemoryCausesTermination
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6af600 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <CF-9F 22-9E FD-7F 00-00 01-9F 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd9e22a0e0 pointing to "/proc/self/exe", 0x5afc4f6b1fa0 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-97 22-9E FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 18:24:13.1053101 798051944 000 ECU1 NONE shm log fatal verbose 16 Cannot allocate shared memory block of size  65536  with alignment  16  at: [ 7ffd9e22aea0 : 7ffd9e23ae8f ]. Does not fit within shared memory segment: [ 7ffd9e22ae90 : 7ffd9e23ae8f ]. Already allocated bytes:  16 . Virtual address space to reserve:  65535 
+[0;32m[       OK ] [mSharedMemoryResourceAllocateDeathTest.AllocatingBlockLargerThanAllocatedSharedMemoryCausesTermination (179 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateDeathTest.AllocationFailureLogsCorrectStartAddress
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6ad3c0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <CF-9F 22-9E FD-7F 00-00 01-9F 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd9e22a0e0 pointing to "/proc/self/exe", 0x5afc4f6b30d0 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-97 22-9E FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 18:24:13.1053280 798053735 000 ECU1 NONE shm log fatal verbose 16 Cannot allocate shared memory block of size  65536  with alignment  16  at: [ 7ffd9e22aea0 : 7ffd9e23ae8f ]. Does not fit within shared memory segment: [ 7ffd9e22ae90 : 7ffd9e23ae8f ]. Already allocated bytes:  16 . Virtual address space to reserve:  65535 
+[0;32m[       OK ] [mSharedMemoryResourceAllocateDeathTest.AllocationFailureLogsCorrectStartAddress (220 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateDeathTest.AllocatingMultipleBlocksLargerThanAllocatedSharedMemoryCausesTermination
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6ad480 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <0F-A0 22-9E FD-7F 00-00 01-9F 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd9e22a120 pointing to "/proc/self/exe", 0x5afc4f6b30d0 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-98 22-9E FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 18:24:13.1053501 798055939 000 ECU1 NONE shm log fatal verbose 16 Cannot allocate shared memory block of size  32769  with alignment  16  at: [ 7ffd9e232e9f : 7ffd9e23ae8f ]. Does not fit within shared memory segment: [ 7ffd9e22ae90 : 7ffd9e23ae8f ]. Already allocated bytes:  32783 . Virtual address space to reserve:  65535 
+[0;32m[       OK ] [mSharedMemoryResourceAllocateDeathTest.AllocatingMultipleBlocksLargerThanAllocatedSharedMemoryCausesTermination (241 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateDeathTest.AllocationTerminatesAfterMaxCompareExchangeRetries
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6afee0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <2F-9D 22-9E FD-7F 00-00 01-9C 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd9e229f20 pointing to "/proc/self/exe", 0x5afc4f6c4d80 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-96 22-9E FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+2026/10/06 18:24:13.1053746 798058394 000 ECU1 NONE shm log fatal verbose 3 Failed to reserve shared memory after  32  attempts. 
+[0;32m[       OK ] [mSharedMemoryResourceAllocateDeathTest.AllocationTerminatesAfterMaxCompareExchangeRetries (179 ms)
+[0;32m[----------] [m4 tests from SharedMemoryResourceAllocateDeathTest (821 ms total)
+
+[0;32m[----------] [m5 tests from SharedMemoryResourceAllocateTest
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateTest.AssociatedMemoryResourceProxyForwardsCallsCorrectly
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6ad730 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <3F-A0 22-9E FD-7F 00-00 01-9F 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceAllocateTest.AssociatedMemoryResourceProxyForwardsCallsCorrectly (1 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateTest.SharedMemoryResourceAllocatesAlignedMemoryDifferentTypes
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6b2a50 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <3F-A0 22-9E FD-7F 00-00 01-9F 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceAllocateTest.SharedMemoryResourceAllocatesAlignedMemoryDifferentTypes (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateTest.SharedMemoryResourceAllocatesAlignedMemoryDifferentTypesAndReturnCorrectNumberOfAllocatedBytes
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6abce0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <3F-A0 22-9E FD-7F 00-00 01-9F 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceAllocateTest.SharedMemoryResourceAllocatesAlignedMemoryDifferentTypesAndReturnCorrectNumberOfAllocatedBytes (0 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateTest.SharedMemoryResourceDeallocateDoesNoDeallocation
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6b29d0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <4F-9E 22-9E FD-7F 00-00 01-9D 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: readlink(0x7ffd9e229dd0 pointing to "/proc/self/exe", 0x5afc4f6b4020 pointing to "", 4096)
+          Returns: 16-byte object <00-00 00-00 00-00 00-00 01-94 22-9E FD-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+[0;32m[       OK ] [mSharedMemoryResourceAllocateTest.SharedMemoryResourceDeallocateDoesNoDeallocation (1 ms)
+[0;32m[ RUN      ] [mSharedMemoryResourceAllocateTest.WhenAllocatingNumberOfBytesGetUserAllocatedBytesFunctionShallReturnThisNumber
+
+GMOCK WARNING:
+Uninteresting mock function call - returning default value.
+    Function call: chmod(0x5afc4f6afee0 pointing to "/tmp/my_shm_lock", 4-byte object <49-00 00-00>)
+          Returns: 12-byte object <4F-9E 22-9E FD-7F 00-00 01-9D 22-9E>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mSharedMemoryResourceAllocateTest.WhenAllocatingNumberOfBytesGetUserAllocatedBytesFunctionShallReturnThisNumber (0 ms)
+[0;32m[----------] [m5 tests from SharedMemoryResourceAllocateTest (5 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m9 tests from 2 test suites ran. (827 ms total)
+[0;32m[  PASSED  ] [m9 tests.

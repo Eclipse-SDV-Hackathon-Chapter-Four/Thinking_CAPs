@@ -1,0 +1,4027 @@
+Draft a scoped contribution for eclipse-score/communication#751, on native commit 381d43dec900ab6a9076f3f30e7bfbdee019e26e.
+Return ONLY JSON {"files":[{"path":"relative/path","content":"complete replacement content"}],"rationale":"brief source-grounded reason and unresolved obligations"}.
+No Markdown fences, tools, shell execution, model calls, workflow creation, approval, invented native identifiers or assertions that checks passed.
+Put complete source files first; at most 16 files. No deletions. If supplied evidence cannot support a correct fix, return an empty files array and explain the unresolved cause.
+Follow CONTRIBUTING.md, preserve licenses and native semantics. Required full native build/tests and lint checks will be measured separately; human engineering acceptance remains offline.
+Allowed exact files: ["quality/static_analysis/BUILD", "quality/static_analysis/codeql_lint.py", "quality/static_analysis/codeql_lint_test.py", ".github/workflows/_codeql.yml", "quality/static_analysis/README.md"]. Allowed new directory prefixes: [].
+This item uses a fresh independent copy of the baseline. Other queue items' patches are not applied; do not assume their changes exist.
+Investigate why production proxy_binding_factory_impl.cpp is absent. A source file having no findings does not prove it was omitted. Make a scoped production-target selection/completeness audit improvement supported by the native tracing implementation; distinguish extraction/database source coverage from SARIF result presence. Preserve compiler tracing environment and forced-recompile seed. If adjusting nightly --target selection, use exact native package patterns and do not silently include tests or drop production targets. Add negative and positive regressions around target expansion or audit behavior using real helper interfaces, and document any missing native compiler-database proof. Do not fabricate a CodeQL command, query, file location or analysis success.
+Issue text:
+### Description
+
+Looking at https://github.com/eclipse-score/communication/actions/runs/29969360900/job/89087757995
+the file score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp is not part of the report.
+
+This file is part of a production target and contains source code.
+
+### Error Occurrence  Rate
+
+Reproducible
+
+### How to reproduce
+
+See the nightly quality workflow for reproduction.
+
+### Supporting Information
+
+_No response_
+
+### Classification
+
+major
+
+### Affected Version
+
+1.0
+
+### Expected Closure Version
+
+1.0
+
+### Category
+
+- [x] Safety Related
+- [ ] Security Related
+Pinned source context:
+
+FILE .bazelversion
+8.7.0
+
+
+FILE .github/workflows/_codeql.yml
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+name: "CodeQL Analysis"
+
+on:
+  workflow_call:
+    inputs:
+      cache-mode:
+        description: "Cache mode override (empty = auto-compute from event context)."
+        type: string
+        default: ""
+      fetch-only:
+        description: "When true, runs --nobuild to fetch dependencies only."
+        type: string
+        default: "false"
+    secrets:
+      UBUNTU_SNAPSHOT_MIRROR_URL:
+        required: false
+      SCORE_QNX_LICENSE:
+        required: false
+      SCORE_QNX_USER:
+        required: false
+      SCORE_QNX_PASSWORD:
+        required: false
+
+jobs:
+  # Whether to additionally analyze the --config=qnx build is derived
+  # automatically from secret availability rather than a caller-supplied
+  # flag: it only runs when the QNX license secret has actually been
+  # provided (e.g. not forwarded by cache-warming callers). Computed once,
+  # up front, so both analysis jobs below can start in parallel gated on
+  # the same `needs.determine-qnx.outputs.available` job output (secrets
+  # cannot be referenced directly in a job-level `if:`).
+  determine-qnx:
+    name: Determine QNX availability
+    runs-on: ubuntu-24.04
+    outputs:
+      available: ${{ steps.qnx.outputs.available }}
+    steps:
+      - id: qnx
+        run: |
+          if [[ -n "${{ secrets.SCORE_QNX_LICENSE }}" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Linux analysis runs on its own runner so it can proceed concurrently
+  # with the QNX analysis below rather than waiting on it.
+  codeql-linux:
+    name: Run CodeQL analysis (Linux)
+    needs: [determine-qnx]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: ./.github/actions/00_infrastructure/prepare_bazel_environment
+        with:
+          disk-cache: ""
+          cache-mode: ${{ inputs.cache-mode }}
+          ubuntu-snapshot-mirror-url: ${{ secrets.UBUNTU_SNAPSHOT_MIRROR_URL }}
+
+      - name: Fetch dependencies (--nobuild)
+        if: inputs.fetch-only == 'true'
+        run: bazel build --config=ci --nobuild //...
+
+      - name: Run CodeQL analysis (Linux)
+        if: inputs.fetch-only != 'true'
+        id: run-codeql
+        run: |
+          set -euo pipefail
+
+          bazel run --config=ci //quality/static_analysis:codeql_lint -- \
+            --output-dir /tmp/codeql-results/linux \
+            --output-prefix codeql-nightly \
+            --target //score/message_passing //score/mw/com
+
+      - name: Upload Linux SARIF (intermediate)
+        if: inputs.fetch-only != 'true' && steps.run-codeql.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-linux
+          path: /tmp/codeql-results/linux/codeql-nightly.sarif
+          retention-days: 1
+
+      - name: Upload MISRA compliance reports (Linux)
+        if: ${{ !cancelled() && inputs.fetch-only != 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-misra-reports
+          path: /tmp/codeql-results/linux/analysis_reports/
+          retention-days: 30
+          if-no-files-found: warn
+
+  # QNX analysis runs in parallel with codeql-linux (both only need
+  # determine-qnx); the merge job below waits on both.
+  codeql-qnx:
+    name: Run CodeQL analysis (QNX, --config=qnx)
+    needs: [determine-qnx]
+    if: inputs.fetch-only != 'true' && needs.determine-qnx.outputs.available == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Setup QNX and QEMU environment
+        uses: ./.github/actions/00_infrastructure/setup_qnx_environment
+        with:
+          qnx-license: ${{ secrets.SCORE_QNX_LICENSE }}
+
+      - uses: ./.github/actions/00_infrastructure/prepare_bazel_environment
+        with:
+          disk-cache: ""
+          cache-mode: ${{ inputs.cache-mode }}
+          ubuntu-snapshot-mirror-url: ${{ secrets.UBUNTU_SNAPSHOT_MIRROR_URL }}
+
+      - name: Run CodeQL analysis (QNX, --config=qnx)
+        id: run-codeql-qnx
+        env:
+          SCORE_QNX_USER: ${{ secrets.SCORE_QNX_USER }}
+          SCORE_QNX_PASSWORD: ${{ secrets.SCORE_QNX_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          bazel run --config=ci //quality/static_analysis:codeql_lint -- \
+            --build-config qnx \
+            --output-dir /tmp/codeql-results/qnx \
+            --output-prefix codeql-nightly-qnx \
+            --target //score/message_passing //score/mw/com
+
+      - name: Upload QNX SARIF (intermediate)
+        if: steps.run-codeql-qnx.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-qnx
+          path: /tmp/codeql-results/qnx/codeql-nightly-qnx.sarif
+          retention-days: 1
+
+  # All merging/deduplication happens on the SARIF documents. The Microsoft
+  # SARIF SDK CLI (@sarif_multitool, the same tool used by
+  # .github/actions/00_infrastructure/merge_sarif_reports for rules_lint)
+  # merges/dedups the SARIF; the resulting deduplicated union SARIF is
+  # published directly (no CSV export) and consumed straight by the
+  # quality dashboard, the same way clang-tidy/clippy SARIF already is.
+  # This job always runs (even Linux-only, i.e. when codeql-qnx was
+  # skipped) since it is now the only place that produces the published
+  # SARIF.
+  merge:
+    name: Merge & deduplicate findings (Linux ∪ QNX union)
+    needs: [determine-qnx, codeql-linux, codeql-qnx]
+    if: ${{ !cancelled() && inputs.fetch-only != 'true' && needs.codeql-linux.result == 'success' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: write
+      security-events: write
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: ./.github/actions/00_infrastructure/prepare_bazel_environment
+        with:
+          disk-cache: ""
+          cache-mode: ${{ inputs.cache-mode }}
+          ubuntu-snapshot-mirror-url: ${{ secrets.UBUNTU_SNAPSHOT_MIRROR_URL }}
+
+      - name: Download Linux SARIF
+        uses: actions/download-artifact@v4
+        with:
+          name: codeql-sarif-linux
+          path: /tmp/codeql-results/linux
+
+      - name: Download QNX SARIF
+        if: needs.codeql-qnx.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: codeql-sarif-qnx
+          path: /tmp/codeql-results/qnx
+
+      - name: Merge & deduplicate findings (Linux ∪ QNX union)
+        id: merge-codeql
+        run: |
+          set -euo pipefail
+
+          sarif_inputs=(/tmp/codeql-results/linux/codeql-nightly.sarif)
+          if [[ -f /tmp/codeql-results/qnx/codeql-nightly-qnx.sarif ]]; then
+            sarif_inputs+=(/tmp/codeql-results/qnx/codeql-nightly-qnx.sarif)
+          fi
+
+          mkdir -p /tmp/codeql-results/publish
+          bazel run --config=ci @sarif_multitool//:sarif_multitool_cli -- \
+            merge "${sarif_inputs[@]}" --merge-empty-logs \
+            --output-file /tmp/codeql-results/publish/codeql-nightly.sarif
+
+      # Single canonical published SARIF: the deduplicated union of Linux
+      # and QNX findings (or just the deduplicated Linux findings when QNX was
+      # not run).
+      - name: Upload SARIF to GitHub Code Scanning
+        if: ${{ !cancelled() && steps.merge-codeql.outcome == 'success' }}
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: /tmp/codeql-results/publish/codeql-nightly.sarif
+          category: codeql-nightly
+
+      - name: Upload SARIF results
+        if: ${{ !cancelled() && steps.merge-codeql.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-results
+          path: /tmp/codeql-results/publish/codeql-nightly.sarif
+          retention-days: 30
+
+
+FILE CONTRIBUTING.md
+# Contributing
+
+- Thank you for your interest in contributing to the Communication Module of the Eclipse SCORE project!
+- This guide will walk you through the necessary steps to get started with development, adhere to our standards, and successfully submit your contributions.
+
+## Eclipse Contributor Agreement (ECA)
+
+Before making any contributions, **you must sign the Eclipse Contributor Agreement (ECA)**. This is a mandatory requirement for all contributors to Eclipse projects.
+
+Sign the ECA here: https://www.eclipse.org/legal/ECA.php
+
+Pull requests from contributors who have not signed the ECA **will not be accepted**.
+
+## Contribution Workflow
+
+To ensure a smooth contribution process, please follow the steps below:
+
+1. **Fork** the repository to your GitHub account.
+2. **Create a feature branch** from your fork:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **Write clean and modular code**, adhering to:
+   - **C++17 standard**
+   - **Google C++ Style Guide**
+4. **Add tests** for any new functionality.
+5. **Ensure all tests pass** before submitting:
+   ```bash
+   bazel test //...
+   ```
+6. **Open a Pull Request** from your feature branch to the `main` branch of the upstream repository.
+   - Provide a clear title and description of your changes.
+   - Reference any related issues.
+
+## Development Setup
+
+### General Prerequisites
+
+- Bazel (Instructions for installing here: https://bazel.build/install)
+- Docker (Instructions for installing here: https://docs.docker.com/engine/install/)
+  - Note. Running Docker in rootless mode is not yet officially supported but may work. See https://docs.docker.com/engine/security/rootless/ for more information.
+
+### OS-specific Prerequisites
+
+We strive to be independent of the host platform via bazel sandboxing.
+Some host platforms come with limitations that bazel cannot sandbox sufficiently.
+For these platforms we collect instructions below.
+
+Please be aware, that while we officially support Ubuntu 24.04 as the host platform that we also test in our CI.
+While other platforms generally should work, we can give no such guarantee.
+Should you face issues with your host platform, feel free to raise an issue or discussion where we will try to support.
+
+#### Ubuntu 24.04 and newer
+
+Starting with Ubuntu 24.04 the security framework apparmor was introduced.
+The standard configuration of apparmor prohibits unprivileged user namespaces.
+This interferes with the bazel sandboxing mechanism and inhibits the linux-sandbox.
+Bazel falls back to a less powerful sandboxing mechanism that is insufficient for our project.
+This affects many bazel tests and potentially any bazel runnables.
+
+To work around this issue, you can run a bash script, which you can get by cloning the cicd-actions repository
+
+```
+git clone --depth=1 https://github.com/eclipse-score/cicd-actions
+```
+
+after which you can run
+
+```bash
+bash <path to cicd-actions repository>/unblock_user_namespace_for_linux_sandbox/action_callable.sh
+```
+
+Note. To take this into effect force, a bazel restart by shutting it down 1st
+
+```bash
+bazel shutdown
+```
+
+These steps must be rerun whenever the bazel version is updated.
+
+### Build Instructions
+
+To build and test the Communication Module, follow the steps below from the project root:
+
+```bash
+# Build all targets
+bazel build //...
+
+# Run all tests
+bazel test //...
+```
+
+### Optional: Configure a local Ubuntu snapshot mirror
+
+The Ubuntu snapshot mirrors are sometimes unreliable. See: https://answers.launchpad.net/launchpad/+question/824541
+
+If you have access to a more reliable Ubuntu snapshot mirror, you can make Bazel try it first while keeping
+the public `snapshot.ubuntu.com` URL as fallback.
+
+An example for such a snapshot mirror service is https://stablebuild.com
+
+1. Create a local downloader config at `user.downloader_config` (this file is ignored by git).
+   Replace the `<private-mirror-tag>` with the tag provided by the StableBuild API
+
+```text
+rewrite snapshot.ubuntu.com/ubuntu/[^/]*/(.*) <private-mirror-tag>.debmirror.stablebuild.com/2026-04-01T10:40:01Z/archive.ubuntu.com/ubuntu/$1
+rewrite snapshot.ubuntu.com/ubuntu/[^/]*/(.*) <private-mirror-tag>.debmirror.stablebuild.com/2026-04-01T10:40:01Z/ports.ubuntu.com/$1
+rewrite snapshot.ubuntu.com/ubuntu/(.*) snapshot.ubuntu.com/ubuntu/$1
+```
+
+2. Point Bazel to this local config in `user.bazelrc` (also ignored by git):
+
+```text
+common --downloader_config=user.downloader_config
+```
+
+3. Restart the Bazel server to reload the downloader config
+
+```shell
+bazel shutdown
+```
+
+### Linting Instructions
+
+For Linting the Code following solutions are available:
+
+Copyright Checker:
+```bash
+# Check Sources
+bazel run //:copyright.check
+
+# Fix Sources
+bazel run //:copyright.fix
+```
+
+C++ and Bazel files formatter:
+```bash
+# Check Sources
+bazel run //:format.check
+
+# Fix Sources
+bazel run //:format
+```
+
+### Testing Instructions
+
+The Communication Module includes extensive tests. Use the following commands:
+
+#### Run All Tests
+```bash
+bazel test //...
+```
+
+#### Run Specific Test Suites
+```bash
+bazel test //score/mw/com/impl:all
+bazel test //score/mw/com/message_passing:all
+```
+
+#### Test Categories
+- **Unit Tests**: Component-level testing
+- **Integration Tests**: Cross-component interactions
+- **Performance Tests**: Latency and throughput benchmarks
+- **Safety Tests**: ASIL-B compliance verification
+
+## Additional Resources
+
+For project details, documentation, and support resources, please refer to the main [README.md](README.md).
+For the release process, see [RELEASING.md](RELEASING.md).
+
+---
+
+## How to Document
+
+This section explains how to document C++ code so it appears in the generated API documentation.
+
+> API documentation is generated using Doxygen and integrated via Breathe.
+> Due to Sphinx version < 9.x limitations with complex C++ templates, use specific class
+> and function directives rather than namespace-level documentation.
+
+### Automatic API Documentation with @api Tag
+
+The project includes an automated RST generation utility that extracts items
+tagged with `@api` in Doxygen comments and generates categorized documentation.
+
+Add the `@api` tag to any Doxygen comment block to include it in the generated API documentation:
+
+```cpp
+/**
+ * @brief Connection handler for client communication
+ * @api
+ */
+class ClientConnection {
+    // ...
+};
+
+/**
+ * @brief Initialize the communication system
+ * @return true if successful
+ * @api
+ */
+bool initialize();
+```
+
+The utility automatically creates:
+
+- **API Index** — overview of all tagged items
+- **Namespace Reference** — namespaces containing `@api` items
+- **Class Reference** — classes and structs with `@api` tag
+- **Member Reference** — functions and methods with `@api` tag
+
+Build integration:
+
+```starlark
+generate_api_rst(
+    name = "generate_api_rst",
+    doxygen_xml = "//path/to:doxygen_target",
+    output_dir = "generated",
+    project_name = "mw::com",
+)
+```
+
+The generated RST files are automatically included in the Sphinx documentation
+under the "Generated API Documentation" section.
+
+### Using Breathe Directives
+
+To document specific classes or functions, use these Breathe directives in RST files:
+
+**Document a specific class:**
+
+```rst
+.. doxygenclass:: score::message_passing::detail::ClientConnection
+    :members:
+    :protected-members:
+    :undoc-members:
+```
+
+**Document a specific function:**
+
+```rst
+.. doxygenfunction:: score::mw::com::functionName
+```
+
+**Document a struct:**
+
+```rst
+.. doxygenstruct:: score::mw::com::ConfigStruct
+    :members:
+```
+
+### Further Resources
+
+- Browse the Doxygen-generated HTML at `bazel-bin/score/mw/com/design/doxygen_build/html/index.html`
+- Review header files in `score/mw/com/` for inline documentation
+- Check the design documentation at `score/mw/com/design/`
+
+**Thank you for contributing to the Eclipse SCORE Communication Module!**
+
+
+FILE LICENSE
+
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+
+FILE NOTICE
+# Notices for Eclipse Safe Open Vehicle Core
+
+This content is produced and maintained by the Eclipse Safe Open Vehicle Core project.
+
+ * Project home: https://projects.eclipse.org/projects/automotive.score
+
+## Trademarks
+
+Eclipse, and the Eclipse Logo are registered trademarks of the Eclipse Foundation.
+
+## Copyright
+
+All content is the property of the respective authors or their employers.
+For more information regarding authorship of content, please consult the
+listed source code repository logs.
+
+## Declared Project Licenses
+
+This program and the accompanying materials are made available under the terms
+of the Apache License Version 2.0 which is available at
+https://www.apache.org/licenses/LICENSE-2.0.
+
+SPDX-License-Identifier: Apache-2.0
+
+## Cryptography
+
+Content may contain encryption software. The country in which you are currently
+may have restrictions on the import, possession, and use, and/or re-export to
+another country, of encryption software. BEFORE using any encryption software,
+please check the country's laws, regulations and policies concerning the import,
+possession, or use, and re-export of encryption software, to see if this is
+permitted.
+
+
+FILE quality/static_analysis/BUILD
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_python//python:defs.bzl", "py_binary")
+
+py_binary(
+    name = "codeql_lint",
+    srcs = ["codeql_lint.py"],
+    args = [
+        "--codeql_path=$(location @codeql_bundle//:codeql_cli)",
+        "--config_path=$(location :config)",
+        "--analysis_report_path=$(location @codeql_coding_standards//:analysis_report)",
+        "--guideline_recategorize_path=$(location @codeql_coding_standards//:guideline_recategorize)",
+    ],
+    data = [
+        ":config",
+        "@codeql_bundle//:codeql_cli",
+        "@codeql_coding_standards//:analysis_report",
+        "@codeql_coding_standards//:guideline_recategorize",
+        "@codeql_coding_standards//:process_coding_standards_config",
+        "@codeql_coding_standards_compiled//:pack",
+    ],
+    main = "codeql_lint.py",
+    tags = ["local"],
+    target_compatible_with = ["@platforms//os:linux"],
+    deps = ["@rules_python//python/runfiles"],
+)
+
+filegroup(
+    name = "config",
+    srcs = ["config.yaml"],
+)
+
+
+FILE quality/static_analysis/codeql_lint.py
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+import argparse
+import os
+import tempfile
+import json
+import subprocess
+import datetime
+import shutil
+
+
+TMP_PATH_FOR_DATABASES = "/var/tmp/codeql_databases"
+CODING_STANDARDS_CONFIG_RELATIVE_PATH = "quality/static_analysis/coding-standards.yaml"
+
+# Name of the fake-$HOME directory used only while invoking `analysis_report`
+# (see _prepare_offline_codeql_home). Created under the current invocation's
+# own output directory rather than a fixed shared path, so it stays scoped
+# to this run and doesn't accumulate stale state across workspaces/versions.
+CODEQL_FAKE_HOME_DIR_NAME = "codeql_home"
+
+
+# Default query suite (relative to the MISRA C++ pack root) run by the analysis.
+# Forward-slash relative path, used both to locate the suite on disk and as the
+# suite selector in the `<pack>@<version>:<suite>` query specifier.
+MISRA_DEFAULT_SUITE_NAME = "codeql-suites/misra-cpp-default.qls"
+
+# Runfiles path of the vendored pre-compiled MISRA C++ query pack's manifest,
+# used to anchor the pack root. Provided by the @codeql_coding_standards_compiled
+# repository (see third_party/codeql/codeql_release_pack.bzl).
+COMPILED_PACK_RUNFILE = "codeql_coding_standards_compiled/pack/qlpack.yml"
+
+
+def _find_coding_standards_root():
+    """Locate the vendored codeql-coding-standards repo root (the dir containing cpp/).
+
+    The codeql_coding_standards repo's cpp/** sources are declared as a `data`
+    dependency of @codeql_coding_standards//:analysis_report, which is in turn a
+    `data` dependency of this py_binary, so Bazel places them in our runfiles
+    tree. Only used for the `--query-spec` override, which analyzes a query from
+    these sources rather than the pre-compiled release pack.
+    """
+    from python.runfiles import Runfiles
+
+    runfiles = Runfiles.Create()
+    anchor = runfiles.Rlocation("codeql_coding_standards/cpp/common/src/qlpack.yml")
+    if not anchor or not os.path.exists(anchor):
+        raise RuntimeError("Unable to locate CodeQL coding standards repo root")
+    # anchor = <repo_root>/cpp/common/src/qlpack.yml -> go up four levels.
+    return os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(anchor))))
+
+
+def _find_compiled_pack_root():
+    """Locate the pre-compiled MISRA C++ query pack root from runfiles.
+
+    The pack is vendored by the @codeql_coding_standards_compiled repository
+    (see third_party/codeql/codeql_release_pack.bzl): a pre-compiled pack
+    published with the codeql-coding-standards release, containing the compiled
+    queries (`.qlx`), the default suites and all library dependencies bundled
+    under `.codeql/libraries/`. Analyzing against this pack (referenced by its
+    `<name>@<version>:<suite>` specifier and made discoverable via
+    --search-path) runs exactly the pinned ruleset without recompiling the
+    queries and without downloading anything from the registry.
+
+    This vendored pack is the ONLY supported query source: if it cannot be
+    located we raise an error instead of silently falling back to any other pack (e.g. a
+    registry download or a runtime-compiled pack), so that the analysis always
+    runs exactly the pinned, hermetic ruleset.
+
+    Returns the pack root directory (the one containing qlpack.yml).
+    """
+    from python.runfiles import Runfiles
+
+    runfiles = Runfiles.Create()
+    anchor = runfiles.Rlocation(COMPILED_PACK_RUNFILE)
+    if not anchor or not os.path.exists(anchor):
+        raise RuntimeError(
+            "Vendored pre-compiled MISRA C++ query pack not found (expected "
+            f"runfile '{COMPILED_PACK_RUNFILE}'). "
+            "Ensure the @codeql_coding_standards_compiled//:pack dependency is "
+            "in this target's `data`. Refusing to fall back to any other query "
+            "source."
+        )
+    # anchor = <pack_root>/qlpack.yml
+    # Resolve symlinks: Bazel runfiles are a symlink farm where individual files
+    # are symlinked into the runfiles tree.  CodeQL's data-extension glob
+    # (qlpack.yml `dataExtensions:`) does NOT follow symlinks when matching
+    # .model.yml files, so using the runfiles path causes all extensible
+    # predicates (allocationFunctionModel, throwingFunctionModel, etc.) to come
+    # up as undefined.  realpath() jumps from the runfiles symlink to the actual
+    # Bazel external-repository directory, where the model files are real files.
+    pack_root = os.path.dirname(os.path.realpath(anchor))
+
+    suite_path = os.path.join(pack_root, MISRA_DEFAULT_SUITE_NAME)
+    if not os.path.exists(suite_path):
+        raise RuntimeError(
+            "Vendored pre-compiled MISRA C++ query pack is incomplete: default "
+            f"suite '{suite_path}' is missing. Refusing to fall back to any "
+            "other query source."
+        )
+    return pack_root
+
+
+def _prepare_offline_codeql_home(libraries_dir, fake_home):
+    """Set up a hermetic $HOME so CodeQL can resolve locked pack dependencies offline.
+
+    `analysis_report` runs some queries straight from the source pack tree via
+    plain `codeql database run-queries`, with no --search-path/--additional-packs
+    of its own. That pack's lock file pins a dependency on
+    `advanced-security/qtil`, which CodeQL can only resolve from its default
+    pack cache (~/.codeql/packages/...) or from --additional-packs directories
+    (--search-path is explicitly ignored for locked dependencies). Without
+    network access, resolving from the default cache would require mutating
+    the real user's $HOME.
+
+    The vendored pre-compiled MISRA pack already bundles this dependency under
+    `.codeql/libraries/<scope>/<name>/<version>`, so instead we point
+    --additional-packs at that directory via a CodeQL per-user config file at
+    `<fake_home>/.config/codeql/config`. `libraries_dir` must be the pack's
+    real, non-symlinked path, since CodeQL's pack resolution doesn't follow
+    symlinks (_find_compiled_pack_root() already handles this via realpath()).
+    The caller is responsible for pointing $HOME at `fake_home` for the
+    subprocess this is prepared for.
+    """
+    config_path = os.path.join(fake_home, ".config", "codeql", "config")
+    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    with open(config_path, "w") as handle:
+        handle.write(f"--additional-packs {libraries_dir}\n")
+
+
+def _read_pack_identity(pack_root):
+    """Return the (name, version) declared in the pack's qlpack.yml.
+
+    The codeql-coding-standards user manual recommends referencing a downloaded
+    release pack by its `<name>@<version>:<suite>` specifier (with the pack made
+    discoverable via --search-path) rather than by a bare suite path. Reading the
+    declared identity here lets CodeQL validate the pack's name and version, so
+    an accidental pack/version drift fails loudly instead of silently analyzing
+    whatever suite happens to live at a path.
+    """
+    name = None
+    version = None
+    with open(os.path.join(pack_root, "qlpack.yml")) as handle:
+        for line in handle:
+            stripped = line.strip()
+            if name is None and stripped.startswith("name:"):
+                name = stripped.split(":", 1)[1].strip().strip("'\"")
+            elif version is None and stripped.startswith("version:"):
+                version = stripped.split(":", 1)[1].strip().strip("'\"")
+    if not name or not version:
+        raise RuntimeError(f"Could not read pack name/version from {pack_root}/qlpack.yml")
+    return name, version
+
+
+def create_database(code_ql_path, config_path, target, source_root, database_path, build_configs=None):
+    """Create the CodeQL database: init, build with tracing, finalize.
+
+    ``build_configs`` is an optional list of additional Bazel ``--config`` names
+    layered on top of the base ``codeql`` config for the traced build. For
+    example ``["qnx"]`` produces ``bazel build --config=codeql --config=qnx``,
+    which retargets the traced compilation at the QNX platform + QCC toolchain
+    (see ``//.bazelrc`` ``common:qnx``). With no extra configs the build is the
+    unchanged Linux analysis.
+    """
+    subprocess.run(
+        f"{code_ql_path} database init --overwrite --begin-tracing --language=cpp "
+        f"--codescanning-config={config_path} --source-root={source_root} -- {database_path}",
+        shell=True,
+        check=True,
+    )
+
+    env_file = os.path.join(database_path, "temp/tracingEnvironment/start-tracing.json")
+    with open(env_file) as f:
+        codeql_env = json.load(f)
+    env = _get_merged_environment(codeql_env)
+
+    # Process coding standards config
+    subprocess.run(
+        f"bazel run @codeql_coding_standards//:process_coding_standards_config -- --working-dir={source_root}",
+        shell=True,
+        env=env,
+        cwd=source_root,
+        check=True,
+    )
+
+    # Build with CodeQL tracing
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+    bazel_cmd = f"bazel build --config=codeql --stamp --action_env=CODEQL_SEED_FORCE_RECOMPILE={timestamp}"
+    for extra_config in build_configs or []:
+        bazel_cmd += f" --config={extra_config}"
+    bazel_cmd += _get_action_env_extension(codeql_env)
+    subprocess.run(f"{bazel_cmd} {target}", shell=True, env=env, cwd=source_root, check=True)
+
+    # Finalize database
+    subprocess.run(
+        f"{code_ql_path} database finalize -j=0 -- {database_path}",
+        shell=True,
+        check=True,
+    )
+
+
+def analyze_database(
+    code_ql_path,
+    database_path,
+    source_root,
+    analysis_report_path=None,
+    recategorize_path=None,
+    coding_standards_config_path=None,
+    query_spec=None,
+    output_prefix="codeql",
+    output_dir=None,
+):
+    """Run CodeQL analysis and generate MISRA C++ compliance reports."""
+    output_base = output_dir or _get_bazel_info(source_root).get("output_path")
+    os.makedirs(output_base, exist_ok=True)
+
+    # Analyze against the pre-compiled MISRA C++ query pack published with the
+    # codeql-coding-standards release and vendored by the
+    # @codeql_coding_standards_compiled repository (see _find_compiled_pack_root).
+    # Following the codeql-coding-standards user manual's recommended approach for
+    # released pack artifacts, the pack is referenced by its
+    # `<name>@<version>:<suite>` specifier and made discoverable via
+    # --search-path. The pack already contains the compiled queries and all their
+    # library dependencies, so this runs exactly the pinned ruleset without
+    # recompiling the queries and without downloading anything from the registry.
+    #
+    # --query-spec overrides this to analyze a single query straight from the
+    # vendored coding-standards sources (used for debugging individual rules).
+    if query_spec:
+        query_target = query_spec
+        common_analyze_flags = f"--additional-packs={_find_coding_standards_root()}"
+    else:
+        pack_root = _find_compiled_pack_root()
+        pack_name, pack_version = _read_pack_identity(pack_root)
+        query_target = f"{pack_name}@{pack_version}:{MISRA_DEFAULT_SUITE_NAME}"
+        common_analyze_flags = f"--search-path={pack_root}"
+    query_arg = f" {query_target}"
+    sarif_path = f"{output_base}/{output_prefix}.sarif"
+
+    # Run CodeQL analysis, producing SARIF only. The merged/deduplicated
+    # union SARIF (see @sarif_multitool//:sarif_multitool_cli in
+    # _codeql.yml) is published and consumed directly by the quality
+    # dashboard afterward; no CSV is ever generated.
+    print("\n Running CodeQL analysis...")
+    subprocess.run(
+        f"{code_ql_path} database analyze -j=0 {database_path}{query_arg} "
+        f"{common_analyze_flags} "
+        f"--format=sarifv2.1.0 --output={sarif_path}",
+        shell=True,
+        check=True,
+    )
+
+    recategorize_sarif(
+        recategorize_path,
+        coding_standards_config_path,
+        sarif_path,
+    )
+    normalize_sarif_rule_order(sarif_path)
+
+    # Generate reports using CodeQL analysis_report tool
+    if analysis_report_path and os.path.exists(analysis_report_path):
+        print(" Generating MISRA C++ compliance reports...")
+        try:
+            # Make analysis_report executable and run it
+            os.chmod(analysis_report_path, 0o755)
+
+            # Remove existing reports directory if it exists
+            reports_output_dir = os.path.join(output_base, "analysis_reports")
+            if os.path.exists(reports_output_dir):
+                shutil.rmtree(reports_output_dir)
+
+            # Prepare environment with CodeQL binary path so analysis_report can find 'codeql' command
+            env = os.environ.copy()
+            codeql_bin_dir = os.path.dirname(os.path.realpath(code_ql_path))
+            print(f" Resolved CodeQL bin dir: {codeql_bin_dir}")
+            print(f" CodeQL bin dir exists: {os.path.isdir(codeql_bin_dir)}")
+            env["PATH"] = f"{codeql_bin_dir}:{env.get('PATH', '')}"
+            print(f" PATH for analysis_report: {env['PATH']}")
+
+            # Point HOME at a hermetic per-invocation directory so
+            # analysis_report can resolve locked pack dependencies offline
+            # without touching the real user's $HOME (see
+            # _prepare_offline_codeql_home).
+            compiled_pack_root = _find_compiled_pack_root()
+            fake_home = os.path.join(output_base, CODEQL_FAKE_HOME_DIR_NAME)
+            _prepare_offline_codeql_home(os.path.join(compiled_pack_root, ".codeql", "libraries"), fake_home)
+            env["HOME"] = fake_home
+
+            # analysis_report expects positional args: database-dir sarif-file output-dir
+
+            result = subprocess.run(
+                [analysis_report_path, database_path, sarif_path, reports_output_dir],
+                capture_output=True,
+                text=True,
+                env=env,
+            )
+
+            # Always show subprocess output for diagnostics
+            if result.stdout:
+                print(f" [analysis_report stdout]: {result.stdout.strip()}")
+
+            if result.stderr:
+                print(f" [analysis_report stderr]: {result.stderr.strip()}")
+            if result.returncode != 0:
+                print(f"   analysis_report exited with code {result.returncode}")
+                # Don't raise exception - allow workflow to continue
+
+        except Exception as e:
+            print(f"Report generation exception: {e}")
+
+
+def recategorize_sarif(recategorize_path, coding_standards_config_path, sarif_path):
+    if not recategorize_path:
+        return sarif_path
+    if not coding_standards_config_path or not os.path.isfile(coding_standards_config_path):
+        raise RuntimeError(f"Coding standards config file not found: {coding_standards_config_path!r}")
+
+    recategorize_path = os.path.realpath(recategorize_path)
+    coding_standards_schema_path, sarif_schema_path = _find_recategorization_schema_paths()
+    coding_standards_schema_path = os.path.realpath(coding_standards_schema_path)
+    sarif_schema_path = os.path.realpath(sarif_schema_path)
+    recategorized_sarif_path = f"{sarif_path}.recategorized"
+    subprocess.run(
+        [
+            recategorize_path,
+            "--coding-standards-schema-file",
+            coding_standards_schema_path,
+            "--sarif-schema-file",
+            sarif_schema_path,
+            coding_standards_config_path,
+            sarif_path,
+            recategorized_sarif_path,
+        ],
+        check=True,
+    )
+    os.replace(recategorized_sarif_path, sarif_path)
+    return sarif_path
+
+
+def normalize_sarif_rule_order(sarif_path):
+    with open(sarif_path, "r", encoding="utf-8") as sarif_file:
+        sarif = json.load(sarif_file)
+
+    runs = sarif.get("runs", [])
+    if not runs:
+        return sarif_path
+
+    for run in runs:
+        _normalize_sarif_run(run)
+
+    normalized_sarif_path = f"{sarif_path}.normalized"
+    with open(normalized_sarif_path, "w", encoding="utf-8") as sarif_file:
+        json.dump(sarif, sarif_file, indent=2)
+        sarif_file.write("\n")
+    os.replace(normalized_sarif_path, sarif_path)
+    return sarif_path
+
+
+def _normalize_sarif_run(run):
+    driver = run.get("tool", {}).get("driver", {})
+    rules = driver.get("rules", [])
+    ordered_rules = sorted(
+        enumerate(rules),
+        key=lambda indexed_rule: indexed_rule[1].get("id", ""),
+    )
+    index_map = {old_index: new_index for new_index, (old_index, _) in enumerate(ordered_rules)}
+    driver["rules"] = [rule for _, rule in ordered_rules]
+
+    artifacts = run.get("artifacts", [])
+    ordered_artifacts = sorted(
+        enumerate(artifacts),
+        key=lambda indexed_artifact: indexed_artifact[1].get("location", {}).get("uri", ""),
+    )
+    artifact_index_map = {old_index: new_index for new_index, (old_index, _) in enumerate(ordered_artifacts)}
+    run["artifacts"] = [artifact for _, artifact in ordered_artifacts]
+
+    for result in run.get("results", []):
+        if "ruleIndex" in result:
+            result["ruleIndex"] = index_map[result["ruleIndex"]]
+        result_rule = result.get("rule")
+        if result_rule is not None and "index" in result_rule:
+            result_rule["index"] = index_map[result_rule["index"]]
+
+    for key, value in run.items():
+        if key != "artifacts":
+            _remap_artifact_indices(value, artifact_index_map)
+
+
+def _remap_artifact_indices(value, artifact_index_map):
+    if isinstance(value, dict):
+        artifact_location = value.get("artifactLocation")
+        if isinstance(artifact_location, dict) and "index" in artifact_location:
+            if artifact_location.get("uri"):
+                del artifact_location["index"]
+            else:
+                artifact_location["index"] = artifact_index_map[artifact_location["index"]]
+        for child in value.values():
+            _remap_artifact_indices(child, artifact_index_map)
+    elif isinstance(value, list):
+        for child in value:
+            _remap_artifact_indices(child, artifact_index_map)
+
+
+def _find_recategorization_schema_paths():
+    from python.runfiles import Runfiles
+
+    runfiles = Runfiles.Create()
+    coding_standards_schema_path = runfiles.Rlocation(
+        "codeql_coding_standards/schemas/coding-standards-schema-1.0.0.json"
+    )
+    sarif_schema_path = runfiles.Rlocation("codeql_coding_standards/schemas/sarif-schema-2.1.0.json")
+    if not coding_standards_schema_path or not os.path.isfile(coding_standards_schema_path):
+        raise RuntimeError("Failed to load Coding Standards schema!")
+    if not sarif_schema_path or not os.path.isfile(sarif_schema_path):
+        raise RuntimeError("Failed to load Sarif schema!")
+    return coding_standards_schema_path, sarif_schema_path
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Run CodeQL linting operations")
+    parser.add_argument("--codeql_path", help="Path to CodeQL binary")
+    parser.add_argument("--config_path", help="CodeQL config file")
+    parser.add_argument("--analysis_report_path", help="Path to analysis_report binary")
+    parser.add_argument(
+        "--guideline_recategorize_path",
+        help="Path to guideline recategorization binary",
+    )
+    parser.add_argument("--target", nargs="+", help="Bazel targets to build")
+    parser.add_argument(
+        "--phase",
+        choices=["create-database", "analyze-database", "all"],
+        default="all",
+        help="Execution phase",
+    )
+    parser.add_argument("--database-path", help="CodeQL database path")
+    parser.add_argument("--query-spec", help="CodeQL query spec")
+    parser.add_argument("--output-prefix", default="codeql", help="Output prefix")
+    parser.add_argument("--output-dir", help="Output directory")
+    parser.add_argument(
+        "--build-config",
+        action="append",
+        default=[],
+        dest="build_configs",
+        metavar="CONFIG",
+        help="Additional Bazel --config to layer on the traced build (repeatable). "
+        "E.g. --build-config qnx runs 'bazel build --config=codeql --config=qnx'.",
+    )
+
+    args = parser.parse_args()
+    target = " ".join(args.target) if args.target else ""
+    source_root = os.environ["BUILD_WORKING_DIRECTORY"]
+
+    # Make codeql_path absolute
+    codeql_path = os.path.abspath(args.codeql_path) if args.codeql_path else None
+    coding_standards_config_path = os.path.join(source_root, CODING_STANDARDS_CONFIG_RELATIVE_PATH)
+    if not os.path.isabs(coding_standards_config_path):
+        coding_standards_config_path = os.path.abspath(coding_standards_config_path)
+
+    if args.phase == "create-database":
+        os.makedirs(os.path.dirname(args.database_path), exist_ok=True)
+        create_database(
+            codeql_path,
+            args.config_path,
+            target,
+            source_root,
+            args.database_path,
+            build_configs=args.build_configs,
+        )
+
+    elif args.phase == "analyze-database":
+        analyze_database(
+            codeql_path,
+            args.database_path,
+            source_root,
+            analysis_report_path=args.analysis_report_path,
+            recategorize_path=args.guideline_recategorize_path,
+            coding_standards_config_path=coding_standards_config_path,
+            query_spec=args.query_spec,
+            output_prefix=args.output_prefix,
+            output_dir=args.output_dir,
+        )
+
+    else:  # all
+        # Use standard Bazel output directory for database
+        bazel_info = _get_bazel_info(source_root)
+        output_path = args.output_dir or bazel_info.get("output_path")
+        # Ensure the output directory exists before CodeQL tries to create the
+        # database inside it (codeql database init does not create parents).
+        os.makedirs(output_path, exist_ok=True)
+        os.makedirs(TMP_PATH_FOR_DATABASES, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=TMP_PATH_FOR_DATABASES) as database_location:
+            create_database(
+                codeql_path,
+                args.config_path,
+                target,
+                source_root,
+                database_location,
+                build_configs=args.build_configs,
+            )
+            analyze_database(
+                codeql_path,
+                database_location,
+                source_root,
+                analysis_report_path=args.analysis_report_path,
+                recategorize_path=args.guideline_recategorize_path,
+                coding_standards_config_path=coding_standards_config_path,
+                query_spec=args.query_spec,
+                output_prefix=args.output_prefix,
+                output_dir=args.output_dir,
+            )
+
+
+def _get_action_env_extension(codeql_env):
+    action_env_extension = ""
+    for env_var in codeql_env:
+        action_env_extension += f" --action_env={env_var}"
+    return action_env_extension
+
+
+def _get_merged_environment(codeql_env):
+    env = os.environ.copy()
+    for var in codeql_env:
+        env[var] = f"{codeql_env[var]}:{env.get(var, '')}" if var in env else codeql_env[var]
+    return env
+
+
+def _get_bazel_info(source_root):
+    result = subprocess.run(
+        "bazel info",
+        shell=True,
+        cwd=source_root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    # Parse the output into a dictionary
+    bazel_info = {}
+    for line in result.stdout.strip().split("\n"):
+        if ":" in line:
+            key, value = line.split(":", 1)
+            bazel_info[key.strip()] = value.strip()
+    return bazel_info
+
+
+if __name__ == "__main__":
+    main()
+
+
+FILE quality/static_analysis/config.yaml
+# CodeQL code-scanning configuration passed to `codeql database init`
+# (--codescanning-config). The MISRA C++ pack to run is intentionally NOT listed
+# here: it is pinned once by the vendored pre-compiled pack (see MODULE.bazel /
+# @codeql_coding_standards_compiled) and passed explicitly to `database analyze`
+# by codeql_lint.py, so the pack name and version have a single source of truth.
+# This file only carries analysis-wide query filters.
+query-filters:
+  - exclude:
+      tags: exclude-from-incremental
+
+
+FILE quality/static_analysis/static_analysis.bazelrc
+# *******************************************************************************
+# Copyright (c) 2026 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+# Config shared by all linters. This config is required to generate the correct outputs for our CI workflows.
+build:_lint --extra_toolchains=@sarif_parser_toolchains//:all
+build:_lint --output_groups=+rules_lint_human,+rules_lint_machine
+build:_lint --@aspect_rules_lint//lint:fail_on_violation=true
+build:_lint --keep_going
+
+# Clang-tidy configuration
+# Run clang-tidy on all C++ targets with: bazel test --config=clang-tidy //...
+build:clang-tidy --config=_lint
+build:clang-tidy --aspects=//tools/lint:linters.bzl%clang_tidy
+build:clang-tidy --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
+build:clang-tidy --extra_toolchains=@ferrocene_x86_64_unknown_linux_gnu_llvm//:rust_ferrocene_toolchain
+
+# Clippy configuration
+# Run clippy on all C++ targets with: bazel test --config=clippy //...
+build:clippy --config=_lint
+build:clippy --aspects=@score_rust_policies//clippy:linters.bzl%clippy_strict
+
+# Ruff configuration
+# Run ruff on all Python targets with: bazel test --config=ruff //...
+build:ruff --config=_lint
+build:ruff --aspects=//tools/lint:linters.bzl%ruff
+
+# Ruff autofix configuration
+# Inherits all ruff flags above and additionally enables fix mode so that
+# aspect_rules_lint runs `ruff check --fix` in a sandbox and collects the
+# edits as a unified-diff patch. Use `bazel run //:ruff.fix` to apply those
+# patches back to the workspace.
+build:ruff-fix --config=ruff
+build:ruff-fix --@aspect_rules_lint//lint:fix
+build:ruff-fix --output_groups=+rules_lint_patch
+
+# Clang-tidy autofix configuration
+# Inherits all clang-tidy flags above and additionally enables fix mode so that
+# aspect_rules_lint runs clang-tidy with --fix-errors in a sandbox, collects
+# the edits as a unified-diff patch, and writes one *.AspectRulesLintClangTidy.patch
+# file per source file under bazel-bin.  Use `bazel run //:clang-tidy.fix`
+# to apply those patches back to the workspace.
+build:clang-tidy-fix --config=clang-tidy
+build:clang-tidy-fix --@aspect_rules_lint//lint:fix
+build:clang-tidy-fix --output_groups=+rules_lint_patch
+
+common:codeql --platform_suffix=codeql
+common:codeql --extra_toolchains=@llvm_toolchain//:cc-toolchain-x86_64-linux
+common:codeql --sandbox_writable_path=/var/tmp
+common:codeql --nouse_action_cache
+common:codeql --noremote_accept_cached
+common:codeql --noremote_upload_local_results
+common:codeql --disk_cache=
+
+
+FILE quality/visibility_guard/BUILD
+# *******************************************************************************
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
+
+py_library(
+    name = "parser",
+    srcs = ["parser.py"],
+)
+
+py_test(
+    name = "visibility_guard_test",
+    srcs = ["visibility_guard_test.py"],
+    data = [":public_targets.golden"],
+    env_inherit = [
+        # Required for internal bazel execution to be able to resolve proxies
+        "HTTP_PROXY",
+        "http_proxy",
+        "HTTPS_PROXY",
+        "https_proxy",
+        "NO_PROXY",
+        "no_proxy",
+    ],
+    # local=True: needs source tree access to read BUILD files across all packages.
+    # The test is deterministic — same source tree always produces the same result.
+    local = True,
+    tags = [
+        "external",
+        "lint",
+        "no-cache",
+        "no-flaky-test-detection",
+        "no-sandbox",
+    ],
+    target_compatible_with = ["@platforms//os:linux"],
+    deps = [":parser"],
+)
+
+py_binary(
+    name = "generate_golden",
+    srcs = ["generate_golden.py"],
+    deps = [":parser"],
+)
+
+
+FILE score/mw/com/impl/BUILD
+# *******************************************************************************
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//quality/unit_testing:unit_testing.bzl", "cc_unit_test")
+load("//score/mw:common_features.bzl", "COMPILER_WARNING_FEATURES")
+
+package(default_visibility = [
+    "//score/mw/com/impl:__subpackages__",
+])
+
+cc_library(
+    name = "impl",
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":generic_proxy",
+        ":generic_proxy_event",
+        ":generic_skeleton",
+        ":proxy_event",
+        ":proxy_field",
+        ":skeleton_event",
+        ":skeleton_field",
+        ":traits",
+        "//score/mw/com/impl/methods:proxy_method",
+        "//score/mw/com/impl/methods:skeleton_method",
+    ],
+)
+
+cc_library(
+    name = "generic_proxy",
+    srcs = ["generic_proxy.cpp"],
+    hdrs = ["generic_proxy.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":error",
+        "//score/mw/com/impl/plumbing",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":flag_owner",
+        ":generic_proxy_event",
+        ":handle_type",
+        ":proxy_base",
+        ":proxy_binding",
+        ":service_element_map_view",
+        ":service_element_map_view_factory",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "generic_proxy_event",
+    srcs = ["generic_proxy_event.cpp"],
+    hdrs = ["generic_proxy_event.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "//score/mw/com/impl/plumbing:event",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":generic_proxy_event_binding",
+        ":proxy_base",
+        ":proxy_event_base",
+        "//score/mw/com/impl/tracing:proxy_event_tracing",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+cc_library(
+    name = "proxy_event",
+    srcs = ["proxy_event.cpp"],
+    hdrs = ["proxy_event.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":generic_proxy_event",
+        ":instance_identifier",
+        ":proxy_base",
+        ":proxy_event_base",
+        ":proxy_event_binding",
+        ":runtime",
+        "//score/mw/com/impl/mocking:i_proxy_event",
+        "//score/mw/com/impl/plumbing:event",
+        "//score/mw/com/impl/tracing:proxy_event_tracing",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "generic_skeleton",
+    srcs = ["generic_skeleton.cpp"],
+    hdrs = ["generic_skeleton.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":error",
+        ":runtime",
+        ":skeleton_binding",
+        "//score/mw/com/impl/plumbing:skeleton_binding_factory",
+        "//score/mw/com/impl/plumbing:skeleton_event_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/memory:data_type_size_info",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":data_type_meta_info",
+        ":generic_skeleton_event",
+        ":instance_identifier",
+        ":instance_specifier",
+        ":service_element_map_view",
+        ":service_element_map_view_factory",
+        ":skeleton_base",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "generic_skeleton_event",
+    srcs = ["generic_skeleton_event.cpp"],
+    hdrs = ["generic_skeleton_event.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":error",
+        ":skeleton_base",
+        "//score/mw/com/impl/tracing:skeleton_event_tracing",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":data_type_meta_info",
+        ":reference_to_moveable",
+        ":sample_allocatee_tracker",
+        ":skeleton_event_base",
+        ":skeleton_event_binding",
+        "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "data_type_meta_info",
+    srcs = ["data_type_meta_info.cpp"],
+    hdrs = ["data_type_meta_info.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__pkg__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":error",
+        "@score_baselibs//score/memory:data_type_size_info",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_event",
+    srcs = ["skeleton_event.cpp"],
+    hdrs = ["skeleton_event.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":instance_identifier",
+        ":reference_to_moveable",
+        ":runtime",
+        ":skeleton_base",
+        ":skeleton_event_base",
+        ":skeleton_event_binding",
+        "//score/mw/com/impl/mocking:i_skeleton_event",
+        "//score/mw/com/impl/plumbing:event",
+        "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+        "//score/mw/com/impl/plumbing:sample_ptr",
+        "//score/mw/com/impl/tracing:skeleton_event_tracing",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_field",
+    srcs = ["skeleton_field.cpp"],
+    hdrs = ["skeleton_field.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":error",
+        ":field_getter_setter_signatures",
+        ":field_tags",
+        ":method_type",
+        ":skeleton_event",
+        ":skeleton_field_base",
+        "//score/mw/com/impl/methods:method_signature_element_ptr",
+        "//score/mw/com/impl/methods:skeleton_method",
+        "//score/mw/com/impl/mocking:i_skeleton_field",
+        "//score/mw/com/impl/plumbing:field",
+        "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "traits",
+    srcs = ["traits.cpp"],
+    hdrs = ["traits.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":field_tags",
+        ":flag_owner",
+        ":proxy_base",
+        ":proxy_event",
+        ":proxy_field",
+        ":skeleton_base",
+        ":skeleton_event",
+        ":skeleton_field",
+        "//score/mw/com/impl/methods:proxy_method",
+        "//score/mw/com/impl/methods:skeleton_method",
+        "//score/mw/com/impl/plumbing:event",
+    ],
+)
+
+cc_library(
+    name = "proxy_field_base",
+    srcs = ["proxy_field_base.cpp"],
+    hdrs = ["proxy_field_base.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":enable_reference_to_moveable_from_this",
+        ":proxy_event_base",
+        "//score/mw/com/impl/methods:proxy_method_base",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "proxy_field",
+    srcs = ["proxy_field.cpp"],
+    hdrs = ["proxy_field.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":field_getter_setter_signatures",
+        ":field_tags",
+        ":method_type",
+        ":proxy_event",
+        ":proxy_event_binding",
+        ":proxy_field_base",
+        "//score/mw/com/impl/methods:proxy_method",
+        "//score/mw/com/impl/mocking:i_proxy_event",
+        "//score/mw/com/impl/plumbing:field",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_event_base",
+    srcs = ["skeleton_event_base.cpp"],
+    hdrs = ["skeleton_event_base.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":enable_reference_to_moveable_from_this",
+        ":flag_owner",
+        ":sample_allocatee_tracker",
+        ":skeleton_event_binding",
+        "//score/mw/com/impl/tracing:skeleton_event_tracing",
+        "//score/mw/com/impl/tracing:skeleton_event_tracing_data",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_field_base",
+    srcs = ["skeleton_field_base.cpp"],
+    hdrs = ["skeleton_field_base.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":enable_reference_to_moveable_from_this",
+        ":error",
+        ":skeleton_event_base",
+        "//score/mw/com/impl/methods:skeleton_method_base",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_base",
+    srcs = ["skeleton_base.cpp"],
+    hdrs = ["skeleton_base.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":runtime",
+        ":skeleton_event_base",
+        ":skeleton_field_base",
+        "//score/mw/com/impl/tracing:skeleton_tracing",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/methods:__pkg__",
+        "//score/mw/com/impl/mocking:__pkg__",
+        "//score/mw/com/impl/plumbing:__pkg__",
+    ],
+    deps = [
+        ":flag_owner",
+        ":instance_identifier",
+        ":reference_to_moveable",
+        ":skeleton_binding",
+        "//score/mw/com/impl/methods:skeleton_method_base",
+        "//score/mw/com/impl/mocking:i_skeleton_base",
+        "//score/mw/com/impl/plumbing",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "find_service_handle",
+    srcs = ["find_service_handle.cpp"],
+    hdrs = ["find_service_handle.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["@score_baselibs//score/mw/log"],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__pkg__",
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "find_service_handler",
+    srcs = ["find_service_handler.cpp"],
+    hdrs = ["find_service_handler.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__pkg__",
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":find_service_handle",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_base",
+    srcs = ["proxy_base.cpp"],
+    hdrs = ["proxy_base.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":proxy_event_base",
+        ":proxy_field_base",
+        ":runtime",
+        "//score/mw/com/impl/methods:proxy_method_base",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":find_service_handle",
+        ":find_service_handler",
+        ":reference_to_moveable",
+        "//score/mw/com/impl/plumbing",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "proxy_event_base",
+    srcs = ["proxy_event_base.cpp"],
+    hdrs = ["proxy_event_base.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":error",
+        "//score/mw/com/impl/tracing:proxy_event_tracing",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/scope_exit",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__pkg__",
+        "//score/mw/com/impl/rust:__pkg__",
+    ],
+    deps = [
+        ":enable_reference_to_moveable_from_this",
+        ":flag_owner",
+        ":proxy_binding",
+        ":proxy_event_binding",
+        ":sample_reference_tracker",
+        "//score/mw/com/impl/mocking:i_proxy_event",
+        "//score/mw/com/impl/tracing:proxy_event_tracing_data",
+        "@score_baselibs//score/language/safecpp/scoped_function:scope",
+    ],
+)
+
+cc_library(
+    name = "subscription_state",
+    srcs = ["subscription_state.cpp"],
+    hdrs = ["subscription_state.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__pkg__",
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "skeleton_binding",
+    srcs = [
+        "skeleton_binding.cpp",
+    ],
+    hdrs = [
+        "skeleton_binding.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/bindings/lola:__pkg__",
+        "//score/mw/com/impl/bindings/mock_binding:__pkg__",
+        "//score/mw/com/impl/plumbing:__subpackages__",
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":binding_type",
+        ":data_type_meta_info",
+        "//score/memory/shared:i_shared_memory_resource",
+        "//score/mw/com/impl/configuration",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_event_binding",
+    srcs = [
+        "skeleton_event_binding.cpp",
+    ],
+    hdrs = [
+        "skeleton_event_binding.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/bindings/lola:__pkg__",
+        "//score/mw/com/impl/bindings/mock_binding:__pkg__",
+        "//score/mw/com/impl/plumbing:__subpackages__",
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":binding_type",
+        ":initialize_sample_callback",
+        ":receive_handler_registration_changed_handler",
+        ":sample_allocatee_tracker",
+        "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+        "//score/mw/com/impl/plumbing:sample_ptr",
+        "//score/mw/com/impl/tracing:skeleton_event_tracing_data",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "generic_skeleton_event_binding",
+    srcs = ["generic_skeleton_event_binding.cpp"],
+    hdrs = ["generic_skeleton_event_binding.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/bindings/lola:__pkg__",
+        "//score/mw/com/impl/bindings/mock_binding:__pkg__",
+        "//score/mw/com/impl/plumbing:__subpackages__",
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":receive_handler_registration_changed_handler",
+        ":skeleton_event_binding",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "proxy_binding",
+    srcs = [
+        "proxy_binding.cpp",
+    ],
+    hdrs = [
+        "proxy_binding.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/bindings/lola:__pkg__",
+        "//score/mw/com/impl/bindings/mock_binding:__pkg__",
+        "//score/mw/com/impl/plumbing:__subpackages__",
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        "proxy_event_binding",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_event_binding",
+    srcs = [
+        "proxy_event_binding.cpp",
+    ],
+    hdrs = [
+        "proxy_event_binding.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/bindings/lola:__pkg__",
+        "//score/mw/com/impl/bindings/mock_binding:__pkg__",
+        "//score/mw/com/impl/plumbing:__subpackages__",
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":binding_type",
+        ":sample_reference_tracker",
+        ":scoped_event_receive_handler",
+        ":subscription_state",
+        ":subscription_state_change_handler",
+        "//score/mw/com/impl/configuration",
+        "//score/mw/com/impl/plumbing:sample_ptr",
+        "//score/mw/com/impl/tracing:i_tracing_runtime",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "generic_proxy_event_binding",
+    srcs = [
+        "generic_proxy_event_binding.cpp",
+    ],
+    hdrs = [
+        "generic_proxy_event_binding.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/bindings/lola:__pkg__",
+        "//score/mw/com/impl/bindings/mock_binding:__pkg__",
+        "//score/mw/com/impl/plumbing:__subpackages__",
+        "//score/mw/com/impl/tracing:__subpackages__",
+    ],
+    deps = [
+        ":binding_type",
+        ":proxy_event_binding",
+        ":scoped_event_receive_handler",
+        ":subscription_state",
+        "//score/mw/com/impl/configuration",
+        "//score/mw/com/impl/plumbing:sample_ptr",
+        "//score/mw/com/impl/tracing:i_tracing_runtime",
+    ],
+)
+
+cc_library(
+    name = "handle_type",
+    srcs = ["handle_type.cpp"],
+    hdrs = ["handle_type.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":instance_identifier",
+        "//score/mw/com/impl/configuration",
+    ],
+)
+
+cc_library(
+    name = "instance_identifier",
+    srcs = ["instance_identifier.cpp"],
+    hdrs = ["instance_identifier.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":error",
+        "//score/mw/com/impl/configuration",
+    ],
+)
+
+cc_library(
+    name = "enriched_instance_identifier",
+    srcs = ["enriched_instance_identifier.cpp"],
+    hdrs = ["enriched_instance_identifier.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":handle_type",
+        ":instance_identifier",
+        "//score/mw/com/impl/configuration:service_instance_id",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "error",
+    srcs = ["com_error.cpp"],
+    hdrs = ["com_error.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "instance_specifier",
+    srcs = ["instance_specifier.cpp"],
+    hdrs = ["instance_specifier.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":error",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "i_service_discovery_client",
+    srcs = ["i_service_discovery_client.cpp"],
+    hdrs = ["i_service_discovery_client.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":enriched_instance_identifier",
+        ":find_service_handler",
+        ":handle_type",
+        ":i_service_discovery",
+        ":instance_identifier",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "method_type",
+    srcs = ["method_type.cpp"],
+    hdrs = ["method_type.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = ["//score/mw/com:__subpackages__"],
+)
+
+cc_library(
+    name = "field_tags_store",
+    srcs = ["field_tags_store.cpp"],
+    hdrs = ["field_tags_store.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = ["//score/mw/com:__subpackages__"],
+    deps = [
+        ":field_tags",
+    ],
+)
+
+cc_library(
+    name = "field_getter_setter_signatures",
+    srcs = ["field_getter_setter_signatures.cpp"],
+    hdrs = ["field_getter_setter_signatures.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = ["//score/mw/com:__subpackages__"],
+    deps = [
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "field_tags",
+    srcs = ["field_tags.cpp"],
+    hdrs = ["field_tags.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = ["//score/mw/com:__subpackages__"],
+)
+
+cc_unit_test(
+    name = "field_tags_test",
+    srcs = ["field_tags_test.cpp"],
+    deps = [
+        ":field_tags",
+    ],
+)
+
+cc_unit_test(
+    name = "field_tags_store_test",
+    srcs = ["field_tags_store_test.cpp"],
+    deps = [
+        ":field_tags_store",
+    ],
+)
+
+cc_library(
+    name = "service_element_type",
+    srcs = ["service_element_type.cpp"],
+    hdrs = ["service_element_type.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "@score_baselibs//score/mw/log",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "service_discovery_client_mock",
+    testonly = True,
+    srcs = ["service_discovery_client_mock.cpp"],
+    hdrs = ["service_discovery_client_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_service_discovery_client",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "binding_type",
+    srcs = ["binding_type.cpp"],
+    hdrs = ["binding_type.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "runtime_interfaces",
+    srcs = [
+        "i_binding_runtime.cpp",
+        "i_runtime.cpp",
+    ],
+    hdrs = [
+        "i_binding_runtime.h",
+        "i_runtime.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":binding_type",
+        ":i_service_discovery",
+        ":i_service_discovery_client",
+        ":instance_identifier",
+        ":instance_specifier",
+        "//score/mw/com/impl/tracing:i_binding_tracing_runtime",
+        "//score/mw/com/impl/tracing:i_tracing_runtime",
+        "//score/mw/com/impl/tracing/configuration:i_tracing_filter_config",
+    ],
+)
+
+cc_library(
+    name = "runtime_mock",
+    testonly = True,
+    srcs = ["runtime_mock.cpp"],
+    hdrs = ["runtime_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":runtime_interfaces",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "event_receive_handler",
+    srcs = ["event_receive_handler.cpp"],
+    hdrs = ["event_receive_handler.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = ["@score_baselibs//score/language/futurecpp"],
+)
+
+cc_library(
+    name = "initialize_sample_callback",
+    srcs = ["initialize_sample_callback.cpp"],
+    hdrs = ["initialize_sample_callback.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = ["@score_baselibs//score/language/futurecpp"],
+)
+
+cc_library(
+    name = "receive_handler_registration_changed_handler",
+    srcs = ["receive_handler_registration_changed_handler.cpp"],
+    hdrs = ["receive_handler_registration_changed_handler.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = ["@score_baselibs//score/language/futurecpp"],
+)
+
+cc_library(
+    name = "subscription_state_change_handler",
+    srcs = ["subscription_state_change_handler.cpp"],
+    hdrs = ["subscription_state_change_handler.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":subscription_state",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_service_discovery",
+    srcs = ["i_service_discovery.cpp"],
+    hdrs = ["i_service_discovery.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":enriched_instance_identifier",
+        ":find_service_handle",
+        ":find_service_handler",
+        ":handle_type",
+        ":instance_identifier",
+        ":instance_specifier",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "service_discovery",
+    srcs = ["service_discovery.cpp"],
+    hdrs = ["service_discovery.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":enriched_instance_identifier",
+        ":find_service_handle",
+        ":find_service_handler",
+        ":handle_type",
+        ":i_service_discovery",
+        ":instance_identifier",
+        ":instance_specifier",
+        ":runtime_interfaces",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "scoped_event_receive_handler",
+    srcs = ["scoped_event_receive_handler.cpp"],
+    hdrs = ["scoped_event_receive_handler.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = ["@score_baselibs//score/language/safecpp/scoped_function:move_only_scoped_function"],
+)
+
+cc_library(
+    name = "service_discovery_mock",
+    testonly = True,
+    srcs = ["service_discovery_mock.cpp"],
+    hdrs = ["service_discovery_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":find_service_handle",
+        ":find_service_handler",
+        ":handle_type",
+        ":i_service_discovery",
+        ":instance_identifier",
+        ":instance_specifier",
+        "@googletest//:gtest",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "runtime",
+    srcs = ["runtime.cpp"],
+    hdrs = ["runtime.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "//score/memory/shared:memory_resource_registry",
+        "//score/mw/com/impl/tracing:tracing_runtime",
+        "//score/mw/com/impl/tracing/configuration:tracing_filter_config_parser",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/utils/meyer_singleton",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com:__subpackages__",
+    ],
+    deps = [
+        ":instance_identifier",
+        ":instance_specifier",
+        ":runtime_interfaces",
+        ":service_discovery",
+        "//score/mw/com:runtime_configuration",
+        "//score/mw/com/impl:event_receive_handler",
+        "//score/mw/com/impl/configuration",
+        "//score/mw/com/impl/plumbing:runtime",
+        "//score/mw/com/impl/tracing/configuration:tracing_filter_config",
+        "@score_baselibs//score/concurrency:long_running_threads_container",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "sample_reference_tracker",
+    srcs = ["sample_reference_tracker.cpp"],
+    hdrs = ["sample_reference_tracker.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/language/safecpp/safe_math",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "sample_allocatee_tracker",
+    srcs = [
+        "sample_allocatee_guard.cpp",
+        "sample_allocatee_tracker.cpp",
+    ],
+    hdrs = [
+        "sample_allocatee_guard.h",
+        "sample_allocatee_tracker.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+cc_library(
+    name = "service_element_map_view_factory",
+    srcs = ["service_element_map_view_factory.cpp"],
+    hdrs = ["service_element_map_view_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":service_element_map_view",
+    ],
+)
+
+cc_library(
+    name = "service_element_map_view",
+    srcs = ["service_element_map_view.cpp"],
+    hdrs = ["service_element_map_view.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "flag_owner",
+    srcs = ["flag_owner.cpp"],
+    hdrs = ["flag_owner.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+)
+
+cc_library(
+    name = "error_serializer",
+    srcs = ["error_serializer.cpp"],
+    hdrs = ["error_serializer.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        ":error",
+        "//score/mw/com/impl/bindings/lola/methods:method_error",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "enable_reference_to_moveable_from_this",
+    srcs = [
+        "enable_reference_to_moveable_from_this.cpp",
+    ],
+    hdrs = [
+        "enable_reference_to_moveable_from_this.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    deps = [
+        ":reference_to_moveable",
+    ],
+)
+
+cc_library(
+    name = "reference_to_moveable",
+    srcs = [
+        "reference_to_moveable.cpp",
+    ],
+    hdrs = [
+        "reference_to_moveable.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    deps = [
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_unit_test(
+    name = "unit_test_runtime_single_exec",
+    srcs = ["runtime_single_exec_test.cpp"],
+    data = [
+        "//score/mw/com/impl/configuration:mw_com_config.json",
+        "//score/mw/com/impl/configuration:mw_com_config_disabled_trace_config.json",
+        "//score/mw/com/impl/configuration:mw_com_config_invalid_trace_config_path.json",
+        "//score/mw/com/impl/configuration:mw_com_config_other.json",
+        "//score/mw/com/impl/configuration:mw_com_config_to_merge.json",
+        "//score/mw/com/impl/configuration:mw_com_config_to_merge_second.json",
+        "//score/mw/com/impl/configuration:mw_com_config_valid_trace_config.json",
+        "//score/mw/com/impl/tracing/configuration:comtrace_filter_config_small.json",
+    ],
+    features = [
+        "aborts_upon_exception",
+    ],
+    deps = [
+        ":impl",
+        ":runtime",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/utils/meyer_singleton/test:single_test_per_process_fixture",
+    ],
+)
+
+cc_unit_test(
+    name = "service_discovery_test",
+    srcs = ["service_discovery_test.cpp"],
+    deps = [
+        ":impl",
+        ":runtime_mock",
+        ":service_discovery_client_mock",
+        "//score/mw/com/impl/bindings/lola:runtime_mock",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+cc_unit_test(
+    name = "generic_proxy_test",
+    srcs = ["generic_proxy_test.cpp"],
+    deps = [
+        ":impl",
+        ":runtime_mock",
+        ":service_discovery_mock",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/mw/log:recorder_mock",
+    ],
+)
+
+cc_unit_test(
+    name = "method_type_test",
+    srcs = ["method_type_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [":method_type"],
+)
+
+cc_unit_test(
+    name = "data_type_meta_info_test",
+    srcs = ["data_type_meta_info_test.cpp"],
+    deps = [
+        ":data_type_meta_info",
+        ":error",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_unit_test(
+    name = "sample_reference_tracker_test",
+    srcs = ["sample_reference_tracker_test.cpp"],
+    deps = [
+        ":sample_reference_tracker",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_unit_test(
+    name = "sample_allocatee_tracker_test",
+    srcs = ["sample_allocatee_tracker_test.cpp"],
+    deps = [":sample_allocatee_tracker"],
+)
+
+cc_unit_test(
+    name = "sample_allocatee_guard_test",
+    srcs = ["sample_allocatee_guard_test.cpp"],
+    deps = [
+        ":sample_allocatee_tracker",
+    ],
+)
+
+cc_unit_test(
+    name = "flag_owner_test",
+    srcs = ["flag_owner_test.cpp"],
+    deps = [
+        ":flag_owner",
+    ],
+)
+
+cc_unit_test(
+    name = "service_element_type_test",
+    srcs = ["service_element_type_test.cpp"],
+    deps = [
+        ":service_element_type",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/mw/log:recorder_mock",
+    ],
+)
+
+cc_unit_test(
+    name = "runtime_test",
+    srcs = ["runtime_test.cpp"],
+    features = COMPILER_WARNING_FEATURES + [
+        # These tests catch exceptions instead of using gtest EXPECT_DEATH so we disable aborts_upon_exception.
+        "-aborts_upon_exception",
+    ],
+    deps = [
+        ":runtime",
+        ":runtime_mock",
+        "//score/mw/com/impl/bindings/lola:runtime_mock",
+        "//score/mw/com/impl/configuration",
+        "//score/mw/com/impl/tracing:tracing_runtime",
+        "//score/mw/com/impl/tracing:tracing_test_resources",
+        "//score/mw/com/impl/tracing/configuration:proxy_event_trace_point_type",
+        "//score/mw/com/impl/tracing/configuration:skeleton_event_trace_point_type",
+        "//score/mw/com/impl/tracing/configuration:tracing_filter_config",
+        "@googletest//:gtest",
+        "@score_baselibs//score/analysis/tracing/generic_trace_library:mock",
+        "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
+        "@score_baselibs//score/mw/log",
+    ],
+)
+
+cc_unit_test(
+    name = "find_service_handle_test",
+    srcs = ["find_service_handle_test.cpp"],
+    deps = [
+        ":find_service_handle",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/mw/log:recorder_mock",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_field_test",
+    srcs = ["proxy_field_test.cpp"],
+    deps = [
+        ":error",
+        ":impl",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_event_test",
+    srcs = ["proxy_event_test.cpp"],
+    deps = [
+        ":impl",
+        ":runtime_mock",
+        "//score/mw/com/impl/plumbing:proxy_field_binding_factory_mock",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:proxy_resources",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_base_test",
+    srcs = ["proxy_base_test.cpp"],
+    features = COMPILER_WARNING_FEATURES + [
+        # These tests catch exceptions instead of using gtest EXPECT_DEATH so we disable aborts_upon_exception.
+        "-aborts_upon_exception",
+    ],
+    deps = [
+        ":error",
+        ":impl",
+        ":runtime_mock",
+        ":service_discovery_mock",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
+        "@score_baselibs//score/language/safecpp/scoped_function:scope",
+    ],
+)
+
+cc_unit_test(
+    name = "generic_skeleton_test",
+    srcs = ["generic_skeleton_test.cpp"],
+    deps = [
+        ":generic_skeleton",
+        ":runtime_mock",
+        ":service_discovery_client_mock",
+        ":service_discovery_mock",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+cc_unit_test(
+    name = "generic_skeleton_event_test",
+    srcs = [
+        "generic_skeleton_event_test.cpp",
+        "service_discovery_client_mock.h",
+    ],
+    deps = [
+        ":generic_skeleton",
+        ":generic_skeleton_event",
+        ":service_discovery_mock",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+cc_unit_test(
+    name = "traits_test",
+    srcs = [
+        "traits_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":runtime_mock",
+        ":service_discovery_mock",
+        "//score/mw/com/impl/mocking:test_type_utilities",
+        "//score/mw/com/impl/plumbing:proxy_binding_factory_mock",
+        "//score/mw/com/impl/plumbing:proxy_event_binding_factory_mock",
+        "//score/mw/com/impl/plumbing:proxy_field_binding_factory_mock",
+        "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+        "//score/mw/com/impl/plumbing:skeleton_binding_factory_mock",
+        "//score/mw/com/impl/plumbing:skeleton_event_binding_factory_mock",
+        "//score/mw/com/impl/plumbing:skeleton_field_binding_factory_mock",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:proxy_resources",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_base_test",
+    srcs = [
+        "skeleton_base_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":service_discovery_mock",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/mocking:test_type_utilities",
+        "//score/mw/com/impl/plumbing:sample_allocatee_ptr",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_unit_test(
+    name = "com_error_test",
+    srcs = [
+        "com_error_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        # These tests catch exceptions instead of using gtest EXPECT_DEATH so we disable aborts_upon_exception.
+        "-aborts_upon_exception",
+    ],
+    deps = [
+        ":error",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
+    ],
+)
+
+cc_unit_test(
+    name = "error_serializer_test",
+    srcs = [
+        "error_serializer_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        # These tests catch exceptions instead of using gtest EXPECT_DEATH so we disable aborts_upon_exception.
+        "-aborts_upon_exception",
+    ],
+    deps = [
+        ":error",
+        ":error_serializer",
+        "//score/mw/com/impl/bindings/lola/methods:method_error",
+        "@score_baselibs//score/language/futurecpp",
+        "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
+    ],
+)
+
+cc_unit_test(
+    name = "enable_reference_to_moveable_from_this_test",
+    srcs = [
+        "enable_reference_to_moveable_from_this_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":enable_reference_to_moveable_from_this",
+    ],
+)
+
+cc_unit_test(
+    name = "reference_to_moveable_test",
+    srcs = [
+        "reference_to_moveable_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":reference_to_moveable",
+    ],
+)
+
+cc_unit_test(
+    name = "enriched_instance_identifier_test",
+    srcs = ["enriched_instance_identifier_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":enriched_instance_identifier",
+    ],
+)
+
+cc_unit_test(
+    name = "generic_proxy_event_test",
+    srcs = ["generic_proxy_event_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":generic_proxy_event",
+        ":proxy_event_base",
+        "//score/mw/com:types",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/test:proxy_resources",
+    ],
+)
+
+cc_unit_test(
+    name = "handle_type_test",
+    srcs = ["handle_type_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":handle_type",
+    ],
+)
+
+cc_unit_test(
+    name = "instance_identifier_test",
+    srcs = ["instance_identifier_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":error",
+        ":instance_identifier",
+        "//score/mw/com/impl/configuration/test:configuration_test_resources",
+    ],
+)
+
+cc_unit_test(
+    name = "instance_specifier_test",
+    srcs = ["instance_specifier_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":error",
+        ":instance_specifier",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_binding_test",
+    srcs = ["proxy_binding_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":proxy_binding",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_event_base_test",
+    srcs = ["proxy_event_base_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":impl",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/test:proxy_resources",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_event_binding_test",
+    srcs = ["proxy_event_binding_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":proxy_event_binding",
+    ],
+)
+
+cc_unit_test(
+    name = "service_element_map_view_test",
+    srcs = ["service_element_map_view_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":service_element_map_view_factory",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_binding_test",
+    srcs = ["skeleton_binding_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":skeleton_binding",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_event_base_test",
+    srcs = ["skeleton_event_base_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":impl",
+        ":runtime_mock",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_event_binding_test",
+    srcs = ["skeleton_event_binding_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":sample_allocatee_tracker",
+        ":skeleton_event_binding",
+    ],
+)
+
+cc_unit_test(
+    name = "generic_skeleton_event_binding_test",
+    srcs = ["generic_skeleton_event_binding_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":generic_skeleton_event_binding",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_event_test",
+    srcs = ["skeleton_event_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":runtime_mock",
+        ":skeleton_event",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/mocking:test_type_utilities",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_field_base_test",
+    srcs = ["skeleton_field_base_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":impl",
+        ":runtime_mock",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_field_test",
+    srcs = ["skeleton_field_test.cpp"],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":runtime_mock",
+        ":skeleton_field",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/mocking:test_type_utilities",
+        "//score/mw/com/impl/test:binding_factory_resources",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+    ],
+)
+
+
+FILE score/mw/com/impl/plumbing/BUILD
+# *******************************************************************************
+# Copyright (c) 2025 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Apache License Version 2.0 which is available at
+# https://www.apache.org/licenses/LICENSE-2.0
+#
+# SPDX-License-Identifier: Apache-2.0
+# *******************************************************************************
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//quality/unit_testing:unit_testing.bzl", "cc_unit_test")
+load("//score/mw:common_features.bzl", "COMPILER_WARNING_FEATURES")
+
+cc_library(
+    name = "plumbing",
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":binding_runtime_factory",
+        ":proxy_binding_factory",
+        ":sample_allocatee_ptr",
+        ":sample_ptr",
+        ":skeleton_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "binding_factory_error",
+    srcs = ["binding_factory_error.cpp"],
+    hdrs = ["binding_factory_error.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "skeleton_method_binding_factory",
+    srcs = ["skeleton_method_binding_factory.cpp"],
+    hdrs = ["skeleton_method_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        "skeleton_method_binding_factory_impl",
+        ":i_skeleton_method_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_skeleton_method_binding_factory",
+    srcs = ["i_skeleton_method_binding_factory.cpp"],
+    hdrs = ["i_skeleton_method_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:skeleton_base",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_method_binding_factory_impl",
+    srcs = ["skeleton_method_binding_factory_impl.cpp"],
+    hdrs = ["skeleton_method_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    deps = [
+        ":i_skeleton_method_binding_factory",
+        ":skeleton_service_element_binding_factory_impl",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_method_binding_factory_mock",
+    testonly = True,
+    srcs = ["skeleton_method_binding_factory_mock.cpp"],
+    hdrs = ["skeleton_method_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_skeleton_method_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_method_binding_factory_test",
+    srcs = [
+        "skeleton_method_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        # These tests catch exceptions instead of using gtest EXPECT_DEATH so we disable aborts_upon_exception.
+        "-aborts_upon_exception",
+    ],
+    deps = [
+        ":skeleton_method_binding_factory",
+        "//score/mw/com/impl/bindings/lola/test:skeleton_test_resources",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+        "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
+    ],
+)
+
+cc_library(
+    name = "binding_runtime_factory",
+    srcs = ["binding_runtime_factory.cpp"],
+    hdrs = ["binding_runtime_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "@score_baselibs//score/language/futurecpp",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl/bindings/lola",
+        "//score/mw/com/impl/configuration",
+        "@score_baselibs//score/concurrency:executor",
+    ],
+)
+
+cc_library(
+    name = "i_proxy_binding_factory",
+    srcs = ["i_proxy_binding_factory.cpp"],
+    hdrs = ["i_proxy_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:handle_type",
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:proxy_binding",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_proxy_event_binding_factory",
+    srcs = ["i_proxy_event_binding_factory.cpp"],
+    hdrs = ["i_proxy_event_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:proxy_base",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_proxy_field_binding_factory",
+    srcs = ["i_proxy_field_binding_factory.cpp"],
+    hdrs = ["i_proxy_field_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:proxy_base",
+        "//score/mw/com/impl/methods:proxy_method_binding",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_proxy_method_binding_factory",
+    srcs = ["i_proxy_method_binding_factory.cpp"],
+    hdrs = ["i_proxy_method_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:proxy_base",
+        "//score/mw/com/impl/methods:proxy_method_binding",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_skeleton_binding_factory",
+    srcs = ["i_skeleton_binding_factory.cpp"],
+    hdrs = ["i_skeleton_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:skeleton_binding",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_skeleton_event_binding_factory",
+    srcs = ["i_skeleton_event_binding_factory.cpp"],
+    hdrs = ["i_skeleton_event_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:skeleton_base",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "i_skeleton_field_binding_factory",
+    srcs = ["i_skeleton_field_binding_factory.cpp"],
+    hdrs = ["i_skeleton_field_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:field_tags_store",
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:skeleton_base",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_binding_factory_impl",
+    srcs = ["proxy_binding_factory_impl.cpp"],
+    hdrs = ["proxy_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        ":binding_factory_error",
+        ":i_proxy_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "lola_proxy_element_building_blocks",
+    srcs = ["lola_proxy_element_building_blocks.cpp"],
+    hdrs = ["lola_proxy_element_building_blocks.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "@score_baselibs//score/language/futurecpp",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        ":binding_factory_error",
+        "//score/mw/com/impl:handle_type",
+        "//score/mw/com/impl:proxy_binding",
+        "//score/mw/com/impl:service_element_type",
+        "//score/mw/com/impl/bindings/lola",
+        "//score/mw/com/impl/configuration",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/result",
+    ],
+)
+
+cc_library(
+    name = "proxy_event_binding_factory_impl",
+    srcs = ["proxy_event_binding_factory_impl.cpp"],
+    hdrs = ["proxy_event_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        ":binding_factory_error",
+        ":i_proxy_event_binding_factory",
+        ":lola_proxy_element_building_blocks",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_field_binding_factory_impl",
+    srcs = ["proxy_field_binding_factory_impl.cpp"],
+    hdrs = ["proxy_field_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    deps = [
+        ":i_proxy_field_binding_factory",
+        ":lola_proxy_element_building_blocks",
+        ":proxy_event_binding_factory",
+        ":proxy_method_binding_factory",
+        "//score/mw/com/impl:field_getter_setter_signatures",
+        "//score/mw/com/impl:method_type",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_method_binding_factory_impl",
+    srcs = ["proxy_method_binding_factory_impl.cpp"],
+    hdrs = ["proxy_method_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl/plumbing:__subpackages__",
+    ],
+    deps = [
+        ":binding_factory_error",
+        ":i_proxy_method_binding_factory",
+        ":lola_proxy_element_building_blocks",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_binding_factory_impl",
+    srcs = ["skeleton_binding_factory_impl.cpp"],
+    hdrs = ["skeleton_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "//score/mw/com/impl/bindings/lola",
+        "//score/mw/com/impl/bindings/lola:partial_restart_path_builder",
+        "//score/mw/com/impl/bindings/lola:shm_path_builder",
+        "@score_baselibs//score/mw/log",
+    ],
+    tags = ["FFI"],
+    deps = [
+        ":i_skeleton_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_service_element_binding_factory_impl",
+    srcs = ["skeleton_service_element_binding_factory_impl.cpp"],
+    hdrs = ["skeleton_service_element_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    deps = [
+        "//score/mw/com/impl:field_tags_store",
+        "//score/mw/com/impl:skeleton_base",
+        "//score/mw/com/impl/bindings/lola",
+        "//score/mw/com/impl/configuration",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_event_binding_factory_impl",
+    srcs = ["skeleton_event_binding_factory_impl.cpp"],
+    hdrs = ["skeleton_event_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    deps = [
+        ":i_skeleton_event_binding_factory",
+        ":skeleton_service_element_binding_factory_impl",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_field_binding_factory_impl",
+    srcs = ["skeleton_field_binding_factory_impl.cpp"],
+    hdrs = ["skeleton_field_binding_factory_impl.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = ["//score/mw/com/impl/bindings/lola"],
+    tags = ["FFI"],
+    deps = [
+        ":i_skeleton_field_binding_factory",
+        ":skeleton_service_element_binding_factory_impl",
+        "//score/mw/com/impl:field_tags",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_binding_factory",
+    srcs = ["proxy_binding_factory.cpp"],
+    hdrs = ["proxy_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "proxy_binding_factory_impl",
+    ],
+    tags = ["FFI"],
+    deps = [
+        ":i_proxy_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_event_binding_factory",
+    srcs = ["proxy_event_binding_factory.cpp"],
+    hdrs = ["proxy_event_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    deps = [
+        "proxy_event_binding_factory_impl",
+        ":i_proxy_event_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_field_binding_factory",
+    srcs = ["proxy_field_binding_factory.cpp"],
+    hdrs = ["proxy_field_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    deps = [
+        "proxy_field_binding_factory_impl",
+        ":i_proxy_field_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_method_binding_factory",
+    srcs = ["proxy_method_binding_factory.cpp"],
+    hdrs = ["proxy_method_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_proxy_method_binding_factory",
+        ":proxy_method_binding_factory_impl",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_binding_factory",
+    srcs = ["skeleton_binding_factory.cpp"],
+    hdrs = ["skeleton_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "skeleton_binding_factory_impl",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_skeleton_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_event_binding_factory",
+    srcs = ["skeleton_event_binding_factory.cpp"],
+    hdrs = ["skeleton_event_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        "skeleton_event_binding_factory_impl",
+        ":i_skeleton_event_binding_factory",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "skeleton_field_binding_factory",
+    srcs = ["skeleton_field_binding_factory.cpp"],
+    hdrs = ["skeleton_field_binding_factory.h"],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    deps = [
+        "skeleton_field_binding_factory_impl",
+        ":i_skeleton_field_binding_factory",
+        "//score/mw/com/impl:field_tags",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "proxy_binding_factory_mock",
+    testonly = True,
+    srcs = ["proxy_binding_factory_mock.cpp"],
+    hdrs = ["proxy_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_proxy_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "proxy_event_binding_factory_mock",
+    testonly = True,
+    srcs = ["proxy_event_binding_factory_mock.cpp"],
+    hdrs = ["proxy_event_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_proxy_event_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "proxy_field_binding_factory_mock",
+    testonly = True,
+    srcs = ["proxy_field_binding_factory_mock.cpp"],
+    hdrs = ["proxy_field_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_proxy_field_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "proxy_method_binding_factory_mock",
+    testonly = True,
+    srcs = ["proxy_method_binding_factory_mock.cpp"],
+    hdrs = ["proxy_method_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_proxy_method_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "skeleton_binding_factory_mock",
+    testonly = True,
+    srcs = ["skeleton_binding_factory_mock.cpp"],
+    hdrs = ["skeleton_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/gateway:__subpackages__",
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_skeleton_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "skeleton_event_binding_factory_mock",
+    testonly = True,
+    srcs = ["skeleton_event_binding_factory_mock.cpp"],
+    hdrs = ["skeleton_event_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_skeleton_event_binding_factory",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "skeleton_field_binding_factory_mock",
+    testonly = True,
+    srcs = ["skeleton_field_binding_factory_mock.cpp"],
+    hdrs = ["skeleton_field_binding_factory_mock.h"],
+    features = COMPILER_WARNING_FEATURES,
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":i_skeleton_field_binding_factory",
+        "//score/mw/com/impl:field_tags",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "runtime",
+    srcs = [
+        "binding_runtime_factory.cpp",
+    ],
+    hdrs = [
+        "binding_runtime_factory.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    implementation_deps = [
+        "//score/mw/com/impl/bindings/lola/tracing:tracing_runtime",
+    ],
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        "//score/mw/com/impl:runtime_interfaces",
+        "//score/mw/com/impl/bindings/lola:runtime",
+        "//score/mw/com/impl/configuration",
+        "//score/mw/com/impl/tracing/configuration:tracing_filter_config",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "event",
+    srcs = [
+    ],
+    hdrs = [
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":proxy_event_binding_factory",
+        ":sample_allocatee_ptr",
+        ":skeleton_event_binding_factory",
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:proxy_base",
+        "//score/mw/com/impl:skeleton_base",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "field",
+    srcs = [
+    ],
+    hdrs = [
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":proxy_field_binding_factory",
+        ":sample_allocatee_ptr",
+        ":skeleton_field_binding_factory",
+        "//score/mw/com/impl:instance_identifier",
+        "//score/mw/com/impl:proxy_base",
+        "//score/mw/com/impl:skeleton_base",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_library(
+    name = "sample_allocatee_ptr",
+    srcs = [
+        "sample_allocatee_ptr.cpp",
+    ],
+    hdrs = [
+        "sample_allocatee_ptr.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = ["//score/mw/com/impl:__subpackages__"],
+    deps = [
+        "//score/mw/com/impl:sample_allocatee_tracker",
+        "//score/mw/com/impl/bindings/lola:event",
+        "//score/mw/com/impl/bindings/mock_binding:sample_allocatee_ptr",
+    ],
+)
+
+cc_library(
+    name = "sample_ptr",
+    srcs = [
+        "sample_ptr.cpp",
+    ],
+    hdrs = [
+        "sample_ptr.h",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    tags = ["FFI"],
+    visibility = ["//score/mw/com/impl:__subpackages__"],
+    deps = [
+        ":sample_allocatee_ptr",
+        "//score/mw/com/impl:sample_reference_tracker",
+        "//score/mw/com/impl/bindings/lola:event",
+        "//score/mw/com/impl/bindings/mock_binding:sample_allocatee_ptr",
+        "//score/mw/com/impl/bindings/mock_binding:sample_ptr",
+        "@score_baselibs//score/language/futurecpp",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_method_binding_factory_test",
+    srcs = [
+        "proxy_method_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        # These tests catch exceptions instead of using gtest EXPECT_DEATH so we disable aborts_upon_exception.
+        "-aborts_upon_exception",
+    ],
+    deps = [
+        ":proxy_method_binding_factory",
+        "//score/mw/com/impl/bindings/lola/test:proxy_event_test_resources",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+        "@score_baselibs//score/language/futurecpp:futurecpp_test_support",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_event_field_binding_factory_test",
+    srcs = [
+        "proxy_event_field_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        "//score/mw/com/impl/bindings/lola/test:proxy_event_test_resources",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_event_binding_factory_test",
+    srcs = [
+        "proxy_event_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":proxy_event_binding_factory",
+    ],
+)
+
+cc_unit_test(
+    name = "proxy_field_binding_factory_test",
+    srcs = [
+        "proxy_field_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":proxy_field_binding_factory",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_service_element_binding_factory_test",
+    srcs = [
+        "skeleton_service_element_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":skeleton_event_binding_factory",
+        ":skeleton_field_binding_factory",
+        "//score/mw/com/impl/bindings/lola/test:skeleton_test_resources",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_event_binding_factory_test",
+    srcs = [
+        "skeleton_event_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":skeleton_event_binding_factory",
+        "//score/mw/com/impl/bindings/lola/test:skeleton_test_resources",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+    ],
+)
+
+cc_unit_test(
+    name = "skeleton_field_binding_factory_test",
+    srcs = [
+        "skeleton_field_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":skeleton_field_binding_factory",
+        "//score/mw/com/impl/bindings/lola/test:skeleton_test_resources",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+    ],
+)
+
+cc_unit_test(
+    name = "binding_runtime_factory_test",
+    srcs = [
+        "binding_runtime_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":binding_runtime_factory",
+        "//score/mw/com/impl/configuration/test:configuration_store",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+    ],
+)
+
+cc_unit_test(
+    name = "binding_factory_error_test",
+    srcs = [
+        "binding_factory_error_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES,
+    deps = [
+        ":binding_factory_error",
+    ],
+)
+
+cc_unit_test(
+    name = "unit_test",
+    srcs = [
+        "proxy_binding_factory_test.cpp",
+        "sample_allocatee_ptr_test.cpp",
+        "sample_ptr_test.cpp",
+        "skeleton_binding_factory_test.cpp",
+    ],
+    features = COMPILER_WARNING_FEATURES + [
+        "aborts_upon_exception",
+    ],
+    visibility = [
+        "//score/mw/com/impl:__subpackages__",
+    ],
+    deps = [
+        ":event",
+        ":plumbing",
+        ":proxy_binding_factory_mock",
+        "//score/mw/com/impl:runtime_mock",
+        "//score/mw/com/impl/bindings/lola:runtime_mock",
+        "//score/mw/com/impl/bindings/lola/test:proxy_event_test_resources",
+        "//score/mw/com/impl/bindings/lola/test_doubles",
+        "//score/mw/com/impl/bindings/mock_binding:mock_binding_lib",
+        "//score/mw/com/impl/test:dummy_instance_identifier_builder",
+        "//score/mw/com/impl/test:runtime_mock_guard",
+        "@score_baselibs//score/mw/log",
+        "@score_baselibs//score/os/mocklib:fcntl_mock",
+    ],
+)
+

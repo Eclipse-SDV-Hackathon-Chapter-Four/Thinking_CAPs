@@ -1,0 +1,292 @@
+diff --git a/.github/workflows/_codeql.yml b/.github/workflows/_codeql.yml
+index 74076518..a9b18f81 100644
+--- a/.github/workflows/_codeql.yml
++++ b/.github/workflows/_codeql.yml
+@@ -87,7 +87,8 @@ jobs:
+           bazel run --config=ci //quality/static_analysis:codeql_lint -- \
+             --output-dir /tmp/codeql-results/linux \
+             --output-prefix codeql-nightly \
+-            --target //score/message_passing //score/mw/com
++            --target //score/message_passing //score/mw/com \
++            --audit-source score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp
+ 
+       - name: Upload Linux SARIF (intermediate)
+         if: inputs.fetch-only != 'true' && steps.run-codeql.outcome == 'success'
+@@ -142,7 +143,8 @@ jobs:
+             --build-config qnx \
+             --output-dir /tmp/codeql-results/qnx \
+             --output-prefix codeql-nightly-qnx \
+-            --target //score/message_passing //score/mw/com
++            --target //score/message_passing //score/mw/com \
++            --audit-source score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp
+ 
+       - name: Upload QNX SARIF (intermediate)
+         if: steps.run-codeql-qnx.outcome == 'success'
+diff --git a/BUILD b/BUILD
+index a64d2a94..df021714 100644
+--- a/BUILD
++++ b/BUILD
+@@ -59,8 +59,8 @@ copyright_checker(
+         "score",
+         "third_party",
+         "tools",
+-        "//:BUILD",
+-        "//:MODULE.bazel",
++        "BUILD",
++        "MODULE.bazel",
+     ],
+     config = "//third_party/cr_checker:config",
+     template = "//third_party/cr_checker:templates",
+diff --git a/quality/static_analysis/BUILD b/quality/static_analysis/BUILD
+index 627015e4..a2c737ac 100644
+--- a/quality/static_analysis/BUILD
++++ b/quality/static_analysis/BUILD
+@@ -11,7 +11,7 @@
+ # SPDX-License-Identifier: Apache-2.0
+ # *******************************************************************************
+ 
+-load("@rules_python//python:defs.bzl", "py_binary")
++load("@rules_python//python:defs.bzl", "py_binary", "py_test")
+ 
+ py_binary(
+     name = "codeql_lint",
+@@ -36,6 +36,15 @@ py_binary(
+     deps = ["@rules_python//python/runfiles"],
+ )
+ 
++py_test(
++    name = "codeql_lint_test",
++    srcs = [
++        "codeql_lint.py",
++        "codeql_lint_test.py",
++    ],
++    target_compatible_with = ["@platforms//os:linux"],
++)
++
+ filegroup(
+     name = "config",
+     srcs = ["config.yaml"],
+diff --git a/quality/static_analysis/codeql_lint.py b/quality/static_analysis/codeql_lint.py
+index 713d4220..217a89cc 100644
+--- a/quality/static_analysis/codeql_lint.py
++++ b/quality/static_analysis/codeql_lint.py
+@@ -17,6 +17,8 @@ import json
+ import subprocess
+ import datetime
+ import shutil
++import sys
++import zipfile
+ 
+ 
+ TMP_PATH_FOR_DATABASES = "/var/tmp/codeql_databases"
+@@ -28,6 +30,12 @@ CODING_STANDARDS_CONFIG_RELATIVE_PATH = "quality/static_analysis/coding-standard
+ # to this run and doesn't accumulate stale state across workspaces/versions.
+ CODEQL_FAKE_HOME_DIR_NAME = "codeql_home"
+ 
++# CodeQL stores the extracted source files for a database in this archive.
++# The audit below deliberately checks this archive instead of the SARIF output:
++# a production source file can have zero findings and therefore no SARIF result,
++# while still being present in the database.
++DATABASE_SRC_ARCHIVE = "src.zip"
++
+ 
+ # Default query suite (relative to the MISRA C++ pack root) run by the analysis.
+ # Forward-slash relative path, used both to locate the suite on disk and as the
+@@ -40,6 +48,55 @@ MISRA_DEFAULT_SUITE_NAME = "codeql-suites/misra-cpp-default.qls"
+ COMPILED_PACK_RUNFILE = "codeql_coding_standards_compiled/pack/qlpack.yml"
+ 
+ 
++def audit_database_source_coverage(database_path, source_root, expected_sources):
++    """Audit that expected source files were extracted into the CodeQL database.
++
++    CodeQL databases retain extracted sources in a ``src.zip`` archive.  This
++    check intentionally inspects that archive instead of the SARIF output: a
++    production source file can legitimately have zero findings and therefore no
++    SARIF result, while still being present in the database.  Conversely, a
++    missing database entry is real evidence that the traced build did not cover
++    the file (for example because the Bazel target pattern was too narrow).
++
++    Args:
++        database_path: Path to the finalized CodeQL database directory.
++        source_root: Root of the source tree used for the traced build.
++        expected_sources: Iterable of source paths (relative to source_root or
++            absolute) that must be present in the database.
++
++    Returns:
++        A sorted list of expected source paths that were not found.
++    """
++    src_zip = os.path.join(database_path, DATABASE_SRC_ARCHIVE)
++    if not os.path.isfile(src_zip):
++        raise RuntimeError(
++            f"CodeQL database source archive not found: {src_zip}. "
++            "Cannot audit database source coverage."
++        )
++
++    normalized_expected = []
++    for source in expected_sources:
++        if os.path.isabs(source):
++            try:
++                rel = os.path.relpath(source, source_root)
++            except ValueError:
++                # On Windows, paths on different drives cannot be relative.
++                rel = source
++        else:
++            rel = source
++        normalized = rel.replace(os.sep, "/").lstrip("/")
++        normalized_expected.append(normalized)
++
++    with zipfile.ZipFile(src_zip, "r") as archive:
++        archive_names = set(archive.namelist())
++
++    missing = []
++    for rel in normalized_expected:
++        if rel not in archive_names and f"./{rel}" not in archive_names:
++            missing.append(rel)
++    return sorted(missing)
++
++
+ def _find_coding_standards_root():
+     """Locate the vendored codeql-coding-standards repo root (the dir containing cpp/).
+ 
+@@ -454,6 +511,16 @@ def main():
+         help="Additional Bazel --config to layer on the traced build (repeatable). "
+         "E.g. --build-config qnx runs 'bazel build --config=codeql --config=qnx'.",
+     )
++    parser.add_argument(
++        "--audit-source",
++        action="append",
++        default=[],
++        dest="audit_sources",
++        metavar="PATH",
++        help="Source file expected to be present in the CodeQL database. "
++        "Repeatable. Used to audit database source coverage independently of "
++        "SARIF results.",
++    )
+ 
+     args = parser.parse_args()
+     target = " ".join(args.target) if args.target else ""
+@@ -475,8 +542,26 @@ def main():
+             args.database_path,
+             build_configs=args.build_configs,
+         )
++        if args.audit_sources:
++            missing = audit_database_source_coverage(
++                args.database_path, source_root, args.audit_sources
++            )
++            if missing:
++                raise RuntimeError(
++                    "CodeQL database source coverage audit failed; missing expected sources: "
++                    + ", ".join(missing)
++                )
+ 
+     elif args.phase == "analyze-database":
++        if args.audit_sources:
++            missing = audit_database_source_coverage(
++                args.database_path, source_root, args.audit_sources
++            )
++            if missing:
++                raise RuntimeError(
++                    "CodeQL database source coverage audit failed; missing expected sources: "
++                    + ", ".join(missing)
++                )
+         analyze_database(
+             codeql_path,
+             args.database_path,
+@@ -506,6 +591,15 @@ def main():
+                 database_location,
+                 build_configs=args.build_configs,
+             )
++            if args.audit_sources:
++                missing = audit_database_source_coverage(
++                    database_location, source_root, args.audit_sources
++                )
++                if missing:
++                    raise RuntimeError(
++                        "CodeQL database source coverage audit failed; missing expected sources: "
++                        + ", ".join(missing)
++                    )
+             analyze_database(
+                 codeql_path,
+                 database_location,
+diff --git a/quality/static_analysis/codeql_lint_test.py b/quality/static_analysis/codeql_lint_test.py
+new file mode 100644
+index 00000000..571b66fe
+--- /dev/null
++++ b/quality/static_analysis/codeql_lint_test.py
+@@ -0,0 +1,76 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import os
++import tempfile
++import unittest
++import zipfile
++
++import codeql_lint
++
++
++class AuditDatabaseSourceCoverageTest(unittest.TestCase):
++    def _create_database_with_sources(self, database_path, sources):
++        src_zip = os.path.join(database_path, "src.zip")
++        with zipfile.ZipFile(src_zip, "w") as archive:
++            for source in sources:
++                archive.writestr(source, "// dummy source\n")
++
++    def test_audit_passes_when_expected_source_is_present(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            self._create_database_with_sources(
++                tmpdir, ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"]
++            )
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_reports_missing_expected_source(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            self._create_database_with_sources(tmpdir, ["score/mw/com/impl/other.cpp"])
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++            self.assertEqual(
++                missing,
++                ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++            )
++
++    def test_audit_accepts_absolute_source_path(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            relative = "score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"
++            self._create_database_with_sources(tmpdir, [relative])
++            absolute = os.path.join(tmpdir, relative)
++            missing = codeql_lint.audit_database_source_coverage(
++                tmpdir,
++                tmpdir,
++                [absolute],
++            )
++            self.assertEqual(missing, [])
++
++    def test_audit_raises_when_src_zip_is_missing(self):
++        with tempfile.TemporaryDirectory() as tmpdir:
++            with self.assertRaises(RuntimeError):
++                codeql_lint.audit_database_source_coverage(
++                    tmpdir,
++                    tmpdir,
++                    ["score/mw/com/impl/plumbing/proxy_binding_factory_impl.cpp"],
++                )
++
++
++if __name__ == "__main__":
++    unittest.main()

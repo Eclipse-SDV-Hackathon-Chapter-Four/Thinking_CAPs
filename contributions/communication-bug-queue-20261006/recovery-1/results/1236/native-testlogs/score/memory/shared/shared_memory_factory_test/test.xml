@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="49" failures="0" disabled="0" errors="0" time="1.005" timestamp="2026-10-06T18:36:43.329" name="AllTests">
+  <testsuite name="SharedMemoryFactoryDeathTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.258" timestamp="2026-10-06T18:36:43.329">
+    <testcase name="FailingToInsertResourceIntoRegistryTerminates" file="score/memory/shared/shared_memory_factory_test.cpp" line="1168" status="run" result="completed" time="0.258" timestamp="2026-10-06T18:36:43.329" classname="SharedMemoryFactoryDeathTest" />
+  </testsuite>
+  <testsuite name="SharedMemoryFactoryDeathTests/SharedMemoryFactoryDeathTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0.464" timestamp="2026-10-06T18:36:43.587">
+    <testcase name="CreatingSharedMemoryTerminate/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="1137" status="run" result="completed" time="0.271" timestamp="2026-10-06T18:36:43.587" classname="SharedMemoryFactoryDeathTests/SharedMemoryFactoryDeathTest" />
+    <testcase name="CreatingSharedMemoryTerminate/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="1137" status="run" result="completed" time="0.193" timestamp="2026-10-06T18:36:43.859" classname="SharedMemoryFactoryDeathTests/SharedMemoryFactoryDeathTest" />
+  </testsuite>
+  <testsuite name="SharedMemoryFactoryTest" tests="22" failures="0" disabled="0" skipped="0" errors="0" time="0.252" timestamp="2026-10-06T18:36:44.052">
+    <testcase name="CallingRemoveOnTypedNamedResourceWillNotCrashWhenUnlinkSharedMemoryFileFailed" file="score/memory/shared/shared_memory_factory_test.cpp" line="164" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.052" classname="SharedMemoryFactoryTest" />
+    <testcase name="WhenRemoveIsCalledOnInvalidPathThenItWillNotCrash" file="score/memory/shared/shared_memory_factory_test.cpp" line="191" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.053" classname="SharedMemoryFactoryTest" />
+    <testcase name="SharedMemoryResourceFallbackToSystemMemory" file="score/memory/shared/shared_memory_factory_test.cpp" line="333" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.054" classname="SharedMemoryFactoryTest">
+      <properties>
+        <property name="Verifies" value="SCR-6223575"/>
+        <property name="Description" value="The SharedMemoryFactory shall return the Shared Memory Resource associated with the given path."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="SharedMemoryResourceIsOpenedWithCorrectPath" file="score/memory/shared/shared_memory_factory_test.cpp" line="374" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.055" classname="SharedMemoryFactoryTest">
+      <properties>
+        <property name="Verifies" value="SCR-6223575"/>
+        <property name="Description" value="The SharedMemoryFactory shall return the Shared Memory Resource associated with the given path."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="FailureToOpenSharedMemoryReturnsNullPtr" file="score/memory/shared/shared_memory_factory_test.cpp" line="480" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.055" classname="SharedMemoryFactoryTest" />
+    <testcase name="PreventsToOpenSameFileTwice" file="score/memory/shared/shared_memory_factory_test.cpp" line="502" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.056" classname="SharedMemoryFactoryTest" />
+    <testcase name="AllowsAccessToMatchingProvidersPreventsNonMatching" file="score/memory/shared/shared_memory_factory_test.cpp" line="516" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.056" classname="SharedMemoryFactoryTest">
+      <properties>
+        <property name="Verifies" value="SCR-33047276"/>
+        <property name="Description" value="Checks that SharedMemoryFactory::Open will return a nullptr if the provided of the SharedMemoryResource to be opened is not in the passed list of allowed providers."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="AllowsAccessToOwnResourceWithNonMatchingProvidersList" file="score/memory/shared/shared_memory_factory_test.cpp" line="566" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.057" classname="SharedMemoryFactoryTest" />
+    <testcase name="DisallowsAccessToResourceWithEmptyProvidersList" file="score/memory/shared/shared_memory_factory_test.cpp" line="584" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.057" classname="SharedMemoryFactoryTest" />
+    <testcase name="AllowsAccessToResourceWithNullProvidersList" file="score/memory/shared/shared_memory_factory_test.cpp" line="603" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.058" classname="SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyOpeningSharedMemoryOnlyOpensResourceOnce" file="score/memory/shared/shared_memory_factory_test.cpp" line="709" status="run" result="completed" time="0.002" timestamp="2026-10-06T18:36:44.059" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreatingOrOpeningSharedMemoryInTypedMemoryFailedNoTypedMemoryProvided" file="score/memory/shared/shared_memory_factory_test.cpp" line="829" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.061" classname="SharedMemoryFactoryTest" />
+    <testcase name="CallingRemoveStaleArtefactsAfterCreatingWillTerminate" file="score/memory/shared/shared_memory_factory_test.cpp" line="1014" status="run" result="completed" time="0.236" timestamp="2026-10-06T18:36:44.061" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreatingAnonymousSharedMemoryInTypedMemory" file="score/memory/shared/shared_memory_factory_test.cpp" line="1045" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.298" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreatingAnonymousSharedMemoryInTypedMemoryFailsWhenTypedMemoryProvidedSetToNullptr" file="score/memory/shared/shared_memory_factory_test.cpp" line="1077" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.299" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreatingAnonymousSharedMemoryInSystemMemory" file="score/memory/shared/shared_memory_factory_test.cpp" line="1094" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.299" classname="SharedMemoryFactoryTest" />
+    <testcase name="OpenWithInterVmPathReturnsNullptrWhenProviderNotSet" file="score/memory/shared/shared_memory_factory_test.cpp" line="1212" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.300" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreateWithInterVmPathReturnsNullptrWhenProviderNotSet" file="score/memory/shared/shared_memory_factory_test.cpp" line="1225" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.300" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreateOrOpenWithInterVmPathReturnsNullptrWhenProviderNotSet" file="score/memory/shared/shared_memory_factory_test.cpp" line="1239" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.301" classname="SharedMemoryFactoryTest" />
+    <testcase name="OpenWithInterVmPathSucceedsWhenProviderIsSet" file="score/memory/shared/shared_memory_factory_test.cpp" line="1257" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.301" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreateWithInterVmPathSucceedsWhenProviderIsSet" file="score/memory/shared/shared_memory_factory_test.cpp" line="1290" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.302" classname="SharedMemoryFactoryTest" />
+    <testcase name="CreateOrOpenWithInterVmPathSucceedsWhenProviderIsSet" file="score/memory/shared/shared_memory_factory_test.cpp" line="1331" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.303" classname="SharedMemoryFactoryTest" />
+  </testsuite>
+  <testsuite name="SharedMemoryFactoryRemoveStaleArtefactsTest" tests="2" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-06T18:36:44.304">
+    <testcase name="CallingRemoveStaleArtefactsWillUnlinkAnOldLockFile" file="score/memory/shared/shared_memory_factory_test.cpp" line="858" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.304" classname="SharedMemoryFactoryRemoveStaleArtefactsTest" />
+    <testcase name="CallingRemoveStaleArtefactsWillUnlinkAnOldSharedMemoryRegion" file="score/memory/shared/shared_memory_factory_test.cpp" line="883" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.304" classname="SharedMemoryFactoryRemoveStaleArtefactsTest" />
+  </testsuite>
+  <testsuite name="SharedMemoryFactoryTests/SharedMemoryFactoryTest" tests="22" failures="0" disabled="0" skipped="0" errors="0" time="0.029" timestamp="2026-10-06T18:36:44.304">
+    <testcase name="ReturnExistingResourceOnReopening/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="95" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.304" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ReturnExistingResourceOnReopening/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="95" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.306" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="CallingRemoveOnNamedResourceWillUnlinkSharedMemoryFile/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="128" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.307" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="CallingRemoveOnNamedResourceWillUnlinkSharedMemoryFile/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="128" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.308" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="DroppingAfterCreationWillRecreate/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="203" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.309" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="DroppingAfterCreationWillRecreate/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="203" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.311" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="RecreatingWillNotReturnAnInstance/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="263" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.312" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="RecreatingWillNotReturnAnInstance/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="263" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.313" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="SharedMemoryResourceIsCreatedWithCorrectPath/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="299" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.315" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest">
+      <properties>
+        <property name="Verifies" value="SCR-6223575"/>
+        <property name="Description" value="The SharedMemoryFactory shall return the Shared Memory Resource associated with the given path."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="SharedMemoryResourceIsCreatedWithCorrectPath/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="299" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.316" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest">
+      <properties>
+        <property name="Verifies" value="SCR-6223575"/>
+        <property name="Description" value="The SharedMemoryFactory shall return the Shared Memory Resource associated with the given path."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="FailureToCreateSharedMemoryReturnsNullPtr/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="397" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.317" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="FailureToCreateSharedMemoryReturnsNullPtr/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="397" status="run" result="completed" time="0." timestamp="2026-10-06T18:36:44.317" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="FailureToCreateOrOpenSharedMemoryReturnsNullPtr/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="419" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.318" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="FailureToCreateOrOpenSharedMemoryReturnsNullPtr/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="419" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.319" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="RecreatingDeletedSharedMemoryWorks/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="622" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.321" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="RecreatingDeletedSharedMemoryWorks/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="622" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.322" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyCreatingSharedMemoryOnlyCreatesResourceOnce/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="669" status="run" result="completed" time="0.002" timestamp="2026-10-06T18:36:44.324" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyCreatingSharedMemoryOnlyCreatesResourceOnce/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="669" status="run" result="completed" time="0.002" timestamp="2026-10-06T18:36:44.327" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyCreatingOrOpeningSharedMemoryOnlyCreatesResourceOnceWhenResourceDoesNotExist/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="737" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.329" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyCreatingOrOpeningSharedMemoryOnlyCreatesResourceOnceWhenResourceDoesNotExist/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="737" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.330" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyCreatingOrOpeningSharedMemoryOnlyOpensResourceOnceWhenResourceExists/0" value_param="true" file="score/memory/shared/shared_memory_factory_test.cpp" line="793" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.331" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+    <testcase name="ConcurrentlyCreatingOrOpeningSharedMemoryOnlyOpensResourceOnceWhenResourceExists/1" value_param="false" file="score/memory/shared/shared_memory_factory_test.cpp" line="793" status="run" result="completed" time="0.001" timestamp="2026-10-06T18:36:44.333" classname="SharedMemoryFactoryTests/SharedMemoryFactoryTest" />
+  </testsuite>
+</testsuites>

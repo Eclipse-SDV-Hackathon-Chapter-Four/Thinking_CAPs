@@ -1,0 +1,478 @@
+{
+  "title": "Communication bug queue recovery: evidence; zero model calls",
+  "parent_id": "01M48JSQSJRXB3YBSQPY69D3KM",
+  "spec": {
+    "run_id": "01M48V2D8ED1KQ4RV6PYTJ27VJ",
+    "settings": {
+      "project": {
+        "name": null,
+        "description": null,
+        "metadata": {}
+      },
+      "workflow": {
+        "name": null,
+        "description": null,
+        "graph": "workflow.fabro",
+        "metadata": {}
+      },
+      "run": {
+        "goal": {
+          "type": "inline",
+          "value": "Execute reviewed S-CORE obligations"
+        },
+        "working_dir": null,
+        "metadata": {
+          "project": "s-core_sw_fabric",
+          "task": "communication-bug-queue-recovery-evidence",
+          "model_policy": "flash-only",
+          "total_budget_usd": "10"
+        },
+        "inputs": {},
+        "model": {
+          "provider": "deepseek",
+          "name": "deepseek-flash",
+          "fallbacks": {
+            "deepseek-flash": []
+          },
+          "controls": {
+            "reasoning_effort": "medium",
+            "speed": null
+          }
+        },
+        "git": {
+          "author": null
+        },
+        "prepare": {
+          "steps": [],
+          "timeout_ms": 300000
+        },
+        "execution": {
+          "mode": "normal",
+          "approval": "prompt"
+        },
+        "checkpoint": {
+          "exclude_globs": [],
+          "skip_git_hooks": false,
+          "commit_timeout_ms": 30000
+        },
+        "clone": {
+          "enabled": false,
+          "depth": 100
+        },
+        "run_branch": {
+          "enabled": true,
+          "push": true
+        },
+        "environment": {
+          "id": "local",
+          "provider": "local",
+          "image": {
+            "docker": null,
+            "dockerfile": null
+          },
+          "resources": {
+            "cpu": null,
+            "memory": null,
+            "disk": null
+          },
+          "network": {
+            "mode": "allow_all",
+            "allow": []
+          },
+          "lifecycle": {
+            "preserve": false,
+            "stop_on_terminal": true,
+            "auto_stop": null
+          },
+          "labels": {},
+          "env": {}
+        },
+        "notifications": {},
+        "interviews": {
+          "provider": null,
+          "slack": null
+        },
+        "agent": {
+          "fabro_tools": false,
+          "mcps": {}
+        },
+        "hooks": [],
+        "scm": {
+          "provider": null,
+          "owner": null,
+          "repository": null,
+          "github": null
+        },
+        "pull_request": null,
+        "artifacts": {
+          "include": []
+        },
+        "integrations": {
+          "github": {
+            "permissions": {}
+          }
+        }
+      }
+    },
+    "graph": {
+      "name": "SCoreWorkflow",
+      "goal": "Execute reviewed S-CORE obligations",
+      "nodes": {
+        "exit": {
+          "label": "Exit",
+          "kind": "exit"
+        },
+        "node_06f913708dd02ef74dda465f": {
+          "label": "export",
+          "kind": "command"
+        },
+        "node_20096290a6a210e669c05e69": {
+          "label": "codeql_create",
+          "kind": "command"
+        },
+        "node_72437685f5a6e1d9892c6d0b": {
+          "label": "copyright",
+          "kind": "command"
+        },
+        "node_72bea82b401ee15b6f8062ba": {
+          "label": "aou",
+          "kind": "command"
+        },
+        "node_9647f3e368d598ec152014a4": {
+          "label": "codeql_analyze",
+          "kind": "command"
+        },
+        "start": {
+          "label": "Start",
+          "kind": "start"
+        }
+      },
+      "edges": [
+        {
+          "from": "node_06f913708dd02ef74dda465f",
+          "to": "exit"
+        },
+        {
+          "from": "node_06f913708dd02ef74dda465f",
+          "to": "exit"
+        },
+        {
+          "from": "node_20096290a6a210e669c05e69",
+          "to": "node_06f913708dd02ef74dda465f"
+        },
+        {
+          "from": "node_20096290a6a210e669c05e69",
+          "to": "node_9647f3e368d598ec152014a4"
+        },
+        {
+          "from": "node_72437685f5a6e1d9892c6d0b",
+          "to": "node_06f913708dd02ef74dda465f"
+        },
+        {
+          "from": "node_72437685f5a6e1d9892c6d0b",
+          "to": "node_72bea82b401ee15b6f8062ba"
+        },
+        {
+          "from": "node_72bea82b401ee15b6f8062ba",
+          "to": "node_06f913708dd02ef74dda465f"
+        },
+        {
+          "from": "node_72bea82b401ee15b6f8062ba",
+          "to": "node_20096290a6a210e669c05e69"
+        },
+        {
+          "from": "node_9647f3e368d598ec152014a4",
+          "to": "node_06f913708dd02ef74dda465f"
+        },
+        {
+          "from": "node_9647f3e368d598ec152014a4",
+          "to": "node_06f913708dd02ef74dda465f"
+        },
+        {
+          "from": "start",
+          "to": "node_72437685f5a6e1d9892c6d0b"
+        }
+      ]
+    },
+    "graph_source": "digraph SCoreWorkflow {\n  graph [goal=\"Execute reviewed S-CORE obligations\", max_node_visits=20, on_failure=\"route\"];\n  rankdir=LR;\n  exit [label=\"Exit\", type=\"exit\"];\n  node_06f913708dd02ef74dda465f [allow_partial=false, label=\"export\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence.py export\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_20096290a6a210e669c05e69 [allow_partial=false, label=\"codeql_create\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence.py codeql_create\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_72437685f5a6e1d9892c6d0b [allow_partial=false, label=\"copyright\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence.py copyright\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_72bea82b401ee15b6f8062ba [allow_partial=false, label=\"aou\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence.py aou\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  node_9647f3e368d598ec152014a4 [allow_partial=false, label=\"codeql_analyze\", max_retries=0, max_visits=1, on_failure=\"route\", script=\"env PYTHONDONTWRITEBYTECODE=1 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3fhaccha/fabric/.venv/bin/python /home/jefferson/eclipse_sdv_hackathon_2026/contributions/communication-bug-queue-20261006/recovery-1/evidence.py codeql_analyze\\n\", selection=\"deterministic\", timeout=\"14400s\", type=\"command\"];\n  start [label=\"Start\", type=\"start\"];\n  node_72437685f5a6e1d9892c6d0b -> node_06f913708dd02ef74dda465f [condition=\"outcome=failed\"];\n  node_06f913708dd02ef74dda465f -> exit [condition=\"outcome=failed\"];\n  node_20096290a6a210e669c05e69 -> node_06f913708dd02ef74dda465f [condition=\"outcome=failed\"];\n  node_72bea82b401ee15b6f8062ba -> node_20096290a6a210e669c05e69;\n  node_06f913708dd02ef74dda465f -> exit;\n  node_20096290a6a210e669c05e69 -> node_9647f3e368d598ec152014a4;\n  node_72bea82b401ee15b6f8062ba -> node_06f913708dd02ef74dda465f [condition=\"outcome=failed\"];\n  start -> node_72437685f5a6e1d9892c6d0b;\n  node_72437685f5a6e1d9892c6d0b -> node_72bea82b401ee15b6f8062ba;\n  node_9647f3e368d598ec152014a4 -> node_06f913708dd02ef74dda465f;\n  node_9647f3e368d598ec152014a4 -> node_06f913708dd02ef74dda465f [condition=\"outcome=failed\"];\n}\n",
+    "workflow_slug": "workflow",
+    "workflow_version_id": "af1d1d4f83b0ad2444e756943cf98e289ac260d8e8d602dacb27f160071b9142",
+    "target": {
+      "kind": "folder",
+      "path": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/runtime-target"
+    },
+    "source_directory": "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-communication-bug-recovery-fw8j963z/runtime-target",
+    "labels": {
+      "total_budget_usd": "10",
+      "task": "communication-bug-queue-recovery-evidence",
+      "project": "s-core_sw_fabric",
+      "model_policy": "flash-only"
+    },
+    "provenance": {
+      "server": {
+        "version": "0.362.0-nightly.0"
+      },
+      "client": {
+        "user_agent": "Python-urllib/3.12"
+      },
+      "subject": {
+        "kind": "user",
+        "identity": {
+          "issuer": "fabro:dev",
+          "subject": "dev"
+        },
+        "login": "dev",
+        "auth_method": "dev_token"
+      }
+    },
+    "definition_blob": "3f9b5202bcc8293eb3ae3887a781430f23b9b64180a717e869de5b9c7a4312a3",
+    "spec_blob": "07b254d496a6671705ecd998cb3c0aa457192f7e3daad2610570394c11690e16",
+    "admission": {
+      "graph": {
+        "blob": "ae152fcd850536f5f40ea095f3878156232814aed3352c193c0b42c1dce1d93d",
+        "digest": "ae152fcd850536f5f40ea095f3878156232814aed3352c193c0b42c1dce1d93d"
+      }
+    }
+  },
+  "web_url": "http://172.18.17.0:43916/runs/01M48V2D8ED1KQ4RV6PYTJ27VJ",
+  "start": {
+    "start_time": "2026-10-06T14:49:48.804Z",
+    "run_branch": "fabro/run/01M48V2D8ED1KQ4RV6PYTJ27VJ",
+    "base_sha": "fa886f70c98f51963fa947b1c9cea61ddadb5f4a"
+  },
+  "status": {
+    "kind": "failed",
+    "reason": "cancelled"
+  },
+  "status_updated_at": "2026-10-06T15:02:04.770Z",
+  "last_event_at": "2026-10-06T15:02:04.770Z",
+  "pending_control": null,
+  "checkpoints": [
+    {
+      "seq": 26,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:49:48.912Z",
+        "current_node": "start",
+        "git_commit_sha": "fa886f70c98f51963fa947b1c9cea61ddadb5f4a"
+      },
+      "diff": {}
+    },
+    {
+      "seq": 41,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:53:33.999Z",
+        "current_node": "node_72437685f5a6e1d9892c6d0b",
+        "git_commit_sha": "a89c960471df6e2d6f8557a91fb4d53299aede0d"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    },
+    {
+      "seq": 55,
+      "checkpoint": {
+        "timestamp": "2026-10-06T14:54:13.356Z",
+        "current_node": "node_72bea82b401ee15b6f8062ba",
+        "git_commit_sha": "b5d3d7bb625a6f6c8f14e3c81641971a0706bd5f"
+      },
+      "diff": {
+        "summary": {
+          "files_changed": 0,
+          "additions": 0,
+          "deletions": 0
+        }
+      }
+    }
+  ],
+  "conclusion": {
+    "timestamp": "2026-10-06T15:02:04.770Z",
+    "status": "failed",
+    "timing": {
+      "wall_time_ms": 0,
+      "inference_time_ms": 0,
+      "tool_time_ms": 0,
+      "active_time_ms": 0
+    },
+    "failure": {
+      "reason": "cancelled",
+      "detail": {
+        "message": "Pipeline cancelled",
+        "category": "deterministic"
+      }
+    },
+    "total_retries": 0,
+    "diff": {}
+  },
+  "sandbox": {
+    "kind": "ready",
+    "plan": {
+      "provider": "local"
+    },
+    "instance": {
+      "provider": "local",
+      "runtime": {
+        "id": "host-g18dbf83648455887-2658650-0",
+        "working_directory": "/home/jefferson/.local/state/s-core/fabro/someip84-server/storage/scratch/20261006-01M48V2D8ED1KQ4RV6PYTJ27VJ/petri/scopes/invocation-0-scope-0/work"
+      },
+      "ready_duration_ms": 36
+    }
+  },
+  "pull_request": null,
+  "superseded_by": null,
+  "git_identity": {
+    "name": "Fabro",
+    "email": "noreply@fabro.sh",
+    "source": "default"
+  },
+  "pending_interviews": {},
+  "stages": {
+    "start@1": {
+      "first_event_seq": 263,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:49:48.908Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "checkout: [run.clone] is disabled; the workspace starts empty\n",
+      "output_bytes": 62,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:49:48.820Z",
+      "handler": "start",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 0,
+        "inference_time_ms": 0,
+        "tool_time_ms": 0,
+        "active_time_ms": 0
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "node_72437685f5a6e1d9892c6d0b@1": {
+      "first_event_seq": 356,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:53:33.989Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "{\"check\": \"copyright-original\", \"exit_code\": 2, \"record\": \"initial-evidence/evidence/copyright-original.json\"}\n{\"check\": \"copyright-corrected-baseline\", \"exit_code\": 1, \"record\": \"initial-evidence/evidence/copyright-corrected-baseline.json\"}\n{\"check\": \"copyright-candidate-1031\", \"exit_code\": 1, \"record\": \"initial-evidence/evidence/copyright-candidate-1031.json\"}\n",
+      "output_bytes": 365,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:49:48.913Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 225034,
+        "inference_time_ms": 0,
+        "tool_time_ms": 225034,
+        "active_time_ms": 225034
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    },
+    "node_20096290a6a210e669c05e69@1": {
+      "first_event_seq": 264805,
+      "prompt": null,
+      "response": null,
+      "completion": null,
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "{\"check\": \"codeql-create-nightly\", \"exit_code\": 137, \"record\": \"initial-evidence/evidence/codeql-create-nightly.json\"}\n",
+      "output_bytes": 119,
+      "live_streaming": true,
+      "started_at": "2026-10-06T14:54:13.362Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "running"
+    },
+    "node_72bea82b401ee15b6f8062ba@1": {
+      "first_event_seq": 225444,
+      "prompt": null,
+      "response": null,
+      "completion": {
+        "outcome": "succeeded",
+        "notes": null,
+        "failure_reason": null,
+        "timestamp": "2026-10-06T14:54:13.324Z"
+      },
+      "provider_used": null,
+      "diff": null,
+      "script_invocation": null,
+      "script_timing": null,
+      "parallel_results": null,
+      "output": "{\"check\": \"aou-external-baseline\", \"exit_code\": 1, \"record\": \"initial-evidence/evidence/aou-external-baseline.json\"}\n{\"check\": \"aou-external-candidate\", \"exit_code\": 1, \"record\": \"initial-evidence/evidence/aou-external-candidate.json\"}\n",
+      "output_bytes": 236,
+      "live_streaming": false,
+      "termination": "exited",
+      "started_at": "2026-10-06T14:53:34.001Z",
+      "handler": "command",
+      "graph_visit": 1,
+      "timing": {
+        "wall_time_ms": 39229,
+        "inference_time_ms": 0,
+        "tool_time_ms": 39229,
+        "active_time_ms": 39229
+      },
+      "usage": {
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache_read": 0,
+          "cache_write": 0
+        }
+      },
+      "state": "succeeded"
+    }
+  }
+}

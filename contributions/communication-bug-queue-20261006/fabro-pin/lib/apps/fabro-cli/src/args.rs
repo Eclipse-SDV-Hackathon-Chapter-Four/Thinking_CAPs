@@ -1,0 +1,2073 @@
+use std::fmt;
+use std::path::{Path, PathBuf};
+
+use anyhow::{Context, Result, bail};
+use clap::{Args, Parser, Subcommand, ValueEnum};
+use fabro_config::{CliLayer, CliLoggingLayer, CliOutputLayer, CliUpdatesLayer};
+use fabro_server::serve::DEFAULT_TCP_PORT;
+use fabro_static::EnvVars;
+use fabro_types::settings::cli::{OutputFormat, OutputVerbosity};
+use fabro_types::settings::run::MergeStrategy;
+use fabro_types::{GitHubRepositorySlug, PermissionLevel};
+use fabro_util::printer::Printer;
+use lithos_llm::catalog::ProviderId;
+use lithos_llm::types::ReasoningEffort;
+
+pub(crate) const LONG_VERSION: &str = concat!(
+    env!("CARGO_PKG_VERSION"),
+    " (",
+    env!("FABRO_GIT_SHA"),
+    " ",
+    env!("FABRO_BUILD_DATE"),
+    env!("FABRO_BUILD_PROFILE_SUFFIX"),
+    ")"
+);
+
+#[derive(Parser)]
+#[command(name = "fabro", version, long_version = LONG_VERSION)]
+pub(crate) struct Cli {
+    #[command(flatten)]
+    pub(crate) globals: GlobalArgs,
+
+    #[command(subcommand)]
+    pub(crate) command: Option<Box<Commands>>,
+}
+
+impl Cli {
+    pub(crate) fn parse() -> Self {
+        <Self as Parser>::parse()
+    }
+
+    #[cfg(test)]
+    pub(crate) fn try_parse_from<I, T>(args: I) -> Result<Self, clap::Error>
+    where
+        I: IntoIterator<Item = T>,
+        T: Into<std::ffi::OsString> + Clone,
+    {
+        <Self as Parser>::try_parse_from(args)
+    }
+}
+
+#[derive(Args)]
+pub(crate) struct GlobalArgs {
+    /// Output as JSON
+    #[arg(long, global = true, env = EnvVars::FABRO_JSON, value_parser = clap::builder::BoolishValueParser::new())]
+    pub json: bool,
+
+    /// Enable DEBUG-level logging (default is INFO)
+    #[arg(long, global = true, env = EnvVars::FABRO_DEBUG, value_parser = clap::builder::BoolishValueParser::new())]
+    pub debug: bool,
+
+    /// Disable automatic upgrade check
+    #[arg(long, global = true, env = EnvVars::FABRO_NO_UPGRADE_CHECK, value_parser = clap::builder::BoolishValueParser::new())]
+    pub no_upgrade_check: bool,
+
+    /// Suppress non-essential output
+    #[arg(long, global = true, env = EnvVars::FABRO_QUIET, value_parser = clap::builder::BoolishValueParser::new(), conflicts_with = "verbose")]
+    pub quiet: bool,
+
+    /// Enable verbose output
+    #[arg(long, global = true, env = EnvVars::FABRO_VERBOSE, value_parser = clap::builder::BoolishValueParser::new(), conflicts_with = "quiet")]
+    pub verbose: bool,
+}
+
+pub(crate) fn global_args_cli_layer(globals: &GlobalArgs) -> CliLayer {
+    let format = globals.json.then_some(OutputFormat::Json);
+    let verbosity = match (globals.quiet, globals.verbose) {
+        (true, _) => Some(OutputVerbosity::Quiet),
+        (_, true) => Some(OutputVerbosity::Verbose),
+        _ => None,
+    };
+    let output =
+        (format.is_some() || verbosity.is_some()).then_some(CliOutputLayer { format, verbosity });
+    let updates = globals
+        .no_upgrade_check
+        .then_some(CliUpdatesLayer { check: Some(false) });
+    let logging = globals.debug.then_some(CliLoggingLayer {
+        level: Some("debug".to_string()),
+    });
+
+    CliLayer {
+        output,
+        updates,
+        logging,
+        ..CliLayer::default()
+    }
+}
+
+pub(crate) fn printer_from_verbosity(verbosity: OutputVerbosity) -> Printer {
+    match verbosity {
+        OutputVerbosity::Quiet => Printer::Quiet,
+        OutputVerbosity::Normal => Printer::Default,
+        OutputVerbosity::Verbose => Printer::Verbose,
+    }
+}
+
+pub(crate) fn require_no_json_override(process_local_json: bool) -> anyhow::Result<()> {
+    anyhow::ensure!(
+        !process_local_json,
+        "--json is not supported for this command"
+    );
+    Ok(())
+}
+
+pub(crate) fn parse_duration(s: &str) -> Result<chrono::Duration> {
+    let s = s.trim();
+    if s.is_empty() {
+        bail!("empty duration string");
+    }
+    let (num_str, unit) = s.split_at(s.len() - 1);
+    let num: i64 = num_str
+        .parse()
+        .with_context(|| format!("invalid duration: {s}"))?;
+    match unit {
+        "h" => Ok(chrono::Duration::hours(num)),
+        "d" => Ok(chrono::Duration::days(num)),
+        _ => bail!("invalid duration unit '{unit}' in '{s}' (expected 'h' or 'd')"),
+    }
+}
+
+pub(crate) fn default_web_url() -> String {
+    format!("http://127.0.0.1:{DEFAULT_TCP_PORT}")
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct StorageDirArgs {
+    /// Local storage directory (default: ~/.fabro/storage)
+    #[arg(long, env = EnvVars::FABRO_STORAGE_DIR)]
+    pub(crate) storage_dir: Option<PathBuf>,
+}
+
+impl StorageDirArgs {
+    pub(crate) fn as_deref(&self) -> Option<&Path> {
+        self.storage_dir.as_deref()
+    }
+
+    pub(crate) fn clone_path(&self) -> Option<PathBuf> {
+        self.storage_dir.clone()
+    }
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct ServerTargetArgs {
+    /// Fabro server target: http(s) URL or absolute Unix socket path
+    #[arg(long = "server", env = EnvVars::FABRO_SERVER)]
+    pub(crate) server: Option<String>,
+}
+
+impl ServerTargetArgs {
+    pub(crate) fn as_deref(&self) -> Option<&str> {
+        self.server.as_deref()
+    }
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct ServerConnectionArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct McpNamespace {
+    #[command(subcommand)]
+    pub(crate) command: McpCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum McpCommand {
+    /// Start the Fabro MCP server over stdio
+    Start(McpStartArgs),
+    /// Print MCP client configuration JSON
+    Config(McpConfigArgs),
+    /// Configure an MCP client to launch Fabro
+    Init(McpInitArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct McpStartArgs {
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+}
+
+#[derive(Args, Debug, Clone)]
+pub(crate) struct McpConfigArgs {
+    /// Name of the mcpServers entry; use distinct names to register multiple
+    /// Fabro servers
+    #[arg(long, value_name = "NAME", default_value = fabro_mcp_server::SERVER_NAME, value_parser = clap::builder::NonEmptyStringValueParser::new())]
+    pub(crate) name: String,
+
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+}
+
+#[derive(Args, Debug, Clone)]
+pub(crate) struct McpInitArgs {
+    pub(crate) agent: McpAgent,
+
+    #[command(flatten)]
+    pub(crate) config: McpConfigArgs,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(crate) enum McpAgent {
+    Claude,
+    Cursor,
+    Windsurf,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct InputOverrideArgs {
+    /// Override a workflow input value (repeatable, format: KEY=VALUE)
+    #[arg(short = 'I', long = "input", value_name = "KEY=VALUE")]
+    pub(crate) values: Vec<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct RunArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    #[command(flatten)]
+    pub(crate) inputs: InputOverrideArgs,
+
+    /// Workflow name, path, or OWNER/REPO[@REF]:WORKFLOW
+    #[allow(
+        rustdoc::broken_intra_doc_links,
+        reason = "the help text's `[@REF]` is an optional segment, not a link"
+    )]
+    #[arg(required = true)]
+    pub(crate) workflow: Option<PathBuf>,
+
+    /// Acquire workflow source locally from a GitHub OWNER/REPO using native
+    /// Git credentials
+    #[arg(long, value_name = "OWNER/REPO")]
+    pub(crate) workflow_repo: Option<GitHubRepositorySlug>,
+
+    /// Workflow branch, tag, HEAD (default), or full commit SHA; qualify
+    /// ambiguous names
+    #[arg(long, requires = "workflow_repo", value_name = "REF")]
+    pub(crate) workflow_ref: Option<String>,
+
+    /// Observe this target directory instead of cwd; Folder targets require
+    /// server filesystem access
+    #[arg(long, conflicts_with_all = ["target_repo", "target_repo_selector"], value_name = "PATH")]
+    pub(crate) target_from: Option<PathBuf>,
+
+    /// Target GitHub repository and optional working branch
+    #[arg(long = "target", conflicts_with_all = ["target_repo", "target_branch"], value_name = "OWNER/REPO[@BRANCH]")]
+    pub(crate) target_repo_selector: Option<String>,
+
+    /// Target GitHub OWNER/REPO; the execution sandbox still needs its own
+    /// clone credentials
+    #[arg(long, value_name = "OWNER/REPO")]
+    pub(crate) target_repo: Option<GitHubRepositorySlug>,
+
+    /// Target working branch (default: remote default branch), pinned to its
+    /// observed commit
+    #[arg(long, requires = "target_repo", value_name = "BRANCH")]
+    pub(crate) target_branch: Option<String>,
+
+    /// Simulate execution; workflow source may still be fetched and uploaded
+    #[arg(long)]
+    pub(crate) dry_run: bool,
+
+    /// Auto-approve all human gates
+    #[arg(long)]
+    pub(crate) auto_approve: bool,
+
+    /// Override the workflow goal (available as {{ goal }} in prompts)
+    #[arg(long)]
+    pub(crate) goal: Option<String>,
+
+    /// Read a per-run goal value from a local file
+    #[arg(long, conflicts_with = "goal")]
+    pub(crate) goal_file: Option<PathBuf>,
+
+    /// Override default LLM model
+    #[arg(long)]
+    pub(crate) model: Option<String>,
+
+    /// Override default LLM provider
+    #[arg(long)]
+    pub(crate) provider: Option<String>,
+
+    /// Enable verbose output
+    #[arg(short, long)]
+    pub(crate) verbose: bool,
+
+    /// Named environment for agent tools
+    #[arg(long)]
+    pub(crate) environment: Option<String>,
+
+    /// Attach a label to this run (repeatable, format: KEY=VALUE)
+    #[arg(long = "label", value_name = "KEY=VALUE")]
+    pub(crate) label: Vec<String>,
+
+    /// Link this run to an existing orchestration parent run
+    #[arg(long, value_name = "RUN")]
+    pub(crate) parent: Option<String>,
+
+    /// Keep the sandbox alive after the run finishes (for debugging)
+    #[arg(long)]
+    pub(crate) preserve_sandbox: bool,
+
+    /// Run the workflow in the background and print the run ID
+    #[arg(short = 'd', long)]
+    pub(crate) detach: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct PreflightArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    #[command(flatten)]
+    pub(crate) inputs: InputOverrideArgs,
+
+    /// Path to a .fabro workflow file or .toml task config
+    pub(crate) workflow: PathBuf,
+
+    /// Override the workflow goal (available as {{ goal }} in prompts)
+    #[arg(long)]
+    pub(crate) goal: Option<String>,
+
+    /// Read the workflow goal from a file
+    #[arg(long, conflicts_with = "goal")]
+    pub(crate) goal_file: Option<PathBuf>,
+
+    /// Override default LLM model
+    #[arg(long)]
+    pub(crate) model: Option<String>,
+
+    /// Override default LLM provider
+    #[arg(long)]
+    pub(crate) provider: Option<String>,
+
+    /// Enable verbose output
+    #[arg(short, long)]
+    pub(crate) verbose: bool,
+
+    /// Named environment for agent tools
+    #[arg(long)]
+    pub(crate) environment: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct RunFilterArgs {
+    /// Only include runs started before this date (YYYY-MM-DD prefix match)
+    #[arg(long)]
+    pub(crate) before: Option<String>,
+
+    /// Filter by workflow name (substring match)
+    #[arg(long)]
+    pub(crate) workflow: Option<String>,
+
+    /// Filter by label (KEY=VALUE, repeatable, AND semantics)
+    #[arg(long = "label", value_name = "KEY=VALUE")]
+    pub(crate) label: Vec<String>,
+
+    /// Include orphan directories (no matching durable run)
+    #[arg(long)]
+    pub(crate) orphans: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsListArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    #[command(flatten)]
+    pub(crate) filter: RunFilterArgs,
+
+    /// Show all runs, not just running (like docker ps -a)
+    #[arg(short = 'a', long)]
+    pub(crate) all: bool,
+
+    /// Only display run IDs
+    #[arg(short = 'q', long)]
+    pub(crate) quiet: bool,
+
+    /// Only display runs linked to this orchestration parent
+    #[arg(long, value_name = "RUN")]
+    pub(crate) parent: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsRemoveArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run IDs or workflow names to remove
+    #[arg(required = true)]
+    pub(crate) runs: Vec<String>,
+
+    /// Force removal of active runs
+    #[arg(short, long)]
+    pub(crate) force: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsArchiveArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run IDs or workflow names to archive
+    #[arg(required = true)]
+    pub(crate) runs: Vec<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsUnarchiveArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run IDs or workflow names to unarchive
+    #[arg(required = true)]
+    pub(crate) runs: Vec<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsApproveArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run IDs or workflow names to approve
+    #[arg(required = true)]
+    pub(crate) runs: Vec<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsDenyArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Reason for denying execution
+    #[arg(long)]
+    pub(crate) reason: Option<String>,
+
+    /// Run IDs or workflow names to deny
+    #[arg(required = true)]
+    pub(crate) runs: Vec<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct EventsArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name (most recent run)
+    pub(crate) run:    String,
+    /// Follow event output
+    #[arg(short, long)]
+    pub(crate) follow: bool,
+    /// Events since timestamp or relative (e.g. "42m", "2h",
+    /// "2026-01-02T13:00:00Z")
+    #[arg(long)]
+    pub(crate) since:  Option<String>,
+    /// Lines from end (default: all)
+    #[arg(short = 'n', long)]
+    pub(crate) tail:   Option<usize>,
+    /// Formatted colored output with rendered assistant text
+    #[arg(short = 'p', long)]
+    pub(crate) pretty: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct LogsArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name (most recent run)
+    pub(crate) run:  String,
+    /// Lines from end (default: all)
+    #[arg(short = 'n', long)]
+    pub(crate) tail: Option<usize>,
+}
+
+#[derive(Args)]
+pub(crate) struct ValidateArgs {
+    /// Path to the .fabro workflow file
+    pub(crate) workflow: PathBuf,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(crate) enum GraphDirection {
+    /// Left to right
+    Lr,
+    /// Top to bottom
+    Tb,
+}
+
+impl fmt::Display for GraphDirection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Lr => write!(f, "LR"),
+            Self::Tb => write!(f, "TB"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(crate) enum GraphOutputFormat {
+    Svg,
+}
+
+impl fmt::Display for GraphOutputFormat {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Svg => write!(f, "svg"),
+        }
+    }
+}
+
+#[derive(Args)]
+pub(crate) struct GraphArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    /// Path to the .fabro workflow file, .toml task config, or project workflow
+    /// name
+    pub(crate) workflow: PathBuf,
+
+    /// Output format
+    #[arg(long, value_enum, default_value_t = GraphOutputFormat::Svg)]
+    pub(crate) format: GraphOutputFormat,
+
+    /// Output file path (defaults to stdout)
+    #[arg(short, long)]
+    pub(crate) output: Option<PathBuf>,
+
+    /// Graph layout direction (overrides the DOT file's rankdir)
+    #[arg(short = 'd', long)]
+    pub(crate) direction: Option<GraphDirection>,
+
+    /// Render even when workflow validation reports errors
+    #[arg(long)]
+    pub(crate) allow_invalid: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct ArtifactListArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID (or prefix)
+    pub(crate) run_id: String,
+
+    /// Filter to artifacts from a specific node
+    #[arg(long)]
+    pub(crate) node: Option<String>,
+
+    /// Filter to artifacts from a specific stage visit (node@visit)
+    #[arg(long)]
+    pub(crate) stage: Option<String>,
+
+    /// Filter to artifacts from a specific retry attempt
+    #[arg(long)]
+    pub(crate) retry: Option<u32>,
+}
+
+#[derive(Args)]
+pub(crate) struct ArtifactCpArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Source: RUN_ID (all artifacts) or RUN_ID:path (specific artifact)
+    pub(crate) source: String,
+
+    /// Destination directory (defaults to current directory)
+    #[arg(default_value = ".")]
+    pub(crate) dest: PathBuf,
+
+    /// Filter to artifacts from a specific node
+    #[arg(long)]
+    pub(crate) node: Option<String>,
+
+    /// Filter to artifacts from a specific stage visit (node@visit)
+    #[arg(long)]
+    pub(crate) stage: Option<String>,
+
+    /// Filter to artifacts from a specific retry attempt
+    #[arg(long)]
+    pub(crate) retry: Option<u32>,
+
+    /// Preserve node[/visit_{N}]/retry_{N}/ directory structure
+    #[arg(long)]
+    pub(crate) tree: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct CpArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Source: `<run-id>:<path>` or local path
+    pub(crate) src:       String,
+    /// Destination: `<run-id>:<path>` or local path
+    pub(crate) dst:       String,
+    /// Recurse into directories
+    #[arg(short, long)]
+    pub(crate) recursive: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct PreviewArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run:    String,
+    /// Port number
+    pub(crate) port:   u16,
+    /// Generate a signed URL (embeds auth token, no headers needed)
+    #[arg(long)]
+    pub(crate) signed: bool,
+    /// Signed URL expiry in seconds (default 3600, requires --signed)
+    #[arg(long, default_value = "3600", requires = "signed")]
+    pub(crate) ttl:    i32,
+    /// Open URL in browser (implies --signed)
+    #[arg(long)]
+    pub(crate) open:   bool,
+}
+
+#[derive(Args)]
+pub(crate) struct SshArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run:   String,
+    /// SSH access expiry in minutes (default 60)
+    #[arg(long, default_value = "60")]
+    pub(crate) ttl:   f64,
+    /// Print the SSH command instead of connecting
+    #[arg(long)]
+    pub(crate) print: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct DiffArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run:  String,
+    /// Show diff for a specific node
+    #[arg(long)]
+    pub(crate) node: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct InspectArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name (most recent run)
+    pub(crate) run: String,
+}
+
+#[derive(Args)]
+pub(crate) struct DumpArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name
+    pub(crate) run: String,
+
+    /// Output directory (must not exist or be empty)
+    #[arg(long, short)]
+    pub(crate) output: PathBuf,
+}
+
+#[derive(Args)]
+pub(crate) struct SecretListArgs;
+
+#[derive(Args)]
+pub(crate) struct SecretRmArgs {
+    /// Name of the secret to remove
+    pub(crate) key: String,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub(crate) enum SecretTypeArg {
+    Token,
+    File,
+}
+
+#[derive(Args)]
+pub(crate) struct SecretSetArgs {
+    /// Name of the secret
+    pub(crate) key:         String,
+    /// Value to store (omit to enter interactively)
+    pub(crate) value:       Option<String>,
+    /// Read the secret value from stdin
+    #[arg(long, conflicts_with = "value")]
+    pub(crate) value_stdin: bool,
+    /// Secret storage type
+    #[arg(long, value_enum, default_value = "token")]
+    pub(crate) r#type:      SecretTypeArg,
+    /// Optional human-readable description
+    #[arg(long)]
+    pub(crate) description: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct VariableListArgs;
+
+#[derive(Args)]
+pub(crate) struct VariableGetArgs {
+    /// Name of the variable to get
+    pub(crate) name: String,
+}
+
+#[derive(Args)]
+pub(crate) struct VariableRmArgs {
+    /// Name of the variable to remove
+    pub(crate) name: String,
+}
+
+#[derive(Args)]
+pub(crate) struct VariableSetArgs {
+    /// Name of the variable
+    pub(crate) name:        String,
+    /// Value to store
+    pub(crate) value:       Option<String>,
+    /// Read the variable value from stdin
+    #[arg(long, conflicts_with = "value")]
+    pub(crate) value_stdin: bool,
+    /// Optional human-readable description
+    #[arg(long)]
+    pub(crate) description: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub(crate) struct ResumeArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or unambiguous prefix
+    pub(crate) run: String,
+
+    /// Run in the background and print the run ID
+    #[arg(short = 'd', long)]
+    pub(crate) detach: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct RetryArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID (or unambiguous prefix)
+    pub(crate) run_id: String,
+}
+
+#[derive(Args)]
+pub(crate) struct ForkArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID (or unambiguous prefix)
+    pub(crate) run_id: String,
+
+    /// Target checkpoint: node name, node@visit, or @ordinal (omit to fork from
+    /// latest)
+    pub(crate) target: Option<String>,
+
+    /// Show the checkpoint timeline instead of forking
+    #[arg(long)]
+    pub(crate) list: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct RewindArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID (or unambiguous prefix)
+    pub(crate) run_id: String,
+
+    /// Target checkpoint: node name, node@visit, or @ordinal (omit with --list)
+    pub(crate) target: Option<String>,
+
+    /// Show the checkpoint timeline instead of rewinding
+    #[arg(long)]
+    pub(crate) list: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct TimelineArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID (or unambiguous prefix)
+    pub(crate) run_id: String,
+}
+
+#[derive(Args)]
+pub(crate) struct WaitArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name (most recent run)
+    pub(crate) run: String,
+
+    /// Maximum time to wait in seconds
+    #[arg(long, value_name = "SECONDS")]
+    pub(crate) timeout: Option<u64>,
+
+    /// Poll interval in milliseconds
+    #[arg(long, value_name = "MS", default_value = "1000")]
+    pub(crate) interval: u64,
+}
+
+#[derive(Args)]
+pub(crate) struct SteerArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix to steer
+    pub(crate) run: String,
+
+    /// Steer message text (omit when --text-stdin is used)
+    pub(crate) text: Option<String>,
+
+    /// Read steer text from stdin instead of a positional arg
+    #[arg(long, conflicts_with = "text")]
+    pub(crate) text_stdin: bool,
+
+    /// Cancel the in-flight LLM stream / tool calls and deliver the message
+    /// as the next user turn (default: append to the steering queue).
+    #[arg(long)]
+    pub(crate) interrupt: bool,
+
+    /// Agent stage to steer, as its stage id (node@visit) or node name
+    /// (default: the run's one live agent stage)
+    #[arg(long, value_name = "STAGE")]
+    pub(crate) stage: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct AskArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name
+    pub(crate) run: String,
+
+    /// Question to ask
+    #[arg(short = 'p', long = "prompt")]
+    pub(crate) prompt: String,
+
+    /// Optional model name
+    #[arg(long)]
+    pub(crate) model: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct WorkflowListArgs;
+
+#[derive(Args)]
+pub(crate) struct WorkflowCreateArgs {
+    /// Name of the workflow
+    pub(crate) name: String,
+
+    /// Goal description for the workflow
+    #[arg(short, long)]
+    pub(crate) goal: Option<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct ProviderLoginArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    /// LLM provider to authenticate with
+    #[arg(long)]
+    pub(crate) provider: ProviderId,
+
+    /// Read an API key from stdin instead of prompting
+    #[arg(long)]
+    pub(crate) api_key_stdin: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct SystemInfoArgs {
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct VersionArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct RunsPruneArgs {
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+
+    #[command(flatten)]
+    pub(crate) filter: RunFilterArgs,
+
+    /// Only prune runs older than this duration (e.g. 24h, 7d). Default: 24h
+    /// when no explicit filters are set.
+    #[arg(
+        long,
+        value_name = "DURATION",
+        value_parser = parse_duration
+    )]
+    pub(crate) older_than: Option<chrono::Duration>,
+
+    /// Actually delete (default is dry-run)
+    #[arg(long)]
+    pub(crate) yes: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct DfArgs {
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+
+    /// Show per-run breakdown
+    #[arg(short, long)]
+    pub(crate) verbose: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct SystemEventsArgs {
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+
+    /// Filter by run ID (repeatable)
+    #[arg(long = "run-id")]
+    pub(crate) run_ids: Vec<String>,
+}
+
+#[derive(Args)]
+pub(crate) struct SystemRepairArgs {
+    #[command(subcommand)]
+    pub(crate) command: SystemRepairCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum SystemRepairCommand {
+    /// List runs that cannot be loaded from durable storage
+    Runs(SystemRepairRunsArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct SystemRepairRunsArgs {
+    #[command(flatten)]
+    pub(crate) connection: ServerConnectionArgs,
+
+    /// Preview deleting unreadable runs
+    #[arg(long)]
+    pub(crate) delete: bool,
+
+    /// Actually delete unreadable runs (default is dry-run)
+    #[arg(long)]
+    pub(crate) yes: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct SettingsArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct PrCreateArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run_id: String,
+    /// LLM model for generating PR description
+    #[arg(long)]
+    pub(crate) model:  Option<String>,
+    /// Create PR even if the run status is not succeeded/partially_succeeded
+    #[arg(short, long)]
+    pub(crate) force:  bool,
+}
+
+#[derive(Args)]
+pub(crate) struct PrViewArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run_id: String,
+}
+
+#[derive(Args)]
+pub(crate) struct PrLinkArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run_id: String,
+    /// GitHub pull request URL to associate with the run
+    pub(crate) url:    String,
+}
+
+#[derive(Args)]
+pub(crate) struct PrUnlinkArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run_id: String,
+}
+
+#[derive(Args)]
+pub(crate) struct ParentLinkArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Child run selector
+    pub(crate) child_run:  String,
+    /// Parent run selector
+    pub(crate) parent_run: String,
+}
+
+#[derive(Args)]
+pub(crate) struct ParentUnlinkArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Child run selector
+    pub(crate) child_run: String,
+}
+
+#[derive(Args)]
+pub(crate) struct PrMergeArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run_id: String,
+    /// Merge method: merge, squash, or rebase
+    #[arg(long, value_enum, default_value_t = MergeStrategy::Squash)]
+    pub(crate) method: MergeStrategy,
+}
+
+#[derive(Args)]
+pub(crate) struct PrCloseArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID or prefix
+    pub(crate) run_id: String,
+}
+
+#[derive(Args)]
+pub(crate) struct StartArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name
+    pub(crate) run: String,
+}
+
+#[derive(Args)]
+pub(crate) struct AttachArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Run ID prefix or workflow name
+    pub(crate) run: String,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub(crate) enum RunWorkerMode {
+    Start,
+    Resume,
+}
+
+#[derive(Args)]
+pub(crate) struct RunWorkerArgs {
+    /// Fabro server target: http(s) URL or absolute Unix socket path
+    #[arg(long)]
+    pub(crate) server: String,
+
+    /// Fabro storage directory for loading worker-visible secrets
+    #[arg(long, hide = true)]
+    pub(crate) storage_dir: PathBuf,
+
+    /// Run scratch directory
+    #[arg(long)]
+    pub(crate) run_dir: PathBuf,
+
+    /// Run ID
+    #[arg(long)]
+    pub(crate) run_id: fabro_types::RunId,
+
+    /// Worker mode
+    #[arg(long, value_enum)]
+    pub(crate) mode: RunWorkerMode,
+
+    /// The Fabro home the server runs under, for the skills a Petri run's
+    /// agents read
+    #[arg(long, hide = true)]
+    pub(crate) fabro_home: Option<PathBuf>,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct ModelListArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    /// Filter by provider
+    #[arg(short, long)]
+    pub(crate) provider: Option<String>,
+
+    /// Search for models matching this string
+    #[arg(short, long)]
+    pub(crate) query: Option<String>,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct ModelTestArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    /// Filter by provider
+    #[arg(short, long)]
+    pub(crate) provider: Option<String>,
+
+    /// Test a specific model
+    #[arg(short, long)]
+    pub(crate) model: Option<String>,
+
+    /// Number of model tests to run concurrently in bulk mode
+    #[arg(
+        short = 'j',
+        long,
+        default_value_t = 4,
+        value_parser = clap::builder::RangedU64ValueParser::<usize>::new().range(1..)
+    )]
+    pub(crate) jobs: usize,
+
+    /// Run a multi-turn tool-use test
+    #[arg(long, alias = "deep")]
+    pub(crate) tools: bool,
+
+    /// Request a reasoning-effort level (minimal, low, medium, high, xhigh,
+    /// max)
+    #[arg(long, value_parser = parse_reasoning_effort_arg)]
+    pub(crate) reasoning_effort: Option<ReasoningEffort>,
+}
+
+#[derive(Args)]
+pub(crate) struct ExecArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    #[command(flatten)]
+    pub(crate) agent: AgentArgs,
+}
+
+/// Agent tool permission level, as the `--permissions` flag spells it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub(crate) enum PermissionsArg {
+    ReadOnly,
+    ReadWrite,
+    Full,
+}
+
+impl From<PermissionsArg> for PermissionLevel {
+    fn from(value: PermissionsArg) -> Self {
+        match value {
+            PermissionsArg::ReadOnly => Self::ReadOnly,
+            PermissionsArg::ReadWrite => Self::ReadWrite,
+            PermissionsArg::Full => Self::Full,
+        }
+    }
+}
+
+/// Output format for `fabro exec`: human-readable assistant output on stdout
+/// with progress on stderr, or one coding agent event per line as JSON.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub(crate) enum ExecOutputFormat {
+    Text,
+    Json,
+}
+
+/// Arguments for the agentic `fabro exec` session.
+#[derive(Args)]
+pub(crate) struct AgentArgs {
+    /// Task prompt
+    pub(crate) prompt: String,
+
+    /// LLM provider (built-in or configured provider ID)
+    #[arg(long)]
+    pub(crate) provider: Option<String>,
+
+    /// Model name (defaults per provider)
+    #[arg(long)]
+    pub(crate) model: Option<String>,
+
+    /// Permission level for tool execution
+    #[arg(long, value_enum)]
+    pub(crate) permissions: Option<PermissionsArg>,
+
+    /// Skip interactive prompts; deny tools outside permission level
+    #[arg(long)]
+    pub(crate) auto_approve: bool,
+
+    /// Print LLM request/response debug info to stderr
+    #[arg(long)]
+    pub(crate) debug: bool,
+
+    /// Print tool results, the transcript, and full LLM request/response JSON
+    /// to stderr
+    #[arg(long)]
+    pub(crate) verbose: bool,
+
+    /// Directory containing skill files (overrides default discovery)
+    #[arg(long)]
+    pub(crate) skills_dir: Option<String>,
+
+    /// Output format (text for human-readable, json for NDJSON event stream)
+    #[arg(long, value_enum)]
+    pub(crate) output_format: Option<ExecOutputFormat>,
+}
+
+impl AgentArgs {
+    /// Fill `None` fields from settings.toml values, then hardcoded defaults.
+    pub(crate) fn apply_cli_defaults(
+        &mut self,
+        provider: Option<&str>,
+        model: Option<&str>,
+        permissions: Option<PermissionLevel>,
+        output_format: Option<ExecOutputFormat>,
+    ) {
+        self.provider = self
+            .provider
+            .take()
+            .or_else(|| provider.map(String::from))
+            .or_else(|| Some("anthropic".to_string()));
+        self.model = self.model.take().or_else(|| model.map(String::from));
+        self.permissions = self
+            .permissions
+            .or_else(|| permissions.map(permissions_arg))
+            .or(Some(PermissionsArg::ReadWrite));
+        self.output_format = self
+            .output_format
+            .or(output_format)
+            .or(Some(ExecOutputFormat::Text));
+    }
+
+    /// The permission level after defaults are applied.
+    pub(crate) fn permission_level(&self) -> PermissionLevel {
+        self.permissions
+            .map_or(PermissionLevel::ReadWrite, PermissionLevel::from)
+    }
+}
+
+fn permissions_arg(level: PermissionLevel) -> PermissionsArg {
+    match level {
+        PermissionLevel::ReadOnly => PermissionsArg::ReadOnly,
+        PermissionLevel::ReadWrite => PermissionsArg::ReadWrite,
+        PermissionLevel::Full => PermissionsArg::Full,
+    }
+}
+
+#[derive(Args)]
+pub(crate) struct UpgradeArgs {
+    /// Target version (e.g. "0.5.0", "v0.5.0", or "v0.177.0-alpha.1")
+    #[arg(long)]
+    pub(crate) version: Option<String>,
+
+    /// Include prereleases (alpha, beta, rc) when selecting the latest version
+    #[arg(long, conflicts_with = "version")]
+    pub(crate) prerelease: bool,
+
+    /// Upgrade even if already on the target version
+    #[arg(long)]
+    pub(crate) force: bool,
+
+    /// Preview what would happen without making changes
+    #[arg(long)]
+    pub(crate) dry_run: bool,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum RunCommands {
+    // Boxed so `RunArgs` does not dominate the size of the flattened
+    // `Commands` enum (clippy `large_enum_variant`).
+    /// Register a workflow version, create a run, and start it
+    Run(Box<RunArgs>),
+    /// Register a workflow version and create a submitted run
+    Create(Box<RunArgs>),
+    /// Start a created workflow run on the server
+    Start(StartArgs),
+    /// Attach to a running or finished workflow run
+    Attach(AttachArgs),
+    /// Internal: execute a single workflow run locally
+    #[command(name = "__run-worker", hide = true)]
+    RunWorker(RunWorkerArgs),
+    /// Show the diff of changes from a workflow run
+    #[command(hide = true)]
+    Diff(DiffArgs),
+    /// View the event log of a workflow run
+    Events(EventsArgs),
+    /// View the raw worker tracing log of a workflow run
+    Logs(LogsArgs),
+    /// Resume an interrupted workflow run
+    Resume(ResumeArgs),
+    /// Retry a finished workflow run from its last checkpoint in a new run
+    Retry(RetryArgs),
+    /// Fork a workflow run from an earlier checkpoint into a new run
+    Fork(ForkArgs),
+    /// Rewind a workflow run to an earlier checkpoint, replacing it
+    Rewind(RewindArgs),
+    /// Show the checkpoint timeline of a workflow run
+    Timeline(TimelineArgs),
+    /// Block until a workflow run completes
+    Wait(WaitArgs),
+    /// Steer a running agent mid-execution
+    Steer(SteerArgs),
+    /// Ask Fabro a read-only question about a run
+    Ask(AskArgs),
+}
+
+impl RunCommands {
+    pub(crate) fn name(&self) -> &'static str {
+        match self {
+            Self::Run(_) => "run",
+            Self::Create(_) => "create",
+            Self::Start(_) => "start",
+            Self::Attach(_) => "attach",
+            Self::RunWorker(_) => "__run-worker",
+            Self::Diff(_) => "diff",
+            Self::Events(_) => "events",
+            Self::Logs(_) => "logs",
+            Self::Resume(_) => "resume",
+            Self::Retry(_) => "retry",
+            Self::Fork(_) => "fork",
+            Self::Rewind(_) => "rewind",
+            Self::Timeline(_) => "timeline",
+            Self::Steer(_) => "steer",
+            Self::Ask(_) => "ask",
+            Self::Wait(_) => "wait",
+        }
+    }
+}
+
+#[derive(Subcommand)]
+pub(crate) enum SandboxCommand {
+    /// Copy files to/from a run's sandbox
+    Cp(CpArgs),
+    /// Get a preview URL for a port on a run's sandbox
+    Preview(PreviewArgs),
+    /// SSH into a run's sandbox
+    Ssh(SshArgs),
+}
+
+impl SandboxCommand {
+    pub(crate) fn name(&self) -> &'static str {
+        match self {
+            Self::Cp(_) => "sandbox cp",
+            Self::Preview(_) => "sandbox preview",
+            Self::Ssh(_) => "sandbox ssh",
+        }
+    }
+}
+
+#[derive(Subcommand)]
+pub(crate) enum RunsCommands {
+    /// List workflow runs
+    #[command(hide = true)]
+    Ps(RunsListArgs),
+    /// Remove one or more workflow runs
+    Rm(RunsRemoveArgs),
+    /// Show detailed information about a workflow run
+    Inspect(InspectArgs),
+    /// Approve a pending run for execution.
+    Approve(RunsApproveArgs),
+    /// Deny execution of a pending run.
+    Deny(RunsDenyArgs),
+    /// Mark terminal runs as archived (reviewed, no further action needed).
+    /// Archived runs are hidden from default listings.
+    Archive(RunsArchiveArgs),
+    /// Restore archived runs to their prior terminal status.
+    Unarchive(RunsUnarchiveArgs),
+}
+
+impl RunsCommands {
+    pub(crate) fn name(&self) -> &'static str {
+        match self {
+            Self::Ps(_) => "ps",
+            Self::Rm(_) => "rm",
+            Self::Inspect(_) => "inspect",
+            Self::Approve(_) => "approve",
+            Self::Deny(_) => "deny",
+            Self::Archive(_) => "archive",
+            Self::Unarchive(_) => "unarchive",
+        }
+    }
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ModelsCommand {
+    /// List available models
+    List(ModelListArgs),
+
+    /// Test model availability by sending a simple prompt
+    Test(ModelTestArgs),
+}
+
+#[derive(Subcommand)]
+pub(crate) enum Commands {
+    /// Run an agentic coding session
+    #[command(hide = true)]
+    Exec(ExecArgs),
+    #[command(flatten)]
+    RunCmd(RunCommands),
+    /// Validate run configuration without executing
+    Preflight(PreflightArgs),
+    /// Validate a workflow
+    Validate(ValidateArgs),
+    /// Render a workflow graph as SVG
+    Graph(GraphArgs),
+    /// Inspect and copy run artifacts (screenshots, reports, traces)
+    Artifact(ArtifactNamespace),
+    /// Export a run's durable state to a directory
+    Dump(DumpArgs),
+    #[command(flatten)]
+    RunsCmd(RunsCommands),
+    /// List and test LLM models
+    Model {
+        #[command(subcommand)]
+        command: Option<ModelsCommand>,
+    },
+    /// Model Context Protocol server
+    Mcp(McpNamespace),
+    /// Server operations
+    Server(ServerNamespace),
+    /// Check environment and integration health
+    Doctor(DoctorArgs),
+    /// Show client and server version information
+    Version(VersionArgs),
+    /// Set up the Fabro environment (LLMs, certs, GitHub)
+    Install {
+        #[command(flatten)]
+        args:    InstallArgs,
+        #[command(subcommand)]
+        command: Option<InstallCommand>,
+    },
+    /// Uninstall Fabro from this machine
+    Uninstall(UninstallArgs),
+    /// Manage CLI authentication state
+    Auth(AuthNamespace),
+    /// Pull request operations
+    Pr(PrNamespace),
+    /// Manage run parent links
+    Parent(ParentNamespace),
+    /// Manage server-owned secrets
+    Secret(SecretNamespace),
+    /// Manage server-owned variables
+    Variable(VariableNamespace),
+    /// Inspect effective settings
+    Settings(SettingsArgs),
+    /// Workflow operations
+    Workflow(WorkflowNamespace),
+    /// Open the Discord community in the browser
+    Discord,
+    /// Open the docs website in the browser
+    Docs,
+    /// Upgrade fabro to the latest version
+    Upgrade(UpgradeArgs),
+    /// Repository commands
+    Repo(RepoNamespace),
+    /// Provider operations
+    Provider(ProviderNamespace),
+    /// Sandbox operations (cp, ssh, preview)
+    Sandbox {
+        #[command(subcommand)]
+        command: SandboxCommand,
+    },
+    /// Generate shell completions
+    Completion(CompletionArgs),
+    /// System maintenance commands
+    System(SystemNamespace),
+    /// Send a queued analytics event (internal)
+    #[command(name = "__send_analytics", hide = true)]
+    SendAnalytics {
+        /// Path to the JSON event file
+        path: PathBuf,
+    },
+    /// Send a queued panic event to Sentry (internal)
+    #[command(name = "__send_panic", hide = true)]
+    SendPanic {
+        /// Path to the JSON event file
+        path: PathBuf,
+    },
+    /// Print generated CLI reference Markdown (internal)
+    #[command(name = "__cli-reference", hide = true)]
+    CliReference,
+    /// Render a DOT graph to SVG (internal)
+    #[command(name = "__render-graph", hide = true)]
+    RenderGraph,
+    /// Build a panic event and write JSON to stdout (internal testing)
+    #[cfg(debug_assertions)]
+    #[command(name = "__test_panic", hide = true)]
+    TestPanic {
+        /// Panic message
+        message: String,
+    },
+}
+
+impl Commands {
+    pub(crate) fn name(&self) -> &'static str {
+        match self {
+            Self::Artifact(ns) => match &ns.command {
+                ArtifactCommand::List(_) => "artifact list",
+                ArtifactCommand::Cp(_) => "artifact cp",
+            },
+            Self::Dump(_) => "dump",
+            Self::Exec(_) => "exec",
+            Self::RunCmd(cmd) => cmd.name(),
+            Self::Preflight(_) => "preflight",
+            Self::Validate(_) => "validate",
+            Self::Graph(_) => "graph",
+            Self::RunsCmd(cmd) => cmd.name(),
+            Self::Model { command } => match command {
+                Some(ModelsCommand::List(_)) => "model list",
+                Some(ModelsCommand::Test(_)) => "model test",
+                None => "model",
+            },
+            Self::Mcp(ns) => match &ns.command {
+                McpCommand::Start(_) => "mcp start",
+                McpCommand::Config(_) => "mcp config",
+                McpCommand::Init(_) => "mcp init",
+            },
+            Self::Server(ns) => match &ns.command {
+                ServerCommand::Start(_) => "server start",
+                ServerCommand::Stop(_) => "server stop",
+                ServerCommand::Restart(_) => "server restart",
+                ServerCommand::Status(_) => "server status",
+                ServerCommand::Serve(_) => "server __serve",
+            },
+            Self::Doctor(_) => "doctor",
+            Self::Version(_) => "version",
+            Self::Repo(ns) => match &ns.command {
+                RepoCommand::Init(_) => "repo init",
+                RepoCommand::Deinit => "repo deinit",
+            },
+            Self::Install { command, .. } => match command {
+                None => "install",
+                Some(InstallCommand::Github(_)) => "install github",
+            },
+            Self::Uninstall(_) => "uninstall",
+            Self::Auth(ns) => match &ns.command {
+                AuthCommand::Login(_) => "auth login",
+                AuthCommand::Logout(_) => "auth logout",
+                AuthCommand::Status(_) => "auth status",
+            },
+            Self::Pr(ns) => match &ns.command {
+                PrCommand::Create(_) => "pr create",
+                PrCommand::Link(_) => "pr link",
+                PrCommand::Unlink(_) => "pr unlink",
+                PrCommand::View(_) => "pr view",
+                PrCommand::Merge(_) => "pr merge",
+                PrCommand::Close(_) => "pr close",
+            },
+            Self::Parent(ns) => match &ns.command {
+                ParentCommand::Link(_) => "parent link",
+                ParentCommand::Unlink(_) => "parent unlink",
+            },
+            Self::Secret(ns) => match &ns.command {
+                SecretCommand::List(_) => "secret list",
+                SecretCommand::Rm(_) => "secret rm",
+                SecretCommand::Set(_) => "secret set",
+            },
+            Self::Variable(ns) => match &ns.command {
+                VariableCommand::List(_) => "variable list",
+                VariableCommand::Get(_) => "variable get",
+                VariableCommand::Rm(_) => "variable rm",
+                VariableCommand::Set(_) => "variable set",
+            },
+            Self::Settings(_) => "settings",
+            Self::Workflow(ns) => match &ns.command {
+                WorkflowCommand::List(_) => "workflow list",
+                WorkflowCommand::Create(_) => "workflow create",
+            },
+            Self::Discord => "discord",
+            Self::Docs => "docs",
+            Self::Upgrade(_) => "upgrade",
+            Self::Provider(ns) => match &ns.command {
+                ProviderCommand::Login(_) => "provider login",
+            },
+            Self::Sandbox { command } => command.name(),
+            Self::Completion(_) => "completion",
+            Self::System(ns) => match &ns.command {
+                SystemCommand::Info(_) => "system info",
+                SystemCommand::Prune(_) => "system prune",
+                SystemCommand::Df(_) => "system df",
+                SystemCommand::Events(_) => "system events",
+                SystemCommand::Repair(args) => match &args.command {
+                    SystemRepairCommand::Runs(_) => "system repair runs",
+                },
+            },
+            Self::SendAnalytics { .. } => "__send_analytics",
+            Self::SendPanic { .. } => "__send_panic",
+            Self::CliReference => "__cli-reference",
+            Self::RenderGraph => "__render-graph",
+            #[cfg(debug_assertions)]
+            Self::TestPanic { .. } => "__test_panic",
+        }
+    }
+}
+
+#[derive(Args)]
+pub(crate) struct PrNamespace {
+    #[command(subcommand)]
+    pub(crate) command: PrCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum PrCommand {
+    /// Create a pull request from a completed run
+    Create(PrCreateArgs),
+    /// Link or replace the GitHub pull request associated with a run
+    Link(PrLinkArgs),
+    /// Unlink the pull request associated with a run
+    Unlink(PrUnlinkArgs),
+    /// View pull request details
+    View(PrViewArgs),
+    /// Merge a pull request
+    Merge(PrMergeArgs),
+    /// Close a pull request
+    Close(PrCloseArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct ParentNamespace {
+    #[command(subcommand)]
+    pub(crate) command: ParentCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ParentCommand {
+    /// Link or replace a run's orchestration parent
+    Link(ParentLinkArgs),
+    /// Unlink a run from its orchestration parent
+    Unlink(ParentUnlinkArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct ArtifactNamespace {
+    #[command(subcommand)]
+    pub(crate) command: ArtifactCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ArtifactCommand {
+    /// List artifacts for a workflow run
+    #[command(alias = "ls")]
+    List(ArtifactListArgs),
+    /// Copy artifacts from a workflow run
+    Cp(ArtifactCpArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct SecretNamespace {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    #[command(subcommand)]
+    pub(crate) command: SecretCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum SecretCommand {
+    /// List secret names
+    #[command(alias = "ls")]
+    List(SecretListArgs),
+    /// Remove a secret
+    Rm(SecretRmArgs),
+    /// Set a secret value
+    Set(SecretSetArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct VariableNamespace {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    #[command(subcommand)]
+    pub(crate) command: VariableCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum VariableCommand {
+    /// List variables
+    #[command(alias = "ls")]
+    List(VariableListArgs),
+    /// Get a variable value
+    Get(VariableGetArgs),
+    /// Remove a variable
+    Rm(VariableRmArgs),
+    /// Set a variable value
+    Set(VariableSetArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct ServerNamespace {
+    #[command(subcommand)]
+    pub(crate) command: ServerCommand,
+}
+
+use fabro_server::serve::ServeArgs;
+
+#[derive(Args)]
+pub(crate) struct ServerStartArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    /// Run in the foreground instead of daemonizing
+    #[arg(long)]
+    pub(crate) foreground: bool,
+
+    #[command(flatten)]
+    pub(crate) serve_args: ServeArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct ServerStopArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    /// Seconds to wait for graceful shutdown before SIGKILL
+    #[arg(long, default_value = "10")]
+    pub(crate) timeout: u64,
+}
+
+#[derive(Args)]
+pub(crate) struct ServerStatusArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    /// Output as JSON
+    #[arg(long)]
+    pub(crate) json: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct ServerRestartArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    /// Seconds to wait for graceful shutdown before SIGKILL
+    #[arg(long, default_value = "10")]
+    pub(crate) timeout: u64,
+
+    /// Run in the foreground instead of daemonizing
+    #[arg(long)]
+    pub(crate) foreground: bool,
+
+    #[command(flatten)]
+    pub(crate) serve_args: ServeArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct ServerServeArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    #[command(flatten)]
+    pub(crate) serve_args: ServeArgs,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ServerCommand {
+    /// Start the HTTP API server
+    Start(ServerStartArgs),
+    /// Stop the HTTP API server
+    Stop(ServerStopArgs),
+    /// Stop and restart the HTTP API server
+    Restart(ServerRestartArgs),
+    /// Show server status
+    Status(ServerStatusArgs),
+    /// Internal: run the server process (spawned by `start`)
+    #[command(name = "__serve", hide = true)]
+    Serve(ServerServeArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct SystemNamespace {
+    #[command(subcommand)]
+    pub(crate) command: SystemCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum SystemCommand {
+    /// Show server runtime information
+    Info(SystemInfoArgs),
+    /// Delete old workflow runs
+    Prune(RunsPruneArgs),
+    /// Show disk usage
+    Df(DfArgs),
+    /// Stream run events from the server
+    Events(SystemEventsArgs),
+    /// Inspect and repair durable server data
+    Repair(SystemRepairArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct WorkflowNamespace {
+    #[command(subcommand)]
+    pub(crate) command: WorkflowCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum WorkflowCommand {
+    /// List available workflows
+    #[command(alias = "ls")]
+    List(WorkflowListArgs),
+    /// Create a new workflow
+    Create(WorkflowCreateArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct RepoNamespace {
+    #[command(subcommand)]
+    pub(crate) command: RepoCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum RepoCommand {
+    /// Initialize a new project
+    Init(RepoInitArgs),
+    /// Remove .fabro/ project directory
+    Deinit,
+}
+
+#[derive(Args)]
+pub(crate) struct RepoInitArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct DoctorArgs {
+    #[command(flatten)]
+    pub(crate) target: ServerTargetArgs,
+
+    /// Show detailed information for each check
+    #[arg(short, long)]
+    pub(crate) verbose: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+pub(crate) enum InstallGitHubStrategyArg {
+    #[value(name = "token")]
+    Token,
+    App,
+}
+
+#[derive(Subcommand, Debug, Clone)]
+pub(crate) enum InstallCommand {
+    /// Configure GitHub integration (token or GitHub App)
+    Github(InstallGithubArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct InstallGithubArgs {
+    /// GitHub authentication strategy (requires --non-interactive)
+    #[arg(long)]
+    pub(crate) strategy: Option<InstallGitHubStrategyArg>,
+
+    /// GitHub App owner: `personal` or `org:<slug>` (app only, requires
+    /// --non-interactive)
+    #[arg(long)]
+    pub(crate) owner: Option<String>,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct InstallNonInteractiveArgs {
+    #[arg(long, hide = true)]
+    pub(crate) llm_provider: Option<ProviderId>,
+
+    #[arg(long, hide = true)]
+    pub(crate) llm_api_key_stdin: bool,
+
+    #[arg(long, hide = true)]
+    pub(crate) llm_api_key_env: Option<String>,
+
+    /// Skip LLM setup entirely; install completes with zero LLM credentials
+    #[arg(
+        long,
+        hide = true,
+        conflicts_with_all = ["llm_provider", "llm_api_key_stdin", "llm_api_key_env"]
+    )]
+    pub(crate) skip_llm: bool,
+
+    #[arg(long, hide = true)]
+    pub(crate) github_strategy: Option<InstallGitHubStrategyArg>,
+
+    #[arg(long, hide = true)]
+    pub(crate) github_owner: Option<String>,
+
+    #[arg(long, hide = true)]
+    pub(crate) github_username: Option<String>,
+
+    #[arg(long, hide = true)]
+    pub(crate) overwrite_settings: bool,
+
+    #[arg(long, hide = true)]
+    pub(crate) keep_existing_settings: bool,
+
+    #[arg(long, hide = true)]
+    pub(crate) run_doctor: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct InstallArgs {
+    #[command(flatten)]
+    pub(crate) storage_dir: StorageDirArgs,
+
+    /// Base URL for the web UI (used for OAuth callback URLs and generated
+    /// settings)
+    #[arg(long, default_value_t = default_web_url())]
+    pub(crate) web_url: String,
+
+    /// Run install without prompts; use hidden scripted flags for inputs
+    #[arg(long, global = true)]
+    pub(crate) non_interactive: bool,
+
+    #[command(flatten)]
+    pub(crate) scripted: InstallNonInteractiveArgs,
+}
+
+#[derive(Args)]
+pub(crate) struct UninstallArgs {
+    /// Skip confirmation prompt
+    #[arg(long)]
+    pub(crate) yes: bool,
+}
+
+#[derive(Args)]
+pub(crate) struct ProviderNamespace {
+    #[command(subcommand)]
+    pub(crate) command: ProviderCommand,
+}
+
+#[derive(Args)]
+pub(crate) struct AuthNamespace {
+    #[command(subcommand)]
+    pub(crate) command: AuthCommand,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum AuthCommand {
+    /// Log in to a Fabro server
+    Login(AuthLoginArgs),
+    /// Log out from a Fabro server
+    Logout(AuthLogoutArgs),
+    /// Show offline CLI auth status
+    Status(AuthStatusArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct AuthLoginArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Log in with a dev-token instead of browser OAuth
+    #[arg(long, conflicts_with_all = ["no_browser", "timeout"])]
+    pub(crate) dev_token: Option<String>,
+
+    /// Print the browser URL instead of opening it automatically
+    #[arg(long)]
+    pub(crate) no_browser: bool,
+
+    /// Timeout in seconds waiting for the browser flow to complete
+    #[arg(long, default_value_t = 300)]
+    pub(crate) timeout: u64,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct AuthLogoutArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+
+    /// Log out from every stored server
+    #[arg(long)]
+    pub(crate) all: bool,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub(crate) struct AuthStatusArgs {
+    #[command(flatten)]
+    pub(crate) server: ServerTargetArgs,
+}
+
+#[derive(Subcommand)]
+pub(crate) enum ProviderCommand {
+    /// Log in to an LLM provider
+    Login(ProviderLoginArgs),
+}
+
+#[derive(Args)]
+pub(crate) struct CompletionArgs {
+    /// Shell to generate completions for
+    pub shell: clap_complete::Shell,
+}
+
+fn parse_reasoning_effort_arg(value: &str) -> Result<ReasoningEffort, String> {
+    value.parse().map_err(|_| {
+        format!(
+            "unknown reasoning effort '{value}'; expected one of: {}",
+            ReasoningEffort::ALL
+                .into_iter()
+                .map(ReasoningEffort::as_str)
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    })
+}
+
+#[cfg(test)]
+mod run_selection_grammar_tests {
+    use crate::commands::run::test_support::parse_run_args;
+
+    #[test]
+    fn run_selection_accepts_independent_resource_flags() {
+        for flags in [
+            vec![
+                "review",
+                "--workflow-repo",
+                "acme/workflows",
+                "--workflow-ref",
+                "refs/tags/v1",
+                "--target-repo",
+                "acme/app",
+                "--target-branch",
+                "release/topic",
+            ],
+            vec!["./review.toml", "--target-from", "../app"],
+        ] {
+            assert!(parse_run_args(flags).is_ok());
+        }
+    }
+
+    #[test]
+    fn run_selection_requires_modifier_owners_and_exclusive_targets() {
+        for flags in [
+            vec!["review", "--workflow-ref", "v1"],
+            vec!["review", "--target-branch", "release"],
+            vec!["review", "--target-from", ".", "--target-repo", "acme/app"],
+            vec!["--workflow-repo", "acme/workflows"],
+        ] {
+            assert!(parse_run_args(flags).is_err());
+        }
+    }
+}

@@ -1,0 +1,214 @@
+diff --git a/tools/lint/buildifier/BUILD b/tools/lint/buildifier/BUILD
+new file mode 100644
+--- /dev/null
++++ b/tools/lint/buildifier/BUILD
+@@ -0,0 +1,30 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@rules_python//python:defs.bzl", "py_binary", "py_test")
++
++py_binary(
++    name = "buildifier_lint",
++    srcs = ["buildifier_lint.py"],
++    data = ["@buildifier_prebuilt//:buildifier"],
++    main = "buildifier_lint.py",
++    deps = ["@rules_python//python/runfiles"],
++)
++
++py_test(
++    name = "buildifier_lint_test",
++    srcs = [
++        "buildifier_lint.py",
++        "buildifier_lint_test.py",
++    ],
++    data = [
++        "@buildifier_prebuilt//:buildifier",
++        "clean_fixture.bzl.txt",
++        "warning_fixture.bzl.txt",
++    ],
++    env = {
++        "CLEAN_FIXTURE": "$(rlocationpath clean_fixture.bzl.txt)",
++        "WARNING_FIXTURE": "$(rlocationpath warning_fixture.bzl.txt)",
++    },
++    deps = ["@rules_python//python/runfiles"],
++)
+diff --git a/tools/lint/buildifier/buildifier_lint.py b/tools/lint/buildifier/buildifier_lint.py
+new file mode 100644
+--- /dev/null
++++ b/tools/lint/buildifier/buildifier_lint.py
+@@ -0,0 +1,62 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import argparse
++import os
++import subprocess
++import sys
++
++from python.runfiles import Runfiles
++
++
++def _find_buildifier():
++    runfiles = Runfiles.Create()
++    path = runfiles.Rlocation("buildifier_prebuilt/buildifier")
++    if not path or not os.path.exists(path):
++        raise RuntimeError("Unable to locate buildifier in runfiles")
++    return path
++
++
++def _run_buildifier(buildifier, args):
++    return subprocess.run([buildifier] + args, capture_output=True, text=True)
++
++
++def _check_result(proc):
++    output = (proc.stdout or "") + (proc.stderr or "")
++    if proc.returncode != 0 or "warning:" in output:
++        if output:
++            print(output, file=sys.stderr)
++        return 1
++    return 0
++
++
++def main(argv=None):
++    parser = argparse.ArgumentParser(description="Run buildifier lint checks.")
++    parser.add_argument("--recursive", action="store_true", help="Recursively lint the workspace.")
++    parser.add_argument("--workspace", help="Workspace root for recursive lint.")
++    parser.add_argument("--type", default="auto", help="Buildifier input type.")
++    parser.add_argument("files", nargs="*", help="Files to lint.")
++    args = parser.parse_args(argv)
++
++    buildifier = _find_buildifier()
++    buildifier_args = ["-lint=warn", "-warnings=all", "-mode=check", f"-type={args.type}"]
++    if args.recursive:
++        workspace = args.workspace or os.environ.get("BUILD_WORKING_DIRECTORY")
++        if not workspace:
++            print("--workspace or BUILD_WORKING_DIRECTORY required for recursive lint.", file=sys.stderr)
++            return 2
++        buildifier_args.extend(["-r", workspace])
++    else:
++        if not args.files:
++            print("No files provided for non-recursive lint.", file=sys.stderr)
++            return 2
++        buildifier_args.extend(args.files)
++
++    proc = _run_buildifier(buildifier, buildifier_args)
++    return _check_result(proc)
++
++
++if __name__ == "__main__":
++    sys.exit(main())
+diff --git a/tools/lint/buildifier/buildifier_lint_test.py b/tools/lint/buildifier/buildifier_lint_test.py
+new file mode 100644
+--- /dev/null
++++ b/tools/lint/buildifier/buildifier_lint_test.py
+@@ -0,0 +1,34 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++import os
++import unittest
++
++import buildifier_lint
++
++
++class BuildifierLintTest(unittest.TestCase):
++    def test_clean_fixture_passes(self):
++        buildifier = buildifier_lint._find_buildifier()
++        fixture = os.environ["CLEAN_FIXTURE"]
++        proc = buildifier_lint._run_buildifier(
++            buildifier, ["-lint=warn", "-warnings=all", "-mode=check", "-type=build", fixture]
++        )
++        self.assertEqual(buildifier_lint._check_result(proc), 0, proc.stderr)
++
++    def test_warning_fixture_fails(self):
++        buildifier = buildifier_lint._find_buildifier()
++        fixture = os.environ["WARNING_FIXTURE"]
++        proc = buildifier_lint._run_buildifier(
++            buildifier, ["-lint=warn", "-warnings=all", "-mode=check", "-type=build", fixture]
++        )
++        self.assertNotEqual(buildifier_lint._check_result(proc), 0, "Expected warning fixture to fail")
++        output = (proc.stdout or "") + (proc.stderr or "")
++        self.assertIn("warning:", output)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tools/lint/buildifier/clean_fixture.bzl.txt b/tools/lint/buildifier/clean_fixture.bzl.txt
+new file mode 100644
+--- /dev/null
++++ b/tools/lint/buildifier/clean_fixture.bzl.txt
+@@ -0,0 +1,5 @@
++load("@rules_cc//cc:defs.bzl", "cc_library")
++
++cc_library(
++    name = "clean",
++)
+diff --git a/tools/lint/buildifier/warning_fixture.bzl.txt b/tools/lint/buildifier/warning_fixture.bzl.txt
+new file mode 100644
+--- /dev/null
++++ b/tools/lint/buildifier/warning_fixture.bzl.txt
+@@ -0,0 +1,5 @@
++load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++
++cc_library(
++    name = "warning",
++)
+diff --git a/.github/workflows/_linter.yml b/.github/workflows/_linter.yml
+--- a/.github/workflows/_linter.yml
++++ b/.github/workflows/_linter.yml
+@@ -163,4 +163,26 @@
+             ${{ matrix.id }}_raw.log
+             ${{ matrix.id }}.sarif
+           if-no-files-found: ignore
+           retention-days: 7
++
++  buildifier:
++    name: buildifier
++    runs-on: ubuntu-24.04
++    permissions:
++      contents: read
++      actions: write
++    steps:
++      - uses: actions/checkout@v6.0.2
++        with:
++          fetch-depth: 0
++
++      - uses: ./.github/actions/00_infrastructure/prepare_bazel_environment
++        with:
++          disk-cache: ${{ inputs.fetch-only != 'true' && 'buildifier' || '' }}
++          cache-mode: ${{ inputs.cache-mode }}
++          ubuntu-snapshot-mirror-url: ${{ secrets.UBUNTU_SNAPSHOT_MIRROR_URL }}
++
++      - name: Run buildifier lint
++        if: inputs.fetch-only != 'true'
++        run: |
++          bazel run --config=ci //tools/lint/buildifier:buildifier_lint -- --recursive

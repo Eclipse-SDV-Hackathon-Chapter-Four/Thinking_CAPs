@@ -7,10 +7,17 @@ Eclipse SDV Hackathon submission. Inventory captured on **2026-10-04**.
 | --- | --- | --- | --- |
 | [SOME/IP #84](issues/eclipse-score/inc_someip_gateway/84/README.md) | Reject duplicate SOCom servers across minor versions | Scoped fix verified; local user approval recorded; patch and full portable evidence retained | Issue open; prepared upstream PR body; broader identifier/discovery work remains |
 | [Lifecycle #704](issues/eclipse-score/lifecycle/704/README.md) | Generate three communication configurations from shared definitions | Fabro/DeepSeek Flash patch verified; 113 native cases pass; scoped local owner approval recorded | Issue open; upstream-template PR body and title prepared; upstream review/CI pending |
-| [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Evidence missing in this checkout | Issue open; recover implementation, baseline and original test records |
+| [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Five patches recovered; native validation pending | Issue open; verify baseline/build/tests before submission |
 | [Communication #1265](issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch; six Linux integration cases passed; agent engineering review complete, retain pastey0.2.3 recommended | Issue open; exact compiler qualification/adoption and human acceptance pending; historical evidence preserved |
-| [Communication #1167](communication-1167/README.md) | Dedicated COM API idempotency integration test | Agent review complete; 503 full-suite tests pass, 6 skipped; 204 inherited copyright findings retained | Issue open; ECA confirmed; formal acceptance pending; push withheld |
+| [Communication #1167](communication-1167/README.md) | Dedicated COM API idempotency integration test | Agent review complete; 503 full-suite tests pass, 6 skipped; 204 inherited copyright findings retained | Issue open; original hackathon-source branch push recorded; native PR and formal acceptance pending |
 | [S-CORE #3115](issues/eclipse-score/score/3115/README.md) | AI SDLC / SpecKit tooling evaluation using `s-core_sw_fabric` experience | Current native DR prepared; 925 existing needs unchanged; fresh checks retain one inherited docs failure | Issue open; draft PR #3307 offered for PR #3140; assignee review requested; docs CI, comparative pilots and acceptance pending |
+| [S-CORE #2850](issues/eclipse-score/score/2850/README.md) | Documentation chatbot retrieval/provenance foundation | Current source, design records, fresh deterministic checks and historical release evidence retained | Issue open; scoped proposal only; native harness adapter and maintainer agreement pending |
+
+| [CDA #543](issues/eclipse-opensovd/classic-diagnostic-adapter/543/README.md) | Replace Option error paths with Result | Patch recovered; snapshot and manifest bound; native testing pending | Issue open; native validation and upstream submission pending |
+| [Communication #1236](issues/eclipse-score/communication/1236/README.md) | Buildifier CI enforcement | Original draft/recovery retained; 27 baseline-identical lint findings remain | Imported; human review and native lint cleanup pending |
+| [Communication #1031](issues/eclipse-score/communication/1031/README.md) | AoU visibility and traceability | Historical scoped checks retained | Imported; production Config Management/FMEA integration and review pending |
+| [Communication #751](issues/eclipse-score/communication/751/README.md) | CodeQL production-source completeness | Latest correction: 502 tests pass, 6 skipped; failures/history retained | Imported; copyright, full query analysis, QNX, coverage and review pending |
+| [Communication #1104](issues/eclipse-score/communication/1104/README.md) | CodeQL finding locations | Exact-scope baseline root cause and draft normalizer retained | Imported; normalizer hides placeholders without restoring locations; review pending |
 
 The first two rows are completed local implementations with retained measurements.
 Upstream review, merge and issue closure have their own statuses. The diagnostics row
@@ -18,9 +25,9 @@ is a recovery item and is excluded from the submission's completed-fix count.
 The communication assessment was added on **2026-10-06** and is excluded from completed/accepted fix counts.
 The tooling evaluation packet was added on **2026-10-07** and is a proposed assessment,
 excluded from completed/accepted fix counts. Its scoped offline verifier checks the new
-packet and referenced native evidence independently. The existing repository-wide verifier
-currently stops at an inherited diagnostics #16 observation-date mismatch; that failure is
-retained in the packet rather than changing older evidence.
+packet and referenced native evidence independently. The initial repository-wide verifier failure is retained in the packet as history.
+The 2026-10-07 import reconciles registry metadata with frozen snapshots and restores
+a missing, exact-hash original Bazel binary; the current full registry verifier passes.
 The inventory covers identifiable contributions in the inspected local factory
 handoffs and this repository; add other completed work as its artifacts are recovered.
 
@@ -78,3 +85,29 @@ Keep native code PRs directed to their individual upstream projects. The hackath
 PR can collect the contribution records and evidence in one submission. Organizer
 destination, submission format and competition eligibility still need confirmation
 against the actual competition instructions before submission.
+
+
+## Consolidated import — 2026-10-07
+
+The `contrib/hackathon-contributions-sync` branch combines the Rust issue queue,
+chatbot #2850, tooling #3115 and newly imported records. It contains **24 issue
+records**; this count includes proposals, failed checks and unimplemented scopes.
+It is not a count of accepted fixes. Native submissions retain their own status.
+
+- [Communication bug queue](communication-bug-queue-20261006/IMPORT.md): all 11,203
+  original regular files retained, including large archive bytes stored as
+  deduplicated hash-bound parts. Original failed attempts and later diagnosis remain.
+- [#1167 sync history](communication-1167/import-history/2026-10-07-before-sync/sync-record.json):
+  seven new publication artifacts, six updated records, all six earlier versions preserved.
+- [Import audit](audits/2026-10-07-import-record.json): source hashes, registry
+  corrections, original-tool recovery and measured integrity results.
+
+Verify imported bytes and the complete registry from this repository root:
+
+```bash
+python3 scripts/verify_missing_contributions.py
+python3 scripts/verify_contributions.py --json
+```
+
+These checks verify retained artifacts; they rerun no native tests or provider calls
+and supply no engineering acceptance. Main-branch integration remains separate.

@@ -1,0 +1,85 @@
+usage: buildifier [-d] [-v] [-r] [-config=path.json] [-diff_command=command] [-help] [-multi_diff] [-mode=mode] [-lint=lint_mode] [-path=path] [files...]
+
+Buildifier applies standard formatting to the named Starlark files.  The mode
+flag selects the processing: check, diff, fix, or print_if_changed.  In check
+mode, buildifier prints a list of files that need reformatting.  In diff mode,
+buildifier shows the diffs that it would make.  It creates the diffs by running
+a diff command, which can be specified using the -diff_command flag. You can
+indicate that the diff command can show differences between more than two files
+in the manner of tkdiff by specifying the -multi_diff flag.  In fix mode,
+buildifier updates the files that need reformatting and, if the -v flag is
+given, prints their names to standard error.  In print_if_changed mode,
+buildifier shows the file contents it would write.  The default mode is fix. -d
+is an alias for -mode=diff.
+
+The lint flag selects the lint mode to be used: off, warn, fix.
+In off mode, the linting is not performed.
+In warn mode, buildifier prints warnings for common mistakes and suboptimal
+coding practices that include links providing more context and fix suggestions.
+In fix mode, buildifier updates the files with all warning resolutions produced
+by automated fixes.
+The default lint mode is off.
+
+If no files are listed, buildifier reads a Starlark file from standard
+input. In fix mode, it writes the reformatted Starlark file to standard output,
+even if no changes are necessary.
+
+Buildifier's reformatting depends in part on the path to the file relative
+to the workspace directory. Normally buildifier deduces that path from the
+file names given, but the path can be given explicitly with the -path
+argument. This is especially useful when reformatting standard input,
+or in scripts that reformat a temporary copy of a file.
+
+Return codes used by buildifier:
+
+  0: success, everything went well
+  1: syntax errors in input
+  2: usage errors: invoked incorrectly
+  3: unexpected runtime errors: file I/O problems or internal bugs
+  4: check mode failed (reformat is needed)
+
+Full list of flags with their defaults:
+  -add_tables string
+    	path to JSON file with custom table definitions which will be merged with the built-in tables
+  -allowsort value
+    	additional sort contexts to treat as safe
+  -buildifier_disable value
+    	list of buildifier rewrites to disable
+  -config string
+    	path to .buildifier.json config file
+  -d	alias for -mode=diff
+  -diff_command string
+    	command to run when the formatting mode is diff (default uses the BUILDIFIER_DIFF, BUILDIFIER_MULTIDIFF, and DISPLAY environment variables to create the diff command)
+  -format string
+    	diagnostics format: text or json (default text)
+  -help
+    	print usage information
+  -lint string
+    	lint mode: off, warn, or fix (default off)
+  -mode string
+    	formatting mode: check, diff, or fix (default fix)
+  -multi_diff
+    	the command specified by the -diff_command flag can diff multiple files in the style of tkdiff (default false)
+  -path string
+    	assume BUILD file has this path relative to the workspace directory
+  -r	find starlark files recursively
+  -tables string
+    	path to JSON file with custom table definitions which will replace the built-in tables
+  -type string
+    	Input file type: build (for BUILD files), bzl (for .bzl files), workspace (for WORKSPACE files), module (for MODULE.bazel files), default (for generic Starlark files) or auto (default, based on the filename) (default "auto")
+  -v	print verbose information to standard error
+  -version
+    	print the version of buildifier
+  -warnings string
+    	comma-separated warnings used in the lint mode or "all"
+
+Buildifier can also be configured via a JSON file.  The location of the file
+is given by the -config flag, the BUILDIFIER_CONFIG environment variable, or
+a file named '.buildifier.json' at the root of the workspace (e.g., in the same
+directory as the WORKSPACE file).  The PWD environment variable or process
+working directory is used to help find the workspace root.  If present, the file
+is loaded into memory and becomes the base configuration that command line flags
+override.  A sample configuration file can be printed to stdout by running
+buildifier -config=example. The config file feature can be disabled completely
+with -config=off.
+
