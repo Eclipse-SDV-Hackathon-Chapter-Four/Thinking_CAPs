@@ -1,36 +1,47 @@
 @startuml
-title S-CORE to OpenSOVD Data Flow - Read Operation
+title S-CORE (OS) to OpenSOVD Data Flow - Read Operation
 
 skinparam participant {
     BackgroundColor<<score>> #E8F5E9
     BackgroundColor<<opensovd>> #E3F2FD
     BackgroundColor<<adapter>> #FFF3E0
+    BackgroundColor<<app>> #FCE4EC
 }
 
 actor "REST Client\n(Dashboard)" as Client
-box "OpenSOVD" #E3F2FD
+
+box "OpenSOVD (SOVD Protocol)" #E3F2FD
     participant "opensovd-server" as Server <<opensovd>>
     participant "opensovd-core\n(DataProvider trait)" as Core <<opensovd>>
 end box
 
-box "sovd_adapter (Bridge)" #FFF3E0
+box "sovd_adapter (Bridge Layer)" #FFF3E0
     participant "SovdDataProvider" as Provider <<adapter>>
     participant "DataResourceRegistry" as Registry <<adapter>>
     participant "convert" as Conv <<adapter>>
     participant "handle" as Handle <<adapter>>
 end box
 
-box "S-CORE (diag_api)" #E8F5E9
-    participant "CruiseDiag" as Cruise <<score>>
-    participant "DataResource\n(VehicleSpeed)" as Resource <<score>>
-    participant "Sensor\n(Shared State)" as Sensor <<score>>
+box "Application (Cruise Control ECU)" #FCE4EC
+    participant "CruiseDiag" as Cruise <<app>>
 end box
 
-== Initialization (Application Startup) ==
+box "S-CORE (Operating System)" #E8F5E9
+    participant "diag_api\n(DataResource)" as Resource <<score>>
+    participant "Middleware\nServices" as MW <<score>>
+    participant "Hardware\nAbstraction" as HAL <<score>>
+end box
 
-Cruise -> Cruise : new(debounce_config)
-Cruise -> Sensor : Arc<Mutex<Sensor>>
-Cruise -> Resource : VehicleSpeed(self.clone())
+== Initialization (ECU Startup on S-CORE OS) ==
+
+note over HAL, MW
+    S-CORE OS provides:
+    - Diagnostic middleware (diag_api)
+    - Communication stack (SOME/IP, DoIP)
+    - Hardware abstraction layer
+end note
+
+Cruise -> Resource : implements DataResource trait
 Cruise -> Registry : register(metadata, resource)
 Registry -> Registry : Store in IndexMap
 Provider -> Registry : new(registry)
@@ -47,15 +58,16 @@ Registry --> Provider : Entry { metadata, format, resource }
 
 Provider -> Provider : Check read-only (allow)
 
-group Mutex Lock Scope
+group S-CORE diag_api Call
     Provider -> Resource : read(args)
     note right of Resource
-        Lock acquired here
-        Returns handle immediately
-        Lock released before await
+        S-CORE diag_api interface
+        Provides diagnostic data access
     end note
-    Resource -> Sensor : lock().current_speed()
-    Sensor --> Resource : 99.8 km/h
+    Resource -> MW : Get sensor data
+    MW -> HAL : Read speed sensor
+    HAL --> MW : Raw sensor value
+    MW --> Resource : Processed: 99.8 km/h
     Resource --> Provider : ReadValueHandle::Ready(payload)
 end
 
@@ -70,9 +82,8 @@ end
 
 Provider -> Conv : reply_value(payload, format)
 note right of Conv
-    diag_api::serde_json::Value
-    → serde_json::Value
-    (string roundtrip for version compat)
+    S-CORE serde_json::Value
+    → OpenSOVD serde_json::Value
 end note
 Conv --> Provider : (Value, Option<Schema>)
 
@@ -80,16 +91,30 @@ Provider --> Core : DataReply::Data { data, schema }
 Core --> Server : DataReply
 Server --> Client : 200 OK\n{ "value": 99.8, "unit": "km/h" }
 
-== Error Flow: Write to Read-Only ==
+== Fault Injection: Write to speed_sensor_stuck ==
 
-Client -> Server : PUT /sovd/v1/components/cruise/data/vehicle_speed
-Server -> Core : DataProvider::write("vehicle_speed", value)
-Core -> Provider : write("vehicle_speed", value)
-Provider -> Registry : get("vehicle_speed")
-Registry --> Provider : Entry { metadata: { read_only: true }, ... }
-Provider -> Provider : Check read-only (reject!)
-Provider --> Core : DataReply::Error(ReadOnly)
-Core --> Server : DataReply::Error
-Server --> Client : 403 Forbidden
+Client -> Server : PUT /sovd/v1/components/cruise/data/speed_sensor_stuck\n{ "stuck": true }
+Server -> Core : DataProvider::write("speed_sensor_stuck", value)
+Core -> Provider : write("speed_sensor_stuck", value)
+
+Provider -> Registry : get("speed_sensor_stuck")
+Registry --> Provider : Entry { metadata: { read_only: false }, ... }
+Provider -> Provider : Check read-only (allow write)
+
+Provider -> Conv : request_payload(value)
+Conv --> Provider : RequestMessagePayload
+
+group S-CORE diag_api Call
+    Provider -> Resource : write(payload)
+    Resource -> MW : Inject fault condition
+    MW -> HAL : Simulate stuck sensor
+    HAL --> MW : Acknowledged
+    MW --> Resource : Ok
+    Resource --> Provider : WriteValueHandle::Ready(Ok)
+end
+
+Provider --> Core : DataReply::Written
+Core --> Server : DataReply
+Server --> Client : 200 OK
 
 @enduml
