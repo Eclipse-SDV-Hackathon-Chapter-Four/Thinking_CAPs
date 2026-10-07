@@ -22,6 +22,8 @@ static constexpr uint8_t ETH_0    = 3;
 static constexpr uint8_t ETH_1    = 4;
 /// DoIP client connections to the Ethernet zonal ECUs (gateway routes with transport doip)
 static constexpr uint8_t DOIP_NODES = 5;
-static constexpr uint8_t LAST_BUS   = DOIP_NODES;
+/// Internal tester of the node reachability routine F000 (SWR-026)
+static constexpr uint8_t PROBE      = 6;
+static constexpr uint8_t LAST_BUS   = PROBE;
 
 } // namespace busid

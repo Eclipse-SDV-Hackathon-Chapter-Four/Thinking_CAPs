@@ -187,3 +187,26 @@ def test_doip_lost_communication_dtc(tester, eth_ecu):
     assert tester.request(ETH, b"\x3E\x00").responses == [(ETH, b"\x7E\x00")]
     assert tester.request(GATEWAY, b"\x14\xFF\xFF\xFF").responses[-1][1] == b"\x54"
     assert read_dtcs(tester, 0x09).get(U0142) is None
+
+
+# --- node reachability routine F000 ---------------------------------------------------------
+
+def test_reachability_routine(tester, eth_ecu, rear_ecu):
+    """SWR-026: 31 01 F000 probes every route; 31 03 F000 reports one byte per route in
+    routing-table order: CAN 0x1020 answers, CAN 0x1030 has no ECU, DoIP 0x1040 answers;
+    with 0x1020 silent only the DoIP route is reached."""
+    start = tester.request(GATEWAY, b"\x31\x01\xF0\x00")
+    assert start.responses == [(GATEWAY, b"\x71\x01\xF0\x00")]
+    running = tester.request(GATEWAY, b"\x31\x03\xF0\x00").responses[-1][1]
+    assert running[:5] == b"\x71\x03\xF0\x00\x01"
+    time.sleep(2.2)
+    assert tester.request(GATEWAY, b"\x31\x03\xF0\x00").responses == [
+        (GATEWAY, b"\x71\x03\xF0\x00\x00\x03\x01\x00\x01")]
+    assert rear_ecu.requests[-1] == b"\x3E\x00"
+    assert eth_ecu.record.requests[-1] == Message(NODE_TESTER, ETH, b"\x3E\x00")
+
+    rear_ecu.mode = "silent"
+    assert tester.request(GATEWAY, b"\x31\x01\xF0\x00").responses == [(GATEWAY, b"\x71\x01\xF0\x00")]
+    time.sleep(2.2)
+    assert tester.request(GATEWAY, b"\x31\x03\xF0\x00").responses == [
+        (GATEWAY, b"\x71\x03\xF0\x00\x00\x03\x00\x00\x01")]

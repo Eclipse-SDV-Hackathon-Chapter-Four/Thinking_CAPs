@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "can/PacedCanTransceiver.h"
 #include <async/Async.h>
 #include <async/IRunnable.h>
 #include <busid/BusId.h>
@@ -106,6 +107,7 @@ private:
     ::docan::DoCanParameters _parameters;
     ::docan::declare::DoCanTransportLayerConfig<DataLinkLayerType, 80U, 15U, 64U>
         _transportLayerConfig;
+    ::etl::optional<::can::PacedCanTransceiver> _pacedTransceiver;
     ::etl::optional<::docan::DoCanPhysicalCanTransceiver<NormalAddressingType>> _transceiver;
     TransportLayers _transportLayers;
     TickGeneratorRunnableAdapter _tickGenerator;

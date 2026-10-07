@@ -118,7 +118,7 @@ inline bool TransportConfiguration::is1ByteDiagAddressBus(uint8_t const busId)
 {
     // Only the Ethernet/DoIP buses use 2-byte diagnostic addresses.
     return (busId != ::busid::ETH_0) && (busId != ::busid::ETH_1)
-           && (busId != ::busid::DOIP_NODES);
+           && (busId != ::busid::DOIP_NODES) && (busId != ::busid::PROBE);
 }
 
 /**

@@ -120,6 +120,21 @@ def test_large_request(tester, rear_ecu):
     assert (too_large.ack, too_large.nack_code) == (False, 0x04), too_large
 
 
+def test_bus_load_pacing(tester, rear_ecu, can_log):
+    """SWR-032: a 4095-byte request (ECU grants STmin 0) is paced: >= 3 ms between the
+    gateway's frames, at most 10 % of 500 kbit/s in any 1 s window."""
+    mark = can_log.mark()
+    payload = b"\x22\xF1\xB0" + bytes(4092)
+    assert tester.request(REAR, payload, wait=5.0).responses == [(REAR, b"\x62\xF1\xB0\x0F\xFF")]
+    sent = [m.timestamp for m in can_log.since(mark) if m.arbitration_id == 0x7E1]
+    assert len(sent) == 586
+    gaps = [b - a for a, b in zip(sent, sent[1:])]
+    # vcan timestamps are taken when SocketCAN receives the frame; allow 0.3 ms of jitter
+    assert min(gaps) >= 0.0027, f"smallest gap {min(gaps) * 1000:.2f} ms"
+    busiest = max(sum(1 for t in sent if start <= t < start + 1.0) for start in sent)
+    assert busiest * 135 <= 0.10 * 500_000, f"{busiest} frames in 1 s"
+
+
 # --- concurrency and timeouts -------------------------------------------------------------
 
 def test_busy_route_nack_and_timeout(tester, rear_ecu):

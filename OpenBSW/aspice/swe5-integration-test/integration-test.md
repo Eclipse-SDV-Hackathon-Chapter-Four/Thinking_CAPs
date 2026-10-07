@@ -104,6 +104,9 @@ The report generator parses this table: ID | Check | Test case | Interfaces | Ve
 | ITC-55 | board:test_board_doip_functional | S32K148: functional TesterPresent answered by `0x1010` and `0x1040` | IF-01, IF-09 | SWR-013, SWR-019 |
 | ITC-56 | board:test_board_doip_latency | S32K148: routed round trip tester → board → DoIP ECU → tester, p95 ≤ 20 ms | IF-01, IF-09 | SWR-051 |
 | ITC-57 | board:test_board_doip_node_failures | S32K148: unreachable and silent node fail the requests, three failures set U0142, ClearDTC resets it | IF-01, IF-06, IF-09 | SWR-006, SWR-024, SWR-025 |
+| ITC-58 | test_bus_load_pacing | 4095-byte request with STmin 0: ≥ 3 ms between gateway frames, ≤ 10 % in every 1 s window | IF-02 | SWR-032 |
+| ITC-59 | test_reachability_routine | Routine F000: `01 00 01` with CAN and DoIP ECUs answering and no ECU on `0x1030`; `00 00 01` with `0x1020` silent; running status before the window ends | IF-01, IF-02, IF-09 | SWR-026 |
+| ITC-60 | board:test_board_reachability_routine | S32K148: routine F000 reports the DoIP route reached and the CAN routes (no peer) not reached | IF-01, IF-09 | SWR-026, SWR-051 |
 
 ## Pass criteria
 

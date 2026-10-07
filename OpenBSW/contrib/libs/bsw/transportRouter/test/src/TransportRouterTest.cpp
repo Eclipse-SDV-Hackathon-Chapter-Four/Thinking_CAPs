@@ -59,7 +59,16 @@ DiagnosticRoute const ROUTES[] = {
 TransportRouterConfiguration configuration(::etl::span<DiagnosticRoute const> const routes)
 {
     return TransportRouterConfiguration{
-        LOCAL, BUS_LOCAL, FUNCTIONAL, GW_TESTER, 0x0E00U, 0x0EFFU, 150U, 7U, routes};
+        LOCAL,
+        BUS_LOCAL,
+        FUNCTIONAL,
+        GW_TESTER,
+        0x0E00U,
+        0x0EFFU,
+        150U,
+        TransportRouter::DEFAULT_TRANSFER_TIMEOUT_MS,
+        7U,
+        routes};
 }
 
 class ObserverMock : public IRouteObserver
@@ -283,6 +292,12 @@ TEST_F(TransportRouterTest, invalidGlobalConfigurationsAreRejected)
         cfg.maxFunctionalLength = TransportRouter::SMALL_BUFFER_SIZE + 1U;
         TransportRouter router(cfg, statistics, TransportRouter::NowMsType::create<&nowMs>());
         EXPECT_EQ(TransportRouter::ValidationError::INVALID_LENGTH, router.validate(bad));
+    }
+    {
+        auto cfg              = configuration(ROUTES);
+        cfg.transferTimeoutMs = 0U;
+        TransportRouter router(cfg, statistics, TransportRouter::NowMsType::create<&nowMs>());
+        EXPECT_EQ(TransportRouter::ValidationError::INVALID_TIMING, router.validate(bad));
     }
 }
 
@@ -531,7 +546,7 @@ TEST_F(TransportRouterTest, unconfirmedDeliveryTimesOut)
 {
     sendRequest(NODE_A, _canA);
     EXPECT_CALL(_observer, routeTimedOut(0U));
-    advance(TransportRouter::TRANSFER_TIMEOUT_MS);
+    advance(TransportRouter::DEFAULT_TRANSFER_TIMEOUT_MS);
     EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
 }
 
@@ -627,7 +642,7 @@ TEST_F(TransportRouterTest, segmentedResponseWithShortP2StarGetsTheTransferBudge
     ASSERT_EQ(
         ErrorCode::TPMSG_OK,
         router.getTransportMessage(BUS_CAN_A, NODE_A, GW_TESTER, 500U, {}, response));
-    fakeNowMs += TransportRouter::TRANSFER_TIMEOUT_MS - 1U;
+    fakeNowMs += TransportRouter::DEFAULT_TRANSFER_TIMEOUT_MS - 1U;
     router.cyclic();
     EXPECT_EQ(RouteState::SENDING, router.routeState(0U));
     EXPECT_CALL(_observer, routeTimedOut(0U));

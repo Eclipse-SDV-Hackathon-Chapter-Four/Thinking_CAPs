@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 // Host unit tests of the gateway units: RoutingTable (DD-04), NodeMonitor (DD-06),
-// GatewayIdentity (DD-08) and the extended DTC store (DD-07).
+// GatewayIdentity (DD-08), the extended DTC store (DD-07), TransmitPacer (DD-20) and
+// ReachabilityProbe (DD-22).
 
 #include "gateway/GatewayIdentity.h"
 #include "gateway/GatewayLogger.h"
 #include "gateway/NodeMonitor.h"
 #include "gateway/RoutingConfig.h"
+#include "gateway/ReachabilityProbe.h"
 #include "gateway/RoutingTable.h"
+#include "gateway/TransmitPacer.h"
 #include "uds/DemoDtcManager.h"
 
 #include <gtest/gtest.h>
+#include <transport/ITransportMessageProvidingListener.h>
 
 #include <string>
 #include <vector>
@@ -249,6 +253,211 @@ TEST(DtcStore, dtcSettingOffIgnoresResults)
     dtcs.reportPassed(0xC14000U);
     EXPECT_EQ(0U, dtcs.getCountByStatusMask(0x0FU));
     EXPECT_FALSE(dtcs.isDtcSettingEnabled());
+}
+
+// --- TransmitPacer ------------------------------------------------------------------------
+
+TEST(TransmitPacer, firstFrameIsSentAtOnce)
+{
+    ::gateway::TransmitPacer const pacer(3000U);
+    EXPECT_EQ(0U, pacer.delayUs(123456U));
+    EXPECT_EQ(3000U, pacer.minGapUs());
+}
+
+TEST(TransmitPacer, nextFrameWaitsForTheGap)
+{
+    ::gateway::TransmitPacer pacer(3000U);
+    pacer.sent(1000U);
+    EXPECT_EQ(3000U, pacer.delayUs(1000U));
+    EXPECT_EQ(1000U, pacer.delayUs(3000U));
+    EXPECT_EQ(1U, pacer.delayUs(3999U));
+    EXPECT_EQ(0U, pacer.delayUs(4000U));
+    EXPECT_EQ(0U, pacer.delayUs(90000U));
+}
+
+TEST(TransmitPacer, gapWorksAcrossClockWrapAround)
+{
+    ::gateway::TransmitPacer pacer(3000U);
+    pacer.sent(0xFFFFFF00U);
+    EXPECT_EQ(3000U - 0x200U, pacer.delayUs(0x00000100U));
+    EXPECT_EQ(0U, pacer.delayUs(0x00000B00U));
+}
+
+TEST(TransmitPacer, frameRateStaysWithinTheBusLoadBudget)
+{
+    // SWR-032: in one second at most 334 frames (t = 0, 3 ms, ..., 999 ms) of 135 bits each,
+    // 45090 bits = 9 % of 500 kbit/s; the stack asks again 100 us after each frame
+    ::gateway::TransmitPacer pacer(3000U);
+    uint32_t now   = 0U;
+    uint32_t count = 0U;
+    for (now += pacer.delayUs(now); now < 1000000U; now += pacer.delayUs(now))
+    {
+        pacer.sent(now);
+        ++count;
+        now += 100U;
+    }
+    EXPECT_EQ(334U, count);
+    EXPECT_LE(count * 135U, 50000U);
+}
+
+// --- ReachabilityProbe ---------------------------------------------------------------------
+
+using ::gateway::ReachabilityProbe;
+using ::transport::ITransportMessageProcessedListener;
+using ::transport::TransportMessage;
+using ProbeResult = ReachabilityProbe::Result;
+
+/** Router stand-in: hands out buffers and records the requests of the probe. */
+class RouterFake : public ::transport::ITransportMessageProvidingListener
+{
+public:
+    ErrorCode getTransportMessage(
+        uint8_t, uint16_t source, uint16_t target, uint16_t, ::etl::span<uint8_t const> const&,
+        TransportMessage*& message) override
+    {
+        message = nullptr;
+        if (target == busyTarget)
+        {
+            return ErrorCode::TPMSG_NO_MSG_AVAILABLE;
+        }
+        sources.push_back(source);
+        TransportMessage& slot = messages[used++];
+        slot.init(buffers[used - 1U], sizeof(buffers[0]));
+        message = &slot;
+        return ErrorCode::TPMSG_OK;
+    }
+
+    void releaseTransportMessage(TransportMessage&) override { ++released; }
+
+    ReceiveResult messageReceived(
+        uint8_t, TransportMessage& message, ITransportMessageProcessedListener* listener) override
+    {
+        requests.push_back(message.getTargetId());
+        payloads.push_back(std::vector<uint8_t>(
+            message.getPayload(), message.getPayload() + message.getPayloadLength()));
+        delivered.push_back(listener);
+        return (message.getTargetId() == refusedTarget) ? ReceiveResult::RECEIVED_ERROR
+                                                         : ReceiveResult::RECEIVED_NO_ERROR;
+    }
+
+    void dump() override {}
+
+    uint16_t busyTarget    = 0U;
+    uint16_t refusedTarget = 0U;
+    size_t used            = 0U;
+    int released           = 0;
+    TransportMessage messages[4];
+    uint8_t buffers[4][8];
+    std::vector<uint16_t> sources;
+    std::vector<uint16_t> requests;
+    std::vector<std::vector<uint8_t>> payloads;
+    std::vector<ITransportMessageProcessedListener*> delivered;
+};
+
+/** Node-side listener of a forwarded response. */
+class ResponseReleased : public ITransportMessageProcessedListener
+{
+public:
+    void transportMessageProcessed(TransportMessage&, ProcessingResult) override { ++count; }
+
+    int count = 0;
+};
+
+class ReachabilityProbeTest : public ::testing::Test
+{
+public:
+    ReachabilityProbeTest()
+    : table(ADDRESSES, ::etl::span<Route const>(::gateway::config::ROUTES))
+    , probe(6U, 0x0EFEU, table, 2000U)
+    {
+        probe.fProvidingListenerHelper.fpMessageProvider = &router;
+        probe.fProvidingListenerHelper.fpMessageListener = &router;
+    }
+
+    void answer(uint16_t node, std::vector<uint8_t> const& payload)
+    {
+        TransportMessage response;
+        uint8_t buffer[8] = {};
+        response.init(buffer, sizeof(buffer));
+        response.setSourceAddress(node);
+        response.setTargetAddress(0x0EFEU);
+        response.setPayloadLength(static_cast<uint16_t>(payload.size()));
+        (void)response.append(payload.data(), static_cast<uint16_t>(payload.size()));
+        EXPECT_EQ(
+            ::transport::AbstractTransportLayer::ErrorCode::TP_OK, probe.send(response, &released));
+    }
+
+    RoutingTable table;
+    ReachabilityProbe probe;
+    RouterFake router;
+    ResponseReleased released;
+};
+
+TEST_F(ReachabilityProbeTest, sendsTesterPresentToEveryRouteFromTheProbeAddress)
+{
+    EXPECT_EQ(ProbeResult::NOT_STARTED, probe.result(0U, 0U));
+    probe.start(1000U);
+    EXPECT_EQ((std::vector<uint16_t>{0x1020U, 0x1030U, 0x1040U}), router.requests);
+    EXPECT_EQ((std::vector<uint16_t>{0x0EFEU, 0x0EFEU, 0x0EFEU}), router.sources);
+    EXPECT_EQ((std::vector<uint8_t>{0x3EU, 0x00U}), router.payloads[0]);
+    EXPECT_TRUE(probe.running(1000U));
+    EXPECT_EQ(3U, probe.routeCount());
+    EXPECT_EQ(0x0EFEU, probe.testerAddress());
+}
+
+TEST_F(ReachabilityProbeTest, answersMarkNodesReachedAndSilentNodesTimeOut)
+{
+    probe.start(1000U);
+    answer(0x1020U, {0x7EU, 0x00U});
+    answer(0x1040U, {0x7FU, 0x3EU, 0x11U}); // a negative response also shows the node is there
+    EXPECT_EQ(2, released.count);
+    EXPECT_EQ(ProbeResult::REACHED, probe.result(0U, 1500U));
+    EXPECT_EQ(ProbeResult::PENDING, probe.result(1U, 1500U));
+    EXPECT_EQ(ProbeResult::REACHED, probe.result(2U, 1500U));
+    EXPECT_TRUE(probe.running(2999U));
+    EXPECT_FALSE(probe.running(3000U));
+    EXPECT_EQ(ProbeResult::NOT_REACHED, probe.result(1U, 3000U));
+    EXPECT_EQ(ProbeResult::NOT_STARTED, probe.result(ReachabilityProbe::MAX_ROUTES, 3000U));
+}
+
+TEST_F(ReachabilityProbeTest, probeEndsWhenEveryRouteHasAResult)
+{
+    probe.start(1000U);
+    answer(0x1020U, {0x7EU, 0x00U});
+    answer(0x1030U, {0x7EU, 0x00U});
+    answer(0x1040U, {0x7EU, 0x00U});
+    answer(0x1099U, {0x7EU, 0x00U}); // not a route: ignored, but released
+    EXPECT_FALSE(probe.running(1100U));
+    EXPECT_EQ(4, released.count);
+}
+
+TEST_F(ReachabilityProbeTest, busyRefusedAndUndeliveredRoutesAreNotReached)
+{
+    router.busyTarget    = 0x1020U;
+    router.refusedTarget = 0x1030U;
+    probe.start(1000U);
+    EXPECT_EQ(ProbeResult::NOT_REACHED, probe.result(0U, 1000U));
+    EXPECT_EQ(ProbeResult::NOT_REACHED, probe.result(1U, 1000U));
+    EXPECT_EQ(1, router.released); // the refused request
+    // the request to 0x1040 is reported as not delivered
+    ASSERT_EQ(2U, router.delivered.size());
+    router.delivered[1]->transportMessageProcessed(
+        router.messages[1], ITransportMessageProcessedListener::ProcessingResult::PROCESSED_ERROR);
+    EXPECT_EQ(ProbeResult::NOT_REACHED, probe.result(2U, 1000U));
+    EXPECT_EQ(2, router.released);
+    EXPECT_FALSE(probe.running(1000U));
+}
+
+TEST_F(ReachabilityProbeTest, deliveredRequestIsReleasedAndALateAnswerAfterRestartCounts)
+{
+    probe.start(1000U);
+    router.delivered[0]->transportMessageProcessed(
+        router.messages[0], ITransportMessageProcessedListener::ProcessingResult::PROCESSED_NO_ERROR);
+    EXPECT_EQ(1, router.released);
+    EXPECT_EQ(ProbeResult::PENDING, probe.result(0U, 1000U));
+    answer(0x1020U, {0x7EU, 0x00U});
+    answer(0x1020U, {0x7EU, 0x00U}); // a second answer changes nothing
+    EXPECT_EQ(ProbeResult::REACHED, probe.result(0U, 1000U));
 }
 
 } // namespace

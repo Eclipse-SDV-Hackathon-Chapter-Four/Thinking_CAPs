@@ -26,7 +26,8 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 
 add_library(zonalGateway src/gateway/GatewayIdentity.cpp src/gateway/NodeMonitor.cpp
-                         src/gateway/RoutingTable.cpp)
+                         src/gateway/RoutingTable.cpp
+                         src/gateway/ReachabilityProbe.cpp)
 add_dependencies(zonalGateway gatewayRoutingConfig)
 target_include_directories(zonalGateway PUBLIC include ${GATEWAY_GEN_DIR})
 target_compile_definitions(

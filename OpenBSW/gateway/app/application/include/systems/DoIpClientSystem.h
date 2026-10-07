@@ -23,8 +23,11 @@ class DoIpClientSystem
 {
 public:
     static constexpr uint32_t SUPERVISION_PERIOD_MS = 10U;
-    /// Connect, routing activation and acknowledgement; below the router's 2 s transfer budget.
+    /// Connect, routing activation and acknowledgement; below the router's transfer budget.
     static constexpr uint32_t DELIVERY_TIMEOUT_MS   = 1500U;
+    static_assert(
+        DELIVERY_TIMEOUT_MS < ::gateway::config::TRANSFER_TIMEOUT_MS,
+        "the router must not give up a request the DoIP client still sends (AD-11)");
     static constexpr size_t NODE_CAPACITY
         = (::gateway::config::DOIP_ROUTE_COUNT > 0U) ? ::gateway::config::DOIP_ROUTE_COUNT : 1U;
 

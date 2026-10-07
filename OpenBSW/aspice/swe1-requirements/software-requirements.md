@@ -394,15 +394,20 @@ shall clear them. Fault memory may be volatile (cleared on restart).
 | Criterion | The status byte follows the test sequence; clear empties the memory; the SOVD client lists and clears the fault through the CDA. |
 
 ### SWR-026 Node reachability routine
-Routine `0x31 01 F000` shall send `3E 00` to every `docan` route. It shall
-return one bit per route: 1 if the route answered within P2, 0 otherwise.
+Routine `0x31 01 F000` shall send `3E 00` to every route (`docan` and `doip`)
+through the router, from a reserved internal tester address
+(`probe_tester_address`), and answer at once. `0x31 03 F000` shall return the
+status (`0x00` complete, `0x01` running), the number of routes and one byte per
+route in routing-table order: `0x01` if the node answered within the window
+(2 s: the DoIP delivery budget plus P2), `0x00` if not, if its delivery failed
+or if the route was busy.
 
 | Attribute | Value |
 | --- | --- |
 | Type | Functional |
 | Derived from | SYS-04 |
 | Verification | UT, IT |
-| Criterion | With one simulated ECU silent, the routine reports exactly that route as unreachable. |
+| Criterion | With the CAN ECU `0x1020` and the DoIP ECU `0x1040` answering and no ECU on `0x1030`, the results are `01 00 01`; with `0x1020` silent, `00 00 01`; on the S32K148EVB (no CAN peer) `00 00 01`. |
 
 ### SWR-027 Session handling
 The gateway's own session shall return to default after 5000 ms with no
@@ -444,14 +449,17 @@ The software shall not open Zenoh sessions or SOME/IP services. OpenBSW's
 
 ### SWR-032 Diagnostic bus load
 Gateway-generated CAN traffic shall stay below 10 % of a 500 kbit/s bus,
-averaged over any 1 s window.
+averaged over any 1 s window. The gateway shall keep a minimum gap between the
+CAN frames it sends (`can_tx_min_gap_us`, 3 ms), whatever separation time an
+ECU grants; the router's transfer budget (`transfer_timeout_ms`) shall cover
+the resulting paced transfers.
 
 | Attribute | Value |
 | --- | --- |
 | Type | Performance |
 | Derived from | SYS-05 |
-| Verification | AN, QT |
-| Criterion | Worst case: 3 routes with 4095-byte transfers at the STmin floor, calculated and measured with candump during QT. |
+| Verification | UT, IT, AN, QT |
+| Criterion | Worst case: every CAN route with a 4095-byte transfer at STmin 0, paced: at most 334 frames in 1 s (9.0 %), calculated; a 4095-byte request in IT shows ≥ 3 ms between gateway frames and ≤ 10 % in every 1 s window of the candump. |
 
 ### SWR-033 Baseline untouched
 The deployment shall add only:

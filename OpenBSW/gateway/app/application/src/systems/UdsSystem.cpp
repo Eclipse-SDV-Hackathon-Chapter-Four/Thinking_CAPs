@@ -49,6 +49,7 @@ UdsSystem::UdsSystem(
 , _readDataByIdentifier()
 , _routineControl()
 , _startRoutine()
+, _requestRoutineResults()
 , _readF190(0xF190, ::gateway::identity::vin())
 , _readF18C(0xF18C, ::gateway::identity::ecuSerial())
 , _readF195(0xF195, ::gateway::identity::softwareVersion())
@@ -134,6 +135,7 @@ void UdsSystem::addDiagJobs()
     // 31 - RoutineControl (start routine)
     (void)_jobRoot.addAbstractDiagJob(_routineControl);
     (void)_jobRoot.addAbstractDiagJob(_startRoutine);
+    (void)_jobRoot.addAbstractDiagJob(_requestRoutineResults);
     // gateway DIDs and routines
     for (AbstractDiagJob* const job : _extraJobs)
     {
@@ -147,6 +149,7 @@ void UdsSystem::removeDiagJobs()
     {
         _jobRoot.removeAbstractDiagJob(*job);
     }
+    _jobRoot.removeAbstractDiagJob(_requestRoutineResults);
     _jobRoot.removeAbstractDiagJob(_startRoutine);
     _jobRoot.removeAbstractDiagJob(_routineControl);
     _jobRoot.removeAbstractDiagJob(_readF195);

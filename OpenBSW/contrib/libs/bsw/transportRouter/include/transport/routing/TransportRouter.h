@@ -75,16 +75,16 @@ public:
         INVALID_LENGTH
     };
 
-    static constexpr size_t NUM_BUFFERS           = 4U;
-    static constexpr uint16_t BUFFER_SIZE         = 4095U;
-    static constexpr size_t NUM_SMALL_BUFFERS     = 8U;
-    static constexpr uint16_t SMALL_BUFFER_SIZE   = 8U;
-    static constexpr size_t MAX_TESTERS           = 8U;
-    static constexpr size_t MAX_ROUTES            = TransportRouterStatistics::MAX_ROUTES;
-    static constexpr size_t INVALID_ROUTE         = 0xFFU;
-    static constexpr uint8_t INVALID_BUS          = 0xFFU;
-    /// Budget to deliver a request and to receive a multi-frame response.
-    static constexpr uint32_t TRANSFER_TIMEOUT_MS = 2000U;
+    static constexpr size_t NUM_BUFFERS                   = 4U;
+    static constexpr uint16_t BUFFER_SIZE                 = 4095U;
+    static constexpr size_t NUM_SMALL_BUFFERS             = 8U;
+    static constexpr uint16_t SMALL_BUFFER_SIZE           = 8U;
+    static constexpr size_t MAX_TESTERS                   = 8U;
+    static constexpr size_t MAX_ROUTES                    = TransportRouterStatistics::MAX_ROUTES;
+    static constexpr size_t INVALID_ROUTE                 = 0xFFU;
+    static constexpr uint8_t INVALID_BUS                  = 0xFFU;
+    /// Recommended TransportRouterConfiguration::transferTimeoutMs for unpaced classic CAN.
+    static constexpr uint32_t DEFAULT_TRANSFER_TIMEOUT_MS = 2000U;
 
     TransportRouter(
         TransportRouterConfiguration const& configuration,

@@ -58,6 +58,10 @@ struct TransportRouterConfiguration
     uint16_t testerAddressMax;
     /// How long responses to a functional request are forwarded.
     uint32_t functionalWindowMs;
+    /// Budget to deliver a request to a node and to receive a segmented response; at least the
+    /// longest transfer on the slowest (e.g. paced) bus.
+    /// TransportRouter::DEFAULT_TRANSFER_TIMEOUT_MS suits unpaced classic CAN.
+    uint32_t transferTimeoutMs;
     /// Largest functional request (one single frame on classic CAN: 7).
     uint16_t maxFunctionalLength;
     /// Routing table; it is checked by TransportRouter::validate().

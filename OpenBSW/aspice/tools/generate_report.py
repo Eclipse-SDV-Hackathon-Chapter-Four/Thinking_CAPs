@@ -23,7 +23,6 @@ import hashlib
 import html
 import io
 import json
-import math
 import os
 import re
 import shutil
@@ -393,11 +392,15 @@ def bus_load(it):
     sys.path.insert(0, str(GENERATOR.parent))
     import gen_routing  # noqa: PLC0415
     cfg = gen_routing.validate(gen_routing.load(OBSW / "gateway" / "config" / "routing.yaml"))
-    # worst case: the largest request of the largest route, sent within one second with STmin 0
-    frames = max(1 if r["max_length"] <= 7 else 1 + math.ceil((r["max_length"] - 6) / 7) for r in cfg["routes"])
-    worst = 100 * frames * frame_bits() / BITRATE
+    # worst case: the largest requests of all CAN routes at once, STmin 0 granted by the ECUs;
+    # the gateway's pacing (can_tx_min_gap_us) caps the frames it sends in any 1 s window
+    can_routes = [r for r in cfg["routes"] if r["transport"] == "docan"]
+    frames = sum(gen_routing.isotp_frames(r["max_length"]) for r in can_routes)
+    cap = 1 + (1_000_000 - 1) // cfg["can_tx_min_gap_us"]
+    worst = 100 * min(frames, cap) * frame_bits() / BITRATE
     measured = it["can_load"]["gateway_tx"]["peak_percent"] if it else None
-    return cfg, {"worst_frames": frames, "worst_percent": round(worst, 2), "measured_percent": measured}
+    return cfg, {"worst_frames": min(frames, cap), "requested_frames": frames, "gap_us": cfg["can_tx_min_gap_us"],
+                 "worst_percent": round(worst, 2), "measured_percent": measured}
 
 
 def qualification(wp, ws, upstream, checks, it, board, board_it, doip):
@@ -425,9 +428,9 @@ def qualification(wp, ws, upstream, checks, it, board, board_it, doip):
         "no-dynamic-memory": (not checks["forbidden"], "none found" if not checks["forbidden"]
                               else "; ".join(checks["forbidden"][:4])),
         "bus-load": (load["worst_percent"] <= 10 and (load["measured_percent"] or 0) <= 10,
-                     f"worst case {load['worst_percent']} % ({load['worst_frames']} frames of a "
-                     f"{max(r['max_length'] for r in cfg['routes'])}-byte request in 1 s, STmin 0); "
-                     f"measured peak {load['measured_percent']} %"),
+                     f"worst case {load['worst_percent']} % ({load['worst_frames']} of {load['requested_frames']} "
+                     f"frames of {max(r['max_length'] for r in cfg['routes'])}-byte requests on every CAN route "
+                     f"in 1 s, STmin 0, paced at {load['gap_us']} us); measured peak {load['measured_percent']} %"),
         "configuration-consistency": (not problems, f"{len(profiles)} Serial2CAN profiles consistent" if not problems
                                       else "; ".join(problems)),
         "latency": (bool(latency) and latency.get("down_p95_ms", 99) <= 10 and latency.get("up_p95_ms", 99) <= 10,

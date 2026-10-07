@@ -39,25 +39,21 @@ new module (see [DoIP routes](#doip-routes-ethernet-zonal-ecus)).
 
 | Item | Result |
 | --- | --- |
-| Unit tests | 107/107: 42 `transportRouter` and 20 `doipClient` (OpenBSW unit-test build; the router also in Bazel), 10 gateway units, 31 generator, 4 existing `TransportRouterSimple` |
-| Module coverage | `transportRouter` 100% lines, 99.1% branches; `doipClient` 94.6% lines, 83.8% branches |
-| Integration tests | 42/42 on the Linux host against simulated CAN ECUs and a simulated Ethernet ECU ([evidence/gateway-it](evidence/gateway-it/results.json)); 15/15 on the S32K148EVB, 5 of them routed over DoIP to the Ethernet ECU ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
-| Forwarding latency (p95) | Linux: DoIP→CAN 5.4 ms, CAN→DoIP 6.1 ms (host load about 50); S32K148EVB: routed DoIP round trip 4.1 ms |
-| Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel and gitlint pass; the patch applies to the pinned base. `doipClient` on current upstream `main`: format, copyright, unit tests, clang-tidy, Bazel, docs build and gitlint pass ([packet](../contributions/openbsw-doip-client/README.md)) |
-| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 30/39 requirements verified, 7 partially (live campaigns not run), 1 failed (SWR-032), 1 not implemented (SWR-026) |
+| Unit tests | 122/122: 46 `transportRouter` and 20 `doipClient` (OpenBSW unit-test build; the router also in Bazel), 19 gateway units, 37 generator |
+| Module coverage | `transportRouter` 100% lines, 99.1% branches; `doipClient` 94.6% lines |
+| Integration tests | 44/44 on the Linux host against simulated CAN ECUs and a simulated Ethernet ECU ([evidence/gateway-it](evidence/gateway-it/results.json)); 16/16 on the S32K148EVB, 6 of them over DoIP to the Ethernet ECU ([evidence/board-gateway-it](evidence/board-gateway-it/results.json)) |
+| CAN bus load (SWR-032) | The gateway paces its own frames (≥ 3 ms apart): worst case 9.0 % of 500 kbit/s, measured peak 7.9 % |
+| Upstream gates for the modules | `transportRouter`: format, copyright, clang-tidy, Bazel pass. `doipClient` on current upstream `main`: format, copyright, unit tests, clang-tidy, Bazel, docs build and gitlint pass ([packet](../contributions/openbsw-doip-client/README.md)) |
+| ASPICE SWE.1–SWE.6 | [report](aspice/report/aspice-swe-report.html): 32/39 requirements verified; 7 partially, waiting only for the live qualification campaigns |
 
 Open items, all of them visible in the report:
 
-- **SWR-032 bus load:** a 4095-byte request to an ECU that grants STmin 0 uses
-  about 16 % of a 500 kbit/s bus in one second (budget 10 %). The fix is to limit
-  `max_length` per route or to add a transmit STmin.
-- **SWR-026:** the reachability routine `31 01 F000` is not implemented.
-- **Live campaigns not run:**
+- **Live campaigns not run** (QTC-12, QTC-13, QTC-14):
   - X-Verse + CARLA cruise-control regression with the gateway
-  - OpenSOVD → CDA (needs an MDD)
-  - ThreadX ECU with UDS (OP-2)
-  - CAN routing on the board (needs a CAN peer, e.g. a USB-CAN adapter); routing
-    on the board is verified over DoIP instead
+  - OpenSOVD → CDA → gateway (needs an MDD for the gateway and its nodes)
+  - ThreadX rear lighting ECU with a UDS-on-CAN server (OP-2)
+- CAN routing on the board needs a CAN peer (e.g. a USB-CAN adapter); routing
+  on the board is verified over DoIP instead.
 
 ## Layout
 

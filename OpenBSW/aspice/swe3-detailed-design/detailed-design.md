@@ -35,10 +35,12 @@ The report generator parses this table: ID | Unit | Source / functions | Element
 | DD-16 | Deployment assets | `scripts/net-up.sh` (also `192.168.0.30` on `lo` for the simulated Ethernet ECU), `scripts/run.sh`, `scripts/storage.sh`; new Serial2CAN profile (planned) | ARC-10 | SWR-033, SWR-050 |
 | DD-17 | DoIP client connection | `DoIpClientConnection.cpp`: `request`, `functional`, `cyclic`, `close`, `connect`, `connected`, `sendActivation`, `sendRequest`, `tryFinishRequest`, `finishRequest`, `headerReceived`, `skipPayload`, `activationResponseReceived`, `ackReceived`, `addressInfoReceived`, `diagnosticPayloadReceived`, `releaseSendJob`, `connectionClosed`, `transportMessageProcessed` | ARC-11 | SWR-006, SWR-013, SWR-019, SWR-043 |
 | DD-18 | DoIP client transport layer | `DoIpClientTransportLayer.cpp`: `send` (physical and functional), `cyclic`, `shutdown`, `findConnection`, `functionalCopyReleased`; `declare::DoIpClientTransportLayer` (static connections and sockets) | ARC-11 | SWR-006, SWR-013, SWR-019, SWR-043 |
+| DD-20 | Transmit pacer | `gateway/lib/include/gateway/TransmitPacer.h`: `delayUs`, `sent` | ARC-02 | SWR-032 |
+| DD-21 | Paced CAN transceiver | `app/application/src/can/PacedCanTransceiver.cpp`: `write` (with and without listener), `execute`, `canFrameSent`, `shutdown`; forwarding of the other `ICanTransceiver` calls; `DoCanSystem::init` wiring | ARC-02 | SWR-032 |
+| DD-22 | Reachability probe | `gateway/lib/src/gateway/ReachabilityProbe.cpp`: `start`, `running`, `result`, `send`, `transportMessageProcessed` | ARC-05 | SWR-026 |
+| DD-23 | Reachability routine | `GatewayDiagJobs.cpp`: `ReachabilityRoutine::start`, `execute` (in the Ethernet context), `requestResults`; `app.cpp` `ReachabilityProbeComponent` (registration on bus `PROBE` at run level 7); `UdsSystem` `RequestRoutineResults` | ARC-05 | SWR-026 |
 | DD-19 | Gateway DoIP client system | `DoIpClientSystem.cpp`: `buildNodes` (the `doip` routes), `run` (registration on `DOIP_NODES`, 10 ms supervision), `shutdown`; `TransportSystem.cpp` `diagnosticRoutes` bus selection; `GatewayDiagJobs.cpp` FD00 DoIP record | ARC-11 | SWR-006, SWR-019, SWR-022 |
 
-SWR-026 (reachability routine `31 01 F000`) is not implemented. The report
-shows it as an open requirement.
 
 ## Unit design notes
 
@@ -132,6 +134,23 @@ its deadline (1.5 s after `send`, covering connect, activation and
 acknowledgement); closing releases the send jobs first, then the request
 fails. A message that the client does not process is skipped with
 `endReceiveMessage`, which also handles empty payloads (OP-7).
+
+**DD-21 Paced CAN transceiver.** DoCAN writes a data frame with a sent listener and
+waits for `canFrameSent()` before the next one, so at most one frame is held back. If the
+gap since the last frame has passed, the frame goes to the CAN transceiver at once;
+otherwise it is stored and sent from an async timeout in the CAN context when the gap has
+passed. Flow-control frames (written without listener) are sent at once and count for the
+gap. A held-back frame that the transceiver then refuses is noticed by DoCAN through its
+transmit callback timeout. RTOS timers round up to the 1 ms tick, so the effective gap is
+3–4 ms; the generator's transfer budget check uses the rounded value.
+
+**DD-22 Reachability probe.** The probe is a transport layer on its own bus (`PROBE`)
+and acts as an internal tester with the reserved address `0x0EFE`. `start()` takes a
+buffer from the router for each route and hands it `3E 00` with `messageReceived()`, as
+a DoIP tester would; the router routes it like any request and sends the node's answer
+back to the probe's bus. Any answer marks the node as reached. A busy route, a refused
+or failed delivery, or no answer within the window leaves it not reached. The routine
+starts the probe in the Ethernet context, because the DoIP client must be called there.
 
 **DD-18 DoIP client transport layer.** `send` routes by target address: the
 functional address goes to every connection with active routing and no

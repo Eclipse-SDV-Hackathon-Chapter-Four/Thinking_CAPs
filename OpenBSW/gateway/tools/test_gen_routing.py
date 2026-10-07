@@ -63,7 +63,16 @@ def test_hash_changes_with_any_address(data):
     (lambda d: d["routes"][2].update(request_can_id=0x7E3), "only for docan"),
     (lambda d: d["routes"][0].update(ip_address="192.168.0.31"), "only for doip"),
     (lambda d: d["routes"].append(dict(d["routes"][2], logical_address=0x1050)), "duplicates eth_zone"),
+    # SWR-032: pacing gap and the transfer budget that the pacing needs
+    (lambda d: d["gateway"].update(can_tx_min_gap_us=2699), "bus-load budget"),
+    (lambda d: d["gateway"].update(transfer_timeout_ms=5687), "paced transfers"),
+    (lambda d: d["gateway"].pop("can_tx_min_gap_us"), "integer"),
+    # SWR-026: internal tester of the reachability routine
+    (lambda d: d["gateway"].update(probe_tester_address=0x0F00), "inside tester_range"),
+    (lambda d: d["gateway"].update(probe_tester_address=0x0E10), "equals node_tester_address"),
 ])
+
+
 def test_invalid_configurations_name_the_problem(data, mutate, message):
     mutate(data)
     with pytest.raises(gen_routing.ConfigError, match=message):
@@ -77,6 +86,7 @@ def test_generated_header_and_address_table(tmp_path):
     assert 'Route{0x1020U, "rear_lighting", Transport::DOCAN, 0x7E1U, 0x7E9U, 0x00000000U' in header
     assert 'Route{0x1040U, "eth_zone", Transport::DOIP, 0x000U, 0x000U, 0xC0A8001EU' in header
     assert "DOCAN_ROUTE_COUNT = 2U" in header and "DOIP_ROUTE_COUNT  = 1U" in header
+    assert "CAN_TX_MIN_GAP_US      = 3000U;" in header and "TRANSFER_TIMEOUT_MS    = 10000U;" in header
     table = json.loads((tmp_path / "routing-table.json").read_text())
     assert [r["logical_address"] for r in table["routes"]] == [0x1020, 0x1030, 0x1040]
     assert table["routes"][2] == {"name": "eth_zone", "logical_address": 0x1040, "transport": "doip",
@@ -107,3 +117,13 @@ def test_existing_az3166_profiles_do_not_forward_diagnostics():
     profiles = Path(__file__).parents[3] / "X-Verse" / "bridges" / "serial2can" / "config"
     for profile in profiles.glob("az3166-*.json"):
         assert gen_routing.check_profile(gen_routing.validate(gen_routing.load(CONFIG)), profile) == []
+
+
+def test_bus_load_helpers():
+    """SWR-032: frame size, ISO-TP frame count and the derived limits."""
+    assert gen_routing.frame_bits(8) == 135
+    assert [gen_routing.isotp_frames(n) for n in (1, 7, 8, 13, 14, 4095)] == [1, 1, 2, 2, 3, 586]
+    assert gen_routing.min_tx_gap_us() == 2700
+    cfg = gen_routing.validate(yaml.safe_load(CONFIG.read_text()))
+    # two CAN routes x 586 frames x (3 ms gap rounded to the tick + 1 tick) + 1 s
+    assert gen_routing.required_transfer_ms(cfg) == 5688

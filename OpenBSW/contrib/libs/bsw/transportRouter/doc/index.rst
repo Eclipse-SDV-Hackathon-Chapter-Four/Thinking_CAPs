@@ -78,11 +78,15 @@ Timing
 ``cyclic()`` must be called periodically, for example every 10 ms. A route waits
 for its node:
 
-- ``TRANSFER_TIMEOUT_MS`` for the transport layer to confirm the request
+- ``transferTimeoutMs`` (configuration) for the transport layer to confirm the request
 - ``p2Ms`` after the confirmation for the start of the response
 - ``p2StarMs`` after each response pending
-- at least ``TRANSFER_TIMEOUT_MS`` (or ``p2StarMs`` if longer) once a segmented
+- at least ``transferTimeoutMs`` (or ``p2StarMs`` if longer) once a segmented
   response has started
+
+``DEFAULT_TRANSFER_TIMEOUT_MS`` (2 s) suits classic CAN without pacing. A slower or
+paced bus needs a budget for its longest transfer, for example several 4095-byte
+transfers that share a paced CAN bus.
 
 When a deadline expires the route becomes idle again, the timeout is counted and
 the observer is notified. The tester side keeps its own P2 client timing; the
@@ -113,6 +117,7 @@ Usage
         0x0E10U,           // gateway tester address towards the nodes
         0x0E00U, 0x0EFFU,  // external testers
         150U,              // functional response window [ms]
+        TransportRouter::DEFAULT_TRANSFER_TIMEOUT_MS,
         7U,                // largest functional request
         ROUTES};
 

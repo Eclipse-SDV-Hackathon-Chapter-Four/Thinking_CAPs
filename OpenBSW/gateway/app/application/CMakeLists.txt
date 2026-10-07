@@ -18,6 +18,7 @@ add_executable(
     src/systems/DoIpServerSystem.cpp
     src/systems/DoIpClientSystem.cpp
     src/systems/DoCanSystem.cpp
+    src/can/PacedCanTransceiver.cpp
     src/uds/DemoClearDtc.cpp
     src/uds/DemoDtcManager.cpp
     src/uds/DemoReadDtcInfo.cpp

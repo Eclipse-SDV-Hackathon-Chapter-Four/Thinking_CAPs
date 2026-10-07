@@ -23,6 +23,32 @@ import yaml
 
 DIAG_CAN_MIN, DIAG_CAN_MAX = 0x7DF, 0x7EF
 TRANSPORTS = ("docan", "doip")
+# SWR-032: gateway CAN traffic <= 10 % of a 500 kbit/s bus in any 1 s window
+CAN_BITRATE, BUS_LOAD_BUDGET = 500_000, 0.10
+RTOS_TICK_US = 1000  # timers round up to the RTOS tick
+
+
+def frame_bits(dlc: int = 8) -> int:
+    """Classic CAN data frame with 11-bit identifier, worst-case bit stuffing."""
+    payload = 8 * dlc
+    return 47 + payload + (34 + payload - 1) // 4
+
+
+def isotp_frames(length: int) -> int:
+    """ISO-TP frames of a request (single frame up to 7 bytes, first frame 6, consecutive 7)."""
+    return 1 if length <= 7 else 1 + -(-(length - 6) // 7)
+
+
+def min_tx_gap_us() -> int:
+    """Smallest gap between gateway frames that keeps the load within the budget."""
+    return -(-frame_bits() * 1_000_000 // int(CAN_BITRATE * BUS_LOAD_BUDGET))
+
+
+def required_transfer_ms(cfg: dict) -> int:
+    """Every CAN route sends its largest request at once through the paced bus, plus 1 s."""
+    gap_ms = -(-cfg["can_tx_min_gap_us"] // RTOS_TICK_US) + 1
+    frames = sum(isotp_frames(r["max_length"]) for r in cfg["routes"] if r["transport"] == "docan")
+    return frames * gap_ms + 1000
 
 
 class ConfigError(Exception):
@@ -86,7 +112,10 @@ def validate(data: dict) -> dict:
         "functional_address": _int(gw, "functional_address", where),
         "functional_can_id": _int(gw, "functional_can_id", where),
         "node_tester_address": _int(gw, "node_tester_address", where),
+        "probe_tester_address": _int(gw, "probe_tester_address", where),
         "functional_window_ms": _int(gw, "functional_window_ms", where),
+        "can_tx_min_gap_us": _int(gw, "can_tx_min_gap_us", where),
+        "transfer_timeout_ms": _int(gw, "transfer_timeout_ms", where),
         "vin": str(gw.get("vin", "")),
         "ecu_serial": str(gw.get("ecu_serial", "")),
     }
@@ -105,6 +134,10 @@ def validate(data: dict) -> dict:
             raise ConfigError(f"gateway: {key} out of range")
     if cfg["tester_min"] <= cfg["logical_address"] <= cfg["tester_max"]:
         raise ConfigError("gateway: logical_address inside tester_range")
+    if not cfg["tester_min"] <= cfg["probe_tester_address"] <= cfg["tester_max"]:
+        raise ConfigError("gateway: probe_tester_address must be inside tester_range")
+    if cfg["probe_tester_address"] == cfg["node_tester_address"]:
+        raise ConfigError("gateway: probe_tester_address equals node_tester_address")
 
     addresses = {cfg["logical_address"]: "gateway", cfg["functional_address"]: "functional"}
     can_ids = {cfg["functional_can_id"]: "functional_can_id"}
@@ -141,6 +174,12 @@ def validate(data: dict) -> dict:
     if not routes:
         raise ConfigError("routes: at least one route is required")
     cfg["routes"] = routes
+    if cfg["can_tx_min_gap_us"] < min_tx_gap_us():
+        raise ConfigError(f"gateway: can_tx_min_gap_us {cfg['can_tx_min_gap_us']} below "
+                          f"{min_tx_gap_us()} us, the 10 % bus-load budget (SWR-032)")
+    if cfg["transfer_timeout_ms"] < required_transfer_ms(cfg):
+        raise ConfigError(f"gateway: transfer_timeout_ms {cfg['transfer_timeout_ms']} below "
+                          f"{required_transfer_ms(cfg)} ms needed for paced transfers on all CAN routes")
     canonical = json.dumps(cfg, sort_keys=True).encode()
     cfg["hash"] = hashlib.sha256(canonical).hexdigest()[:8]
     return cfg
@@ -173,9 +212,12 @@ constexpr uint16_t GATEWAY_ADDRESS        = 0x{cfg['logical_address']:04X}U;
 constexpr uint16_t FUNCTIONAL_ADDRESS     = 0x{cfg['functional_address']:04X}U;
 constexpr uint32_t FUNCTIONAL_CAN_ID      = 0x{cfg['functional_can_id']:03X}U;
 constexpr uint16_t NODE_TESTER_ADDRESS    = 0x{cfg['node_tester_address']:04X}U;
+constexpr uint16_t PROBE_TESTER_ADDRESS   = 0x{cfg['probe_tester_address']:04X}U;
 constexpr uint16_t TESTER_ADDRESS_MIN     = 0x{cfg['tester_min']:04X}U;
 constexpr uint16_t TESTER_ADDRESS_MAX     = 0x{cfg['tester_max']:04X}U;
 constexpr uint32_t FUNCTIONAL_WINDOW_MS   = {cfg['functional_window_ms']}U;
+constexpr uint32_t CAN_TX_MIN_GAP_US      = {cfg['can_tx_min_gap_us']}U;
+constexpr uint32_t TRANSFER_TIMEOUT_MS    = {cfg['transfer_timeout_ms']}U;
 constexpr char const VIN[]                = "{cfg['vin']}";
 constexpr char const ECU_SERIAL[]         = "{cfg['ecu_serial']}";
 

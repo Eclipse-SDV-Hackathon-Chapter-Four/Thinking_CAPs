@@ -28,6 +28,7 @@ char const* BusIdTraits::getName(uint8_t index)
         BUS_ID_NAME(CAN_0);
         BUS_ID_NAME(ETH_0);
         BUS_ID_NAME(DOIP_NODES);
+        BUS_ID_NAME(PROBE);
         default: return "INVALID";
     }
 }

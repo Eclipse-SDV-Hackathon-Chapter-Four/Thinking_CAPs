@@ -1,6 +1,6 @@
 {
-  "generated": "2026-10-07T16:44:24+0100",
-  "executable_sha256": "25238a04581a59b80f3d6aa9b360bf0453e175022811368050d464b0859993a9",
+  "generated": "2026-10-07T19:16:16+0100",
+  "executable_sha256": "4f8dcdc90dba1830c5d0b7f3be641025f6a9de5bbad47ad5dfbf3694c6b40fdf",
   "openbsw_revision": "432b9be6098d99570ab8ebc32a7cbb895ca7bb63",
   "requirements": {
     "SWR-001": {
@@ -110,11 +110,8 @@
       ]
     },
     "SWR-026": {
-      "status": "not verified",
-      "missing_levels": [
-        "IT",
-        "UT"
-      ]
+      "status": "verified",
+      "missing_levels": []
     },
     "SWR-027": {
       "status": "verified",
@@ -135,9 +132,8 @@
       ]
     },
     "SWR-032": {
-      "status": "failed",
+      "status": "verified",
       "missing_levels": [
-        "AN",
         "QT"
       ]
     },
@@ -199,13 +195,11 @@
   },
   "requirement_counts": {
     "partially verified": 7,
-    "verified": 30,
-    "not verified": 1,
-    "failed": 1
+    "verified": 32
   },
   "unit_tests": {
-    "total": 107,
-    "passed": 107
+    "total": 122,
+    "passed": 122
   },
   "coverage": {
     "module": {
@@ -219,11 +213,11 @@
       "function_percent": 97.2
     },
     "gateway": {
-      "line_percent": 96.7,
-      "branch_percent": 83.4
+      "line_percent": 97.5,
+      "branch_percent": 84.6
     },
     "generator": {
-      "line_percent": 97.27272727272727
+      "line_percent": 97.60956175298804
     }
   },
   "upstream_gates": {
@@ -236,11 +230,11 @@
   },
   "bazel": [
     [
-      "//libs/bsw/transportRouter:transport_router_test",
+      "//libs/bsw/transportRouterSimple:transport_router_simple_test",
       "PASSED"
     ],
     [
-      "//libs/bsw/transportRouterSimple:transport_router_simple_test",
+      "//libs/bsw/transportRouter:transport_router_test",
       "PASSED"
     ]
   ],
@@ -309,11 +303,14 @@
     "ITC-54": "passed",
     "ITC-55": "passed",
     "ITC-56": "passed",
-    "ITC-57": "passed"
+    "ITC-57": "passed",
+    "ITC-58": "passed",
+    "ITC-59": "passed",
+    "ITC-60": "passed"
   },
   "integration_current": true,
   "board": {
-    "image_sha256": "3ae702227a540494b6d9ddd5e39d756d0fef8a21a083e51842c4add12d265020",
+    "image_sha256": "6826a521fbc052b4aea17e86d2a995f2dff524159d176eaac4b82cfbe9b61e7f",
     "regions": {
       "FlashConfigField": {
         "used": 0,
@@ -324,8 +321,8 @@
         "percent": 25.0
       },
       "Application": {
-        "used": 203400,
-        "percent": 12.94
+        "used": 208624,
+        "percent": 13.27
       },
       "CrcMeta": {
         "used": 32,
@@ -340,8 +337,8 @@
         "percent": 14.0
       },
       "MainRAM": {
-        "used": 91080,
-        "percent": 72.31
+        "used": 91400,
+        "percent": 72.57
       },
       "NoInit": {
         "used": 0,
@@ -377,8 +374,8 @@
       "detail": "none found"
     },
     "QTC-06": {
-      "status": "failed",
-      "detail": "worst case 15.82 % (586 frames of a 4095-byte request in 1 s, STmin 0); measured peak 15.98 %"
+      "status": "passed",
+      "detail": "worst case 9.02 % (334 of 1172 frames of 4095-byte requests on every CAN route in 1 s, STmin 0, paced at 3000 us); measured peak 7.91 %"
     },
     "QTC-07": {
       "status": "passed",
@@ -386,11 +383,11 @@
     },
     "QTC-08": {
       "status": "passed",
-      "detail": "p95 DoIP\u2192CAN 5.4 ms, CAN\u2192DoIP 6.06 ms (200 samples)"
+      "detail": "p95 DoIP\u2192CAN 3.77 ms, CAN\u2192DoIP 0.83 ms (200 samples)"
     },
     "QTC-09": {
       "status": "passed",
-      "detail": "start-up hash b22f042e found; statistics line found"
+      "detail": "start-up hash 7dad8df6 found; statistics line found"
     },
     "QTC-10": {
       "status": "passed",
@@ -414,7 +411,7 @@
     },
     "QTC-15": {
       "status": "passed",
-      "detail": "THREADX: flash 203400 B (12.94 %), MainRAM 91080 B (72.31 %); POSIX headers outside platforms/posix: 0; recorded board run uses the current image"
+      "detail": "THREADX: flash 208624 B (13.27 %), MainRAM 91400 B (72.57 %); POSIX headers outside platforms/posix: 0; recorded board run uses the current image"
     },
     "QTC-16": {
       "status": "passed",
@@ -430,11 +427,11 @@
     }
   },
   "bus_load": {
-    "worst_frames": 586,
-    "worst_percent": 15.82,
-    "measured_percent": 15.98
+    "worst_frames": 334,
+    "requested_frames": 1172,
+    "gap_us": 3000,
+    "worst_percent": 9.02,
+    "measured_percent": 7.91
   },
-  "trace_issues": [
-    "SWR-026 is not implemented by a software unit"
-  ]
+  "trace_issues": []
 }

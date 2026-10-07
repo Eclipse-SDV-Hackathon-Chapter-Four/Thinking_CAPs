@@ -25,7 +25,7 @@ The report generator parses this table: ID | Source | Test case | Method | Verif
 | QTC-03 | auto:openbsw-pinned | The OpenBSW checkout is at the locked revision without tracked modifications | Analysis | SWR-053 |
 | QTC-04 | auto:no-vehicle-middleware | The gateway executable contains no SOME/IP, middleware or Zenoh symbols | Analysis | SWR-031 |
 | QTC-05 | auto:no-dynamic-memory | Gateway and module sources contain no `new`, `malloc`, `throw` or `dynamic_cast` | Analysis | SWR-043 |
-| QTC-06 | auto:bus-load | Worst-case gateway CAN load from the routing table (classic CAN, 500 kbit/s) and the measured 1 s peak in SWE.5 are below 10 % | Analysis | SWR-032 |
+| QTC-06 | auto:bus-load | Worst-case gateway CAN load from the routing table (classic CAN, 500 kbit/s, every CAN route at its largest request, STmin 0, with the gateway's transmit pacing) and the measured 1 s peak in SWE.5 are below 10 % | Analysis | SWR-032 |
 | QTC-07 | auto:configuration-consistency | `routing.yaml` is valid (all CAN identifiers in `0x7DF`–`0x7EF`, so the DoCAN filter accepts and the gateway sends nothing else) and every Serial2CAN profile forwards each route's request and response IDs together (or neither) | Analysis | SWR-030, SWR-033, SWR-052 |
 | QTC-08 | auto:latency | Recorded forwarding latency p95 ≤ 10 ms per direction | Test | SWR-060 |
 | QTC-09 | auto:observability | Recorded gateway logs contain the start-up identity with the current routing-table hash and a statistics line | Analysis | SWR-054 |

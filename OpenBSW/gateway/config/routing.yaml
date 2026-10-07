@@ -12,7 +12,10 @@ gateway:
   functional_can_id: 0x7DF      # ISO-TP functional request identifier
   node_tester_address: 0x0E10   # source address the gateway uses towards nodes (CAN and DoIP)
   tester_range: [0x0E00, 0x0EFF] # DoIP testers allowed to activate routing
+  probe_tester_address: 0x0EFE  # internal tester of routine F000; reserved, not for DoIP testers
   functional_window_ms: 150     # time to collect functional responses
+  can_tx_min_gap_us: 3000       # minimum gap between the gateway's CAN frames: <= 10 % bus load (SWR-032)
+  transfer_timeout_ms: 10000    # router budget per request; covers paced 4095-byte transfers on all CAN routes
   vin: TCAPSZONALGW00001        # 17 characters, DoIP announcement and DID F190
   ecu_serial: ZGW-POSIX-0001    # DID F18C
 

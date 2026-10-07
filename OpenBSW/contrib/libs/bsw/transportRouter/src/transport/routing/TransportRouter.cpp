@@ -86,6 +86,10 @@ TransportRouter::ValidationError TransportRouter::validate(size_t& badRouteIndex
     {
         return ValidationError::INVALID_LENGTH;
     }
+    if (cfg.transferTimeoutMs == 0U)
+    {
+        return ValidationError::INVALID_TIMING;
+    }
     for (size_t i = 0U; i < cfg.routes.size(); ++i)
     {
         DiagnosticRoute const& route = cfg.routes[i];
@@ -129,7 +133,7 @@ char const* TransportRouter::toString(ValidationError const error)
         case ValidationError::ADDRESS_CONFLICT:
             return "route overlaps the local, functional, gateway tester or tester addresses";
         case ValidationError::DUPLICATE_ADDRESS: return "duplicate route address";
-        case ValidationError::INVALID_TIMING:    return "invalid P2/P2*";
+        case ValidationError::INVALID_TIMING:    return "invalid P2/P2* or transfer budget";
         case ValidationError::INVALID_LENGTH:    return "invalid maximum length";
         default:                                 return "unknown";
     }
@@ -351,8 +355,9 @@ ITransportMessageProvider::ErrorCode TransportRouter::getTransportMessage(
     if (pending)
     {
         // P2 covers the start of the response; a segmented response may take longer.
-        uint32_t const p2Star = _configuration.routes[index].p2StarMs;
-        route.deadline = _nowMs() + ((p2Star > TRANSFER_TIMEOUT_MS) ? p2Star : TRANSFER_TIMEOUT_MS);
+        uint32_t const p2Star   = _configuration.routes[index].p2StarMs;
+        uint32_t const transfer = _configuration.transferTimeoutMs;
+        route.deadline          = _nowMs() + ((p2Star > transfer) ? p2Star : transfer);
     }
     return allocate(size, NO_ROUTE, pTransportMessage);
 }
@@ -435,7 +440,7 @@ ITransportMessageListener::ReceiveResult TransportRouter::routeRequest(
         route.testerBusId = testerBusId;
         route.processed   = listener;
         route.state       = RouteState::SENDING;
-        route.deadline    = _nowMs() + TRANSFER_TIMEOUT_MS;
+        route.deadline    = _nowMs() + _configuration.transferTimeoutMs;
         _statistics.count(index, RouteCounter::REQUESTS);
     }
     message.setSourceAddress(_configuration.gatewayTesterAddress);

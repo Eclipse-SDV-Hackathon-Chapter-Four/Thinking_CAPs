@@ -27,6 +27,7 @@
 #include <uds/async/AsyncDiagHelper.h>
 #include <uds/jobs/ReadIdentifierFromMemory.h>
 #include <uds/services/readdata/ReadDataByIdentifier.h>
+#include <uds/services/routinecontrol/RequestRoutineResults.h>
 #include <uds/services/routinecontrol/RoutineControl.h>
 #include <uds/services/routinecontrol/StartRoutine.h>
 #include <uds/services/sessioncontrol/DiagnosticSessionControl.h>
@@ -91,6 +92,7 @@ private:
     ReadDataByIdentifier _readDataByIdentifier;
     RoutineControl _routineControl;
     StartRoutine _startRoutine;
+    RequestRoutineResults _requestRoutineResults;
     ReadIdentifierFromMemory _readF190;
     ReadIdentifierFromMemory _readF18C;
     ReadIdentifierFromMemory _readF195;

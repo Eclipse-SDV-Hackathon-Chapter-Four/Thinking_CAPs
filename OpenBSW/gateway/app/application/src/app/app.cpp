@@ -37,6 +37,7 @@
 #include <etl/print.h>
 #include <gateway/GatewayIdentity.h>
 #include <gateway/NodeMonitor.h>
+#include <lifecycle/AsyncLifecycleComponent.h>
 #include <lifecycle/LifecycleLogger.h>
 #include <lifecycle/LifecycleManager.h>
 #include <systems/ICanSystem.h>
@@ -100,6 +101,13 @@ LifecycleManager lifecycleManager{
 ::etl::typed_storage<::gateway::NodeMonitor> nodeMonitor;
 ::etl::typed_storage<::uds::ReadRoutingTable> readRoutingTable;
 ::etl::typed_storage<::uds::ReadRoutingStatistics> readRoutingStatistics;
+::etl::typed_storage<::gateway::ReachabilityProbe> reachabilityProbe;
+::etl::typed_storage<::uds::ReachabilityRoutine> reachabilityRoutine;
+/// Covers the DoIP client's delivery budget and the longest P2 of the routes (SWR-026).
+constexpr uint32_t REACHABILITY_WINDOW_MS = 2000U;
+static_assert(
+    REACHABILITY_WINDOW_MS > ::doip::DoIpClientSystem::DELIVERY_TIMEOUT_MS + 150U,
+    "a DoIP route must be able to connect and answer within the reachability window");
 
 // VIN for DoIP vehicle announcement and identification responses (SWR-001).
 void provideVin(::etl::span<uint8_t, ::doip::VIN_LENGTH> const vin)
@@ -110,6 +118,41 @@ void provideVin(::etl::span<uint8_t, ::doip::VIN_LENGTH> const vin)
         vin[i] = (i < configured.size()) ? configured[i] : static_cast<uint8_t>(' ');
     }
 }
+
+// Registers the reachability probe with the router once the router is initialised (SWR-026);
+// the router's init() resets its transport layers.
+class ReachabilityProbeComponent : public ::lifecycle::AsyncLifecycleComponent
+{
+public:
+    ReachabilityProbeComponent(
+        ::transport::ITransportSystem& transport,
+        ::gateway::ReachabilityProbe& probe,
+        ::async::ContextType const context)
+    : _transport(transport), _probe(probe)
+    {
+        setTransitionContext(context);
+    }
+
+    void init() override { transitionDone(); }
+
+    void run() override
+    {
+        _transport.addTransportLayer(_probe);
+        transitionDone();
+    }
+
+    void shutdown() override
+    {
+        _transport.removeTransportLayer(_probe);
+        transitionDone();
+    }
+
+private:
+    ::transport::ITransportSystem& _transport;
+    ::gateway::ReachabilityProbe& _probe;
+};
+
+::etl::typed_storage<ReachabilityProbeComponent> reachabilityProbeComponent;
 
 // Releases a disconnected tester's pending requests in the router (SWR-041).
 class TesterConnectionMonitor : public ::doip::IDoIpServerConnectionStateCallback
@@ -236,6 +279,15 @@ void startApp()
     transport.getRouter().setObserver(&monitor);
     uds.addJob(readRoutingTable.create(transport.getRoutingTable()));
     uds.addJob(readRoutingStatistics.create(transport.getRoutingTable(), transport.getStatistics()));
+    // routine F000 probes the routes from the Ethernet context, where the DoIP client runs
+    auto& probe = reachabilityProbe.create(
+        ::busid::PROBE,
+        ::gateway::config::PROBE_TESTER_ADDRESS,
+        transport.getRoutingTable(),
+        REACHABILITY_WINDOW_MS);
+    auto& routine = reachabilityRoutine.create(probe, TASK_ETHERNET);
+    uds.addJob(routine.getStartRoutine());
+    uds.addJob(routine.getRequestRoutineResults());
     lifecycleManager.addComponent("uds", uds, 6U);
 
     /* runlevel 7: DoIP server and vehicle announcement; DoIP client to the Ethernet nodes */
@@ -253,6 +305,10 @@ void startApp()
     lifecycleManager.addComponent("doipServer", doip, 7U);
     lifecycleManager.addComponent(
         "doipClient", doipClientSystem.create(transport, TASK_ETHERNET), 7U);
+    lifecycleManager.addComponent(
+        "reachability",
+        reachabilityProbeComponent.create(transport, *reachabilityProbe, TASK_ETHERNET),
+        7U);
 
     /* runlevel 8 */
     lifecycleManager.addComponent(

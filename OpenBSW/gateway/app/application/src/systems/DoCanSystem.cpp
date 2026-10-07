@@ -121,9 +121,13 @@ void DoCanSystem::init()
     _normalAddressingFilter.init(
         ::etl::span<AddressEntryType const>(_addressEntries), ::etl::make_span(_codecs));
 
-    auto& transceiver = *_canSystem.getCanTransceiver(::busid::CAN_0);
+    // the gateway's own frames are paced to stay within the bus-load budget (SWR-032)
+    auto& transceiver = _pacedTransceiver.emplace(
+        *_canSystem.getCanTransceiver(::busid::CAN_0),
+        _context,
+        ::gateway::config::CAN_TX_MIN_GAP_US);
     auto& docanTransceiver = _transceiver.emplace(
-        ::etl::ref(transceiver),
+        ::etl::ref<::can::ICanTransceiver>(transceiver),
         ::etl::ref(_normalAddressingFilter),
         ::etl::ref(_normalAddressingFilter),
         ::etl::ref(_normalAddressing));

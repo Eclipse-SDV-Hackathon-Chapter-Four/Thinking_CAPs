@@ -2,6 +2,7 @@
 #include "uds/GatewayDiagJobs.h"
 
 #include <async/Async.h>
+#include <time/TimestampProvider.h>
 #include <uds/connection/IncomingDiagConnection.h>
 
 namespace uds
@@ -111,6 +112,57 @@ void DtcSink::setPassed(uint32_t const dtc)
 {
     ::async::LockType const lock;
     _manager.reportPassed(dtc);
+}
+
+namespace
+{
+uint32_t probeNowMs() { return ::bsw::time::TimestampProvider::getTimestampUs32Bit() / 1000U; }
+} // namespace
+
+ReachabilityRoutine::ReachabilityRoutine(
+    ::gateway::ReachabilityProbe& probe, ::async::ContextType const probeContext)
+: RoutineControlJob(_implRequest, sizeof(_implRequest), nullptr, &_resultsNode)
+, _probe(probe)
+, _probeContext(probeContext)
+, _startPending(false)
+, _implRequest{0x31U, 0x01U, ROUTINE_ID >> 8U, ROUTINE_ID & 0xFFU}
+, _resultsImplRequest{0x31U, 0x03U, ROUTINE_ID >> 8U, ROUTINE_ID & 0xFFU}
+, _resultsNode(_resultsImplRequest, *this)
+{}
+
+DiagReturnCode::Type ReachabilityRoutine::start(
+    IncomingDiagConnection& connection, uint8_t const* const, uint16_t const)
+{
+    _startPending = true;
+    ::async::execute(_probeContext, *this);
+    // the dispatcher has already put the sub-function and the routine ID into the response
+    PositiveResponse& response = connection.releaseRequestGetResponse();
+    (void)connection.sendPositiveResponseInternal(response.getLength(), *this);
+    return DiagReturnCode::OK;
+}
+
+void ReachabilityRoutine::execute()
+{
+    _probe.start(probeNowMs());
+    _startPending = false;
+}
+
+DiagReturnCode::Type ReachabilityRoutine::requestResults(
+    IncomingDiagConnection& connection, uint8_t const* const, uint16_t const)
+{
+    uint32_t const now         = probeNowMs();
+    bool const running         = _startPending || _probe.running(now);
+    PositiveResponse& response = connection.releaseRequestGetResponse();
+    (void)response.appendUint8(running ? 0x01U : 0x00U);
+    (void)response.appendUint8(static_cast<uint8_t>(_probe.routeCount()));
+    for (size_t i = 0U; i < _probe.routeCount(); ++i)
+    {
+        bool const reached
+            = (!running) && (_probe.result(i, now) == ::gateway::ReachabilityProbe::Result::REACHED);
+        (void)response.appendUint8(reached ? 0x01U : 0x00U);
+    }
+    (void)connection.sendPositiveResponseInternal(response.getLength(), *this);
+    return DiagReturnCode::OK;
 }
 
 } // namespace uds

@@ -79,6 +79,7 @@ TransportSystem::TransportSystem(::async::ContextType transitionContext)
           ::gateway::config::TESTER_ADDRESS_MIN,
           ::gateway::config::TESTER_ADDRESS_MAX,
           ::gateway::config::FUNCTIONAL_WINDOW_MS,
+          ::gateway::config::TRANSFER_TIMEOUT_MS,
           MAX_FUNCTIONAL_LENGTH,
           ::etl::span<::transport::DiagnosticRoute const>(_routes)},
       _statistics,

@@ -313,3 +313,12 @@ def test_board_doip_node_failures(tester, eth_ecu):
     assert tester.request(ETH, b"\x3E\x00").responses == [(ETH, b"\x7E\x00")]
     assert tester.request(GATEWAY, b"\x14\xFF\xFF\xFF").responses[-1][1] == b"\x54"
     assert read_dtcs(tester, 0x09).get(u0142) is None
+
+
+def test_board_reachability_routine(tester, eth_ecu):
+    """SWR-026, SWR-051: routine F000 on the board: the CAN routes have no peer, the DoIP route
+    to the Ethernet ECU answers."""
+    assert tester.request(GATEWAY, b"\x31\x01\xF0\x00").responses == [(GATEWAY, b"\x71\x01\xF0\x00")]
+    time.sleep(2.2)
+    assert tester.request(GATEWAY, b"\x31\x03\xF0\x00").responses == [
+        (GATEWAY, b"\x71\x03\xF0\x00\x00\x03\x00\x00\x01")]
