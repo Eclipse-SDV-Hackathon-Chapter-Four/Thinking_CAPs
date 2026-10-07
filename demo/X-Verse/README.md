@@ -85,6 +85,8 @@ The vehicle baseline uses the Python Zenoh VCU with the SOME/IP bridge and S-COR
 | CARLA simulator and client bridge | Vehicle simulation, telemetry, and actuator application | `~/carla-simulator`, `bridges/carla` |
 | Eclipse Zenoh | Communication between vehicle, control, and HMI components | `core/zenoh` and a separately started router |
 | Zenoh–SOME/IP bridge | Maps signals between Zenoh topics and SOME/IP services | `bridges/someip/zenoh-someip-bridge` |
+| Zenoh–CAN bridge | Maps Zenoh topics to CAN signals and back; used by the ThreadX AZ3166 lighting ECU | `bridges/can/can-zenoh-bridge-python` |
+| X-COM Serial2CAN bridge | Connects serial SLCAN ECUs (e.g. the ThreadX AZ3166) to an X-Verse CAN bus (`vcan0` or rootless `udp_multicast`) | `bridges/can/serial2can-bridge` |
 | Eclipse S-CORE ADAS | Cruise control application and middleware runtime in a container | `vecu/s-core` |
 | Python Zenoh VCU | Driver requests, cruise control engagement, and vehicle commands | `vecu/vcu_zenoh` |
 | Python PID controller | Alternative controller for the Zenoh-only mode | `vecu/simulink/pid_controller` |
