@@ -1,0 +1,42 @@
+# Eclipse SDV Hackathon 2026 (Chapter Four) · OpenSOVD vECU
+# The opensovd-gateway of inc_diagnostics PR #40 (component `cruise`, :7690) and the
+# SOVD Adapter Console (:8080) that watches it next to the live vehicle (Zenoh :7447).
+# The classic path (CDA :20002 + ECU simulator :8181) is the upstream CDA compose,
+# started by ctl.sh from its own checkout.
+#
+# Host network, like the S-CORE containers: everything meets on 127.0.0.1.
+# Use ./ctl.sh (up | start | stop | down | logs), not compose directly.
+
+x-debounce: &debounce
+  # Same variables as the Rust code; demo values (Rust defaults 5000 / 2000).
+  CRUISE_DEBOUNCE_FAILED_MS: ${CRUISE_DEBOUNCE_FAILED_MS:-1500}
+  CRUISE_DEBOUNCE_PASSED_MS: ${CRUISE_DEBOUNCE_PASSED_MS:-1000}
+
+services:
+  opensovd-gateway:
+    build: ./gateway
+    image: opensovd-gateway-pr40:d388985
+    container_name: opensovd-gateway
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      <<: *debounce
+      SCORE_GATEWAY_ADDRESS: ${SCORE_GATEWAY_ADDRESS:-127.0.0.1:7690}
+      RUST_LOG: ${RUST_LOG:-info}
+
+  sovd-adapter-console:
+    build: ../SOVD_Adapter_Console
+    image: sovd-adapter-console:2.1
+    container_name: sovd-adapter-console
+    network_mode: host
+    restart: unless-stopped
+    depends_on:
+      opensovd-gateway:
+        condition: service_healthy
+    environment:
+      <<: *debounce
+      CONSOLE_PORT: ${CONSOLE_PORT:-8080}
+      SOVD_URL: http://${SCORE_GATEWAY_ADDRESS:-127.0.0.1:7690}
+      ZENOH_CONNECT: ${ZENOH_CONNECT:-tcp/127.0.0.1:7447}
+      CDA_URL: ${CDA_URL:-http://127.0.0.1:20002}
+      SIM_URL: ${SIM_URL:-http://127.0.0.1:8181}

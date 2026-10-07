@@ -1,0 +1,18 @@
+[package]
+name = "opensovd-gateway"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "opensovd-gateway"
+path = "../../../inc/score/opensovd-gateway/src/main.rs"
+
+[dependencies]
+diag_api = { path = "../diag_api" }
+diag_json = { path = "../diag_json" }
+sovd_adapter = { path = "../sovd_adapter" }
+opensovd-core = { workspace = true }
+opensovd-server = { workspace = true }
+tokio = { version = "1", features = ["macros", "rt", "net", "time"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
