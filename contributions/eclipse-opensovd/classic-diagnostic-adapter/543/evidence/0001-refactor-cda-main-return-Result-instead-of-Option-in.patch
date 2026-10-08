@@ -1,5 +1,21 @@
+From 5a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t Mon Sep 17 00:00:00 2001
+From: EP1991 - Team Thinking_CAPs <erupuri@icloud.com>
+Date: Tue, 22 Sep 2026 15:43:48 +0200
+Subject: [PATCH] refactor(cda-main): return Result instead of Option in mdd.rs
 
+Eclipse SDV Hackathon Chapter 4 - 2026
 
+Replace Option<T> with Result<T, MddLoadingError> for proper error handling
+in MDD loading functions. Add new error variants for better diagnostics:
+- StorageUnavailable
+- MissingPayload
+- DatabaseBuildFailed
+- ComParamsInvalid
+- EcuManagerFailed
+
+Fixes #543
+
+---
 diff --git a/cda-main/src/mdd.rs b/cda-main/src/mdd.rs
 index a22aa3a..67a7b05 100644
 --- a/cda-main/src/mdd.rs
@@ -23,7 +39,7 @@ index a22aa3a..67a7b05 100644
 +    #[error("Failed to create ECU manager for ECU {ecu}: {reason}")]
 +    EcuManagerFailed { ecu: String, reason: String },
  }
- 
+
  pub const PROTO_LOAD_CONFIG: &[ProtoLoadConfig; 4] = &[
 @@ -222,8 +236,11 @@ pub async fn load_databases<S: SecurityPlugin>(
  /// Returns paths to MDD files, preferring files found in the CDA `storage`.
@@ -41,7 +57,7 @@ index a22aa3a..67a7b05 100644
          tracing::info!(
 @@ -252,39 +269,38 @@ pub async fn resolve_mdd_paths(storage: &LocalStorage, database_dir: &str) -> Ve
  }
- 
+
  /// Returns paths to all MDD files found in the CDA `storage`.
 -/// Falls back to an empty list if the storage collection cannot be accessed.
 -async fn load_mdd_paths_from_storage(storage: &LocalStorage) -> Option<Vec<PathBuf>> {
@@ -66,7 +82,7 @@ index a22aa3a..67a7b05 100644
 +        .map_err(|e| MddLoadingError::StorageUnavailable {
 +            reason: format!("cannot access DiagnosticDatabase collection: {e}"),
 +        })?;
- 
+
 -    let keys = match collection.list().await {
 -        Ok(k) => k,
 -        Err(e) => {
@@ -80,7 +96,7 @@ index a22aa3a..67a7b05 100644
 +        .map_err(|e| MddLoadingError::StorageUnavailable {
 +            reason: format!("cannot list DiagnosticDatabase collection: {e}"),
 +        })?;
- 
+
 -    Some(
 -        keys.iter()
 -            .filter_map(|k| match collection.file_path(k) {
@@ -105,11 +121,11 @@ index a22aa3a..67a7b05 100644
 +        })
 +        .collect())
  }
- 
+
  /// Seeds the `DiagnosticDatabase` storage collection from `mdd_files` when the collection
 @@ -428,23 +444,22 @@ async fn mark_duplicate_ecus_by_address<S: SecurityPlugin>(
  }
- 
+
  /// Extract and build the diagnostic database from proto data.
 +///
 +/// # Errors
@@ -139,7 +155,7 @@ index a22aa3a..67a7b05 100644
 +            path: ctx.mddfile.display().to_string(),
 +            ecu: ctx.ecu_name.clone(),
 +        })?;
- 
+
      let mut cfg = ctx.database_config.clone();
      if let Some(override_value) = ctx
 @@ -461,25 +476,24 @@ fn build_diagnostic_database(
@@ -160,7 +176,7 @@ index a22aa3a..67a7b05 100644
      })
 -    .ok()
  }
- 
+
  /// Create an ECU manager from diagnostic database and configuration.
 +///
 +/// # Errors
@@ -192,11 +208,11 @@ index a22aa3a..67a7b05 100644
      })
 -    .ok()
  }
- 
+
  /// Extract file chunks from proto data.
 @@ -521,18 +531,25 @@ fn extract_file_chunks(mut proto_data: HashMap<ChunkType, Vec<Chunk>>) -> Vec<Ch
  }
- 
+
  /// Load and process a single ECU from MDD file.
 +///
 +/// # Errors
@@ -225,15 +241,15 @@ index a22aa3a..67a7b05 100644
 @@ -551,7 +568,7 @@ fn load_ecu_from_file<S: SecurityPlugin>(
      )?;
      let files = extract_file_chunks(proto_data);
- 
+
 -    Some(EcuLoadResult { manager, files })
 +    Ok(EcuLoadResult { manager, files })
  }
- 
+
  /// Loads a single MDD file and returns the ECU name, manager, and file manager.
 @@ -610,12 +627,7 @@ fn load_single_mdd<S: SecurityPlugin>(
      };
- 
+
      let per_ecu_cfg = ecu_config_map.get(&ecu_name.to_lowercase());
 -    let result = load_ecu_from_file(proto_data, &ctx, per_ecu_cfg).ok_or_else(|| {
 -        MddLoadingError::LoadFailed {
@@ -242,13 +258,13 @@ index a22aa3a..67a7b05 100644
 -        }
 -    })?;
 +    let result = load_ecu_from_file(proto_data, &ctx, per_ecu_cfg)?;
- 
+
      let file_manager = FileManager::new(mdd_path, result.files);
      Ok((ecu_name, result.manager, file_manager))
 @@ -834,11 +846,91 @@ mod tests {
          );
      }
- 
+
 +    /// Replaces the storage's `collections` directory with a plain file, so every
 +    /// collection access fails (also when the tests run as root).
 +    fn break_storage(fixture: &Fixture) {
@@ -339,7 +355,7 @@ index a22aa3a..67a7b05 100644
      impl Fixture {
          fn new_with_mdd_files(mdd_files: &[(&str, &[u8])]) -> Self {
 @@ -858,7 +950,7 @@ mod tests {
- 
+
              Self {
                  mdd_files: mdd_files.into_iter().map(|(path, _)| path).collect(),
 -                _storage_dir: storage_dir,
@@ -347,6 +363,5 @@ index a22aa3a..67a7b05 100644
                  storage,
                  db_dir,
              }
--- 
+--
 2.53.0
-
