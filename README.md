@@ -1,189 +1,271 @@
-# Thinking CAPs
+<!--
+  Eclipse SDV Hackathon 2026 (Chapter Four) · Thinking CAPs · demo architecture with contributions
+  Developed mainly with Claude (Anthropic), model Claude Fable 5.1.
+  Created: 2026-10-07 · Latest version: 2026-10-08
+-->
+# Thinking CAPs – Demo architecture and contributions
 
-> **Open-Source at the Core. Cyber-Physical by Design. AI-Powered. Software-Defined.**
+![Demo architecture with the team's contributions: Legends, Core Architecture and Aspice Dark Factory](System_Architecture_contributions.png)
 
-## Contributions
+*Figure 1 – `System_Architecture_contributions.drawio`. Colours: white = Eclipse project used as is · blue = brought to the hackathon · blue with green dashed border = brought and extended during the hackathon · green = built during the hackathon · orange chip = upstream pull request (dark orange with tick = merged) · grey dashed chip = issue work without a PR yet. Solid line = implemented, dashed line = in progress.*
 
-This inventory groups **45 contribution entries** by Eclipse project: upstream
-fixes and proposals, dependency assessments, implemented integrations and planned
-extensions. It includes the original 42 entries plus the documentation-assistant
-pilot, repository code-header cleanup and end-to-end ASPICE evidence. Contribution names link to their records
-or upstream proposals.
+---
 
-**PR status checked: 7 October 2026.** There are **11 distinct published upstream
-PRs: one merged, six open and four draft**. Local verification describes retained
-evidence; upstream acceptance is shown by the PR status. **Not submitted** means
-no published team PR was found; **N/A** marks integration, assessment or concept
-work without a standalone upstream PR.
+## 1. Architecture overview
 
-Cross-project work appears under its primary project, with partner components
-named in the module column. X-Verse, X-COM, CARLA, AAOS, the dashboard and the
-software factory are supporting assets or team implementations. Detailed evidence
-and remaining review requirements are in the [contribution index](contributions/README.md)
-and [registry](contributions/registry.json).
+The vehicle is split into high-performance computers (HPC), a zonal computer, a diagnostic virtual device
+and a test bench, all connected through the **X-COM** communication backbone (Eclipse Zenoh). Four paths run over it:
 
-### Eclipse S-CORE
+1. **Vehicle-control path**: CARLA drives, the X-Verse VCU publishes vehicle data on Zenoh, the
+   ZENOH_2_SOMEIP bridge carries it into the S-CORE cruise-control application over SOME/IP.
+2. **Diagnostic path**: the cruise-control application publishes its diagnostic resources through the
+   `sovd_adapter` crate (PR #40) as OpenSOVD data items; the OpenSOVD diagnostic virtual device also reads
+   the classic ECU through the CDA (PR #601); the Vehicle Lab Diagnosis UI shows the result.
+3. **Lighting path**: vehicle status travels over ZENOH_2_CAN and Serial / CAN to the ThreadX zonal
+   controller, which returns brake and reverse-light decisions; serial-attached ECUs join through SERIAL_2_CAN.
+4. **Test and update paths**: openDuT manages the two-peer test bench and the loss / recovery campaigns from
+   the Vehicle Lab Test Manager; the two FOTA back ends update the RTCU over mutual TLS, and the RTCU
+   deploys to the IVI over ADB.
 
-[Eclipse Safe Open Vehicle Core](https://projects.eclipse.org/projects/automotive.score)
-includes the Communication, SOME/IP Gateway, Lifecycle and Diagnostics modules.
-Communication middleware is also called LoLa or `mw::com`.
+---
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [SOME/IP #84 — service identity and duplicate registration](https://github.com/eclipse-score/inc_someip_gateway/issues/84) | SOME/IP Gateway: SOCom identifiers, registration and discovery | Locally verified; native requirements and maintainer review pending | Not submitted |
-| [Lifecycle #704 — shared communication configuration](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/lifecycle/704/README.md) | Launch Manager: daemon/control-client configuration generation | Draft PR | [Lifecycle #762](https://github.com/eclipse-score/lifecycle/pull/762) |
-| [Diagnostics #16 — diagnostic resource provider](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/issues/eclipse-score/inc_diagnostics/16/README.md) | `diag_api` / `sovd_adapter`: `DataResource` to OpenSOVD `DataProvider` | Open PR; native review pending | [Diagnostics #40](https://github.com/eclipse-score/inc_diagnostics/pull/40) |
-| [Communication #1167 — COM API idempotency tests](contributions/communication-1167/README.md) | LoLa public COM-API integration tests | Open PR; Linux checks retained; native CI/review pending | [Communication #1335](https://github.com/eclipse-score/communication/pull/1335) |
-| [Communication #1261 — stream available services](contributions/issues/eclipse-score/communication/1261/README.md) | Rust COM-API LoLa runtime: service discovery and FFI | Linux checks passed; review pending | Not submitted |
-| [Communication #250 — typed find-any discovery](contributions/issues/eclipse-score/communication/250/README.md) | Rust COM-API: `FindServiceSpecifier::Any` | Linux checks passed; review pending | Not submitted |
-| [Communication #560 — subscription-state handlers](contributions/issues/eclipse-score/communication/560/README.md) | Rust COM-API proxy events and FFI | Linux checks passed; review pending | Not submitted |
-| [Communication #781 — method argument ownership](contributions/issues/eclipse-score/communication/781/README.md) | Rust method plumbing: `MethodInArgPtr<T>` | Draft PR; Linux checks passed | [Communication #1339](https://github.com/eclipse-score/communication/pull/1339) |
-| [Communication #490 — in-process mock runtime](contributions/issues/eclipse-score/communication/490/README.md) | Rust `com-api-runtime-mock` | Draft PR; Linux checks passed | [Communication #1340](https://github.com/eclipse-score/communication/pull/1340) |
-| [Communication #1265 — identifier-pasting dependency](contributions/issues/eclipse-score/communication/1265/engineering-review/score-rust-engineering-review-kohskpez/README.md) | Rust COM-API: `pastey` qualification/adoption | Assessment; native qualification and adoption pending | N/A — assessment |
-| [Communication #173 — external crate inventory](contributions/issues/eclipse-score/communication/173/README.md) | Rust COM-API dependency qualification | Assessment; dependency decisions pending | N/A — assessment |
-| [Communication #1264 — error-handling dependency](contributions/issues/eclipse-score/communication/1264/README.md) | Rust COM-API: `thiserror` | Assessment; native acceptance pending | N/A — assessment |
-| [Communication #1263 — async dependency](contributions/issues/eclipse-score/communication/1263/README.md) | Rust COM-API: `futures` | Assessment; native acceptance pending | N/A — assessment |
-| [Communication #794 — Rust test registration](contributions/issues/eclipse-score/communication/794/README.md) | Rust Bazel targets and manual tags | Tracked upstream work; no team patch | N/A — upstream-owned work |
-| [Communication #782 — Method API runtime](contributions/issues/eclipse-score/communication/782/README.md) | Rust COM-API method backend | Assessment; another contributor active | N/A — assessment |
-| [Communication #1062 — end-to-end protection](contributions/issues/eclipse-score/communication/1062/README.md) | Rust Method/Field API integrity protection | Design assessment; implementation pending | N/A — assessment |
-| [Communication #741 — sample/tutorial relocation](contributions/issues/eclipse-score/communication/741/README.md) | Rust COM example application and tutorial | Tracked opportunity; not implemented | Not submitted |
-| [Communication #1236 — buildifier enforcement](contributions/issues/eclipse-score/communication/1236/README.md) | Communication Bazel lint tooling and CI | Local fix verified; native CI/review pending | Not submitted |
-| [Communication #1031 — assumptions-of-use traceability](contributions/issues/eclipse-score/communication/1031/README.md) | Communication safety analysis; companion Configuration Management provider integration | Public API/provider checks retained; consumer safety decisions pending | Not submitted |
-| [Communication #751 — production CodeQL coverage](contributions/issues/eclipse-score/communication/751/README.md) | Communication static-analysis extraction/build pipeline | Current-source analysis retained; broader CI/review pending | Not submitted |
-| [Communication #1104 — CodeQL finding locations](contributions/issues/eclipse-score/communication/1104/README.md) | Communication CodeQL query overrides and reporting | Native location fix verified; review pending | Not submitted |
-| [Repository code-header cleanup](https://github.com/eclipse-score/communication/pull/1341) | Communication implementation, build helpers, fixtures and generated code | Open PR; code-header checks passed; non-code findings remain | [Communication #1341](https://github.com/eclipse-score/communication/pull/1341) |
-| [S-CORE #3115 — AI SDLC tooling evaluation](contributions/issues/eclipse-score/score/3115/README.md) | Infrastructure: AI-tool evaluation and decision records | Open PR; native CI/adoption/review pending | [S-CORE #3307](https://github.com/eclipse-score/score/pull/3307) |
-| [S-CORE #2850 — native assurance harness](https://github.com/eclipse-score/docs-as-code/pull/926) | `docs-as-code`: assurance evaluation, native gates and structured traces | Draft PR; integration and qualification review pending | [docs-as-code #926](https://github.com/eclipse-score/docs-as-code/pull/926) |
-| [Cruise control, receiver observations and fault injection](docs/reproduction.md) | S-CORE application integration; SOME/IP and Zenoh vehicle-data bridges | Integrated and exercised on the recorded bench | N/A — integration |
-| [S-CORE Software Factory](contributions/issues/eclipse-score/score/3115/README.md) | Team engineering automation: development, verification, review and evidence; Hephaestus workflow pilot | Implementation and pilot evidence retained; native adoption pending | Related: [S-CORE #3307](https://github.com/eclipse-score/score/pull/3307), [Hephaestus #14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) |
-| [Safety Evaluation Kit](#safety-evaluation-kit) | Safety/dependability workflow: impact, traceability and evidence/review gates | Concept; best-effort extension | N/A — concept |
+## 2. What we brought to the hackathon (pre-event baseline)
 
-### Eclipse OpenSOVD
+### 2.1 Eclipse and open-source projects used as is (white boxes)
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [CDA #543 — diagnostic loading errors](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/issues/543) | Classic Diagnostic Adapter: `cda-main/src/mdd.rs` | **Merged upstream** | [CDA #601](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601) |
-| [OpenSOVD #156 — FaultProvider prototype](docs/hackathon/FAULT_PROVIDER_DESIGN.md) | Core fault-provider API and `/faults` resources | Legacy prototype; native completion pending | Not submitted |
-| [Write-through fault storage](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/compliance/2026-10-07/original/fault-storage-write-through/README.md) | fault-lib: Diagnostic Fault Manager / `SovdFaultStorage` persistence | Locally verified; native review/CI pending | Not submitted |
-| [Native receiver diagnosis and fault lifecycle](OpenSOVD/README.md) | App `DataProvider`; fault-lib Reporter, Diagnostic Fault Manager and query APIs | Integrated and exercised; native `/faults` routing remains conditional | N/A — integration |
-| [Vehicle Lab dashboard](docs/dashboard.md) | Team Diagnosis and Test Manager UI; OpenSOVD diagnostic APIs and openDuT lifecycle | Implemented and browser-checked | N/A — integration |
+| Block | Project | Role in the demo |
+| --- | --- | --- |
+| S-CORE · SOME/IP gateway | Eclipse S-CORE (`inc_someip_gateway`) | SOME/IP access of the cruise-control application to the backbone |
+| S-CORE · Lifecycle · Launch Manager | Eclipse S-CORE (`lifecycle`) | Daemon / control-client communication configuration |
+| S-CORE · Communication middleware · LoLa / Rust COM-API | Eclipse S-CORE (`communication`) | Communication middleware used by the cruise-control application |
+| ThreadX · RTOS | Eclipse ThreadX | Real-time kernel of the zonal lighting controller |
+| OpenDuT · Test Bench | Eclipse openDuT 0.10.2 (CARL, EDGAR, CLEO) | Managed test bench network |
+| OpenSOVD · Diag Virtual Device and CDA | Eclipse OpenSOVD core, classic diagnostic adapter | SOVD server of the vehicle; reads the classic ECU |
+| X-Verse Lite · CARLA (simulator inside) | CARLA | Driving simulator |
+| X-COM (transport inside) | Eclipse Zenoh | Pub/sub transport of the backbone |
 
-The S-CORE Diagnostics adapter above also contributes to the OpenSOVD integration
-through [Diagnostics PR #40](https://github.com/eclipse-score/inc_diagnostics/pull/40).
+### 2.2 Team assets brought in their pre-event version (blue boxes)
 
-### Eclipse ThreadX
+| Block | Asset | Pre-event version |
+| --- | --- | --- |
+| X-COM · vehicle communication backbone | X-COM communication bridges | Team backbone over Eclipse Zenoh |
+| BRIDGE · ZENOH_2_SOMEIP, BRIDGE · ZENOH_2_CAN | X-COM bridges | Existing bridges (extended, see section 3) |
+| X-Verse Lite · CARLA | X-Verse Lite blueprint | Standard X-Verse Lite version (extended, see section 3) |
+| Cruise Control App (DTC) | Existing cruise-control integration | S-CORE cruise-control ECU / bridge integration (extended, see section 3) |
+| IVI · Android | AAOS IVI application | Existing Android Automotive OS infotainment application (extended, see section 3) |
+| FOTA (left cloud) | OTA Manager | Existing C++ implementation |
+| RTCU · Remote Telematics Control Unit | Telematics unit of the update chain | Receives updates over mutual TLS, deploys to the IVI over ADB |
+| S-CORE Software Factory | Software factory | First draft release (extended, see section 3) |
+| S-CORE documentation bot | Documentation bot | Existing local assistant (extended, see section 3) |
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [ThreadX #744 — stack-address width](contributions/threadx-744/README.md) | Kernel `_tx_thread_create`, stack initialization and MISRA alignment helpers | Fix and regression evidence retained; final review pending | Not submitted |
-| [Linux zonal lighting controller](demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) | GNU/Linux simulation port; threads, queues, timers and event flags; CAN/Zenoh application integration | Implemented and tested | N/A — integration |
-| [MXChip AZ3166 lighting ECU](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/README.md) | Cortex-M4 / STM32F412 board integration; UART/SLCAN lighting firmware | Hardware and live CARLA checks retained | N/A — integration |
+---
 
-### Eclipse OpenBSW
+## 3. Brought to the hackathon and extended during it (blue boxes with a green dashed border)
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [Diagnostic transport-router patch](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/contributions/openbsw-transport-router/validation.md) | `libs/bsw/transportRouter`: routing, route observers and statistics | Locally verified; maintainer agreement/review pending | Not submitted |
-| [Linux / S32K148EVB zonal gateway](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/OpenBSW/README.md) | DoIP/lwIP, DoCAN/ISO-TP, UDS, `transportRouter`, async and ThreadX board/RTOS binding | Integration checks retained; bus-load failure and qualification gaps remain | N/A — integration |
+| Block | Pre-event part | During hackathon |
+| --- | --- | --- |
+| **Cruise Control App (DTC)** | existing cruise-control integration | DTC handling, fault-injection hook, exposure of the diagnostic state over SOVD (through `sovd_adapter`, PR #40) |
+| **IVI · Android** | AAOS IVI application | instrument-cluster APK delivered over OTA with mutual TLS |
+| **BRIDGE · ZENOH_2_SOMEIP** | X-COM bridge | fault injection and receiver observations carried to the S-CORE application |
+| **BRIDGE · ZENOH_2_CAN** | X-COM bridge | lighting path to the zonal computer |
+| **X-Verse Lite · CARLA** | CARLA in the X-Verse Lite blueprint | repeatable startup, the VCU, fault injection, ASPICE SWE.1–SWE.6 evidence |
+| **S-CORE Software Factory** | first draft | automated development, verification, review and evidence workflows, applied to the S-CORE issues of section 5 |
+| **S-CORE documentation bot** | existing bot | retrieval and provenance proposal (S-CORE #2850, PR #926) |
 
-### Eclipse Zenoh
+---
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [X-Verse / CARLA blueprint and repeatable startup](https://github.com/Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs/blob/main/demo/X-Verse/README.md) | Team simulation/startup integration using Zenoh routing, S-CORE, OpenSOVD and openDuT | Drive, disturbance, diagnosis and recovery demonstrated on the recorded host | N/A — integration |
-| [X-Verse end-to-end ASPICE evidence](demo/X-Verse/aspice/report/README.md) | Cross-project simulation, S-CORE cruise control, OpenSOVD diagnostics and AAOS OTA verification | Recorded evidence: 11/11 software requirements, 24/24 test cases and traceability | N/A — integration evidence |
-| [X-COM Serial2CAN bridge](https://github.com/The-Xverse/zenoh2can_bridge/blob/dev/sdv-hackathon-2026/serial2can-bridge/README.md) | Team SLCAN-to-CAN bridge; Zenoh2CAN and ThreadX ECU transport | Implemented and tested; hardware/live CARLA evidence retained | N/A — integration |
+## 4. Built during the hackathon (green boxes)
 
-Zenoh also supplies the vehicle-data transport in the S-CORE cruise-control and
-ThreadX/AutoSD lighting integrations listed under those projects.
+| Block | What it is | Where |
+| --- | --- | --- |
+| **sovd_adapter · SOVD DataProvider** | New Rust crate bridging a `diag_api` `DataResource` to an OpenSOVD `DataProvider`: S-CORE diagnostic resources become SOVD data items (Diagnostics #16, PR #40) | HPC · S-CORE |
+| **FOTA (right cloud)** | Java EOL backend of the update chain; delivers the cluster APK to the RTCU over mutual TLS (Jakarta EE adaptation planned) | Cloud |
+| **Vehicle Lab · Test Manager** | openDuT web UI: run admission, recovery campaigns, reports | above OpenDuT |
+| **Vehicle Lab · Diagnosis** | OpenSOVD web UI: native diagnosis, fault history, evidence replay | above OpenSOVD |
+| **Lighting controller** | ThreadX Linux simulation port (VM) and the MXChip AZ3166 lighting ECU (hardware, UART/SLCAN) | Zonal Computer · Rear |
+| **two-peer testbench, loss / recovery campaigns** | openDuT 0.10.2 deployment with communication-loss, recovery and cleanup campaigns | inside OpenDuT |
+| **BRIDGE · SERIAL_2_CAN** | SLCAN-to-CAN transport bridge for serial-attached ECUs (`The-Xverse/zenoh2can_bridge`, branch `dev/sdv-hackathon-2026`) | X-COM |
+| **OpenBSW + ThreadX** | DoIP-to-CAN zonal diagnostic gateway: DoIP/lwIP, DoCAN/ISO-TP, UDS, on Linux and S32K148EVB (Ethernet · DoIP link in progress) | Gateway Feature |
 
-### Eclipse openDuT
+---
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [Two-peer testbench and loss/recovery campaigns](OpenDut/README.md) | CARL coordination, EDGAR peers and CLEO management; team campaign runners | Deployment, disturbance, recovery and cleanup exercised | N/A — integration |
+## 5. Our contributions with a pull request (orange chips)
 
-### Eclipse SDV Hephaestus
+All eleven pull requests were opened during the event (6–7 October 2026). Status as on GitHub, 7 October 2026.
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [Software-factory workflow pilot, related to #11](contributions/issues/eclipse-hephaestus/hephaestus/11/README.md) | Engineering tooling catalog and workflow documentation | Open proposal; pilot adoption/review pending | [Hephaestus #14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) |
-| [S-CORE Docs Assistant pilot, related to #11](https://github.com/eclipse-hephaestus/hephaestus/pull/15) | Documentation tooling catalog; assistant retrieval/provenance pilot | Open proposal; Hephaestus corpus integration/adoption pending | [Hephaestus #15](https://github.com/eclipse-hephaestus/hephaestus/pull/15) |
+| # | Upstream repository | PR | Issue | Title (as on GitHub) | Status | How it was produced | Block |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | [eclipse-score/inc_diagnostics](https://github.com/eclipse-score/inc_diagnostics) | [#40](https://github.com/eclipse-score/inc_diagnostics/pull/40) | [Diagnostics #16](https://github.com/eclipse-score/inc_diagnostics/issues/16) | feat(sovd_adapter): expose diag_api::DataResource as opensovd_core::DataProvider | **OPEN** | manual coding + AI-assisted | S-CORE · sovd_adapter |
+| 2 | [eclipse-opensovd/classic-diagnostic-adapter](https://github.com/eclipse-opensovd/classic-diagnostic-adapter) | [#601](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/pull/601) | [CDA #543](https://github.com/eclipse-opensovd/classic-diagnostic-adapter/issues/543) | refactor(cda-main): return Result instead of Option in mdd.rs | **MERGED ✓** | manual coding, no AI | OpenSOVD · CDA |
+| 3 | [eclipse-score/communication](https://github.com/eclipse-score/communication) | [#1335](https://github.com/eclipse-score/communication/pull/1335) | [Communication #1167](https://github.com/eclipse-score/communication/issues/1167) | test: add dedicated integration coverage for idempotent COM APIs | **OPEN** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
+| 4 | eclipse-score/communication | [#1339](https://github.com/eclipse-score/communication/pull/1339) | [Communication #781](https://github.com/eclipse-score/communication/issues/781) | Implement lifetime-bound MethodInArgPtr ABI owner | **DRAFT** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
+| 5 | eclipse-score/communication | [#1340](https://github.com/eclipse-score/communication/pull/1340) | [Communication #490](https://github.com/eclipse-score/communication/issues/490) | Implement isolated Rust COM mock runtime | **DRAFT** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
+| 6 | eclipse-score/communication | [#1341](https://github.com/eclipse-score/communication/pull/1341) | repository hygiene | chore: add license headers across repository code | **OPEN** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
+| 7 | [eclipse-score/lifecycle](https://github.com/eclipse-score/lifecycle) | [#762](https://github.com/eclipse-score/lifecycle/pull/762) | [Lifecycle #704](https://github.com/eclipse-score/lifecycle/issues/704) | refactor: Deduplicate LmControl communication configuration | **DRAFT** | AI-generated (software factory), human-reviewed | S-CORE · Lifecycle |
+| 8 | [eclipse-score/score](https://github.com/eclipse-score/score) | [#3307](https://github.com/eclipse-score/score/pull/3307) | [S-CORE #3115](https://github.com/eclipse-score/score/issues/3115) | docs: Complete AI tooling evaluation and selection for S-CORE | **OPEN** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
+| 9 | [eclipse-score/docs-as-code](https://github.com/eclipse-score/docs-as-code) | [#926](https://github.com/eclipse-score/docs-as-code/pull/926) | [S-CORE #2850](https://github.com/eclipse-score/score/issues/2850) | Evaluate assurance changes with native gates and structured traces | **DRAFT** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
+| 10 | [eclipse-hephaestus/hephaestus](https://github.com/eclipse-hephaestus/hephaestus) | [#14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) | [Hephaestus #11](https://github.com/eclipse-hephaestus/hephaestus/issues/11) | Propose s-core_sw_fabric engineering workflow pilot | **OPEN** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
+| 11 | eclipse-hephaestus/hephaestus | [#15](https://github.com/eclipse-hephaestus/hephaestus/pull/15) | documentation assistant | Propose S-CORE Docs Assistant documentation pilot | **OPEN** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
 
-### Eclipse Automotive Integration for AutoSD
+Totals: **11 pull requests** across 6 Eclipse repositories: 1 merged, 6 open, 4 draft.
+PR #601 was coded by hand without AI; PR #40 combines manual coding with AI assistance; the other nine were
+produced with the AI-based S-CORE Software Factory workflow and reviewed by the team.
 
-The [Eclipse integration project](https://projects.eclipse.org/projects/automotive.autosd)
-uses the AutoSD distribution from the CentOS Automotive SIG. Our work is a team
-deployment integration in this ecosystem.
+---
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [AutoSD vehicle-computer VM](AutoSD/README.md) | VM/workload provisioning; ThreadX simulation, Zenoh2CAN, OpenSOVD lighting provider and optional openDuT network | Integrated and exercised; reboot and recovery evidence retained | N/A — integration |
+## 6. Aspice Dark Factory (engineering and process contributions)
 
-### Jakarta EE
+| Element | Origin | Content |
+| --- | --- | --- |
+| **S-CORE Software Factory** | brought (first draft), extended during the hackathon | automated development, verification, review and evidence workflows, applied to the S-CORE issues of section 5 |
+| **PR #3307** · eclipse-score/score · AI tooling evaluation (#3115) | hack | OPEN |
+| **PR #926** · docs-as-code · assurance harness (#2850) | hack | DRAFT |
+| **PR #14** · Hephaestus · software-factory workflow pilot (#11) | hack | OPEN |
+| **PR #15** · Hephaestus · documentation-assistant pilot | hack | OPEN |
+| **S-CORE documentation bot** | brought, extended during the hackathon | retrieval and provenance proposal for the docs-as-code harness |
+| Safety Evaluation Kit | concept | safety-impact, evidence and approval gates; best-effort extension |
+| Contribution registry | hack | 24 issue records with evidence per PR in `Thinking_CAPs/contributions` |
 
-| Contribution | Module / subsystem | Current status | Upstream PR |
-| --- | --- | --- | --- |
-| [AAOS / OTA backend extension](demo/X-Verse/aspice/report/README.md) | Java EOL backend and RTCU deployment; Jakarta specification/module not yet selected or implemented | OTA implemented and verified; Jakarta adaptation planned | N/A — planned extension |
+---
 
-## Overview
+## 7. Run the end-to-end demonstration
 
-This repository brings together vehicle simulation, S-CORE applications,
-OpenSOVD diagnostics, openDuT testing, ECU integrations and upstream contribution
-records. Use the guide below to find the part you need; the full PR inventory,
-demonstration walkthrough, team plan and working agreements remain in this README.
+The whole demonstration (CARLA vehicle, Zenoh VCU, SOME/IP bridge, S-CORE cruise-control ECU with its
+SOVD diagnostics, OTA vECU, Android cluster, OpenSOVD vECU with the SOVD Adapter Console, and the ThreadX
+lighting ECU on the AZ3166 board or its AutoSD digital twin) starts and stops with one command,
+`run_autoverse.py`, from the X-Verse workspace **autoverse**.
 
-## Pre-Work: What Existed Before the Event
+### 7.1 Access through X-Verse
 
-The team started the hackathon with the following upstream repositories and
-existing software assets. These formed our pre-event baseline; they are not
-presented as work developed during the event. Event development builds on this
-baseline through integrations, features, fixes and verification.
+The vehicle components live in the X-Verse organisation on GitHub:
+**[https://github.com/The-Xverse](https://github.com/The-Xverse)**. The workspace repository
+`The-Xverse/autoverse` (branch `dev/sdv-hackathon-2026`) holds the launcher, the setup script and the
+hackathon ECUs (`external_hackathon_ecus/`: ThreadX, its AutoSD digital twin, the OpenSOVD vECU, the SOVD
+Adapter Console and the Demo Console). Its manifest `autoverse.repos` lists one X-Verse repository per
+component (S-CORE ECU, VCU, bridges, OTA vECU, Android Cuttlefish, …), each on its
+`dev/sdv-hackathon-2026` branch, and `setup.sh` clones them with `vcs import`.
 
-### Standard Upstream Repositories
+These repositories are **private**. Everyone who is a member of The-Xverse organisation (or has been
+given access to its repositories) can run the demonstration:
 
-These are the existing open-source projects used as starting dependencies:
+1. Ask an X-Verse organisation owner to add your GitHub account to
+   [The-Xverse](https://github.com/The-Xverse) (or to the repositories you need).
+2. Add an SSH key to your GitHub account (`ssh -T git@github.com` must greet you): all X-Verse
+   repositories are cloned over SSH (`git@github.com:The-Xverse/...`).
+3. Use either entry point below; both give the same workspace.
 
-| Project | Pre-event baseline |
+| Entry point | Where the workspace lives |
 | --- | --- |
-| CARLA | Default CARLA repository |
-| Eclipse S-CORE | Standard project repository |
-| Eclipse OpenSOVD | Standard project repository |
-| Eclipse openDuT | Standard project repository |
-| Eclipse ThreadX | Standard project repository |
-| Eclipse OpenBSW | Standard project repository |
-| Eclipse Zenoh | Standard project repository |
+| **Thinking_CAPs** (this repository) | `demo/X-Verse` is an exact copy of autoverse `dev/sdv-hackathon-2026`; `setup.sh` links it to `~/autoverse` |
+| **autoverse** directly | your own clone at `~/autoverse` |
 
-### Existing Team Assets
+### 7.2 Prerequisites
 
-The following assets were already developed or available before the event:
+- Ubuntu 22.04 or later, a user with `sudo`, an NVIDIA GPU for the CARLA server, and hardware
+  virtualisation (`/dev/kvm`) for Android Cuttlefish.
+- Internet access for the first setup (CARLA, container images, component builds; about 1 h once).
+- Optional: the MXChip AZ3166 board for the physical ThreadX lighting ECU. Without it the launcher
+  starts the AutoSD digital twin instead.
 
-| Asset | Pre-event version |
+### 7.3 Set up once
+
+```bash
+# Entry point A: Thinking_CAPs
+git clone git@github.com:Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs.git ~/Thinking_CAPs
+~/Thinking_CAPs/demo/X-Verse/setup.sh --carla --cuttlefish --threadx
+
+# Entry point B: autoverse directly
+git clone -b dev/sdv-hackathon-2026 git@github.com:The-Xverse/autoverse.git ~/autoverse
+~/autoverse/setup.sh --carla --cuttlefish --threadx
+```
+
+`setup.sh` installs the host tools and Docker, imports every component from X-Verse, installs CARLA
+(`--carla`), prepares Android Cuttlefish (`--cuttlefish`) and the AZ3166 board access (`--threadx`), builds
+S-CORE and its diagnostics server, builds the OpenSOVD vECU and the ThreadX twin images, and loads the
+`vcan` kernel module. If it adds you to the `docker` group, log out and in once, then run it again.
+
+### 7.4 Run
+
+```bash
+cd ~/autoverse
+python3 run_autoverse.py --enable-camera-display --vcu-zenoh
+# with the AZ3166 board plugged in (serial port access):
+sg dialout -c "python3 run_autoverse.py --enable-camera-display --vcu-zenoh"
+```
+
+The launcher starts, in order: the Zenoh router (if none answers on port 7447), the CARLA server, the
+ThreadX lighting ECU (board, else its AutoSD twin), the VCU, the Zenoh–SOME/IP bridge, the S-CORE ECU,
+the OTA vECU, the OpenSOVD vECU, Vehicle Manual Control, the CARLA client and Android Cuttlefish. All ten
+containers are up after about one minute.
+
+| What | Where |
 | --- | --- |
-| X-Verse Lite | Standard X-Verse Lite version |
-| S-CORE Software Factory | First draft release |
-| AAOS IVI Application | Existing Android Automotive OS (AAOS) in-vehicle infotainment (IVI) application |
-| OTA Manager | Existing C++ implementation |
+| Drive | Vehicle Manual Control window: `W`/`S` throttle and brake, `C` cruise control, `Q` reverse, `I` withhold the speed signal (fault) |
+| SOVD Adapter Console | http://localhost:8080 (opens automatically) |
+| S-CORE SOVD diagnostics | http://localhost:7691/sovd/v1/components/cruise_control/data |
+| OTA EOL console | https://localhost:9444 (self-signed certificate) |
+| Android cluster (Cuttlefish) | https://localhost:8443 (self-signed certificate) |
 
-See [Development Baseline and Event Work](#development-baseline-and-event-work)
-for the distinction between the starting baseline and the planned event work.
+On a new Android container, install the cluster app over the air once: in the EOL console upload
+`vecu/aaos_cuttlefish/apk/digital-cluster-app-debug.apk` and push it to `PC-CUTTLEFISH-01`.
 
-## Start Here
+**Scenario.** Accelerate above 10 km/h and press `C`: cruise control engages. Press `I`: the vehicle
+speed is no longer published, the S-CORE ECU cancels cruise control and reports DTC
+`CC.LostCommunication` over SOVD, the console qualifies U0104 and the classic DTC appears through the CDA.
+Press `I` again: the signal returns and the DTCs heal. Brake or reverse: the lighting ECU switches the
+vehicle's lights.
 
-| Your goal | Where to go |
-| --- | --- |
-| Identify what was available before the event | [Pre-Work](#pre-work-what-existed-before-the-event) |
-| Find a PR, patch or contribution status | [Contributions](#contributions) and [contribution records](contributions/README.md) |
-| Understand the folders and find source code | [Repository Structure](#repository-structure) |
-| Understand the integrated system | [How the Pieces Fit Together](#how-the-pieces-fit-together) and [architecture documents](docs/architecture/README.md) |
-| Drive the vehicle and try instrument-cluster OTA | [Run and Verify the End-to-End Demonstration](#run-and-verify-the-end-to-end-demonstration) |
-| Run managed diagnostic and recovery campaigns | [Native reproduction guide](docs/reproduction.md) |
-| Use the diagnosis and test-management UI | [Vehicle Lab dashboard guide](docs/dashboard.md) |
-| Run a lighting ECU or diagnostic gateway | [ThreadX Linux](demo/X-Verse/external_hackathon_ecus/ThreadX/README.md), [AZ3166 hardware](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/README.md), [AutoSD](AutoSD/README.md) or [OpenBSW](OpenBSW/README.md) |
-| Find test commands and understand saved results | [Shared tests](tests/README.md), [Quality Control](#quality-control) and [claim/evidence map](docs/claim-evidence.md) |
-| Understand ownership, scope and team agreements | [Team Roster](#team-roster), [Responsibilities](#responsibilities), [Hackathon Scope](#hackathon-scope) and [How We Work](#how-we-work) |
+**Stop** with `Ctrl+C` in the launcher's terminal: it stops every component in reverse order.
 
-## Who We Are
+### 7.5 Verify
+
+```bash
+cd ~/autoverse
+python3 aspice/tools/e2e_check.py                     # 16 integration checks (nothing injected into the vehicle)
+python3 aspice/tools/generate_report.py --qualify     # ASPICE report, also drives the scenario automatically
+```
+
+The report (`aspice/report/README.md`) traces 7 system and 15 software requirements to 30 test cases.
+
+---
+
+## 8. Process oriented to the ASPICE model
+
+The team works along the Automotive SPICE software engineering processes (SWE.1–SWE.6), with
+the supporting processes kept lightweight for a hackathon. The work products are demonstration evidence,
+not an assessed capability level. The end-to-end package lives in the X-Verse workspace,
+[`demo/X-Verse/aspice`](demo/X-Verse/aspice/README.md); its report
+([`aspice/report/README.md`](demo/X-Verse/aspice/report/README.md)) is generated from the running system.
+
+| ASPICE process | How we apply it | Work products and evidence |
+| --- | --- | --- |
+| SWE.1 Software requirements analysis | System requirements (SYS-01..07) from the use case, refined into software requirements (SWR-01..15), each derived from a SYS and allocated to an element | [system](demo/X-Verse/aspice/swe1-requirements/system-requirements.md), [software](demo/X-Verse/aspice/swe1-requirements/software-requirements.md) requirements |
+| SWE.2 Software architectural design | Elements, interfaces (IF-01..13) and allocation rationale; PlantUML views (context, components, DTC and OTA sequences) | [architecture.md](demo/X-Verse/aspice/swe2-architecture/architecture.md) |
+| SWE.3 Software detailed design and construction | Unit-level design: Zenoh keys, SOME/IP events, SOVD resources, OTA units, OpenSOVD vECU, ThreadX mapping | [detailed-design.md](demo/X-Verse/aspice/swe3-detailed-design/detailed-design.md) |
+| SWE.4 Software unit verification | Unit suites executed by the generator: launcher, SOME/IP payload conversion, S-CORE cruise control, PR #16 `sovd_adapter`, OTA backend, SOVD Adapter Console, ThreadX | [unit-verification.md](demo/X-Verse/aspice/swe4-unit-verification/unit-verification.md) |
+| SWE.5 Software integration and integration test | 16 black-box interface checks against the running system (`tools/e2e_check.py`) | [integration-test.md](demo/X-Verse/aspice/swe5-integration-test/integration-test.md) |
+| SWE.6 Software qualification test | Scenario tests of the system requirements, driven automatically through Vehicle Manual Control's scripted input (`tools/qualification_check.py`); no case is accepted from a witness statement | [qualification-test.md](demo/X-Verse/aspice/swe6-qualification-test/qualification-test.md) |
+| Traceability (SWE.1–SWE.6) | Bidirectional: SYS → SWR → element → test case → result, checked on every report run; a gap fails the run | [report](demo/X-Verse/aspice/report/README.md), `summary.json` |
+| SUP.8 Configuration management | One X-Verse repository per component on its `dev/sdv-hackathon-2026` branch, selected by `autoverse.repos` and imported with `vcs import`; upstream dependencies pinned by commit (inc_diagnostics PR #40 `d388985`, opensovd-core `29e806f`, CDA `c1a5d8b`, ThreadX and the Zenoh2CAN bridge in `dependencies.lock.json`); `demo/X-Verse` changes only through `scripts/sync-xverse.sh` | `demo/X-Verse/autoverse.repos`, sync commits with an `X-Verse-Source` trailer |
+| SUP.9 Problem resolution | Defects found by the tests are recorded with cause and decision (fixed, or known and out of scope) | "Known defect" in [qualification-test.md](demo/X-Verse/aspice/swe6-qualification-test/qualification-test.md), defects in the [package README](demo/X-Verse/aspice/README.md) |
+| SUP.10 Change request management / review | Every change is a reviewed commit with its rationale; AI-generated changes (Software Factory, section 6) are human-reviewed before a pull request | commit history, [contributions](contributions/) |
+
+Component-level ASPICE packages follow the same layout: the ThreadX AZ3166 ECU
+([`external_hackathon_ecus/ThreadX/az3166/aspice`](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/aspice/README.md)),
+the OpenBSW gateway ([`OpenBSW/aspice`](OpenBSW/aspice/)), and, in their X-Verse repositories, the OTA vECU
+(`vecu/ota/aspice`) and the Serial2CAN bridge (`bridges/can/serial2can-bridge/aspice`).
+
+Working rules derived from it:
+
+1. A change starts from a requirement (or adds one) and names the elements it touches.
+2. Tests at the right level come with the change; the report is regenerated
+   (`python3 aspice/tools/generate_report.py --qualify` in the workspace) and must show no traceability gap.
+3. A verdict comes from a tool run on the system, recorded with its date; recorded results are marked as such.
+4. A defect found on the way is recorded with its cause and the decision, even when it is not fixed.
+
+---
+
+## 9. Who we are
 
 Thinking CAPs is a multidisciplinary automotive software team combining expertise in:
 
@@ -197,7 +279,9 @@ Thinking CAPs is a multidisciplinary automotive software team combining expertis
 
 Our goal is to show how open-source SDV projects, simulation assets, physical platforms, and development automation can be assembled into a representative environment for modern vehicle software engineering.
 
-## Team Roster
+---
+
+## 10. Team roster
 
 | Name | Role | GitHub Handle | Contribution |
 |---|---|---|---|
@@ -207,202 +291,9 @@ Our goal is to show how open-source SDV projects, simulation assets, physical pl
 | Puru | Software Engineer | [puru](https://github.com/EP1991)  | OpenSOVD; CDA; diagnostics dashboard |
 | Siva | Test Engineer | [siva](https://github.com/siveshvar) | openDuT; OpenSOVD |
 
-## Run and Verify the End-to-End Demonstration
+---
 
-The end-to-end demonstration is the X-Verse vehicle simulation in [`demo/X-Verse`](demo/X-Verse):
-CARLA and the virtual vehicle → Zenoh VCU → Zenoh–SOME/IP bridge → Eclipse S-CORE
-cruise-control ECU, which detects a lost vehicle-speed signal, cancels cruise control and
-reports DTC `CC.LostCommunication` over SOVD (Eclipse inc_diagnostics PR #16
-`sovd_adapter`) → OTA vECU (certgen, EOL backend, RTCU) updating the instrument cluster
-on Android Automotive (Cuttlefish, optionally a Raspberry Pi 4). One command starts and
-stops everything.
-
-### Verify Without Running It
-
-The [ASPICE SWE.1–SWE.6 report](demo/X-Verse/aspice/report/README.md) contains the
-requirements, the architecture (PlantUML), the unit, integration and qualification
-results and the traceability matrix, with every result recorded in the report itself:
-11/11 software requirements verified, 24/24 test cases pass, no traceability gaps.
-This needs no access to the X-Verse component repositories.
-
-### Where the End-to-End Tests Reside
-
-| What | Location (after step 2) | Run with |
-| --- | --- | --- |
-| ASPICE package: requirements, architecture, design, test specifications, report | [`demo/X-Verse/aspice/`](demo/X-Verse/aspice/README.md) | `python3 aspice/tools/generate_report.py --full` |
-| End-to-end integration checks (13, read-only, against the running system) | [`demo/X-Verse/aspice/tools/e2e_check.py`](demo/X-Verse/aspice/tools/e2e_check.py) | `python3 aspice/tools/e2e_check.py` |
-| Recorded results of the last run | [`demo/X-Verse/aspice/report/evidence/`](demo/X-Verse/aspice/report/evidence) | — |
-| Launcher tests | [`demo/X-Verse/tests/`](demo/X-Verse/tests) | `python3 -m unittest tests.test_run_autoverse` |
-| S-CORE cruise control and signal-loss guard (gtest) | `demo/X-Verse/vecu/s-core/cc_s-core/score/cruise_control/tests/` | Bazel in the S-CORE devcontainer (run by `--full`) |
-| PR #16 `sovd_adapter` | `demo/X-Verse/vecu/s-core/third_party/inc_diagnostics` | Bazel in the S-CORE devcontainer (run by `--full`) |
-| SOME/IP payload conversion | `demo/X-Verse/bridges/someip/zenoh-someip-bridge/tests/` | `build/test_convert` |
-| OTA backend (JUnit) and live OTA cycle | `demo/X-Verse/vecu/ota/backend/java/src/test/`, `demo/X-Verse/vecu/ota/e2e/` | Maven container (run by `--full`) |
-
-### Step by Step: Clone, Run and Verify
-
-**Prerequisites.** Ubuntu 22.04 on x86-64 with a graphical desktop, an NVIDIA GPU for
-CARLA, virtualization enabled in the BIOS/UEFI (`/dev/kvm`, for Android Cuttlefish),
-internet access, plenty of free disk space (CARLA, Android images and container builds),
-and a GitHub SSH key with read access to the The-Xverse repositories: the components are
-imported from there.
-
-1. **Clone.**
-
-   ```bash
-   git clone git@github.com:Eclipse-SDV-Hackathon-Chapter-Four/Thinking_CAPs.git
-   cd Thinking_CAPs/demo/X-Verse
-   ```
-
-2. **Set up** (one time; it takes a while). Installs the host tools and Docker, checks
-   KVM, imports every component with `vcs import` (each from its X-Verse repository,
-   branch `dev/sdv-hackathon-2026`), builds S-CORE with its diagnostics server and the
-   SOME/IP bridge, and installs CARLA and Cuttlefish. Add `--threadx` when an MXChip AZ3166
-   board is used.
-
-   ```bash
-   ./setup.sh --carla --cuttlefish
-   ```
-
-3. **Start the demonstration.**
-
-   ```bash
-   python3 run_autoverse.py --enable-camera-display --vcu-zenoh
-   ```
-
-   It starts a Zenoh router if none is running, CARLA, the VCU, the SOME/IP bridge,
-   S-CORE, the OTA stack, Vehicle Manual Control, the virtual vehicle and Cuttlefish. The
-   EOL console opens at `https://localhost:9444`; Android is at `https://localhost:8443`
-   (self-signed certificates: accept the warning).
-
-4. **Install the cluster app over the air** (one time). In the EOL console, upload
-   `vecu/aaos_cuttlefish/apk/digital-cluster-app-debug.apk` with a
-   version and **Push update** to `PC-CUTTLEFISH-01`; the campaign shows
-   `downloading → installing → success`. Open the cluster app from Android's app menu.
-
-5. **Drive.** Focus the **Vehicle Manual Control** window: `W` accelerate, `S` brake,
-   `A`/`D` steer, `C` cruise control (from 10 km/h), `Z`/`X` set speed, `Q` reverse.
-
-6. **Lose the speed signal and diagnose it.** With cruise control engaged, press `I`:
-   after about 1.1 s S-CORE cancels cruise control and the VCU disengages. Read the DTC
-   over SOVD:
-
-   ```bash
-   curl -s http://127.0.0.1:7691/sovd/v1/components/cruise_control/data/cc_lost_communication
-   ```
-
-   Press `I` again to restore the signal.
-
-7. **Verify the end-to-end chain** while the system runs:
-
-   ```bash
-   python3 aspice/tools/e2e_check.py                # 13 integration checks, expect "13/13 passed"
-   python3 aspice/tools/generate_report.py --full   # all suites + report in aspice/report/
-   ```
-
-8. **Stop** with **Ctrl+C** in the terminal of step 3; every component it started is
-   stopped.
-
-Optional hardware, detailed troubleshooting and every launcher option are described in the
-[X-Verse README](demo/X-Verse/README.md): the Raspberry Pi 4 as second OTA target (step
-10) and the ThreadX AZ3166 lighting ECU (step 12).
-
-## How the Pieces Fit Together
-
-The cruise-control integration has a vehicle-control path and a diagnostic path:
-
-```text
-X-Verse / CARLA vehicle simulation
-              ↕
-     Zenoh–SOME/IP bridge
-              ↕
- S-CORE cruise-control receiver and application
-              │ receiver observations
-              ▼
- OpenSOVD diagnostic provider → Vehicle Lab browser UI
-
-openDuT manages the testbench network.
-Campaign runners introduce disturbances, check recovery and save evidence.
-```
-
-- **X-Verse / CARLA** supplies the simulated vehicle and driving environment.
-- **S-CORE** hosts the vehicle application. **Zenoh and SOME/IP** carry messages
-  between it and the simulation.
-- **OpenSOVD** exposes receiver observations and fault history over HTTP.
-- **openDuT** provides the managed network for communication-loss and recovery tests.
-- **Vehicle Lab** displays diagnosis, starts project test campaigns and opens saved reports.
-- **ThreadX / AutoSD** provides the separate lighting path: vehicle status travels
-  through a Zenoh-to-CAN gateway to the ThreadX controller, which returns brake and
-  reverse-light decisions. AutoSD hosts the gateway, controller and lighting diagnostics.
-
-The X-Verse supervisor also starts the OTA backend, update controller and Android
-Automotive instrument cluster. The [X-Verse report](demo/X-Verse/aspice/report/README.md)
-records the update campaigns and end-to-end checks. The separate [OpenBSW gateway](OpenBSW/README.md)
-routes diagnostics from Ethernet to CAN-connected ECUs.
-
-The software-factory and engineering-assistant work is documented in the
-[contribution records](contributions/README.md), alongside its verification and review evidence.
-
-## Repository Structure
-
-### Component Code and Integrations
-
-| Location | What you will find |
-| --- | --- |
-| [demo/X-Verse/](demo/X-Verse/README.md) | Main interactive vehicle workspace: launcher, setup, component import manifest, Android cluster/OTA assets and ASPICE requirements, tests and reports. Component sources are imported from their own repositories during setup. |
-| [OpenSOVD/](OpenSOVD/README.md) | Native Rust diagnostic providers, fault configuration, upstream patches, build scripts, tests and component evidence. Start with `integration/diagnostics/` for cruise-control diagnosis. |
-| [OpenDut/](OpenDut/README.md) | Managed two-peer testbench configuration, lifecycle scripts, receiver/network tests and deployment evidence. The directory is spelled `OpenDut`; the project is openDuT. |
-| [ThreadX/ (in X-Verse)](demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) | C lighting-controller application using the ThreadX Linux simulation port, its CAN contract, build configuration, tests and artifacts. |
-| [ThreadX/az3166/ (in X-Verse)](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/README.md) | Physical MXChip AZ3166 lighting ECU: firmware, UART/SLCAN transport, board setup, tests and ASPICE work products. |
-| [OpenBSW/](OpenBSW/README.md) | DoIP-to-CAN zonal diagnostic gateway for Linux and S32K148EVB, routing configuration, upstream module, tests and evidence. |
-| [AutoSD/](AutoSD/README.md) | VM provisioning and workload deployment, service configuration, managed-network support and lighting-integration evidence. |
-| [score/](score/README.md) | Earlier S-CORE cruise-control ECU/bridge integration, Docker configuration and build scripts. The native campaign's external S-CORE checkout is selected through its configuration. |
-| [integration/dashboard/](integration/dashboard/) | Current Vehicle Lab Python service and browser UI (`web/`). Launch it with `scripts/run_dashboard.py`. |
-| [demo/X-Verse/](demo/X-Verse/README.md) | The end-to-end demo: the synced X-Verse workspace (`run_autoverse.py`), including the hackathon ECUs in `external_hackathon_ecus/` (ThreadX, OpenSOVD vECU, SOVD Adapter Console, Demo Console v1). |
-| [dashboard/](dashboard/README.md) | Earlier Gateway/CDA demonstration stack: live console, replay assets and openDuT runner. `integration/dashboard/` is the current Vehicle Lab service. |
-
-Components generally keep their own `scripts/`, `tests/`, `config/`, `docs/`,
-`specs/` and `evidence/` or `artifacts/` directories. Follow each component README
-for its prerequisites and commands.
-
-### Shared Tools, Documentation and Records
-
-| Location | What you will find |
-| --- | --- |
-| [scripts/](scripts/README.md) | Shared audit, reproduction, campaign, dashboard, replay and contribution-verification commands. |
-| [tests/](tests/README.md) | Shared Python regression tests, smoke checks and the campaign input example in `campaigns/local.example.json`. |
-| [config/](config/) | Dependency audit/pins, upstream observations and the dashboard configuration example. |
-| [docs/](docs/README.md) | Architecture, native reproduction, dashboard operation, handover, claim/evidence mapping and hackathon materials. |
-| [specs/](specs/) | Shared feature requirements, implementation plans, tasks and acceptance records. Component-specific specifications also live inside components. |
-| [contributions/](contributions/README.md) | Upstream issue records, patches, manifests, verification logs, review packets and submission material. `registry.json` is the consolidated issue registry. |
-| [evidence/](evidence/) | Retained shared campaign results, logs, manifests, browser checks and recorded replays. Component-specific runs also live under their component. |
-| [prework/](prework/README.md) | Preparation research, architecture, setup plans and presentation material. Read it as historical context alongside the dated contribution records. |
-| [templates/](templates/) and [misc/](misc/) | Saved-campaign replay template and architecture image assets. |
-| [.specify/](.specify/) and [.agents/skills/](.agents/skills/) | Spec Kit workflow configuration, templates and local agent instructions for specification-driven development. |
-| [requirements-core.txt](requirements-core.txt) / [requirements-carla.txt](requirements-carla.txt) | Python dependencies for the core tools and optional CARLA integration. |
-| [CONTRIBUTING.md](CONTRIBUTING.md), [NOTICE](NOTICE) and [LICENSES/](LICENSES/) | Contribution guidance, repository notice and license texts. |
-| [component-layout.json](component-layout.json) | Component relocation map, local upstream checkout references and preserved-artifact hashes. |
-
-### Compatibility Paths and Local Assets
-
-Some root paths are symlinks kept for older scripts and saved manifests:
-
-| Original path | Canonical location |
-| --- | --- |
-| `integration/diagnostics/` | `OpenSOVD/integration/diagnostics/` |
-| `config/faults/` | `OpenSOVD/config/faults/` |
-| `config/testbench/` | `OpenDut/config/testbench/` |
-| `patches/<component>/` | `OpenSOVD/patches/<component>/` |
-| `sovd/` | `OpenSOVD/legacy/` (earlier diagnostic scaffolding) |
-
-Use the canonical component locations for new work. Additional script, test,
-specification and evidence mappings are listed in [component-layout.json](component-layout.json).
-
-`.local/`, build/cache directories and component `upstream/` checkouts contain
-private state or locally acquired dependencies. They are configured or generated
-during setup. The root `upstream/` directory currently contains a reference README;
-the checkout does not include a populated set of upstream Git submodules.
-
-## Responsibilities
+## 11. Responsibilities
 
 Roles are assigned by work package, but the team maintains collective responsibility for integration and demonstration readiness.
 
@@ -457,7 +348,9 @@ Roles are assigned by work package, but the team maintains collective responsibi
 - Maintain a fallback test-runner or CI-based scenario.
 - Support environment bring-up and demonstration recovery.
 
-## Challenge Alignment
+---
+
+## 12. Challenge alignment
 
 ### Selected Challenge
 
@@ -476,636 +369,9 @@ Our solution aligns with the challenge through four complementary dimensions:
 
 The team selected the Freestyle Track with an integration and feature-development focus during the preparation phase.
 
-## Hackathon Scope
+---
 
-### First Priority: Core Scope
-
-#### Cyber-Physical SDV Blueprint
-
-Create a representative cyber-physical blueprint integrating:
-
-- Eclipse SDV projects
-- X-Verse simulation assets
-- Virtual ECUs
-- Physical ECUs where feasible
-- Vehicle communication middleware
-- Diagnostics
-- Deployment and test orchestration
-- User interfaces and dashboards
-
-The blueprint will provide an integrated environment for developing, running, diagnosing, and validating software-defined vehicle functions.
-
-The primary demonstration will use a fault-aware cruise-control scenario in which:
-
-1. X-Verse executes a virtual driving scenario.
-2. An S-CORE application controls the cruise-control function. With the sovd_adapter feature implementation, we bridge the S-CORE diagnostic framework and the OpenSOVD gateway, enabling standardized vehicle diagnostics over REST/HTTP.
-3. A controlled fault is introduced into the vehicle-speed path.
-4. The application detects the invalid signal.
-5. Cruise control transitions to a safe disabled state.
-6. The diagnostic state is exposed through OpenSOVD.
-7. The fault and application state are displayed to the user.
-8. Test and deployment assets validate the scenario.
-
-This extends the previously agreed S-CORE, OpenSOVD, X-Verse, and fault-injection demonstration.
-
-See the [contribution status table](#contributions) for the diagnostics and
-CDA issue records, current upstream pull requests and remaining review gates.
-
-#### Dark Software Factory and Local Engineering Assistant
-
-Advance automotive software development automation through two complementary capabilities.
-
-##### S-CORE Software Factory
-
-Use a dark factory, multi-agent development workflow to address selected small-to-medium-complexity S-CORE issues.
-
-The workflow will cover:
-- Issue and requirement analysis
-- Implementation planning
-- Code generation or modification
-- Build execution
-- Deterministic testing
-- Static and security analysis where applicable
-- Repair loops
-- Evidence collection
-- Traceability
-- Human review and approval
-
-##### S-CORE Local Bot Assistant
-
-Use a local engineering assistant to:
-- Navigate S-CORE documentation
-- Locate relevant architectural information
-- Support repository exploration
-- Accelerate issue investigation
-- Provide traceable responses based on available project documentation
-
-Generated code must pass deterministic checks and human review.
-
-#### Open-Source Contributions
-
-Navigate open issues and bugs in Eclipse SDV repositories to accomplish the following.
-
-##### A. Identify Contribution Opportunities
-
-Select features, bugs, or integration gaps that Thinking CAPs can address during the event.
-
-Selection criteria:
-
-- Relevance to the blueprint
-- Achievable scope
-- Value to the Eclipse community
-- Technical feasibility
-- Testability
-- Potential for upstream acceptance
-
-##### B. Introduce Value-Adding Assets
-
-Assess how the following assets could extend the Eclipse SDV ecosystem:
-
-- X-Verse
-- S-CORE Software Factory
-- S-CORE documentation bot
-- OTA Manager
-- Simulation integration wrappers
-- Communication bridges
-
-##### C. Deliver Contribution-Ready Improvements
-
-Target the highest practical maturity level within the event:
-
-- Clearly defined problem
-- Maintainable implementation
-- Buildable code
-- Documented design
-- Automated or reproducible tests
-- Reviewed changes
-- Respected licensing and contribution requirements
-- Pull request or patch prepared for upstream review
-
-“Ready to merge” is the quality ambition. Actual merging remains subject to the respective project maintainers and governance processes.
-
-### Second Priority: Best-Effort Extensions
-
-Once the integrated baseline is stable, the team may extend the blueprint with the following capabilities.
-
-#### New Physical ECU Integration
-
-Introduce a physical or representative zonal ECU based on:
-
-- Eclipse ThreadX
-- Eclipse OpenBSW
-
-Associated X-Verse wrappers and communication bridges will connect the device to the wider blueprint.
-
-#### Jakarta-Based OTA Backend
-
-Adapt the Java-based OTA backend to the Jakarta framework and connect it to the OTA Manager workflow.
-
-#### Safety Evaluation Kit
-
-Propose a Safety Evaluation Kit for the S-CORE Software Factory, focused on:
-
-- Structured safety-impact assessment
-- Evidence collection
-- Validation gates
-- Traceability
-- Human approval
-- Explicit identification of limitations
-
-This will be presented as an engineering concept or demonstrator, not as formal functional-safety certification.
-
-#### AutoSD Deployment
-
-Deploy selected blueprint components in an AutoSD environment. Initial candidates include:
-
-- OpenSOVD services
-- Diagnostic adapters
-- Integration services
-- Dashboard backend
-- Deployment and test utilities
-
-AutoSD will remain an extension until the core demonstration is stable.
-
-## Core Solution Idea
-
-### Solution Title
-
-**Thinking CAPs Open SDV Blueprint**
-
-**A cyber-physical environment for development, diagnostics, automation, and shift-left validation**
-
-### Problem Statement
-
-Modern vehicle software development involves multiple projects, middleware technologies, virtual environments, physical devices, and specialized engineering tools.
-
-Even when individual components work independently, teams still face difficulties with:
-
-- Cross-project interoperability
-- Reproducible environments
-- Early testing without physical hardware
-- Application-to-diagnostics integration
-- Deployment across virtual and physical targets
-- Efficient navigation of large repositories
-- Converting open issues into tested contributions
-- Maintaining quality when AI-assisted development is applied
-
-### Proposed Solution
-
-Thinking CAPs will assemble a reusable cyber-physical blueprint that connects open-source SDV technologies with X-Verse and engineering automation.
-
-![Thinking CAPs EE architecture](misc/ee-architecture.png)
-
-```text
-Simulation and Scenario Execution
-              |
-           X-Verse
-              |
-   Communication and Wrappers
-   Zenoh | SOME/IP | Serial2CAN
-              |
-      Vehicle Software Layer
-       S-CORE | ThreadX
-              |
- Application and Fault Management
-       Cruise Control | DTC
-              |
-   Software-Oriented Diagnostics
-           OpenSOVD
-              |
- Deployment and Test Orchestration
-        openDUT | AutoSD
-              |
- Dashboard | Bot | Software Factory
-```
-
-This is the target architecture for the plan. Individual extensions will only be added after the core integration flow is stable.
-
-### Main Demonstration Story
-
-#### Phase 1: Develop and Run
-
-- X-Verse runs a virtual vehicle.
-- S-CORE hosts the cruise-control application.
-- Zenoh and SOME/IP connect the simulated vehicle and application environment.
-- The dashboard displays relevant vehicle and application states.
-
-#### Phase 2: Inject and Detect a Fault
-
-- X-Verse or a dedicated injector introduces a vehicle-speed fault.
-- The S-CORE application detects missing or invalid speed information.
-- Cruise control transitions to a safe disabled state.
-- The diagnostic logic qualifies and records the fault.
-
-#### Phase 3: Diagnose
-
-- OpenSOVD exposes the diagnostic state.
-- The dashboard or diagnostic client retrieves the fault.
-- The user sees the relationship between the injected condition, application response, and diagnostic result.
-
-#### Phase 4: Validate
-
-- openDUT or an equivalent automated path executes the scenario.
-- Test evidence confirms the expected behaviour.
-- Logs and results are stored with the solution artifacts.
-
-#### Phase 5: Improve
-
-- The Software Factory addresses a selected S-CORE issue.
-- The local bot assists with documentation and repository navigation.
-- Human reviewers verify all proposed changes.
-- Contribution-ready artifacts are prepared.
-
-## Projects and Assets Involved
-
-### Eclipse and Open-Source Projects
-
-#### Core Projects
-
-- Eclipse S-CORE
-- Eclipse OpenSOVD
-- Eclipse openDUT
-- Eclipse Zenoh
-- Eclipse ThreadX
-- Eclipse OpenBSW
-- Eclipse AutoSD
-- Jakarta
-
-#### Extension Projects and Technologies
-
-- Java
-- CARLA
-- Android Automotive OS
-
-A project will only be claimed as part of the implemented solution when it is meaningfully used through code, configuration, deployment, integration, testing, or demonstration.
-
-### Capgemini Engineering Assets
-
-- X-Verse
-- S-CORE Software Factory
-- S-CORE documentation bot
-- Fabro Dashboard
-- OTA Manager
-- X-Verse integration wrappers
-- X-COM communication bridges
-- AAOS Instrument Cluster Application
-
-The plan distinguishes between:
-
-- Assets available before the event
-- Assets modified during the event
-- Newly created integrations
-- Upstream Eclipse contributions
-- Best-effort experimental extensions
-
-## Development Baseline and Event Work
-
-### Pre-Work Baseline
-
-The following technologies and developments form the starting baseline:
-
-- Standard CARLA repository
-- Standard Eclipse SDV project repositories
-- S-CORE
-- OpenSOVD
-- openDUT
-- ThreadX
-- OpenBSW
-- Zenoh
-- X-Verse Lite baseline
-- First draft of the S-CORE Software Factory
-- AAOS IVI application
-- C++ OTA Manager
-- Existing cruise-control integration
-- Initial architecture and setup documentation
-
-Pre-existing work will be identified transparently and will not be presented as development completed during the event.
-
-### Event Development
-
-#### Core Blueprint
-
-- Integrate Eclipse SDV projects with X-Verse.
-- Stabilize the cyber-physical blueprint.
-- Document the architecture and deployment.
-- Establish reproducible startup and test procedures.
-
-#### Simulation and Fault Injection
-
-- Implement or improve X-Verse fault injection.
-- Connect the injector to the S-CORE application.
-- Validate safe cruise-control deactivation.
-- Expose the resulting diagnostic state through OpenSOVD.
-
-#### Software Automation
-
-- Enhance the S-CORE Software Factory.
-- Apply it to selected S-CORE issues.
-- Collect proven-in-use evidence.
-- Demonstrate deterministic validation and human review.
-- Improve the local S-CORE documentation bot.
-
-#### Physical and Virtual Device Representation
-
-- Integrate a ThreadX-based zonal-computer representation.
-- Add OpenBSW as a best-effort physical ECU representation.
-- Connect virtual or physical devices to the blueprint.
-
-#### X-Verse Integrations
-
-- Create or enhance simulation wrappers.
-- Implement the X-COM Serial2CAN bridge.
-- Connect new components without destabilizing the baseline.
-
-#### OTA Extension
-
-- Explore a Java implementation of the OTA Manager.
-- Adapt the backend to Jakarta as a best-effort extension.
-
-#### Open-Source Contributions
-
-- Investigate open issues.
-- Implement selected fixes or features.
-- Add tests and documentation.
-- Conduct peer review.
-- Prepare issues, patches, or pull requests for maintainers.
-
-## How We Work
-
-### Lightweight Development Process
-
-The team will use an integration-first, evidence-driven process.
-
-#### Workstreams
-
-1. Blueprint architecture and interfaces
-2. S-CORE applications and diagnostics
-3. OpenSOVD integration
-4. X-Verse simulation and communication
-5. Software Factory and bot
-6. Device and hardware integration
-7. Deployment, testing, and contributions
-
-```text
-Select
-  ↓
-Specify
-  ↓
-Design
-  ↓
-Implement
-  ↓
-Build
-  ↓
-Test
-  ↓
-Review
-  ↓
-Integrate
-  ↓
-Demonstrate
-  ↓
-Document
-```
-
-Each work item must have:
-
-- A named owner
-- Declared input and expected output
-- Acceptance criteria
-- Dependencies
-- Evidence of testing
-- Current status
-- Integration target
-
-### Progress Tracking
-
-The team will use a lightweight board with:
-
-- Backlog
-- Selected
-- In Progress
-- In Review
-- Integration
-- Blocked
-- Done
-
-Prioritization will consider:
-
-- Contribution value
-- Blueprint relevance
-- Implementation effort
-- Integration risk
-- Demonstration impact
-- Available evidence
-- Dependency on external maintainers or hardware
-
-The shared GitHub repository will be the source of truth for code, architecture, documentation, scripts, testing evidence, and integration status.
-
-## Quality Control
-
-### Quality Principles
-
-The team will prioritize:
-
-1. Working integration over isolated feature quantity.
-2. Reproducibility over machine-specific success.
-3. Deterministic verification over unverified AI output.
-4. Reviewable contributions over experimental patches.
-5. Clear evidence over unsupported claims.
-6. A stable baseline over uncontrolled scope expansion.
-
-### Testing Strategy
-
-#### Component Tests
-
-Each component must be independently executable or testable.
-
-#### Interface Tests
-
-Connected components must be validated using controlled messages, mocks, or reference examples.
-
-#### Integration Tests
-
-The complete chain must be tested from simulated input to application response and diagnostic output.
-
-#### Regression Tests
-
-The known-good baseline must be rerun after critical integration changes.
-
-#### Demonstration Tests
-
-The team must verify that the complete scenario can be reproduced using the documented setup and startup sequence.
-
-#### Contribution Tests
-
-Proposed upstream changes should include, where applicable:
-
-- Successful compilation
-- Automated tests
-- Static checks
-- Interface validation
-- Regression evidence
-- Documentation
-- Known limitations
-
-### Code Review
-
-- Critical changes require review by at least one additional team member.
-- Interface changes require review from both affected workstreams.
-- AI-generated or AI-modified code requires explicit human review.
-- Experimental changes remain separate from the stable demonstration baseline.
-- Upstream fixes should follow the target project’s contribution conventions.
-
-### Document and Configuration Management
-
-The repository will contain:
-
-- Solution plan
-- Architecture diagrams
-- Root README
-- Component-level setup instructions
-- Test instructions
-- Evidence
-- Known limitations
-- Contribution records
-- Third-party and licensing information where applicable
-
-Dependencies and working configurations should be pinned where practical. A known-good baseline will be clearly identified and protected.
-
-## Team Communication
-
-### Communication Channels
-
-- Slack and Teams for immediate coordination
-- GitHub issues for technical tasks and blockers
-- Pull requests for review and integration
-- Repository documentation for stable information
-- A lightweight decision log for architectural choices
-
-### Checkpoints
-
-Each checkpoint will answer:
-
-1. What is working?
-2. What changed?
-3. What is blocked?
-4. Has the baseline been affected?
-5. What evidence was produced?
-6. What is the next highest-value task?
-7. Should any best-effort item be stopped?
-
-### Blocker Reporting
-
-A blocker report must state:
-
-- Affected component
-- Observed behaviour
-- Available evidence
-- Affected dependency
-- Help required
-- Fallback option
-- Scope impact
-
-## Decision Making
-
-### Decision Principles
-
-Decisions will be made in the following order:
-
-1. Protect the working blueprint.
-2. Preserve safe application behaviour.
-3. Maintain reproducibility.
-4. Maximize ecosystem and contribution value.
-5. Add optional technologies only when they provide demonstrable value.
-
-### Resolving Design Disagreements
-
-When alternatives compete:
-
-1. Describe the options.
-2. Identify architectural and interface impacts.
-3. Compare integration risk.
-4. Use a small technical experiment where practical.
-5. Prefer the simplest option that satisfies the objective.
-6. Record the decision and rationale.
-7. Escalate unresolved scope decisions to the team lead.
-
-### Time-Boxing and Fallback
-
-If an item threatens the core solution:
-
-1. Preserve the last known-good version.
-2. Isolate the experiment.
-3. Use the simpler fallback path.
-4. Record the limitation.
-5. Continue the end-to-end integration.
-6. Return to the item only after the baseline is stable.
-
-## Scope Priorities
-
-### Must Have
-
-- Cyber-physical blueprint architecture
-- X-Verse virtual vehicle
-- S-CORE cruise-control application
-- Zenoh and SOME/IP communication
-- Controlled fault injection
-- Safe cruise-control deactivation
-- OpenSOVD diagnostic visibility
-- Lightweight dashboard or client
-- Reproducible setup
-- Test evidence
-- Architecture and interface documentation
-
-### Should Have
-
-- Enhanced S-CORE Software Factory
-- Proven-in-use automation evidence
-- S-CORE documentation bot
-- openDUT test execution
-- X-Verse simulation wrappers
-- Selected Eclipse issue fixes
-- Contribution-ready patches or pull requests
-
-### Could Have
-
-- ThreadX zonal-computer representation
-- Serial2CAN X-COM bridge
-- AutoSD deployment
-- OpenBSW physical ECU integration
-- Jakarta-based OTA backend
-- Safety Evaluation Kit concept
-
-### Out of Core Scope
-
-The following items must not block the core demonstration:
-
-- Formal safety certification
-- Production-ready OTA deployment
-- Complete physical vehicle integration
-- Integration of every listed Eclipse project
-- Upstream acceptance or merging during the event
-- Production maturity of the complete blueprint
-
-## Definition of Success
-
-The hackathon will be successful if Thinking CAPs can demonstrate:
-
-- A functional cyber-physical SDV blueprint
-- Meaningful integration of multiple Eclipse SDV projects
-- A virtual vehicle running an S-CORE function
-- Controlled fault injection
-- Safe application behaviour
-- Diagnostic visibility through OpenSOVD
-- Repeatable deployment and validation
-- Practical use of the Software Factory on a real issue
-- Useful results from the local documentation bot
-- Documented architecture and interfaces
-- Tested, reviewed, and contribution-ready improvements
-- Transparent separation between pre-existing work and event development
-
-## Repository Contribution Guidance and License
+## 13. Repository contribution guidance and license
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution and review expectations.
 Repository code is covered by [Apache-2.0](LICENSE); upstream dependencies and
