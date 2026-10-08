@@ -1,6 +1,6 @@
 # AutoSD digital twin of the ThreadX zonal lighting ECU
 
-This folder runs a digital twin of the [ThreadX zonal lighting controller](../../ThreadX/README.md)
+This folder runs a digital twin of the [ThreadX zonal lighting controller](../X-Verse/external_hackathon_ecus/ThreadX/README.md)
 in an AutoSD container. It does what the ThreadX ECU does: it takes the VCU
 status from Zenoh, decides the brake and reverse lights, and publishes the light
 commands that CARLA's vehicle subscribes to.
@@ -11,10 +11,10 @@ vehicle/lights/*  ← Zenoh2CAN ← vcan0 0x1F4 ← brake/reverse decisions
                  (inside the autosd-threadx-twin container)
 ```
 
-The twin uses the same sources and contract as `ThreadX/`, without changing them:
+The twin uses the same sources and contract as `ThreadX/` (X-Verse `external_hackathon_ecus/ThreadX`, synced into `demo/X-Verse`; `THREADX_DIR` overrides it), without changing them:
 
 - the ThreadX controller (`ThreadX/src`), built against the pinned Eclipse ThreadX revision
-- the [CAN lighting contract](../../ThreadX/docs/can-lighting-contract.md) (`0x1F1` in, `0x1F4` out)
+- the [CAN lighting contract](../X-Verse/external_hackathon_ecus/ThreadX/docs/can-lighting-contract.md) (`0x1F1` in, `0x1F4` out)
 - the bridge profile generator `ThreadX/scripts/configure_bridge.py`
 - the Zenoh2CAN bridge at the revision pinned in `ThreadX/dependencies.lock.json`
 

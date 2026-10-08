@@ -13,7 +13,7 @@
 # It publishes the same light commands as the AZ3166 board, so run one of them
 # at a time: stop ThreadX/ctl.sh (the board's bridge) before `up`.
 #
-# Sources are only read from ../../ThreadX and the bridge checkout; build/ in
+# Sources are only read from the ThreadX folder (THREADX_DIR) and the bridge checkout; build/ in
 # this folder holds the staged Docker build context (ignored by Git).
 #
 # Environment overrides:
@@ -31,7 +31,13 @@ if ( return 0 2>/dev/null ); then
 fi
 
 TWIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-THREADX_DIR="$(cd -- "$TWIN_DIR/../../ThreadX" && pwd)"
+# ThreadX sources: X-Verse's external_hackathon_ecus/ThreadX, synced next to this
+# folder (demo/X-Verse), else ~/autoverse; THREADX_DIR overrides it.
+if [[ -z "${THREADX_DIR:-}" ]]; then
+    THREADX_DIR="$TWIN_DIR/../X-Verse/external_hackathon_ecus/ThreadX"
+    [[ -d "$THREADX_DIR" ]] || THREADX_DIR="$HOME/autoverse/external_hackathon_ecus/ThreadX"
+fi
+THREADX_DIR="$(cd -- "$THREADX_DIR" && pwd)"
 
 if [[ -z "${AUTOVERSE_ROOT:-}" ]]; then
     if [[ -d "$TWIN_DIR/../X-Verse/bridges" ]]; then

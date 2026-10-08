@@ -2,7 +2,7 @@
 #
 # Digital twin of the ThreadX zonal lighting ECU on AutoSD.
 # Build stage: the unchanged ThreadX controller sources (staged by ctl.sh from
-# ../../ThreadX) on CentOS Stream 9, the base of the AutoSD container image.
+# X-Verse external_hackathon_ecus/ThreadX) on CentOS Stream 9, the base of the AutoSD container image.
 # Runtime stage: the CentOS Automotive SIG's AutoSD container image (Stream 9
 # with the AutoSD automotive repositories, pinned by digest) with the
 # controller, the pinned Zenoh2CAN bridge and the unchanged bridge profile.
