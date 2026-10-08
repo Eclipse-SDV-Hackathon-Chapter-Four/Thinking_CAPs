@@ -91,7 +91,7 @@ and a test bench, all connected through the **X-COM** communication backbone (Ec
 
 ## 5. Our contributions with a pull request (orange chips)
 
-All eleven pull requests were opened during the event (6–7 October 2026). Status as on GitHub, 7 October 2026.
+All eleven pull requests were opened during the event (6–7 October 2026). Status as on GitHub, 8 October 2026.
 
 | # | Upstream repository | PR | Issue | Title (as on GitHub) | Status | How it was produced | Block |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -101,13 +101,13 @@ All eleven pull requests were opened during the event (6–7 October 2026). Stat
 | 4 | eclipse-score/communication | [#1339](https://github.com/eclipse-score/communication/pull/1339) | [Communication #781](https://github.com/eclipse-score/communication/issues/781) | Implement lifetime-bound MethodInArgPtr ABI owner | **DRAFT** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
 | 5 | eclipse-score/communication | [#1340](https://github.com/eclipse-score/communication/pull/1340) | [Communication #490](https://github.com/eclipse-score/communication/issues/490) | Implement isolated Rust COM mock runtime | **DRAFT** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
 | 6 | eclipse-score/communication | [#1341](https://github.com/eclipse-score/communication/pull/1341) | repository hygiene | chore: add license headers across repository code | **OPEN** | AI-generated (software factory), human-reviewed | S-CORE · Communication |
-| 7 | [eclipse-score/lifecycle](https://github.com/eclipse-score/lifecycle) | [#762](https://github.com/eclipse-score/lifecycle/pull/762) | [Lifecycle #704](https://github.com/eclipse-score/lifecycle/issues/704) | refactor: Deduplicate LmControl communication configuration | **DRAFT** | AI-generated (software factory), human-reviewed | S-CORE · Lifecycle |
+| 7 | [eclipse-score/lifecycle](https://github.com/eclipse-score/lifecycle) | [#762](https://github.com/eclipse-score/lifecycle/pull/762) | [Lifecycle #704](https://github.com/eclipse-score/lifecycle/issues/704) | refactor: Deduplicate LmControl communication configuration | **OPEN** | AI-generated (software factory), human-reviewed | S-CORE · Lifecycle |
 | 8 | [eclipse-score/score](https://github.com/eclipse-score/score) | [#3307](https://github.com/eclipse-score/score/pull/3307) | [S-CORE #3115](https://github.com/eclipse-score/score/issues/3115) | docs: Complete AI tooling evaluation and selection for S-CORE | **OPEN** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
 | 9 | [eclipse-score/docs-as-code](https://github.com/eclipse-score/docs-as-code) | [#926](https://github.com/eclipse-score/docs-as-code/pull/926) | [S-CORE #2850](https://github.com/eclipse-score/score/issues/2850) | Evaluate assurance changes with native gates and structured traces | **DRAFT** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
 | 10 | [eclipse-hephaestus/hephaestus](https://github.com/eclipse-hephaestus/hephaestus) | [#14](https://github.com/eclipse-hephaestus/hephaestus/pull/14) | [Hephaestus #11](https://github.com/eclipse-hephaestus/hephaestus/issues/11) | Propose s-core_sw_fabric engineering workflow pilot | **OPEN** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
 | 11 | eclipse-hephaestus/hephaestus | [#15](https://github.com/eclipse-hephaestus/hephaestus/pull/15) | documentation assistant | Propose S-CORE Docs Assistant documentation pilot | **OPEN** | AI-generated (software factory), human-reviewed | Aspice Dark Factory |
 
-Totals: **11 pull requests** across 6 Eclipse repositories: 1 merged, 6 open, 4 draft.
+Totals: **11 pull requests** across 6 Eclipse repositories: 1 merged, 7 open, 3 draft.
 PR #601 was coded by hand without AI; PR #40 combines manual coding with AI assistance; the other nine were
 produced with the AI-based S-CORE Software Factory workflow and reviewed by the team.
 
