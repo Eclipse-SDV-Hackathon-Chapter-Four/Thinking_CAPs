@@ -1,0 +1,1 @@
+An optional IDE confirmation was accidentally assigned the module-tidy log name. Two collector calls reused that filename, making its historical log binding ambiguous. Treat native-mod-tidy as excluded collector history. The confirmed-native-mod-tidy command was rerun sequentially; it passed with all source subjects unchanged.

@@ -1,0 +1,265 @@
+--- a/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs
++++ b/score/mw/com/test/basic_rust_api/subscription_state_apis/subscription_state_app.rs
+@@ -95,11 +95,14 @@
+                  <notifications|replacement|unset|false-then-drop|drop-active>"
+             );
+             std::process::exit(2);
+-        }
++        },
+     };
+ 
+     if let Err(error) = controller_entry(scenario) {
+-        eprintln!("[subscription-state-apis] controller scenario '{}' failed: {}", scenario, error);
++        eprintln!(
++            "[subscription-state-apis] controller scenario '{}' failed: {}",
++            scenario, error
++        );
+         std::process::exit(1);
+     }
+ }
+@@ -244,7 +247,7 @@
+         i16_val: i16::try_from(marker).unwrap_or(i16::MAX),
+         u8_val: u8::try_from(marker).unwrap_or(u8::MAX),
+         i8_val: i8::try_from(marker).unwrap_or(i8::MAX),
+-        flag: marker % 2 == 0,
++        flag: marker.is_multiple_of(2),
+     }
+ }
+ 
+@@ -301,7 +304,10 @@
+         self.stdin.take();
+         let deadline = deadline_after(EXIT_TIMEOUT);
+         let status = loop {
+-            let child = self.child.as_mut().ok_or_else(|| "provider child is missing".to_string())?;
++            let child = self
++                .child
++                .as_mut()
++                .ok_or_else(|| "provider child is missing".to_string())?;
+             match try_wait(child) {
+                 Ok(Some(status)) => break status,
+                 Ok(None) => {
+@@ -315,7 +321,9 @@
+         };
+         self.child.take();
+         if let Some(reader) = self.reader.take() {
+-            reader.join().map_err(|_| "provider stdout reader panicked".to_string())?;
++            reader
++                .join()
++                .map_err(|_| "provider stdout reader panicked".to_string())?;
+         }
+         if !status.success() {
+             return Err(format!("provider child exited unsuccessfully after FINISH: {}", status));
+@@ -362,8 +370,8 @@
+             match self.receiver.recv_timeout(deadline - now) {
+                 Ok(line) => {
+                     if line.starts_with(PROTOCOL_PREFIX) {
+-                        let parsed = parse_protocol(&line)
+-                            .ok_or_else(|| format!("malformed protocol message: {}", line))?;
++                        let parsed =
++                            parse_protocol(&line).ok_or_else(|| format!("malformed protocol message: {}", line))?;
+                         let (received_phase, received_command, ok) = parsed;
+                         if received_phase != phase {
+                             return Err(format!(
+@@ -388,7 +396,10 @@
+                     return Err(format!("timeout awaiting {} phase {}", command, phase));
+                 },
+                 Err(RecvTimeoutError::Disconnected) => {
+-                    return Err(format!("provider stdout closed while awaiting {} phase {}", command, phase));
++                    return Err(format!(
++                        "provider stdout closed while awaiting {} phase {}",
++                        command, phase
++                    ));
+                 },
+             }
+         }
+@@ -563,12 +574,11 @@
+     }
+ }
+ 
+-/// A single handler invocation, tagged with the originating handler ID and an ordered counter.
++/// A single handler invocation, tagged with the originating handler ID.
+ #[derive(Debug)]
+ struct Observation {
+     handler_id: u32,
+     state: SubscriptionState,
+-    invocation: usize,
+ }
+ 
+ /// Resources captured by a subscription-state handler. Dropping this value records exactly one
+@@ -619,12 +629,8 @@
+     let handler = move |state: SubscriptionState| -> bool {
+         // Referencing the probe keeps it owned by, and disposed with, this callable.
+         let _ = probe.handler_id();
+-        let invocation = invocations_counter.fetch_add(1, Ordering::SeqCst) + 1;
+-        let observation = Observation {
+-            handler_id: id,
+-            state,
+-            invocation,
+-        };
++        invocations_counter.fetch_add(1, Ordering::SeqCst);
++        let observation = Observation { handler_id: id, state };
+         if sender.send(observation).is_err() {
+             send_failures_counter.fetch_add(1, Ordering::SeqCst);
+         }
+@@ -715,7 +721,9 @@
+     S: Subscription<MixedPrimitivesPayload, R>,
+ {
+     let (control, handler) = make_handler(1, true);
+-    subscription.set_subscription_state_change_handler(handler).map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler)
++        .map_err(err_str)?;
+ 
+     session.withdraw()?;
+     let pending = await_observation(&control, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
+@@ -728,7 +736,9 @@
+     session.send_sample(SAMPLE_MARKER_NOTIFICATIONS)?;
+     receive_marker::<R, S>(&subscription, SAMPLE_MARKER_NOTIFICATIONS, SAMPLE_TIMEOUT)?;
+ 
+-    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    subscription
++        .unset_subscription_state_change_handler()
++        .map_err(err_str)?;
+     require_eq(
+         control.disposals.load(Ordering::SeqCst),
+         1,
+@@ -761,8 +771,12 @@
+     let (control_a, handler_a) = make_handler(1, true);
+     let (control_b, handler_b) = make_handler(2, true);
+ 
+-    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
+-    subscription.set_subscription_state_change_handler(handler_b).map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler_a)
++        .map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler_b)
++        .map_err(err_str)?;
+     require_eq(
+         control_a.disposals.load(Ordering::SeqCst),
+         1,
+@@ -783,7 +797,9 @@
+         "replacement: replaced handler A never invoked",
+     )?;
+ 
+-    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    subscription
++        .unset_subscription_state_change_handler()
++        .map_err(err_str)?;
+     require_eq(
+         control_b.disposals.load(Ordering::SeqCst),
+         1,
+@@ -813,8 +829,12 @@
+     let (control_a, handler_a) = make_handler(1, true);
+     let (control_b, handler_b) = make_handler(2, true);
+ 
+-    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
+-    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler_a)
++        .map_err(err_str)?;
++    subscription
++        .unset_subscription_state_change_handler()
++        .map_err(err_str)?;
+     require_eq(
+         control_a.disposals.load(Ordering::SeqCst),
+         1,
+@@ -831,7 +851,9 @@
+         "unset: handler A never invoked after unset",
+     )?;
+ 
+-    subscription.set_subscription_state_change_handler(handler_b).map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler_b)
++        .map_err(err_str)?;
+     session.withdraw()?;
+     await_observation(&control_b, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
+     wait_for_state::<R, S>(&subscription, SubscriptionState::SubscriptionPending, QUERY_TIMEOUT)?;
+@@ -839,7 +861,9 @@
+     await_observation(&control_b, SubscriptionState::Subscribed, CALLBACK_TIMEOUT)?;
+     wait_for_state::<R, S>(&subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
+ 
+-    subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    subscription
++        .unset_subscription_state_change_handler()
++        .map_err(err_str)?;
+     require_eq(
+         control_b.disposals.load(Ordering::SeqCst),
+         1,
+@@ -866,7 +890,9 @@
+     S: Subscription<MixedPrimitivesPayload, R>,
+ {
+     let (control_a, handler_a) = make_handler(1, false);
+-    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler_a)
++        .map_err(err_str)?;
+ 
+     session.withdraw()?;
+     await_observation(&control_a, SubscriptionState::SubscriptionPending, CALLBACK_TIMEOUT)?;
+@@ -903,17 +929,15 @@
+ 
+ /// Case 5: dropping a subscription with an active handler disposes it once; a fresh
+ /// subscription with a positive-control handler verifies a full withdrawal/re-offer cycle.
+-fn scenario_drop_active<R, S>(
+-    session: &mut ProviderSession,
+-    runtime: &R,
+-    subscription: S,
+-) -> AppResult<()>
++fn scenario_drop_active<R, S>(session: &mut ProviderSession, runtime: &R, subscription: S) -> AppResult<()>
+ where
+     R: Runtime,
+     S: Subscription<MixedPrimitivesPayload, R>,
+ {
+     let (control_a, handler_a) = make_handler(1, true);
+-    subscription.set_subscription_state_change_handler(handler_a).map_err(err_str)?;
++    subscription
++        .set_subscription_state_change_handler(handler_a)
++        .map_err(err_str)?;
+     drop(subscription);
+     require_eq(
+         control_a.disposals.load(Ordering::SeqCst),
+@@ -945,7 +969,9 @@
+     await_observation(&control_b, SubscriptionState::Subscribed, CALLBACK_TIMEOUT)?;
+     wait_for_state::<R, _>(&fresh_subscription, SubscriptionState::Subscribed, QUERY_TIMEOUT)?;
+ 
+-    fresh_subscription.unset_subscription_state_change_handler().map_err(err_str)?;
++    fresh_subscription
++        .unset_subscription_state_change_handler()
++        .map_err(err_str)?;
+     require_eq(
+         control_b.disposals.load(Ordering::SeqCst),
+         1,
+@@ -988,7 +1014,9 @@
+     #[test]
+     fn provider_failure_after_finish_is_rejected() {
+         let mut session = scripted_provider("read -r line; printf 'SSAPI-PROTO 1 FINISH OK\\n'; exit 7");
+-        let error = session.finish().expect_err("a FINISH acknowledgement cannot hide a failed exit");
++        let error = session
++            .finish()
++            .expect_err("a FINISH acknowledgement cannot hide a failed exit");
+         assert!(error.contains("exited unsuccessfully"), "{error}");
+         assert!(session.child.is_none(), "the exited child must already be reaped");
+     }
+@@ -1004,8 +1032,17 @@
+             .expect_err("wait errors must propagate");
+         assert!(error.contains("injected wait error"), "{error}");
+         assert!(session.child.is_some(), "wait error must preserve cleanup ownership");
+-        assert!(session.child.as_mut().expect("owned child").try_wait().expect("real wait").is_none());
++        assert!(session
++            .child
++            .as_mut()
++            .expect("owned child")
++            .try_wait()
++            .expect("real wait")
++            .is_none());
+         drop(session);
+-        assert!(!Path::new(&format!("/proc/{pid}")).exists(), "the owned child must be reaped");
+-    }
+-}
++        assert!(
++            !Path::new(&format!("/proc/{pid}")).exists(),
++            "the owned child must be reaped"
++        );
++    }
++}

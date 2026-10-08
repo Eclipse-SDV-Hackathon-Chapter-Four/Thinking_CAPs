@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="18" failures="0" disabled="0" errors="0" time="0.092" timestamp="2026-10-07T18:57:54.483" name="AllTests">
+  <testsuite name="RuntimeTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0." timestamp="2026-10-07T18:57:54.483">
+    <testcase name="CanRetrieveServiceDiscovery" file="score/mw/com/impl/runtime_test.cpp" line="49" status="run" result="completed" time="0." timestamp="2026-10-07T18:57:54.483" classname="RuntimeTest" />
+  </testsuite>
+  <testsuite name="RuntimeFixture" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.003" timestamp="2026-10-07T18:57:54.484">
+    <testcase name="CtorWillCreateBindingRuntimes" file="score/mw/com/impl/runtime_test.cpp" line="138" status="run" result="completed" time="0.002" timestamp="2026-10-07T18:57:54.484" classname="RuntimeFixture" />
+    <testcase name="CanInjectMock" file="score/mw/com/impl/runtime_test.cpp" line="147" status="run" result="completed" time="0." timestamp="2026-10-07T18:57:54.486" classname="RuntimeFixture" />
+    <testcase name="ConfiguredDiscoveryDoesNotExtendLegacyRuntimeInterface" file="score/mw/com/impl/runtime_test.cpp" line="162" status="run" result="completed" time="0." timestamp="2026-10-07T18:57:54.486" classname="RuntimeFixture" />
+    <testcase name="ReturnsLolaBindingWhenCallingWithLolaTemplateAndLolaBindingType" file="score/mw/com/impl/runtime_test.cpp" line="175" status="run" result="completed" time="0." timestamp="2026-10-07T18:57:54.486" classname="RuntimeFixture" />
+    <testcase name="TerminatesWhenCallingWithLolaTemplateAndNonLolaBindingType" file="score/mw/com/impl/runtime_test.cpp" line="192" status="run" result="completed" time="0." timestamp="2026-10-07T18:57:54.486" classname="RuntimeFixture" />
+  </testsuite>
+  <testsuite name="RuntimeTracingConfigTest" tests="12" failures="0" disabled="0" skipped="0" errors="0" time="0.088" timestamp="2026-10-07T18:57:54.487">
+    <testcase name="GetTracingFilterConfigWillReturnEmptyOptionalIfNotSet" file="score/mw/com/impl/runtime_test.cpp" line="226" status="run" result="completed" time="0." timestamp="2026-10-07T18:57:54.487" classname="RuntimeTracingConfigTest" />
+    <testcase name="CreatingRuntimeWillRegisterClientIfTracingEnabledAndFilterConfigExists" file="score/mw/com/impl/runtime_test.cpp" line="238" status="run" result="completed" time="0.012" timestamp="2026-10-07T18:57:54.487" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18159752"/>
+        <property name="Description" value="Checks whether Runtime will call RegisterClient if tracing is enabled and a TracingFilterConfig is provided. It should be called with the lola binding type and the correct applicationInstanceID."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="TracingWillBeDisabledIfRegisterClientReturnsAnError" file="score/mw/com/impl/runtime_test.cpp" line="268" status="run" result="completed" time="0.012" timestamp="2026-10-07T18:57:54.499" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18159752"/>
+        <property name="Description" value="Checks whether tracing is disabled if RegisterClient returns an error."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="TraceClientIdWillBeSavedWhenRegisterClientSucceeds" file="score/mw/com/impl/runtime_test.cpp" line="296" status="run" result="completed" time="0.011" timestamp="2026-10-07T18:57:54.511" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18172251"/>
+        <property name="Description" value="Checks whether the TraceClientId returned by RegisterClient will be saved."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CreatingRuntimeWillRegisterTraceDoneCBWithClientIdFromClientRegistrationIfRegisterClientSucceeded" file="score/mw/com/impl/runtime_test.cpp" line="325" status="run" result="completed" time="0.011" timestamp="2026-10-07T18:57:54.523" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18194091"/>
+        <property name="Description" value="Checks whether RegisterTraceDoneCB is called with the correct TraceClientId if RegisterClient succeeds."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="RegisterTraceDoneCBWillNotBeCalledIfRegisterClientReturnsAnError" file="score/mw/com/impl/runtime_test.cpp" line="356" status="run" result="completed" time="0.011" timestamp="2026-10-07T18:57:54.535" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18194091"/>
+        <property name="Description" value="Checks that RegisterTraceDoneCB is not called if RegisterClient returns an error."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="TracingWillBeDisabledIfRegisterTraceDoneCBReturnsAnError" file="score/mw/com/impl/runtime_test.cpp" line="385" status="run" result="completed" time="0.011" timestamp="2026-10-07T18:57:54.547" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18194091"/>
+        <property name="Description" value="Checks that tracing is disabled if RegisterTraceDoneCB returns an error."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CreatingRuntimeWillCreateTracingRuntimeIfTracingEnabledAndFilterConfigExists" file="score/mw/com/impl/runtime_test.cpp" line="417" status="run" result="completed" time="0.011" timestamp="2026-10-07T18:57:54.559" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18159733"/>
+        <property name="Description" value="Checks that IPC tracing runtime will be created if tracing is enabled in TracingConfiguration and a valid Trace Filter config is provided."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CreatingRuntimeNotCreateTracingRuntimeIfTracingDisabled" file="score/mw/com/impl/runtime_test.cpp" line="447" status="run" result="completed" time="0.001" timestamp="2026-10-07T18:57:54.570" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18159733"/>
+        <property name="Description" value="Checks that IPC tracing runtime will not be created if tracing is disabled in TracingConfiguration."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="CreatingRuntimeNotCreateTracingRuntimeIfNoTraceFilterConfigExists" file="score/mw/com/impl/runtime_test.cpp" line="477" status="run" result="completed" time="0.001" timestamp="2026-10-07T18:57:54.572" classname="RuntimeTracingConfigTest">
+      <properties>
+        <property name="Verifies" value="SCR-18159733"/>
+        <property name="Description" value="Checks that IPC tracing runtime will not be created if a valid Trace Filter config is not provided."/>
+        <property name="TestType" value="Requirements-based test"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="Analysis of requirements"/>
+      </properties>
+    </testcase>
+    <testcase name="GetTracingFilterConfigWillReturnConfigPassedToConstructor" file="score/mw/com/impl/runtime_test.cpp" line="504" status="run" result="completed" time="0.001" timestamp="2026-10-07T18:57:54.573" classname="RuntimeTracingConfigTest" />
+    <testcase name="TracingFilterConfigRetrievedFromRuntimeWillHaveSameTracePointedEnabled" file="score/mw/com/impl/runtime_test.cpp" line="520" status="run" result="completed" time="0.001" timestamp="2026-10-07T18:57:54.574" classname="RuntimeTracingConfigTest" />
+  </testsuite>
+</testsuites>

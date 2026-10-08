@@ -1,0 +1,94 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/gateway/transport_layer/sample/test/integration_test:test_bidirectional_transport_reconnect
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/462/execroot/_main/bazel-out/k8-fastbuild/bin/score/mw/com/gateway/transport_layer/sample/test/integration_test/test_bidirectional_transport_reconnect.runfiles/score_itf+
+configfile: pytest.ini
+collected 1 item
+
+../score_itf+::test_bidirectional_transport_reconnect 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 17:08:52.206] [INFO] [score.itf.plugins.docker] Executing custom image bootstrap command: score/mw/com/gateway/transport_layer/sample/test/integration_test/_image_test_bidirectional_transport_reconnect_loader.sh
+[2026-10-07 17:08:54.229] [INFO] [score.itf.plugins.docker] Bootstrap stdout: Loaded image: test_bidirectional_transport_reconnect:latest
+
+[2026-10-07 17:08:54.229] [DEBUG] [docker.utils.config] Trying paths: ['/home/jefferson/.docker/config.json', '/home/jefferson/.dockercfg']
+[2026-10-07 17:08:54.229] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:08:54.230] [DEBUG] [docker.utils.config] Trying paths: ['/home/jefferson/.docker/config.json', '/home/jefferson/.dockercfg']
+[2026-10-07 17:08:54.230] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:08:54.238] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+[2026-10-07 17:08:54.297] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/networks/create HTTP/1.1" 201 87
+[2026-10-07 17:08:54.299] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/networks/9c17e11c52b7d9ea49ace5d4fc857e81e60bbe427708ce2396c1097dea908542 HTTP/1.1" 200 564
+[2026-10-07 17:08:54.525] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/create HTTP/1.1" 201 88
+[2026-10-07 17:08:54.526] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/containers/fb1014bf35cc878fc3a68393e37b2d6e453cc26268063437f3f35a5d92bd4b63/json HTTP/1.1" 200 None
+[2026-10-07 17:08:54.827] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fb1014bf35cc878fc3a68393e37b2d6e453cc26268063437f3f35a5d92bd4b63/start HTTP/1.1" 204 0
+[2026-10-07 17:08:54.827] [DEBUG] [docker.utils.config] Trying paths: ['/home/jefferson/.docker/config.json', '/home/jefferson/.dockercfg']
+[2026-10-07 17:08:54.827] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:08:54.828] [DEBUG] [docker.utils.config] Trying paths: ['/home/jefferson/.docker/config.json', '/home/jefferson/.dockercfg']
+[2026-10-07 17:08:54.828] [DEBUG] [docker.utils.config] No config file found
+[2026-10-07 17:08:54.835] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /version HTTP/1.1" 200 1212
+-------------------------------- live log call ---------------------------------
+[2026-10-07 17:08:54.837] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fb1014bf35cc878fc3a68393e37b2d6e453cc26268063437f3f35a5d92bd4b63/exec HTTP/1.1" 201 74
+[2026-10-07 17:08:54.838] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/2aa9f0f7786eb70b1cd9f5559098328f572469d9c1c6bf2481128901c743a9c5/start HTTP/1.1" 101 0
+[2026-10-07 17:08:54.888] [INFO] [app1] mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+[2026-10-07 17:08:54.889] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fb1014bf35cc878fc3a68393e37b2d6e453cc26268063437f3f35a5d92bd4b63/exec HTTP/1.1" 201 74
+[2026-10-07 17:08:54.890] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/start HTTP/1.1" 101 0
+[2026-10-07 17:08:54.929] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.024] [INFO] [app2] mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+[2026-10-07 17:08:55.025] [INFO] [app2] App2: Message sent, shutting down to trigger disconnect
+[2026-10-07 17:08:55.025] [INFO] [app2] 2026/10/07 17:08:55.2935024 1551732639 000 ECU1 NONE DFLT log warn verbose 6 ReceiveAll: peer closed connection, fd= 5  remaining= 9  of  9
+[2026-10-07 17:08:55.025] [INFO] [app1] 2026/10/07 17:08:55.2935024 1551732641 000 ECU1 NONE DFLT log warn verbose 6 ReceiveAll: peer closed connection, fd= 4  remaining= 9  of  9 
+[2026-10-07 17:08:55.025] [INFO] [app1] 2026/10/07 17:08:55.2935024 1551732641 000 ECU1 NONE DFLT log warn verbose 1 BidirectionalTransport: disconnected, will attempt to reconnect
+[2026-10-07 17:08:55.030] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.132] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.233] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.334] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.436] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.537] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.639] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.740] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.841] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:55.942] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.043] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.144] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.245] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.346] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.447] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.548] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.650] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.751] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.852] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:56.953] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.055] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.126] [INFO] [app2] App2: Waiting for notification response from App1.
+[2026-10-07 17:08:57.126] [INFO] [app2] App2: Received message of type 64
+[2026-10-07 17:08:57.130] [INFO] [app1] App1: All messages received successfully after reconnect and response sent.
+[2026-10-07 17:08:57.130] [INFO] [app2] 2026/10/07 17:08:57.2937130 1551753693 000 ECU1 NONE DFLT log warn verbose 6 ReceiveAll: peer closed connection, fd= 5  remaining= 9  of  9 
+[2026-10-07 17:08:57.130] [INFO] [app1] 2026/10/07 17:08:57.2937130 1551753694 000 ECU1 NONE DFLT log warn verbose 6 ReceiveAll: peer closed connection, fd= 4  remaining= 9  of  9
+[2026-10-07 17:08:57.130] [INFO] [app2] 2026/10/07 17:08:57.2937130 1551753694 000 ECU1 NONE DFLT log warn verbose 1 BidirectionalTransport: disconnected, will attempt to reconnect
+[2026-10-07 17:08:57.156] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.176] [INFO] [app2] App2: Finished successfully
+[2026-10-07 17:08:57.258] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.359] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.460] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.562] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.663] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.765] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.866] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:57.968] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:58.069] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 428
+[2026-10-07 17:08:58.171] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 426
+[2026-10-07 17:08:58.172] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/f4237c5151170730214f400f782e8daf2bea47ff891a8fc803e87620e4f5b42e/json HTTP/1.1" 200 426
+[2026-10-07 17:08:58.172] [DEBUG] [score.itf.core.process.wrapped_process] Application [app2] exit code: [0]
+[2026-10-07 17:08:58.173] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/2aa9f0f7786eb70b1cd9f5559098328f572469d9c1c6bf2481128901c743a9c5/json HTTP/1.1" 200 426
+[2026-10-07 17:08:58.174] [DEBUG] [urllib3.connectionpool] http://localhost:None "GET /v1.56/exec/2aa9f0f7786eb70b1cd9f5559098328f572469d9c1c6bf2481128901c743a9c5/json HTTP/1.1" 200 426
+[2026-10-07 17:08:58.174] [DEBUG] [score.itf.core.process.wrapped_process] Application [app1] exit code: [0]
+PASSED                                                                   [100%]
+------------------------------ live log teardown -------------------------------
+[2026-10-07 17:08:58.479] [DEBUG] [urllib3.connectionpool] http://localhost:None "POST /v1.56/containers/fb1014bf35cc878fc3a68393e37b2d6e453cc26268063437f3f35a5d92bd4b63/stop?t=1 HTTP/1.1" 204 0
+[2026-10-07 17:08:58.534] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/containers/fb1014bf35cc878fc3a68393e37b2d6e453cc26268063437f3f35a5d92bd4b63?v=False&link=False&force=True HTTP/1.1" 204 0
+[2026-10-07 17:08:58.695] [DEBUG] [urllib3.connectionpool] http://localhost:None "DELETE /v1.56/networks/9c17e11c52b7d9ea49ace5d4fc857e81e60bbe427708ce2396c1097dea908542 HTTP/1.1" 204 0
+
+
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/communication-complete-3c7jhdey/bazel-output/8d7477de0cf318c0a7997a7b39c23d59/sandbox/linux-sandbox/462/execroot/_main/bazel-out/k8-fastbuild/testlogs/score/mw/com/gateway/transport_layer/sample/test/integration_test/test_bidirectional_transport_reconnect/test.xml -
+============================== 1 passed in 6.51s ===============================

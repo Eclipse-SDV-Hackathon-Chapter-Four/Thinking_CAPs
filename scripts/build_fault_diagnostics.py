@@ -1,1 +1,0 @@
-../OpenSOVD/scripts/build_fault_diagnostics.py

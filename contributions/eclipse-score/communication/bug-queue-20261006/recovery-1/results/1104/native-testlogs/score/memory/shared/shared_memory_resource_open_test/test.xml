@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="18" failures="0" disabled="0" errors="0" time="0.966" timestamp="2026-10-06T20:39:50.083" name="AllTests">
+  <testsuite name="SharedMemoryResourceOpenDeathTest" tests="5" failures="0" disabled="0" skipped="0" errors="0" time="0.952" timestamp="2026-10-06T20:39:50.083">
+    <testcase name="OpensSharedMemoryTerminatesProcessIfLockfileIsAlwaysThere" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="720" status="run" result="completed" time="0.605" timestamp="2026-10-06T20:39:50.083" classname="SharedMemoryResourceOpenDeathTest" />
+    <testcase name="UnableToMemoryMapCausesTermination" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="738" status="run" result="completed" time="0.09" timestamp="2026-10-06T20:39:50.688" classname="SharedMemoryResourceOpenDeathTest" />
+    <testcase name="OpensSharedMemoryErrorOnFstatCausesTermination" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="758" status="run" result="completed" time="0.085" timestamp="2026-10-06T20:39:50.779" classname="SharedMemoryResourceOpenDeathTest" />
+    <testcase name="OpensSharedMemoryEAGAINOnFstatCausesTermination" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="783" status="run" result="completed" time="0.081" timestamp="2026-10-06T20:39:50.865" classname="SharedMemoryResourceOpenDeathTest" />
+    <testcase name="OpenTypedSharedMemoryTerminatesWhenGetCreatorUidFails" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="808" status="run" result="completed" time="0.088" timestamp="2026-10-06T20:39:50.947" classname="SharedMemoryResourceOpenDeathTest" />
+  </testsuite>
+  <testsuite name="SharedMemoryResourceOpenTest" tests="13" failures="0" disabled="0" skipped="0" errors="0" time="0.013" timestamp="2026-10-06T20:39:51.036">
+    <testcase name="OpensSharedMemoryReadOnlyByDefault" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="50" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.036" classname="SharedMemoryResourceOpenTest">
+      <properties>
+        <property name="Verifies" value="SCR-5899175, SCR-6240424"/>
+        <property name="Description" value="Can open shared memory segment read-only. Only opens shared memory segment provided in constructor."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="OpeningSharedMemoryFreesResourcesOnDestruction" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="72" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.037" classname="SharedMemoryResourceOpenTest">
+      <properties>
+        <property name="Verifies" value="SCR-6367126"/>
+        <property name="Description" value="SharedMemoryResource shall free resources only on destruction."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="OpensSharedMemoryWillWaitUntilLockFileIsGone" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="126" status="run" result="completed" time="0.01" timestamp="2026-10-06T20:39:51.037" classname="SharedMemoryResourceOpenTest">
+      <properties>
+        <property name="Verifies" value="SCR-5899175"/>
+        <property name="Description" value="Can open shared memory segment read-only after a lock was created"/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="OpensSharedMemoryErrorOnLockFileHandleGracefully" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="169" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.048" classname="SharedMemoryResourceOpenTest" />
+    <testcase name="OpensSharedMemoryReadWrite" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="197" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.048" classname="SharedMemoryResourceOpenTest">
+      <properties>
+        <property name="Verifies" value="SCR-5899175, SCR-6240424"/>
+        <property name="Description" value="Can open shared memory segment read-write. Only opens shared memory segment provided in constructor."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="OpeningResourceThatDoesNotExistWillReturnError" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="219" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.048" classname="SharedMemoryResourceOpenTest">
+      <properties>
+        <property name="Verifies" value="SCR-32158471"/>
+        <property name="Description" value="Checks that Open will return an error when the underlying resource cannot be found."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="OpeningResourceWithoutTheRequiredACLsWillReturnError" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="251" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.048" classname="SharedMemoryResourceOpenTest">
+      <properties>
+        <property name="Verifies" value="SCR-32158471"/>
+        <property name="Description" value="Checks that Open will return an error when the process doesn&apos;t have the correct permissions to open the underlying resource."/>
+        <property name="TestType" value="requirements-based"/>
+        <property name="Priority" value="1"/>
+        <property name="DerivationTechnique" value="requirements-analysis"/>
+      </properties>
+    </testcase>
+    <testcase name="SameUnitIsEqual" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="284" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.048" classname="SharedMemoryResourceOpenTest" />
+    <testcase name="DifferentChildClassIsNotEqual" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="302" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.049" classname="SharedMemoryResourceOpenTest" />
+    <testcase name="IsShmInTypedMemoryReturnsFalseWhenOpenTypedSharedMemoryFail" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="572" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.049" classname="SharedMemoryResourceOpenTest" />
+    <testcase name="DifferentInstancesAreNotEqual" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="613" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.049" classname="SharedMemoryResourceOpenTest" />
+    <testcase name="OpeningSharedMemoryFillsRegistryKnownRegions" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="664" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.049" classname="SharedMemoryResourceOpenTest" />
+    <testcase name="LockFileIsHeldDuringEntireOpenSequence" file="score/memory/shared/shared_memory_resource_open_test.cpp" line="692" status="run" result="completed" time="0." timestamp="2026-10-06T20:39:51.050" classname="SharedMemoryResourceOpenTest" />
+  </testsuite>
+</testsuites>

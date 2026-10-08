@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# openDuT peer carrying the demo as a container executor.
+# Apply with:  opendut-cleo apply dashboard/opendut/peer.yaml
+# DEMO_HOST must be reachable from the peer: the machine running dashboard/start.sh.
+---
+kind: PeerDescriptor
+version: v1
+metadata:
+  id: 5b1f7c2e-8a3d-4e6f-9b0a-1c2d3e4f5a6b
+  name: sdv-demo-bench
+spec:
+  location: Friedrichshafen
+  network:
+    interfaces:
+    - id: 7e2a9c41-3b5d-4f60-8a1b-2c3d4e5f6a7b
+      name: eth0
+      kind: ethernet
+  topology:
+    devices:
+    - id: 0c9d8e7f-6a5b-4c3d-9e2f-1a0b9c8d7e6f
+      name: hvac-ecu
+      description: S-CORE HVAC application behind the OpenSOVD gateway (path A)
+      interface-id: 7e2a9c41-3b5d-4f60-8a1b-2c3d4e5f6a7b
+      tags:
+        - sovd
+        - score
+    - id: 3f4e5d6c-7b8a-4910-a2b3-c4d5e6f7a8b9
+      name: flxc1000
+      description: Simulated DoIP ECU behind the Classic Diagnostic Adapter (path B)
+      interface-id: 7e2a9c41-3b5d-4f60-8a1b-2c3d4e5f6a7b
+      tags:
+        - doip
+        - simulated
+  executors:
+    - id: 9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d
+      kind: container
+      results-url: http://nginx-webdav/sdv-demo/
+      parameters:
+        engine: docker
+        name: sdv-demo-runner
+        image: sdv-demo-runner:local
+        volumes: []
+        devices: []
+        envs:
+        - name: GATEWAY
+          value: http://DEMO_HOST:7690/sovd/v1
+        - name: CDA
+          value: http://DEMO_HOST:20002/vehicle/v15
+        - name: SIM
+          value: http://DEMO_HOST:8181
+        ports: []
+        command-args: []
+---
+kind: ClusterDescriptor
+version: v1
+metadata:
+  id: 2d3c4b5a-6978-4e8f-9a0b-c1d2e3f4a5b6
+  name: sdv-demo-cluster
+spec:
+  leader-id: 5b1f7c2e-8a3d-4e6f-9b0a-1c2d3e4f5a6b
+  devices:
+    - 0c9d8e7f-6a5b-4c3d-9e2f-1a0b9c8d7e6f
+    - 3f4e5d6c-7b8a-4910-a2b3-c4d5e6f7a8b9

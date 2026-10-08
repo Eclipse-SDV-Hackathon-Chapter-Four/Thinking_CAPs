@@ -1,0 +1,2146 @@
+diff --git a/.github/actions/00_infrastructure/setup_bazel_cache/build.mjs b/.github/actions/00_infrastructure/setup_bazel_cache/build.mjs
+index b08dab86..15c38db5 100644
+--- a/.github/actions/00_infrastructure/setup_bazel_cache/build.mjs
++++ b/.github/actions/00_infrastructure/setup_bazel_cache/build.mjs
+@@ -1,4 +1,16 @@
+-// SPDX-License-Identifier: Apache-2.0
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ import * as esbuild from "esbuild";
+ 
+ // When bundling ESM packages (e.g. @actions/cache -> @azure/storage-common) into
+@@ -6,12 +18,25 @@ import * as esbuild from "esbuild";
+ // that is never initialised at runtime.  Provide the correct file:// URL via a
+ // banner variable so that createRequire / fileURLToPath calls inside those
+ // bundled modules receive a valid value.
++const licenseHeader = `/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/`;
++
+ const sharedOptions = {
+   bundle: true,
+   platform: "node",
+   format: "cjs",
+   banner: {
+-    js: 'var __importMetaUrl__ = require("url").pathToFileURL(__filename).href;',
++    js: `${licenseHeader}\nvar __importMetaUrl__ = require("url").pathToFileURL(__filename).href;`,
+   },
+   define: {
+     "import.meta.url": "__importMetaUrl__",
+diff --git a/.github/actions/00_infrastructure/setup_bazel_cache/dist/main/index.js b/.github/actions/00_infrastructure/setup_bazel_cache/dist/main/index.js
+index bee22336..4ef2854b 100644
+--- a/.github/actions/00_infrastructure/setup_bazel_cache/dist/main/index.js
++++ b/.github/actions/00_infrastructure/setup_bazel_cache/dist/main/index.js
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ var __importMetaUrl__ = require("url").pathToFileURL(__filename).href;
+ var __create = Object.create;
+ var __defProp = Object.defineProperty;
+diff --git a/.github/actions/00_infrastructure/setup_bazel_cache/dist/post/index.js b/.github/actions/00_infrastructure/setup_bazel_cache/dist/post/index.js
+index 23d26d1e..2f30379f 100644
+--- a/.github/actions/00_infrastructure/setup_bazel_cache/dist/post/index.js
++++ b/.github/actions/00_infrastructure/setup_bazel_cache/dist/post/index.js
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ var __importMetaUrl__ = require("url").pathToFileURL(__filename).href;
+ var __create = Object.create;
+ var __defProp = Object.defineProperty;
+diff --git a/bazel/rules/expand_template.bzl b/bazel/rules/expand_template.bzl
+index 20c2fb0a..5fa70b90 100644
+--- a/bazel/rules/expand_template.bzl
++++ b/bazel/rules/expand_template.bzl
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ """
+ Wrapper rule around the expand_template action with support for location
+ expansion.
+diff --git a/bazel/toolchains/BUILD b/bazel/toolchains/BUILD
+index 55793fdf..c0de9215 100644
+--- a/bazel/toolchains/BUILD
++++ b/bazel/toolchains/BUILD
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ load(
+     "@score_tooling//bazel/rules/rules_score:sphinx_toolchain.bzl",
+     "score_sphinx_toolchain",
+diff --git a/bazel/tools/BUILD b/bazel/tools/BUILD
+index dd819952..1f777620 100644
+--- a/bazel/tools/BUILD
++++ b/bazel/tools/BUILD
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ load(":json_schema_validator_test.bzl", "json_schema_validator_tests")
+ 
+ json_schema_validator_tests(name = "json_validator_tests")
+diff --git a/bazel/tools/json_schema_validator.bzl b/bazel/tools/json_schema_validator.bzl
+index 56dc56cc..6be3bd91 100644
+--- a/bazel/tools/json_schema_validator.bzl
++++ b/bazel/tools/json_schema_validator.bzl
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ """
+ Creates "validate_json_schema_test" test rule which validates the input "json" file against its "schema"
+ """
+diff --git a/bazel/tools/json_schema_validator_test.bzl b/bazel/tools/json_schema_validator_test.bzl
+index fb6d6ec2..773d5227 100644
+--- a/bazel/tools/json_schema_validator_test.bzl
++++ b/bazel/tools/json_schema_validator_test.bzl
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ """Test cases for the JSON schema validator rules."""
+ 
+ load("//bazel/tools:json_schema_validator.bzl", "validate_json_schema_test")
+diff --git a/docs/sphinx/_gh_pages/index.html b/docs/sphinx/_gh_pages/index.html
+index 95695270..afcb697e 100644
+--- a/docs/sphinx/_gh_pages/index.html
++++ b/docs/sphinx/_gh_pages/index.html
+@@ -1,4 +1,19 @@
+ <!DOCTYPE html>
++<!--
++*******************************************************************************
++Copyright (c) 2026 Contributors to the Eclipse Foundation
++
++See the NOTICE file(s) distributed with this work for additional
++information regarding copyright ownership.
++
++This program and the accompanying materials are made available under the
++terms of the Apache License Version 2.0 which is available at
++https://www.apache.org/licenses/LICENSE-2.0
++
++SPDX-License-Identifier: Apache-2.0
++*******************************************************************************
++-->
++
+ <html>
+ <head>
+     <meta charset="utf-8">
+diff --git a/docs/sphinx/_static/css/default_custom.css b/docs/sphinx/_static/css/default_custom.css
+index 4e0adc66..3d3362d2 100644
+--- a/docs/sphinx/_static/css/default_custom.css
++++ b/docs/sphinx/_static/css/default_custom.css
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ /* Docs-as-Code Theme for SCORE Communication
+  * Based on Eclipse SCORE purple theme
+  */
+diff --git a/docs/sphinx/_static/css/version_flyout.css b/docs/sphinx/_static/css/version_flyout.css
+index 25cbb3df..59120692 100644
+--- a/docs/sphinx/_static/css/version_flyout.css
++++ b/docs/sphinx/_static/css/version_flyout.css
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ /* RTD-style version flyout panel */
+ .version-flyout {
+     position: fixed;
+diff --git a/docs/sphinx/_static/js/version_flyout.js b/docs/sphinx/_static/js/version_flyout.js
+index 6af9bf5b..d3c48f1e 100644
+--- a/docs/sphinx/_static/js/version_flyout.js
++++ b/docs/sphinx/_static/js/version_flyout.js
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ /**
+  * RTD-style version flyout for GitHub Pages.
+  * Reads versions from switcher.json and renders a floating panel.
+diff --git a/module_integration_test/MODULE.bazel b/module_integration_test/MODULE.bazel
+index bae5a386..eb953e83 100644
+--- a/module_integration_test/MODULE.bazel
++++ b/module_integration_test/MODULE.bazel
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ bazel_dep(name = "score_communication", version = "0.0.0")
+ local_path_override(
+     module_name = "score_communication",
+diff --git a/module_integration_test/main.cpp b/module_integration_test/main.cpp
+index 79d2ffc5..4320718b 100644
+--- a/module_integration_test/main.cpp
++++ b/module_integration_test/main.cpp
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/runtime.h"
+ 
+ int main(int, char**)
+diff --git a/quality/api_surface/tests/all_private.h b/quality/api_surface/tests/all_private.h
+index da9ecc80..4c4a559c 100644
+--- a/quality/api_surface/tests/all_private.h
++++ b/quality/api_surface/tests/all_private.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/basic_class.h b/quality/api_surface/tests/basic_class.h
+index 4e2a7646..b1f22fdc 100644
+--- a/quality/api_surface/tests/basic_class.h
++++ b/quality/api_surface/tests/basic_class.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/constexpr_members.h b/quality/api_surface/tests/constexpr_members.h
+index 0290c2d0..b865c6bf 100644
+--- a/quality/api_surface/tests/constexpr_members.h
++++ b/quality/api_surface/tests/constexpr_members.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/cpp_attributes.h b/quality/api_surface/tests/cpp_attributes.h
+index 00760dc4..7add0609 100644
+--- a/quality/api_surface/tests/cpp_attributes.h
++++ b/quality/api_surface/tests/cpp_attributes.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/enum_and_free_functions.h b/quality/api_surface/tests/enum_and_free_functions.h
+index 12fd9c7a..21c9dc4a 100644
+--- a/quality/api_surface/tests/enum_and_free_functions.h
++++ b/quality/api_surface/tests/enum_and_free_functions.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/extern_c.h b/quality/api_surface/tests/extern_c.h
+index fde39d0e..0f3cf2ee 100644
+--- a/quality/api_surface/tests/extern_c.h
++++ b/quality/api_surface/tests/extern_c.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/extern_explicit.h b/quality/api_surface/tests/extern_explicit.h
+index 712dba38..42f5b67e 100644
+--- a/quality/api_surface/tests/extern_explicit.h
++++ b/quality/api_surface/tests/extern_explicit.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/forward_declared.h b/quality/api_surface/tests/forward_declared.h
+index bdd48e51..f1512e73 100644
+--- a/quality/api_surface/tests/forward_declared.h
++++ b/quality/api_surface/tests/forward_declared.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/globals.h b/quality/api_surface/tests/globals.h
+index 839696c8..514fcc4b 100644
+--- a/quality/api_surface/tests/globals.h
++++ b/quality/api_surface/tests/globals.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/inheritance.h b/quality/api_surface/tests/inheritance.h
+index 9965e4cd..b7ec850d 100644
+--- a/quality/api_surface/tests/inheritance.h
++++ b/quality/api_surface/tests/inheritance.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/internal_namespace.h b/quality/api_surface/tests/internal_namespace.h
+index 4495ebff..0ab9c4db 100644
+--- a/quality/api_surface/tests/internal_namespace.h
++++ b/quality/api_surface/tests/internal_namespace.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/member_function_templates.h b/quality/api_surface/tests/member_function_templates.h
+index 50051942..1ad0a474 100644
+--- a/quality/api_surface/tests/member_function_templates.h
++++ b/quality/api_surface/tests/member_function_templates.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/multi_inheritance.h b/quality/api_surface/tests/multi_inheritance.h
+index 68d9846c..1fbe5244 100644
+--- a/quality/api_surface/tests/multi_inheritance.h
++++ b/quality/api_surface/tests/multi_inheritance.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/private_changes.h b/quality/api_surface/tests/private_changes.h
+index f0a96326..5f2d4670 100644
+--- a/quality/api_surface/tests/private_changes.h
++++ b/quality/api_surface/tests/private_changes.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/private_changes_v2.h b/quality/api_surface/tests/private_changes_v2.h
+index 2eb0a52b..c8df1e4a 100644
+--- a/quality/api_surface/tests/private_changes_v2.h
++++ b/quality/api_surface/tests/private_changes_v2.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/protected_methods.h b/quality/api_surface/tests/protected_methods.h
+index 1542e4a2..65454fd4 100644
+--- a/quality/api_surface/tests/protected_methods.h
++++ b/quality/api_surface/tests/protected_methods.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/ref_qualifiers.h b/quality/api_surface/tests/ref_qualifiers.h
+index 6050c052..4af1e486 100644
+--- a/quality/api_surface/tests/ref_qualifiers.h
++++ b/quality/api_surface/tests/ref_qualifiers.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/result_type_regression.h b/quality/api_surface/tests/result_type_regression.h
+index bced0876..c91ade04 100644
+--- a/quality/api_surface/tests/result_type_regression.h
++++ b/quality/api_surface/tests/result_type_regression.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/result_type_support.h b/quality/api_surface/tests/result_type_support.h
+index 9eb756ab..b0662991 100644
+--- a/quality/api_surface/tests/result_type_support.h
++++ b/quality/api_surface/tests/result_type_support.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/sfinae.h b/quality/api_surface/tests/sfinae.h
+index 29fd0a88..ac4305ba 100644
+--- a/quality/api_surface/tests/sfinae.h
++++ b/quality/api_surface/tests/sfinae.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/template_alias.h b/quality/api_surface/tests/template_alias.h
+index 43c377b7..679f8a9c 100644
+--- a/quality/api_surface/tests/template_alias.h
++++ b/quality/api_surface/tests/template_alias.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/type_alias.h b/quality/api_surface/tests/type_alias.h
+index ae95e9a1..82b02671 100644
+--- a/quality/api_surface/tests/type_alias.h
++++ b/quality/api_surface/tests/type_alias.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/api_surface/tests/types_in_signatures.h b/quality/api_surface/tests/types_in_signatures.h
+index 97240b34..0d9c4828 100644
+--- a/quality/api_surface/tests/types_in_signatures.h
++++ b/quality/api_surface/tests/types_in_signatures.h
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #pragma once
+ 
+diff --git a/quality/compiler_warnings/test/BUILD b/quality/compiler_warnings/test/BUILD
+index 8a28e427..9f5b1962 100644
+--- a/quality/compiler_warnings/test/BUILD
++++ b/quality/compiler_warnings/test/BUILD
+@@ -6,7 +6,7 @@
+ #
+ # This program and the accompanying materials are made available under the
+ # terms of the Apache License Version 2.0 which is available at
+-# https://apache.org
++# https://www.apache.org/licenses/LICENSE-2.0
+ #
+ # SPDX-License-Identifier: Apache-2.0
+ # *******************************************************************************
+diff --git a/quality/compiler_warnings/test/has_warnings/cast_qual.cpp b/quality/compiler_warnings/test/has_warnings/cast_qual.cpp
+index b4c00f54..16d311c4 100644
+--- a/quality/compiler_warnings/test/has_warnings/cast_qual.cpp
++++ b/quality/compiler_warnings/test/has_warnings/cast_qual.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file cast_qual.cpp
+ /// @brief Triggers warning: -Wcast-qual.
+diff --git a/quality/compiler_warnings/test/has_warnings/conversion.cpp b/quality/compiler_warnings/test/has_warnings/conversion.cpp
+index 7eb9b5e8..173ad8ed 100644
+--- a/quality/compiler_warnings/test/has_warnings/conversion.cpp
++++ b/quality/compiler_warnings/test/has_warnings/conversion.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file conversion.cpp
+ /// @brief Triggers warning: -Wfloat-conversion.
+diff --git a/quality/compiler_warnings/test/has_warnings/delete_non_virtual_dtor.cpp b/quality/compiler_warnings/test/has_warnings/delete_non_virtual_dtor.cpp
+index 10597987..9bfdcddf 100644
+--- a/quality/compiler_warnings/test/has_warnings/delete_non_virtual_dtor.cpp
++++ b/quality/compiler_warnings/test/has_warnings/delete_non_virtual_dtor.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file delete_non_virtual_dtor.cpp
+ /// @brief Triggers warning: -Wdelete-non-virtual-dtor.
+diff --git a/quality/compiler_warnings/test/has_warnings/overloaded_virtual.cpp b/quality/compiler_warnings/test/has_warnings/overloaded_virtual.cpp
+index 31ea9c26..b8a333c0 100644
+--- a/quality/compiler_warnings/test/has_warnings/overloaded_virtual.cpp
++++ b/quality/compiler_warnings/test/has_warnings/overloaded_virtual.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file overloaded_virtual.cpp
+ /// @brief Triggers warning: -Woverloaded-virtual.
+diff --git a/quality/compiler_warnings/test/has_warnings/shadow.cpp b/quality/compiler_warnings/test/has_warnings/shadow.cpp
+index 4591bc26..a9da9063 100644
+--- a/quality/compiler_warnings/test/has_warnings/shadow.cpp
++++ b/quality/compiler_warnings/test/has_warnings/shadow.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file shadow.cpp
+ /// @brief Triggers warning: -Wshadow.
+diff --git a/quality/compiler_warnings/test/has_warnings/sign_compare.cpp b/quality/compiler_warnings/test/has_warnings/sign_compare.cpp
+index ffed27e6..7c8cc851 100644
+--- a/quality/compiler_warnings/test/has_warnings/sign_compare.cpp
++++ b/quality/compiler_warnings/test/has_warnings/sign_compare.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file sign_compare.cpp
+ /// @brief Triggers warning: -Wsign-compare.
+diff --git a/quality/compiler_warnings/test/has_warnings/undef.cpp b/quality/compiler_warnings/test/has_warnings/undef.cpp
+index 8a5502a1..73b07ec8 100644
+--- a/quality/compiler_warnings/test/has_warnings/undef.cpp
++++ b/quality/compiler_warnings/test/has_warnings/undef.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file undef.cpp
+ /// @brief Triggers warning: -Wundef.
+diff --git a/quality/compiler_warnings/test/no_warnings/clean.cpp b/quality/compiler_warnings/test/no_warnings/clean.cpp
+index 1d63ff89..518541da 100644
+--- a/quality/compiler_warnings/test/no_warnings/clean.cpp
++++ b/quality/compiler_warnings/test/no_warnings/clean.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2025 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ /// @file clean.cpp
+ /// @brief False-positive baseline: should compile cleanly with warning features enabled.
+diff --git a/quality/dashboard/dashboard.html.j2 b/quality/dashboard/dashboard.html.j2
+index 5c378f3c..2299ec51 100644
+--- a/quality/dashboard/dashboard.html.j2
++++ b/quality/dashboard/dashboard.html.j2
+@@ -1,4 +1,19 @@
+ <!DOCTYPE html>
++<!--
++*******************************************************************************
++Copyright (c) 2026 Contributors to the Eclipse Foundation
++
++See the NOTICE file(s) distributed with this work for additional
++information regarding copyright ownership.
++
++This program and the accompanying materials are made available under the
++terms of the Apache License Version 2.0 which is available at
++https://www.apache.org/licenses/LICENSE-2.0
++
++SPDX-License-Identifier: Apache-2.0
++*******************************************************************************
++-->
++
+ <html lang="en">
+ <head>
+ <meta charset="UTF-8"/>
+diff --git a/quality/dependency_compatibility_checker/tests/fixtures/git_override.MODULE b/quality/dependency_compatibility_checker/tests/fixtures/git_override.MODULE
+index d334e9bb..2b4d0697 100644
+--- a/quality/dependency_compatibility_checker/tests/fixtures/git_override.MODULE
++++ b/quality/dependency_compatibility_checker/tests/fixtures/git_override.MODULE
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ module(name = "root", version = "0.0.1")
+ bazel_dep(name = "score_baselibs", version = "0.2.9")
+ git_override(
+diff --git a/quality/dependency_compatibility_checker/tests/fixtures/plain.MODULE b/quality/dependency_compatibility_checker/tests/fixtures/plain.MODULE
+index 704ac716..49fc0364 100644
+--- a/quality/dependency_compatibility_checker/tests/fixtures/plain.MODULE
++++ b/quality/dependency_compatibility_checker/tests/fixtures/plain.MODULE
+@@ -1,2 +1,15 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ module(name = "root", version = "0.0.1")
+ bazel_dep(name = "rules_cc", version = "0.2.17")
+diff --git a/quality/dependency_compatibility_checker/tests/fixtures/single_override.MODULE b/quality/dependency_compatibility_checker/tests/fixtures/single_override.MODULE
+index b0240477..e1046a68 100644
+--- a/quality/dependency_compatibility_checker/tests/fixtures/single_override.MODULE
++++ b/quality/dependency_compatibility_checker/tests/fixtures/single_override.MODULE
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ module(name = "root", version = "0.0.1")
+ bazel_dep(name = "rules_cc", version = "0.2.17")
+ single_version_override(module_name = "rules_cc", version = "0.2.18")
+diff --git a/quality/static_analysis/coding-standards.yaml b/quality/static_analysis/coding-standards.yaml
+index a1c94e34..a2fcc9b0 100644
+--- a/quality/static_analysis/coding-standards.yaml
++++ b/quality/static_analysis/coding-standards.yaml
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ deviations:
+   - rule-id: "RULE-18-5-2"
+     query-id: "cpp/misra/avoid-program-terminating-functions"
+diff --git a/quality/static_analysis/config.yaml b/quality/static_analysis/config.yaml
+index 75166fd6..18ded0b8 100644
+--- a/quality/static_analysis/config.yaml
++++ b/quality/static_analysis/config.yaml
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ # CodeQL code-scanning configuration passed to `codeql database init`
+ # (--codescanning-config). The MISRA C++ pack to run is intentionally NOT listed
+ # here: it is pinned once by the vendored pre-compiled pack (see MODULE.bazel /
+diff --git a/quality/unit_testing/unit_testing.bzl b/quality/unit_testing/unit_testing.bzl
+index 4cb96cc2..6c7713b6 100644
+--- a/quality/unit_testing/unit_testing.bzl
++++ b/quality/unit_testing/unit_testing.bzl
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ """Macros for declaring C++ and Rust unit tests that also run on QNX."""
+ 
+ load("@rules_cc//cc:defs.bzl", "cc_test")
+diff --git a/score/memory/shared/test/dynamic_array_in_shm_test/dynamic_array_sct.cpp b/score/memory/shared/test/dynamic_array_in_shm_test/dynamic_array_sct.cpp
+index cba3e171..63b2531e 100644
+--- a/score/memory/shared/test/dynamic_array_in_shm_test/dynamic_array_sct.cpp
++++ b/score/memory/shared/test/dynamic_array_in_shm_test/dynamic_array_sct.cpp
+@@ -1,15 +1,15 @@
+-// *******************************************************************************
+-// Copyright (c) 2026 Contributors to the Eclipse Foundation
+-//
+-// See the NOTICE file(s) distributed with this work for additional
+-// information regarding copyright ownership.
+-//
+-// This program and the accompanying materials are made available under the
+-// terms of the Apache License Version 2.0 which is available at
+-// https://www.apache.org/licenses/LICENSE-2.0
+-//
+-// SPDX-License-Identifier: Apache-2.0
+-// *******************************************************************************
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
+ 
+ #include "score/containers/dynamic_array.h"
+ #include "score/memory/shared/polymorphic_offset_ptr_allocator.h"
+diff --git a/score/mw/com/design/doxygen_build/BUILD b/score/mw/com/design/doxygen_build/BUILD
+index 861d5f8f..00379266 100644
+--- a/score/mw/com/design/doxygen_build/BUILD
++++ b/score/mw/com/design/doxygen_build/BUILD
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ load("@doxygen//:doxygen.bzl", "doxygen")
+ 
+ doxygen(
+diff --git a/score/mw/com/gateway/transport_layer/sample/sample_transport_test_resources.h b/score/mw/com/gateway/transport_layer/sample/sample_transport_test_resources.h
+index d64efb93..9fd20134 100644
+--- a/score/mw/com/gateway/transport_layer/sample/sample_transport_test_resources.h
++++ b/score/mw/com/gateway/transport_layer/sample/sample_transport_test_resources.h
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #ifndef COMMUNICATION_SAMPLE_TRANSPORT_TEST_RESOURCES_H
+ #define COMMUNICATION_SAMPLE_TRANSPORT_TEST_RESOURCES_H
+ 
+diff --git a/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.cpp b/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.cpp
+index 3676cd0b..f42153f9 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.cpp
+@@ -1 +1,14 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.h b/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.h
+index daa6ec66..4bc80b2b 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.h
++++ b/score/mw/com/impl/bindings/lola/messaging/asil_specific_cfg.h
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #ifndef SCORE_MW_COM_IMPL_BINDINGS_LOLA_MESSAGING_ASIL_SPECIFIC_CFG_H
+ #define SCORE_MW_COM_IMPL_BINDINGS_LOLA_MESSAGING_ASIL_SPECIFIC_CFG_H
+ 
+diff --git a/score/mw/com/impl/bindings/lola/messaging/client_quality_type.cpp b/score/mw/com/impl/bindings/lola/messaging/client_quality_type.cpp
+index ef865485..34458ece 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/client_quality_type.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/client_quality_type.cpp
+@@ -1 +1,14 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/client_quality_type.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/client_quality_type.h b/score/mw/com/impl/bindings/lola/messaging/client_quality_type.h
+index 3ada558d..fb515744 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/client_quality_type.h
++++ b/score/mw/com/impl/bindings/lola/messaging/client_quality_type.h
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #ifndef SCORE_MW_COM_IMPL_BINDINGS_LOLA_MESSAGING_CLIENT_QUALITY_TYPE_H
+ #define SCORE_MW_COM_IMPL_BINDINGS_LOLA_MESSAGING_CLIENT_QUALITY_TYPE_H
+ 
+diff --git a/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance.cpp b/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance.cpp
+index 4b955320..93328049 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance.cpp
+@@ -1 +1,14 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance_factory.cpp b/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance_factory.cpp
+index e88b0c0f..f318c25d 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance_factory.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance_factory.cpp
+@@ -1 +1,14 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/i_message_passing_service_instance_factory.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory.cpp b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory.cpp
+index 38d133ff..9bf41c03 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory.cpp
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory.h"
+ 
+ #include "score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory_mock.cpp b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory_mock.cpp
+index a2c7a3c3..8390e9a4 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory_mock.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory_mock.cpp
+@@ -1 +1,14 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_factory_mock.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp
+index a3a35245..a6d61c53 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_methods_test.cpp
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/client_quality_type.h"
+ #include "score/mw/com/impl/bindings/lola/messaging/i_message_passing_service.h"
+ #include "score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_mock.cpp b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_mock.cpp
+index 36d3387c..134e72c9 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_mock.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_mock.cpp
+@@ -1 +1,14 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_mock.h"
+diff --git a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp
+index 2218c097..077aa789 100644
+--- a/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp
++++ b/score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance_test.cpp
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2025 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/impl/bindings/lola/messaging/message_passing_service_instance.h"
+ #include "score/message_passing/mock/client_connection_mock.h"
+ #include "score/message_passing/mock/client_factory_mock.h"
+diff --git a/score/mw/com/mocking/BUILD b/score/mw/com/mocking/BUILD
+index ba7daa43..fa4c6212 100644
+--- a/score/mw/com/mocking/BUILD
++++ b/score/mw/com/mocking/BUILD
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ load("@rules_cc//cc:defs.bzl", "cc_library")
+ load("//quality/unit_testing:unit_testing.bzl", "cc_unit_test")
+ load("//score/mw:common_features.bzl", "COMPILER_WARNING_FEATURES")
+diff --git a/score/mw/com/test/all_service_elements/consumer.cpp b/score/mw/com/test/all_service_elements/consumer.cpp
+index f0447dc4..2b1347b8 100644
+--- a/score/mw/com/test/all_service_elements/consumer.cpp
++++ b/score/mw/com/test/all_service_elements/consumer.cpp
+@@ -1,15 +1,16 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
++
+ #include "score/mw/com/test/all_service_elements/consumer.h"
+ 
+ #include "score/mw/com/test/all_service_elements/all_service_elements_datatype.h"
+diff --git a/score/mw/com/test/all_service_elements/consumer.h b/score/mw/com/test/all_service_elements/consumer.h
+index 6686fb71..fc1acbbb 100644
+--- a/score/mw/com/test/all_service_elements/consumer.h
++++ b/score/mw/com/test/all_service_elements/consumer.h
+@@ -1,15 +1,15 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
+ 
+ #ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_CONSUMER_H
+ #define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_CONSUMER_H
+diff --git a/score/mw/com/test/all_service_elements/main_consumer.cpp b/score/mw/com/test/all_service_elements/main_consumer.cpp
+index 914dc3d8..5689bb24 100644
+--- a/score/mw/com/test/all_service_elements/main_consumer.cpp
++++ b/score/mw/com/test/all_service_elements/main_consumer.cpp
+@@ -1,15 +1,16 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
++
+ #include "score/mw/com/runtime.h"
+ #include "score/mw/com/test/all_service_elements/consumer.h"
+ #include "score/mw/com/test/common_test_resources/assert_handler.h"
+diff --git a/score/mw/com/test/all_service_elements/main_consumer_and_provider.cpp b/score/mw/com/test/all_service_elements/main_consumer_and_provider.cpp
+index 508996c1..681c42d0 100644
+--- a/score/mw/com/test/all_service_elements/main_consumer_and_provider.cpp
++++ b/score/mw/com/test/all_service_elements/main_consumer_and_provider.cpp
+@@ -1,15 +1,15 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
+ 
+ #include "score/mw/com/runtime.h"
+ #include "score/mw/com/test/all_service_elements/consumer.h"
+diff --git a/score/mw/com/test/all_service_elements/main_provider.cpp b/score/mw/com/test/all_service_elements/main_provider.cpp
+index b7d93448..9dd5b222 100644
+--- a/score/mw/com/test/all_service_elements/main_provider.cpp
++++ b/score/mw/com/test/all_service_elements/main_provider.cpp
+@@ -1,15 +1,15 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
+ 
+ #include "score/mw/com/runtime.h"
+ #include "score/mw/com/test/all_service_elements/provider.h"
+diff --git a/score/mw/com/test/all_service_elements/provider.cpp b/score/mw/com/test/all_service_elements/provider.cpp
+index 18aa720a..812eaebe 100644
+--- a/score/mw/com/test/all_service_elements/provider.cpp
++++ b/score/mw/com/test/all_service_elements/provider.cpp
+@@ -1,15 +1,16 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
++
+ #include "score/mw/com/test/all_service_elements/provider.h"
+ 
+ #include "score/mw/com/test/all_service_elements/all_service_elements_datatype.h"
+diff --git a/score/mw/com/test/all_service_elements/provider.h b/score/mw/com/test/all_service_elements/provider.h
+index 1e7ba994..fd135658 100644
+--- a/score/mw/com/test/all_service_elements/provider.h
++++ b/score/mw/com/test/all_service_elements/provider.h
+@@ -1,15 +1,15 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
+ 
+ #ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_PROVIDER_H
+ #define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_PROVIDER_H
+diff --git a/score/mw/com/test/all_service_elements/test_constants.cpp b/score/mw/com/test/all_service_elements/test_constants.cpp
+index 1fe90602..19571972 100644
+--- a/score/mw/com/test/all_service_elements/test_constants.cpp
++++ b/score/mw/com/test/all_service_elements/test_constants.cpp
+@@ -1,14 +1,14 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
+ 
+ #include "score/mw/com/test/all_service_elements/test_constants.h"
+diff --git a/score/mw/com/test/all_service_elements/test_constants.h b/score/mw/com/test/all_service_elements/test_constants.h
+index 57b6bfdb..cf80f741 100644
+--- a/score/mw/com/test/all_service_elements/test_constants.h
++++ b/score/mw/com/test/all_service_elements/test_constants.h
+@@ -1,15 +1,15 @@
+-/*******************************************************************************
++/********************************************************************************
+  * Copyright (c) 2026 Contributors to the Eclipse Foundation
+  *
+  * See the NOTICE file(s) distributed with this work for additional
+  * information regarding copyright ownership.
+  *
+  * This program and the accompanying materials are made available under the
+- * terms of the Apache License 2.0 which is available at
++ * terms of the Apache License Version 2.0 which is available at
+  * https://www.apache.org/licenses/LICENSE-2.0
+  *
+  * SPDX-License-Identifier: Apache-2.0
+- *******************************************************************************/
++ ********************************************************************************/
+ 
+ #ifndef SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_TEST_CONSTANTS_H
+ #define SCORE_MW_COM_TEST_ALL_SERVICE_ELEMENTS_TEST_CONSTANTS_H
+diff --git a/score/mw/com/test/generic_skeleton/BUILD.bazel b/score/mw/com/test/generic_skeleton/BUILD.bazel
+index 8c585c6e..9a7dc394 100644
+--- a/score/mw/com/test/generic_skeleton/BUILD.bazel
++++ b/score/mw/com/test/generic_skeleton/BUILD.bazel
+@@ -1,3 +1,4 @@
++# *******************************************************************************
+ # Copyright (c) 2025 Contributors to the Eclipse Foundation
+ #
+ # See the NOTICE file(s) distributed with this work for additional
+@@ -8,6 +9,7 @@
+ # https://www.apache.org/licenses/LICENSE-2.0
+ #
+ # SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
+ 
+ load("@rules_cc//cc:defs.bzl", "cc_binary")
+ load("@score_baselibs//score/language/safecpp:toolchain_features.bzl", "COMPILER_WARNING_FEATURES")
+diff --git a/score/mw/com/test/generic_skeleton/generic_generic_interaction_app.cpp b/score/mw/com/test/generic_skeleton/generic_generic_interaction_app.cpp
+index f1029132..338b4377 100644
+--- a/score/mw/com/test/generic_skeleton/generic_generic_interaction_app.cpp
++++ b/score/mw/com/test/generic_skeleton/generic_generic_interaction_app.cpp
+@@ -1,3 +1,16 @@
++/********************************************************************************
++ * Copyright (c) 2026 Contributors to the Eclipse Foundation
++ *
++ * See the NOTICE file(s) distributed with this work for additional
++ * information regarding copyright ownership.
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
+ #include "score/mw/com/runtime.h"
+ #include "score/mw/com/runtime_configuration.h"
+ #include "score/mw/com/test/common_test_resources/stop_token_sig_term_handler.h"
+diff --git a/score/mw/com/test/generic_skeleton/integration_test/BUILD.bazel b/score/mw/com/test/generic_skeleton/integration_test/BUILD.bazel
+index adb807f9..7a77aa71 100644
+--- a/score/mw/com/test/generic_skeleton/integration_test/BUILD.bazel
++++ b/score/mw/com/test/generic_skeleton/integration_test/BUILD.bazel
+@@ -1,3 +1,4 @@
++# *******************************************************************************
+ # Copyright (c) 2025 Contributors to the Eclipse Foundation
+ #
+ # See the NOTICE file(s) distributed with this work for additional
+@@ -8,6 +9,7 @@
+ # https://www.apache.org/licenses/LICENSE-2.0
+ #
+ # SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
+ 
+ load("//quality/integration_testing:integration_testing.bzl", "integration_test")
+ 
+diff --git a/score/mw/com/test/generic_skeleton/integration_test/test_generic_generic_interaction.py b/score/mw/com/test/generic_skeleton/integration_test/test_generic_generic_interaction.py
+index 500af28e..1dd92d2f 100644
+--- a/score/mw/com/test/generic_skeleton/integration_test/test_generic_generic_interaction.py
++++ b/score/mw/com/test/generic_skeleton/integration_test/test_generic_generic_interaction.py
+@@ -1,3 +1,4 @@
++# *******************************************************************************
+ # Copyright (c) 2025 Contributors to the Eclipse Foundation
+ #
+ # See the NOTICE file(s) distributed with this work for additional
+@@ -8,6 +9,7 @@
+ # https://www.apache.org/licenses/LICENSE-2.0
+ #
+ # SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
+ 
+ import time
+ import logging
+diff --git a/score/mw/com/test/generic_skeleton/integration_test/test_generic_typed_interaction.py b/score/mw/com/test/generic_skeleton/integration_test/test_generic_typed_interaction.py
+index 1a4d26ab..82891d84 100644
+--- a/score/mw/com/test/generic_skeleton/integration_test/test_generic_typed_interaction.py
++++ b/score/mw/com/test/generic_skeleton/integration_test/test_generic_typed_interaction.py
+@@ -1,3 +1,4 @@
++# *******************************************************************************
+ # Copyright (c) 2025 Contributors to the Eclipse Foundation
+ #
+ # See the NOTICE file(s) distributed with this work for additional
+@@ -8,6 +9,7 @@
+ # https://www.apache.org/licenses/LICENSE-2.0
+ #
+ # SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
+ 
+ import time
+ import logging
+diff --git a/score/mw/com/test/shared_memory_storage/BUILD b/score/mw/com/test/shared_memory_storage/BUILD
+index dcdc3c6c..24ae9a3b 100644
+--- a/score/mw/com/test/shared_memory_storage/BUILD
++++ b/score/mw/com/test/shared_memory_storage/BUILD
+@@ -3,7 +3,6 @@
+ #
+ # See the NOTICE file(s) distributed with this work for additional
+ # information regarding copyright ownership.
+-# information regarding copyright ownership.
+ #
+ # This program and the accompanying materials are made available under the
+ # terms of the Apache License Version 2.0 which is available at
+diff --git a/third_party/score_requirement_model/BUILD b/third_party/score_requirement_model/BUILD
+index 41314f0e..8ed9b9f9 100644
+--- a/third_party/score_requirement_model/BUILD
++++ b/third_party/score_requirement_model/BUILD
+@@ -1,3 +1,16 @@
++# *******************************************************************************
++# Copyright (c) 2025 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ load("@trlc//:trlc.bzl", "trlc_requirements_test", "trlc_specification")
+ 
+ trlc_specification(
+diff --git a/tools/lint/rustfmt_wrapper.sh.tpl b/tools/lint/rustfmt_wrapper.sh.tpl
+index 576920c2..6149c817 100644
+--- a/tools/lint/rustfmt_wrapper.sh.tpl
++++ b/tools/lint/rustfmt_wrapper.sh.tpl
+@@ -1,4 +1,17 @@
+ #!/usr/bin/env bash
++# *******************************************************************************
++# Copyright (c) 2026 Contributors to the Eclipse Foundation
++#
++# See the NOTICE file(s) distributed with this work for additional
++# information regarding copyright ownership.
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
+ # Wrapper around the rules_rust `rustfmt` binary that injects the config to use, so the policy is consumed as a Bazel
+ # dependency.
+ set -euo pipefail

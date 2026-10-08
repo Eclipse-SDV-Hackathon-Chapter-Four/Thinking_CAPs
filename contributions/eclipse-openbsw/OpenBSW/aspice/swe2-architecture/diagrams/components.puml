@@ -1,0 +1,82 @@
+@startuml components
+!theme plain
+skinparam defaultFontName "DejaVu Sans"
+skinparam shadowing false
+title Static view — OpenBSW modules reused and gateway elements added
+skinparam classAttributeIconSize 0
+set separator none
+hide empty members
+
+package "Gateway application (new, Apache-2.0)" #E8F1FB {
+  class "transport::TransportRouter — ARC-03\n(contributed module transportRouter)" as Router {
+    +getTransportMessage(srcBus, src, target, size, peek)
+    +messageReceived(srcBus, msg, processedListener)
+    +releaseTransportMessage(msg)
+    -routes : RouteContext[16]
+    -testers : Tester[8]
+    +cyclic()
+    +releaseTester(address)
+  }
+  class "RoutingTable — ARC-04" as Table {
+    +validate(badIndex) : Error
+    +find(logicalAddress) : Route*
+    +routes() : span<Route const>
+  }
+  class "Route" as Route {
+    logicalAddress, name
+    transport : local | docan
+    requestId, responseId
+    p2Ms, p2StarMs, stMinMs, maxLength
+  }
+  class "NodeMonitor + DtcStore — ARC-06" as Mon {
+    +responded(route)
+    +timedOut(route)
+    +readByStatusMask(mask)
+    +clear()
+  }
+  class "TransportRouterStatistics — ARC-07" as Stats {
+    +count(route, event)
+    +logPeriodic()
+  }
+  package "UDS jobs — ARC-05" #F4F8FC {
+    class "ReadIdentification\nF190, F18C, F195" as J1
+    class "ReadRoutingTable FD00\nReadRoutingStats FD01" as J2
+    class "ReadDTC 0x19 / ClearDTC 0x14" as J3
+    class "RoutineReachability 31 01 F000" as J4
+  }
+  class "gen_routing.py — ARC-04\nrouting.yaml → RoutingConfig.h\n+ MDD / CAN-profile check" as Gen
+}
+
+package "Eclipse OpenBSW (pinned, unmodified)" #F2F7F2 {
+  class "DoIpServerSystem — ARC-01\n(doip: DoIpServerTransportLayer,\nVehicleIdentificationService,\nConnectionHandler)" as DoIp
+  class "DoCanSystem — ARC-02\n(docan, cpp2can)" as DoCan
+  class "UdsSystem — ARC-05\n(uds: DiagDispatcher, sessions,\nTesterPresent)" as Uds
+  class "transport\nAbstractTransportLayer,\nTransportMessage,\nITransportMessageProvidingListener" as Tp
+  class "lifecycle, async, logger — ARC-08" as Life
+  class "TapEthernetSystem + lwipSocket\n(POSIX) — ARC-08" as Eth
+  class "SocketCAN transceiver\n(POSIX bsp) — ARC-08" as Can
+}
+
+Router ..|> Tp : implements IF-03
+Router --> Table : IF-05
+Table "1" *-- "1..n" Route
+Router <-up-> DoIp : IF-03 / IF-04\ntester ↔ router
+Router <-up-> DoCan : IF-03 / IF-04\nISO-TP ↔ router
+Router <-up-> Uds : IF-03 / IF-04\nlocal route
+Router --> Mon : IF-06 routeResponded / routeTimedOut
+Router --> Stats : IF-06
+Uds --> J1
+Uds --> J2
+Uds --> J3
+Uds --> J4
+J2 --> Table
+J2 --> Stats
+J3 --> Mon
+J4 ..> Router : TesterPresent probe\nper route
+Gen ..> Table : generates
+DoIp --> Eth : UDP/TCP 13400 (IF-01)
+DoCan --> Can : ISO-TP frames (IF-02)
+Life --> DoIp : run level 3
+Life --> DoCan : run level 2
+Life --> Uds : run level 2
+@enduml

@@ -1,0 +1,2526 @@
+From 1e4bdb44240e9cd572594c476d7dccae555e2ff5 Mon Sep 17 00:00:00 2001
+From: Jefferson Nascimento <jnsagai@gmail.com>
+Date: Tue, 6 Oct 2026 22:42:25 +0100
+Subject: [PATCH] Add transportRouter module for diagnostic gateways
+
+TransportRouterSimple sends every request to the local diagnostic
+server and every reply to the bus of the last request, so an OpenBSW
+node cannot forward UDS requests to other ECUs. Add a separate module
+with a router that does this by logical address.
+
+`transport::TransportRouter` implements
+`ITransportMessageProvidingListener` like TransportRouterSimple and
+plugs into the existing DoIP, DoCAN and UDS transport layers:
+
+- routes requests to the local server, to a node of the routing table
+  (`DiagnosticRoute`: address, bus, P2, P2*, maximum length) or to the
+  functional group
+- replaces the tester address towards the node and restores it on the
+  response, so several testers on several buses can share the gateway
+- allows one outstanding request per route, supervises P2 and P2*,
+  passes response pending (NRC 0x78) through and discards late or
+  unsolicited responses
+- sends functional requests to the local server and once per node bus
+- reports busy, too large and unknown targets through
+  `ITransportMessageProvider::ErrorCode`, which DoIP maps to diagnostic
+  message NACKs
+- releases a disconnected tester's requests, counts events in
+  `TransportRouterStatistics` and reports outcomes to `IRouteObserver`
+
+Memory is static. TransportRouterSimple is unchanged.
+
+Signed-off-by: Jefferson Nascimento <jnsagai@gmail.com>
+---
+ CMakeLists.txt                                |   1 +
+ libs/bsw/CMakeLists.txt                       |   1 +
+ libs/bsw/transportRouter/BUILD.bazel          |  49 +
+ libs/bsw/transportRouter/CMakeLists.txt       |  18 +
+ libs/bsw/transportRouter/doc/index.rst        | 130 +++
+ .../include/transport/TpGatewayLogger.h       |  15 +
+ .../transport/routing/DiagnosticRoute.h       |  67 ++
+ .../transport/routing/IRouteObserver.h        |  37 +
+ .../transport/routing/TransportRouter.h       | 227 +++++
+ .../routing/TransportRouterStatistics.h       |  66 ++
+ libs/bsw/transportRouter/module.spec          |   1 +
+ .../src/transport/TpGatewayLogger.cpp         |  13 +
+ .../src/transport/routing/TransportRouter.cpp | 698 +++++++++++++
+ .../routing/TransportRouterStatistics.cpp     |  55 +
+ libs/bsw/transportRouter/test/CMakeLists.txt  |  23 +
+ .../test/src/TransportRouterTest.cpp          | 952 ++++++++++++++++++
+ 16 files changed, 2353 insertions(+)
+ create mode 100644 libs/bsw/transportRouter/BUILD.bazel
+ create mode 100644 libs/bsw/transportRouter/CMakeLists.txt
+ create mode 100644 libs/bsw/transportRouter/doc/index.rst
+ create mode 100644 libs/bsw/transportRouter/include/transport/TpGatewayLogger.h
+ create mode 100644 libs/bsw/transportRouter/include/transport/routing/DiagnosticRoute.h
+ create mode 100644 libs/bsw/transportRouter/include/transport/routing/IRouteObserver.h
+ create mode 100644 libs/bsw/transportRouter/include/transport/routing/TransportRouter.h
+ create mode 100644 libs/bsw/transportRouter/include/transport/routing/TransportRouterStatistics.h
+ create mode 100644 libs/bsw/transportRouter/module.spec
+ create mode 100644 libs/bsw/transportRouter/src/transport/TpGatewayLogger.cpp
+ create mode 100644 libs/bsw/transportRouter/src/transport/routing/TransportRouter.cpp
+ create mode 100644 libs/bsw/transportRouter/src/transport/routing/TransportRouterStatistics.cpp
+ create mode 100644 libs/bsw/transportRouter/test/CMakeLists.txt
+ create mode 100644 libs/bsw/transportRouter/test/src/TransportRouterTest.cpp
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index eea88b6..853af73 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -190,6 +190,7 @@ if (BUILD_EXECUTABLE STREQUAL "unitTest")
+         add_subdirectory(libs/bsw/timer/test)
+         add_subdirectory(libs/bsw/transport/test)
+         add_subdirectory(libs/bsw/transportRouterSimple/test)
++        add_subdirectory(libs/bsw/transportRouter/test)
+         add_subdirectory(libs/bsw/uds/test)
+         add_subdirectory(libs/bsw/util/test)
+ 
+diff --git a/libs/bsw/CMakeLists.txt b/libs/bsw/CMakeLists.txt
+index 583337b..f0d25ac 100644
+--- a/libs/bsw/CMakeLists.txt
++++ b/libs/bsw/CMakeLists.txt
+@@ -48,5 +48,6 @@ if (OPENBSW_CONFIGURE_GENERIC_BSW)
+     add_subdirectory(storage)
+     add_subdirectory(transport)
+     add_subdirectory(transportRouterSimple)
++    add_subdirectory(transportRouter)
+     add_subdirectory(uds)
+ endif ()
+diff --git a/libs/bsw/transportRouter/BUILD.bazel b/libs/bsw/transportRouter/BUILD.bazel
+new file mode 100644
+index 0000000..5b2940c
+--- /dev/null
++++ b/libs/bsw/transportRouter/BUILD.bazel
+@@ -0,0 +1,49 @@
++# *******************************************************************************
++# Copyright (c) 2026 Jefferson Nascimento
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("//bazel/config/build_variant:compatibility.bzl", "unit_test_only")
++
++cc_library(
++    name = "transport_router",
++    srcs = [
++        "src/transport/TpGatewayLogger.cpp",
++        "src/transport/routing/TransportRouter.cpp",
++        "src/transport/routing/TransportRouterStatistics.cpp",
++    ],
++    hdrs = [
++        "include/transport/TpGatewayLogger.h",
++        "include/transport/routing/DiagnosticRoute.h",
++        "include/transport/routing/IRouteObserver.h",
++        "include/transport/routing/TransportRouter.h",
++        "include/transport/routing/TransportRouterStatistics.h",
++    ],
++    strip_include_prefix = "include",
++    visibility = ["//visibility:public"],
++    deps = [
++        "//libs/3rdparty/etl",
++        "//libs/bsw/transport",
++    ],
++)
++
++cc_test(
++    name = "transport_router_test",
++    srcs = ["test/src/TransportRouterTest.cpp"],
++    target_compatible_with = unit_test_only(),
++    deps = [
++        ":transport_router",
++        "//libs/3rdparty/etl",
++        "//libs/3rdparty/googletest:gtest_main",
++        "//libs/bsw/async:async_mock_impl",
++        "//libs/bsw/transport:transport_mock",
++        "//libs/bsw/util:util_mock",
++    ],
++)
+diff --git a/libs/bsw/transportRouter/CMakeLists.txt b/libs/bsw/transportRouter/CMakeLists.txt
+new file mode 100644
+index 0000000..3300e53
+--- /dev/null
++++ b/libs/bsw/transportRouter/CMakeLists.txt
+@@ -0,0 +1,18 @@
++# *******************************************************************************
++# Copyright (c) 2026 Jefferson Nascimento
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++add_library(
++    transportRouter
++    src/transport/TpGatewayLogger.cpp src/transport/routing/TransportRouter.cpp
++    src/transport/routing/TransportRouterStatistics.cpp)
++
++target_include_directories(transportRouter PUBLIC include)
++
++target_link_libraries(transportRouter PUBLIC transport etl)
+diff --git a/libs/bsw/transportRouter/doc/index.rst b/libs/bsw/transportRouter/doc/index.rst
+new file mode 100644
+index 0000000..21ecd88
+--- /dev/null
++++ b/libs/bsw/transportRouter/doc/index.rst
+@@ -0,0 +1,130 @@
++..
++   *******************************************************************************
++   Copyright (c) 2026 Jefferson Nascimento
++
++   This program and the accompanying materials are made available under the
++   terms of the Apache License Version 2.0 which is available at
++   https://www.apache.org/licenses/LICENSE-2.0
++
++   SPDX-License-Identifier: Apache-2.0
++   *******************************************************************************
++
++transportRouter
++===============
++
++Overview
++--------
++
++``TransportRouter`` is a diagnostic gateway router. It routes UDS messages by
++logical address between external testers (for example DoIP), the gateway's own
++diagnostic server and diagnostic nodes reached through other transport layers
++(for example DoCAN). It implements ``ITransportMessageProvidingListener`` and
++plugs into the existing transport layers in the same way as
++``TransportRouterSimple``.
++
++``TransportRouterSimple`` forwards every request to the local diagnostic server
++and every reply to the bus that sent the last request. ``TransportRouter`` adds
++what a gateway needs:
++
++- a routing table of ``DiagnosticRoute`` entries (logical address, bus, P2, P2*,
++  maximum length), checked by ``validate()``
++- address-based routing: requests to the local address, to a route's address or
++  to the functional address
++- one outstanding request per route, with P2/P2* supervision and pass-through of
++  response pending (NRC 0x78)
++- restoration of the original tester address on responses, so several testers on
++  several buses can share the gateway
++- functional fan-out: one copy per route bus, and forwarding of the nodes'
++  responses within a configurable window
++- release of a tester's pending requests when its connection closes
++- saturating statistics and an ``IRouteObserver`` for route outcomes, e.g. a
++  lost-communication monitor
++
++The router never interprets or generates diagnostic payloads for a node.
++
++Routing rules
++-------------
++
++Messages are classified by address, not by bus:
++
++=================================  ==============================================
++Message                            Routing
++=================================  ==============================================
++Tester → local address             Local bus (own diagnostic server)
++Tester → route address             Route's bus, source replaced by the gateway
++                                   tester address; the route becomes busy
++Tester → functional address        Local bus, and one copy per route bus
++Route node → gateway tester        The tester of the pending (or functional)
++                                   request, on that tester's bus
++Local server → tester              The tester's bus, learned from its requests
++=================================  ==============================================
++
++``getTransportMessage()`` reports routing errors with
++``ITransportMessageProvider::ErrorCode``. The DoIP server maps them to diagnostic
++message NACKs:
++
++==============================  =====================================  ========
++Situation                       Error code                             DoIP
++==============================  =====================================  ========
++Unknown target address          ``TPMSG_INVALID_TGT_ADDRESS``          0x03
++Larger than the route maximum   ``TPMSG_SIZE_TOO_LARGE``               0x04
++Request outstanding on route    ``TPMSG_NO_MSG_AVAILABLE``             0x05
++No free buffer                  ``TPMSG_NO_MSG_AVAILABLE``             0x05
++==============================  =====================================  ========
++
++Timing
++------
++
++``cyclic()`` must be called periodically, for example every 10 ms. A route waits
++for its node:
++
++- ``TRANSFER_TIMEOUT_MS`` for the transport layer to confirm the request
++- ``p2Ms`` after the confirmation for the start of the response
++- ``p2StarMs`` after each response pending
++- at least ``TRANSFER_TIMEOUT_MS`` (or ``p2StarMs`` if longer) once a segmented
++  response has started
++
++When a deadline expires the route becomes idle again, the timeout is counted and
++the observer is notified. The tester side keeps its own P2 client timing; the
++router does not send a response on behalf of a node.
++
++Buffers
++-------
++
++The router owns ``NUM_BUFFERS`` full-size (4095 bytes) and ``NUM_SMALL_BUFFERS``
++small (8 bytes) message buffers. Requests to the local and functional addresses
++always get a full-size buffer, because the UDS server builds its response in the
++request buffer. All memory is allocated statically.
++
++Usage
++-----
++
++.. code-block:: cpp
++
++    DiagnosticRoute const ROUTES[] = {
++        {0x1020U, ::busid::CAN_0, 150U, 5100U, 4095U, "rear"},
++        {0x1030U, ::busid::CAN_0, 150U, 5100U, 4095U, "front"},
++    };
++
++    TransportRouterConfiguration const CONFIG{
++        0x1010U,           // own diagnostic server
++        ::busid::SELFDIAG,
++        0xE400U,           // functional address
++        0x0E10U,           // gateway tester address towards the nodes
++        0x0E00U, 0x0EFFU,  // external testers
++        150U,              // functional response window [ms]
++        7U,                // largest functional request
++        ROUTES};
++
++    TransportRouterStatistics statistics;
++    TransportRouter router(CONFIG, statistics, TransportRouter::NowMsType::create<&nowMs>());
++
++    size_t badRoute;
++    if (router.validate(badRoute) != TransportRouter::ValidationError::NONE) { /* stop */ }
++    router.init();
++    // register the DoIP, DoCAN and UDS transport layers with addTransportLayer()
++    // call router.cyclic() every 10 ms
++
++The DoCAN layer must map each route to the node's CAN identifiers with
++``transportSourceId`` = route address and ``transportTargetId`` = gateway tester
++address, and the functional address to the functional CAN identifier.
+diff --git a/libs/bsw/transportRouter/include/transport/TpGatewayLogger.h b/libs/bsw/transportRouter/include/transport/TpGatewayLogger.h
+new file mode 100644
+index 0000000..4b68817
+--- /dev/null
++++ b/libs/bsw/transportRouter/include/transport/TpGatewayLogger.h
+@@ -0,0 +1,15 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#pragma once
++
++#include "util/logger/Logger.h"
++
++DECLARE_LOGGER_COMPONENT(TPGATEWAY)
+diff --git a/libs/bsw/transportRouter/include/transport/routing/DiagnosticRoute.h b/libs/bsw/transportRouter/include/transport/routing/DiagnosticRoute.h
+new file mode 100644
+index 0000000..30c96c0
+--- /dev/null
++++ b/libs/bsw/transportRouter/include/transport/routing/DiagnosticRoute.h
+@@ -0,0 +1,67 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#pragma once
++
++#include <etl/span.h>
++
++#include <cstddef>
++#include <cstdint>
++
++namespace transport
++{
++/**
++ * A diagnostic node reachable through the gateway.
++ *
++ * The TransportRouter forwards a request whose target address equals logicalAddress to the
++ * transport layer registered for busId and expects the node's response within p2Ms (or
++ * p2StarMs after each response pending, NRC 0x78).
++ */
++struct DiagnosticRoute
++{
++    /// Logical address of the node (target address of requests, source address of responses).
++    uint16_t logicalAddress;
++    /// Bus whose transport layer reaches the node.
++    uint8_t busId;
++    /// Time to the start of the node's response.
++    uint16_t p2Ms;
++    /// Time to the next response after a response pending (NRC 0x78).
++    uint16_t p2StarMs;
++    /// Largest request routed to the node; larger requests are rejected.
++    uint16_t maxLength;
++    /// Name used in log output; may be nullptr.
++    char const* name;
++};
++
++/**
++ * Static configuration of a TransportRouter.
++ */
++struct TransportRouterConfiguration
++{
++    /// Logical address of the gateway's own diagnostic server.
++    uint16_t localAddress;
++    /// Bus of the gateway's own diagnostic server (e.g. SELFDIAG).
++    uint8_t localBusId;
++    /// Functional address: requests go to the own server and to every route bus.
++    uint16_t functionalAddress;
++    /// Source address the gateway uses towards nodes (the gateway acts as their tester).
++    uint16_t gatewayTesterAddress;
++    /// External testers: source addresses in [testerAddressMin, testerAddressMax].
++    uint16_t testerAddressMin;
++    uint16_t testerAddressMax;
++    /// How long responses to a functional request are forwarded.
++    uint32_t functionalWindowMs;
++    /// Largest functional request (one single frame on classic CAN: 7).
++    uint16_t maxFunctionalLength;
++    /// Routing table; it is checked by TransportRouter::validate().
++    ::etl::span<DiagnosticRoute const> routes;
++};
++
++} // namespace transport
+diff --git a/libs/bsw/transportRouter/include/transport/routing/IRouteObserver.h b/libs/bsw/transportRouter/include/transport/routing/IRouteObserver.h
+new file mode 100644
+index 0000000..f9623d8
+--- /dev/null
++++ b/libs/bsw/transportRouter/include/transport/routing/IRouteObserver.h
+@@ -0,0 +1,37 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#pragma once
++
++#include <cstddef>
++
++namespace transport
++{
++/**
++ * Outcome of routed requests, e.g. for a lost-communication monitor. Called in the context
++ * that observed the outcome; implementations must not block.
++ */
++class IRouteObserver
++{
++public:
++    IRouteObserver()                                 = default;
++    IRouteObserver(IRouteObserver const&)            = delete;
++    IRouteObserver& operator=(IRouteObserver const&) = delete;
++
++    /// The node answered a request (final response, not NRC 0x78).
++    virtual void routeResponded(size_t routeIndex) = 0;
++    /// The node did not answer within P2/P2*, or the request could not be delivered.
++    virtual void routeTimedOut(size_t routeIndex)  = 0;
++
++protected:
++    ~IRouteObserver() = default;
++};
++
++} // namespace transport
+diff --git a/libs/bsw/transportRouter/include/transport/routing/TransportRouter.h b/libs/bsw/transportRouter/include/transport/routing/TransportRouter.h
+new file mode 100644
+index 0000000..911aa06
+--- /dev/null
++++ b/libs/bsw/transportRouter/include/transport/routing/TransportRouter.h
+@@ -0,0 +1,227 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#pragma once
++
++#include "transport/routing/DiagnosticRoute.h"
++#include "transport/routing/IRouteObserver.h"
++#include "transport/routing/TransportRouterStatistics.h"
++
++#include <transport/AbstractTransportLayer.h>
++#include <transport/ITransportMessageProcessedListener.h>
++#include <transport/ITransportMessageProvidingListener.h>
++#include <transport/TransportMessage.h>
++
++#include <etl/array.h>
++#include <etl/delegate.h>
++#include <etl/intrusive_list.h>
++#include <etl/uncopyable.h>
++
++#include <cstdint>
++
++namespace transport
++{
++/**
++ * Diagnostic gateway router.
++ *
++ * Routes diagnostic messages by logical address between external testers, the gateway's own
++ * diagnostic server and the nodes listed in a routing table:
++ *
++ * - A request from a tester (source in the tester range) to the local address goes to the
++ *   local bus; to a route's address, to the route's bus with the gateway tester address as
++ *   source; to the functional address, to the local bus and once to every route bus.
++ * - A response from a route's node goes back to the tester that sent the pending request (or
++ *   the functional request), on that tester's bus, with the original tester address.
++ * - At most one request per route is outstanding. The router supervises P2 and P2*, passes
++ *   response pending (NRC 0x78) through, and discards late or unsolicited responses.
++ *
++ * Errors are reported through ITransportMessageProvider::ErrorCode so that DoIP maps them to
++ * diagnostic message NACKs: unknown target (0x03), too large (0x04), busy or no buffer (0x05).
++ *
++ * The router never interprets or generates diagnostic payloads for a node. Call cyclic()
++ * periodically (e.g. every 10 ms) for timeout supervision.
++ */
++class TransportRouter
++: public ITransportMessageProvidingListener
++, public ::etl::uncopyable
++{
++public:
++    using NowMsType = ::etl::delegate<uint32_t()>;
++
++    enum class RouteState : uint8_t
++    {
++        IDLE,
++        RESERVED,     ///< buffer handed to the tester side, request not yet forwarded
++        SENDING,      ///< forwarded to the route's transport layer, delivery not confirmed
++        WAIT_RESPONSE ///< waiting for the node within P2 or P2*
++    };
++
++    enum class ValidationError : uint8_t
++    {
++        NONE,
++        NO_ROUTES,
++        TOO_MANY_ROUTES,
++        INVALID_TESTER_RANGE,
++        ADDRESS_CONFLICT,
++        DUPLICATE_ADDRESS,
++        INVALID_TIMING,
++        INVALID_LENGTH
++    };
++
++    static constexpr size_t NUM_BUFFERS           = 4U;
++    static constexpr uint16_t BUFFER_SIZE         = 4095U;
++    static constexpr size_t NUM_SMALL_BUFFERS     = 8U;
++    static constexpr uint16_t SMALL_BUFFER_SIZE   = 8U;
++    static constexpr size_t MAX_TESTERS           = 8U;
++    static constexpr size_t MAX_ROUTES            = TransportRouterStatistics::MAX_ROUTES;
++    static constexpr size_t INVALID_ROUTE         = 0xFFU;
++    static constexpr uint8_t INVALID_BUS          = 0xFFU;
++    /// Budget to deliver a request and to receive a multi-frame response.
++    static constexpr uint32_t TRANSFER_TIMEOUT_MS = 2000U;
++
++    TransportRouter(
++        TransportRouterConfiguration const& configuration,
++        TransportRouterStatistics& statistics,
++        NowMsType nowMs);
++
++    /// Checks the configuration; returns the first error and the index of the offending route.
++    ValidationError validate(size_t& badRouteIndex) const;
++    static char const* toString(ValidationError error);
++
++    void init();
++    void shutdown();
++    void addTransportLayer(AbstractTransportLayer& transportLayer);
++    void removeTransportLayer(AbstractTransportLayer& transportLayer);
++
++    void setObserver(IRouteObserver* observer) { _observer = observer; }
++
++    /// Timeout supervision.
++    void cyclic();
++
++    /// A tester disconnected: release its pending requests at once (late responses are then
++    /// discarded).
++    void releaseTester(uint16_t testerAddress);
++
++    size_t routeIndex(uint16_t logicalAddress) const;
++    RouteState routeState(size_t routeIndex) const;
++    size_t freeBuffers() const;
++
++    TransportRouterConfiguration const& configuration() const { return _configuration; }
++
++    ErrorCode getTransportMessage(
++        uint8_t srcBusId,
++        uint16_t sourceAddress,
++        uint16_t targetAddress,
++        uint16_t size,
++        ::etl::span<uint8_t const> const& peek,
++        TransportMessage*& pTransportMessage) override;
++    void releaseTransportMessage(TransportMessage& transportMessage) override;
++    ReceiveResult messageReceived(
++        uint8_t sourceBusId,
++        TransportMessage& transportMessage,
++        ITransportMessageProcessedListener* pNotificationListener) override;
++
++    void dump() override {}
++
++private:
++    static constexpr uint8_t NO_ROUTE = 0xFFU;
++
++    struct Slot
++    {
++        TransportMessage message;
++        uint8_t* buffer;
++        uint16_t size;
++        bool locked;
++        uint8_t route;
++    };
++
++    struct Tester
++    {
++        uint16_t address;
++        uint8_t busId;
++    };
++
++    class RouteContext : public ITransportMessageProcessedListener
++    {
++    public:
++        void transportMessageProcessed(
++            TransportMessage& transportMessage, ProcessingResult result) override;
++
++        TransportRouter* router                       = nullptr;
++        uint8_t index                                 = 0U;
++        RouteState state                              = RouteState::IDLE;
++        uint16_t tester                               = 0U;
++        uint8_t testerBusId                           = INVALID_BUS;
++        uint32_t deadline                             = 0U;
++        ITransportMessageProcessedListener* processed = nullptr;
++    };
++
++    class FunctionalCopyListener : public ITransportMessageProcessedListener
++    {
++    public:
++        void transportMessageProcessed(
++            TransportMessage& transportMessage, ProcessingResult result) override;
++
++        TransportRouter* router = nullptr;
++    };
++
++    using TransportLayerList
++        = ::etl::intrusive_list<AbstractTransportLayer, ::etl::bidirectional_link<0>>;
++
++    bool isTester(uint16_t address) const;
++    size_t routeFromNode(uint8_t busId, uint16_t sourceAddress) const;
++    void learnTester(uint16_t address, uint8_t busId);
++    uint8_t testerBus(uint16_t address) const;
++
++    ErrorCode allocate(uint16_t size, uint8_t route, TransportMessage*& pTransportMessage);
++    ReceiveResult
++    forward(uint8_t busId, TransportMessage& message, ITransportMessageProcessedListener* listener);
++    ReceiveResult routeRequest(
++        size_t routeIndex,
++        uint8_t testerBusId,
++        TransportMessage& message,
++        ITransportMessageProcessedListener* listener);
++    ReceiveResult routeFunctional(
++        uint8_t testerBusId,
++        TransportMessage& message,
++        ITransportMessageProcessedListener* listener);
++    ReceiveResult routeNodeResponse(
++        size_t routeIndex, TransportMessage& message, ITransportMessageProcessedListener* listener);
++    void routeProcessed(RouteContext& route, bool success);
++    void notify(size_t routeIndex, bool responded);
++
++    static bool isResponsePending(TransportMessage const& message);
++
++    static bool expired(uint32_t const now, uint32_t const deadline)
++    {
++        return static_cast<int32_t>(now - deadline) >= 0;
++    }
++
++    TransportRouterConfiguration _configuration;
++    TransportRouterStatistics& _statistics;
++    NowMsType _nowMs;
++    IRouteObserver* _observer;
++    TransportLayerList _transportLayers;
++
++    ::etl::array<RouteContext, MAX_ROUTES> _routes;
++    ::etl::array<Tester, MAX_TESTERS> _testers;
++    size_t _nextTester;
++    FunctionalCopyListener _functionalCopyListener;
++    bool _functionalActive;
++    uint16_t _functionalTester;
++    uint8_t _functionalTesterBusId;
++    uint32_t _functionalDeadline;
++
++    uint8_t _buffers[NUM_BUFFERS][BUFFER_SIZE];
++    uint8_t _smallBuffers[NUM_SMALL_BUFFERS][SMALL_BUFFER_SIZE];
++    ::etl::array<Slot, NUM_BUFFERS + NUM_SMALL_BUFFERS> _slots;
++};
++
++} // namespace transport
+diff --git a/libs/bsw/transportRouter/include/transport/routing/TransportRouterStatistics.h b/libs/bsw/transportRouter/include/transport/routing/TransportRouterStatistics.h
+new file mode 100644
+index 0000000..845466a
+--- /dev/null
++++ b/libs/bsw/transportRouter/include/transport/routing/TransportRouterStatistics.h
+@@ -0,0 +1,66 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#pragma once
++
++#include <etl/array.h>
++
++#include <cstddef>
++#include <cstdint>
++
++namespace transport
++{
++/**
++ * Saturating counters of a TransportRouter, per route and for the router as a whole.
++ */
++class TransportRouterStatistics
++{
++public:
++    static constexpr size_t MAX_ROUTES = 16U;
++
++    enum class RouteCounter : uint8_t
++    {
++        REQUESTS,       ///< physical requests forwarded to the route
++        RESPONSES,      ///< final responses forwarded to a tester
++        PENDING,        ///< response pending (NRC 0x78) forwarded
++        TIMEOUTS,       ///< no response within P2 / P2*
++        NACK_BUSY,      ///< rejected: a request to the route is outstanding
++        NACK_TOO_LARGE, ///< rejected: larger than the route's maximum length
++        TX_FAILURES,    ///< the route's transport layer did not deliver the request
++        DISCARDED,      ///< late or unsolicited responses
++        COUNT
++    };
++
++    enum class RouterCounter : uint8_t
++    {
++        LOCAL_REQUESTS,
++        FUNCTIONAL_REQUESTS,
++        UNKNOWN_TARGET,
++        NO_BUFFER,
++        COUNT
++    };
++
++    static constexpr size_t ROUTE_COUNTERS  = static_cast<size_t>(RouteCounter::COUNT);
++    static constexpr size_t ROUTER_COUNTERS = static_cast<size_t>(RouterCounter::COUNT);
++
++    void count(size_t routeIndex, RouteCounter counter);
++    void count(RouterCounter counter);
++    uint16_t get(size_t routeIndex, RouteCounter counter) const;
++    uint16_t get(RouterCounter counter) const;
++    void reset();
++
++private:
++    static void increment(uint16_t& value);
++
++    ::etl::array<::etl::array<uint16_t, ROUTE_COUNTERS>, MAX_ROUTES> _route{};
++    ::etl::array<uint16_t, ROUTER_COUNTERS> _router{};
++};
++
++} // namespace transport
+diff --git a/libs/bsw/transportRouter/module.spec b/libs/bsw/transportRouter/module.spec
+new file mode 100644
+index 0000000..87faef8
+--- /dev/null
++++ b/libs/bsw/transportRouter/module.spec
+@@ -0,0 +1 @@
++oss: true
+diff --git a/libs/bsw/transportRouter/src/transport/TpGatewayLogger.cpp b/libs/bsw/transportRouter/src/transport/TpGatewayLogger.cpp
+new file mode 100644
+index 0000000..eabf770
+--- /dev/null
++++ b/libs/bsw/transportRouter/src/transport/TpGatewayLogger.cpp
+@@ -0,0 +1,13 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#include "transport/TpGatewayLogger.h"
++
++DEFINE_LOGGER_COMPONENT(TPGATEWAY)
+diff --git a/libs/bsw/transportRouter/src/transport/routing/TransportRouter.cpp b/libs/bsw/transportRouter/src/transport/routing/TransportRouter.cpp
+new file mode 100644
+index 0000000..ae5d976
+--- /dev/null
++++ b/libs/bsw/transportRouter/src/transport/routing/TransportRouter.cpp
+@@ -0,0 +1,698 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#include "transport/routing/TransportRouter.h"
++
++#include "transport/TpGatewayLogger.h"
++
++#include <async/Async.h>
++
++// NOLINTBEGIN(cppcoreguidelines-pro-type-vararg): Logger API is variadic by design.
++
++namespace transport
++{
++using ::util::logger::Logger;
++using ::util::logger::TPGATEWAY;
++using RouteCounter  = TransportRouterStatistics::RouteCounter;
++using RouterCounter = TransportRouterStatistics::RouterCounter;
++
++TransportRouter::TransportRouter(
++    TransportRouterConfiguration const& configuration,
++    TransportRouterStatistics& statistics,
++    NowMsType const nowMs)
++: _configuration(configuration)
++, _statistics(statistics)
++, _nowMs(nowMs)
++, _observer(nullptr)
++, _transportLayers()
++, _routes()
++, _testers()
++, _nextTester(0U)
++, _functionalCopyListener()
++, _functionalActive(false)
++, _functionalTester(0U)
++, _functionalTesterBusId(INVALID_BUS)
++, _functionalDeadline(0U)
++, _buffers()
++, _smallBuffers()
++, _slots()
++{
++    for (size_t i = 0U; i < _routes.size(); ++i)
++    {
++        _routes[i].router = this;
++        _routes[i].index  = static_cast<uint8_t>(i);
++    }
++    _functionalCopyListener.router = this;
++    for (size_t i = 0U; i < _slots.size(); ++i)
++    {
++        Slot& slot  = _slots[i];
++        slot.buffer = (i < NUM_BUFFERS) ? _buffers[i] : _smallBuffers[i - NUM_BUFFERS];
++        slot.size   = (i < NUM_BUFFERS) ? BUFFER_SIZE : SMALL_BUFFER_SIZE;
++        slot.locked = false;
++        slot.route  = NO_ROUTE;
++        slot.message.init(slot.buffer, slot.size);
++    }
++    for (Tester& tester : _testers)
++    {
++        tester = Tester{0U, INVALID_BUS};
++    }
++}
++
++TransportRouter::ValidationError TransportRouter::validate(size_t& badRouteIndex) const
++{
++    badRouteIndex                           = INVALID_ROUTE;
++    TransportRouterConfiguration const& cfg = _configuration;
++    if (cfg.routes.empty())
++    {
++        return ValidationError::NO_ROUTES;
++    }
++    if (cfg.routes.size() > MAX_ROUTES)
++    {
++        return ValidationError::TOO_MANY_ROUTES;
++    }
++    if ((cfg.testerAddressMin > cfg.testerAddressMax) || isTester(cfg.localAddress)
++        || isTester(cfg.functionalAddress) || (cfg.localAddress == cfg.functionalAddress))
++    {
++        return ValidationError::INVALID_TESTER_RANGE;
++    }
++    if ((cfg.maxFunctionalLength == 0U) || (cfg.maxFunctionalLength > SMALL_BUFFER_SIZE))
++    {
++        return ValidationError::INVALID_LENGTH;
++    }
++    for (size_t i = 0U; i < cfg.routes.size(); ++i)
++    {
++        DiagnosticRoute const& route = cfg.routes[i];
++        badRouteIndex                = i;
++        if ((route.logicalAddress == cfg.localAddress)
++            || (route.logicalAddress == cfg.functionalAddress)
++            || (route.logicalAddress == cfg.gatewayTesterAddress) || isTester(route.logicalAddress)
++            || (route.busId == cfg.localBusId))
++        {
++            return ValidationError::ADDRESS_CONFLICT;
++        }
++        if ((route.p2Ms == 0U) || (route.p2Ms > route.p2StarMs))
++        {
++            return ValidationError::INVALID_TIMING;
++        }
++        if ((route.maxLength == 0U) || (route.maxLength > BUFFER_SIZE))
++        {
++            return ValidationError::INVALID_LENGTH;
++        }
++        for (size_t j = 0U; j < i; ++j)
++        {
++            if (cfg.routes[j].logicalAddress == route.logicalAddress)
++            {
++                return ValidationError::DUPLICATE_ADDRESS;
++            }
++        }
++    }
++    badRouteIndex = INVALID_ROUTE;
++    return ValidationError::NONE;
++}
++
++char const* TransportRouter::toString(ValidationError const error)
++{
++    switch (error)
++    {
++        case ValidationError::NONE:            return "ok";
++        case ValidationError::NO_ROUTES:       return "no routes";
++        case ValidationError::TOO_MANY_ROUTES: return "too many routes";
++        case ValidationError::INVALID_TESTER_RANGE:
++            return "tester range overlaps the local or functional address";
++        case ValidationError::ADDRESS_CONFLICT:
++            return "route overlaps the local, functional, gateway tester or tester addresses";
++        case ValidationError::DUPLICATE_ADDRESS: return "duplicate route address";
++        case ValidationError::INVALID_TIMING:    return "invalid P2/P2*";
++        case ValidationError::INVALID_LENGTH:    return "invalid maximum length";
++        default:                                 return "unknown";
++    }
++}
++
++void TransportRouter::init()
++{
++    _transportLayers.clear();
++    ::async::LockType const lock;
++    _functionalActive = false;
++    for (RouteContext& route : _routes)
++    {
++        route.state = RouteState::IDLE;
++    }
++}
++
++void TransportRouter::shutdown() { _transportLayers.clear(); }
++
++void TransportRouter::addTransportLayer(AbstractTransportLayer& transportLayer)
++{
++    for (AbstractTransportLayer const& layer : _transportLayers)
++    {
++        if (layer.getBusId() == transportLayer.getBusId())
++        {
++            Logger::error(
++                TPGATEWAY,
++                "TpLayer for bus %d must not be registered multiple times",
++                transportLayer.getBusId());
++            return;
++        }
++    }
++    transportLayer.fProvidingListenerHelper.fpMessageListener = this;
++    transportLayer.fProvidingListenerHelper.fpMessageProvider = this;
++    _transportLayers.push_back(transportLayer);
++}
++
++void TransportRouter::removeTransportLayer(AbstractTransportLayer& transportLayer)
++{
++    if (!_transportLayers.contains_node(transportLayer))
++    {
++        return;
++    }
++    transportLayer.fProvidingListenerHelper.fpMessageListener = nullptr;
++    transportLayer.fProvidingListenerHelper.fpMessageProvider = nullptr;
++    _transportLayers.erase(transportLayer);
++}
++
++bool TransportRouter::isTester(uint16_t const address) const
++{
++    return (address >= _configuration.testerAddressMin)
++           && (address <= _configuration.testerAddressMax);
++}
++
++size_t TransportRouter::routeIndex(uint16_t const logicalAddress) const
++{
++    for (size_t i = 0U; i < _configuration.routes.size(); ++i)
++    {
++        if (_configuration.routes[i].logicalAddress == logicalAddress)
++        {
++            return i;
++        }
++    }
++    return INVALID_ROUTE;
++}
++
++size_t TransportRouter::routeFromNode(uint8_t const busId, uint16_t const sourceAddress) const
++{
++    size_t const index = routeIndex(sourceAddress);
++    if ((index != INVALID_ROUTE) && (_configuration.routes[index].busId == busId))
++    {
++        return index;
++    }
++    return INVALID_ROUTE;
++}
++
++TransportRouter::RouteState TransportRouter::routeState(size_t const index) const
++{
++    ::async::LockType const lock;
++    return (index < _configuration.routes.size()) ? _routes[index].state : RouteState::IDLE;
++}
++
++size_t TransportRouter::freeBuffers() const
++{
++    ::async::LockType const lock;
++    size_t count = 0U;
++    for (Slot const& slot : _slots)
++    {
++        if (!slot.locked)
++        {
++            ++count;
++        }
++    }
++    return count;
++}
++
++void TransportRouter::learnTester(uint16_t const address, uint8_t const busId)
++{
++    ::async::LockType const lock;
++    for (Tester& tester : _testers)
++    {
++        if (tester.address == address)
++        {
++            tester.busId = busId;
++            return;
++        }
++    }
++    _testers[_nextTester] = Tester{address, busId};
++    _nextTester           = (_nextTester + 1U) % MAX_TESTERS;
++}
++
++uint8_t TransportRouter::testerBus(uint16_t const address) const
++{
++    ::async::LockType const lock;
++    for (Tester const& tester : _testers)
++    {
++        if ((tester.busId != INVALID_BUS) && (tester.address == address))
++        {
++            return tester.busId;
++        }
++    }
++    return INVALID_BUS;
++}
++
++ITransportMessageProvider::ErrorCode TransportRouter::allocate(
++    uint16_t const size, uint8_t const route, TransportMessage*& pTransportMessage)
++{
++    // the smallest free buffer that fits
++    Slot* best = nullptr;
++    for (Slot& slot : _slots)
++    {
++        if ((!slot.locked) && (slot.size >= size)
++            && ((best == nullptr) || (slot.size < best->size)))
++        {
++            best = &slot;
++        }
++    }
++    if (best == nullptr)
++    {
++        _statistics.count(RouterCounter::NO_BUFFER);
++        return ErrorCode::TPMSG_NO_MSG_AVAILABLE;
++    }
++    best->locked = true;
++    best->route  = route;
++    best->message.init(best->buffer, best->size);
++    pTransportMessage = &best->message;
++    return ErrorCode::TPMSG_OK;
++}
++
++ITransportMessageProvider::ErrorCode TransportRouter::getTransportMessage(
++    uint8_t const srcBusId,
++    uint16_t const sourceAddress,
++    uint16_t const targetAddress,
++    uint16_t const size,
++    ::etl::span<uint8_t const> const& /* peek */,
++    TransportMessage*& pTransportMessage)
++{
++    pTransportMessage = nullptr;
++    ::async::LockType const lock;
++
++    if (srcBusId == _configuration.localBusId)
++    {
++        // the local diagnostic server: responses and copies of functional requests
++        return allocate(size, NO_ROUTE, pTransportMessage);
++    }
++
++    if (isTester(sourceAddress))
++    {
++        // The local diagnostic server may build its response in the request buffer, so
++        // local and functional requests always get a full-size buffer.
++        if (targetAddress == _configuration.localAddress)
++        {
++            return allocate(BUFFER_SIZE, NO_ROUTE, pTransportMessage);
++        }
++        if (targetAddress == _configuration.functionalAddress)
++        {
++            if (size > _configuration.maxFunctionalLength)
++            {
++                return ErrorCode::TPMSG_SIZE_TOO_LARGE;
++            }
++            return allocate(BUFFER_SIZE, NO_ROUTE, pTransportMessage);
++        }
++        size_t const index = routeIndex(targetAddress);
++        if (index == INVALID_ROUTE)
++        {
++            _statistics.count(RouterCounter::UNKNOWN_TARGET);
++            return ErrorCode::TPMSG_INVALID_TGT_ADDRESS;
++        }
++        if (size > _configuration.routes[index].maxLength)
++        {
++            _statistics.count(index, RouteCounter::NACK_TOO_LARGE);
++            return ErrorCode::TPMSG_SIZE_TOO_LARGE;
++        }
++        if (_routes[index].state != RouteState::IDLE)
++        {
++            _statistics.count(index, RouteCounter::NACK_BUSY);
++            return ErrorCode::TPMSG_NO_MSG_AVAILABLE;
++        }
++        ErrorCode const result = allocate(size, static_cast<uint8_t>(index), pTransportMessage);
++        if (result == ErrorCode::TPMSG_OK)
++        {
++            _routes[index].state = RouteState::RESERVED;
++        }
++        return result;
++    }
++
++    size_t const index = routeFromNode(srcBusId, sourceAddress);
++    if (index == INVALID_ROUTE)
++    {
++        return ErrorCode::TPMSG_NOT_RESPONSIBLE;
++    }
++    RouteContext& route = _routes[index];
++    bool const pending
++        = (route.state == RouteState::SENDING) || (route.state == RouteState::WAIT_RESPONSE);
++    if ((!pending) && (!_functionalActive))
++    {
++        _statistics.count(index, RouteCounter::DISCARDED);
++        return ErrorCode::TPMSG_NOT_RESPONSIBLE;
++    }
++    if (pending)
++    {
++        // P2 covers the start of the response; a segmented response may take longer.
++        uint32_t const p2Star = _configuration.routes[index].p2StarMs;
++        route.deadline = _nowMs() + ((p2Star > TRANSFER_TIMEOUT_MS) ? p2Star : TRANSFER_TIMEOUT_MS);
++    }
++    return allocate(size, NO_ROUTE, pTransportMessage);
++}
++
++void TransportRouter::releaseTransportMessage(TransportMessage& transportMessage)
++{
++    ::async::LockType const lock;
++    for (Slot& slot : _slots)
++    {
++        if (&slot.message == &transportMessage)
++        {
++            // released before it was forwarded, e.g. the tester side aborted the reception
++            if ((slot.route != NO_ROUTE) && (_routes[slot.route].state == RouteState::RESERVED))
++            {
++                _routes[slot.route].state = RouteState::IDLE;
++            }
++            slot.locked = false;
++            slot.route  = NO_ROUTE;
++            return;
++        }
++    }
++}
++
++ITransportMessageListener::ReceiveResult TransportRouter::messageReceived(
++    uint8_t const sourceBusId,
++    TransportMessage& transportMessage,
++    ITransportMessageProcessedListener* const pNotificationListener)
++{
++    if (sourceBusId == _configuration.localBusId)
++    {
++        // response of the local diagnostic server: back to the tester's bus
++        uint8_t const busId = testerBus(transportMessage.getTargetId());
++        if (busId == INVALID_BUS)
++        {
++            return ReceiveResult::RECEIVED_ERROR;
++        }
++        return forward(busId, transportMessage, pNotificationListener);
++    }
++
++    uint16_t const source = transportMessage.getSourceId();
++    if (isTester(source))
++    {
++        learnTester(source, sourceBusId);
++        uint16_t const target = transportMessage.getTargetId();
++        if (target == _configuration.localAddress)
++        {
++            _statistics.count(RouterCounter::LOCAL_REQUESTS);
++            return forward(_configuration.localBusId, transportMessage, pNotificationListener);
++        }
++        if (target == _configuration.functionalAddress)
++        {
++            return routeFunctional(sourceBusId, transportMessage, pNotificationListener);
++        }
++        size_t const index = routeIndex(target);
++        if (index == INVALID_ROUTE)
++        {
++            return ReceiveResult::RECEIVED_ERROR;
++        }
++        return routeRequest(index, sourceBusId, transportMessage, pNotificationListener);
++    }
++
++    size_t const index = routeFromNode(sourceBusId, source);
++    if (index == INVALID_ROUTE)
++    {
++        return ReceiveResult::RECEIVED_ERROR;
++    }
++    return routeNodeResponse(index, transportMessage, pNotificationListener);
++}
++
++ITransportMessageListener::ReceiveResult TransportRouter::routeRequest(
++    size_t const index,
++    uint8_t const testerBusId,
++    TransportMessage& message,
++    ITransportMessageProcessedListener* const listener)
++{
++    RouteContext& route = _routes[index];
++    {
++        ::async::LockType const lock;
++        route.tester      = message.getSourceId();
++        route.testerBusId = testerBusId;
++        route.processed   = listener;
++        route.state       = RouteState::SENDING;
++        route.deadline    = _nowMs() + TRANSFER_TIMEOUT_MS;
++        _statistics.count(index, RouteCounter::REQUESTS);
++    }
++    message.setSourceAddress(_configuration.gatewayTesterAddress);
++    ReceiveResult const result = forward(_configuration.routes[index].busId, message, &route);
++    if (result != ReceiveResult::RECEIVED_NO_ERROR)
++    {
++        ::async::LockType const lock;
++        message.setSourceAddress(route.tester);
++        // the tester side keeps the buffer and releases it, which frees the route
++        route.state = RouteState::RESERVED;
++        _statistics.count(index, RouteCounter::TX_FAILURES);
++    }
++    return result;
++}
++
++ITransportMessageListener::ReceiveResult TransportRouter::routeFunctional(
++    uint8_t const testerBusId,
++    TransportMessage& message,
++    ITransportMessageProcessedListener* const listener)
++{
++    {
++        ::async::LockType const lock;
++        _statistics.count(RouterCounter::FUNCTIONAL_REQUESTS);
++        _functionalActive      = true;
++        _functionalTester      = message.getSourceId();
++        _functionalTesterBusId = testerBusId;
++        _functionalDeadline    = _nowMs() + _configuration.functionalWindowMs;
++    }
++    // one copy per distinct route bus
++    for (size_t i = 0U; i < _configuration.routes.size(); ++i)
++    {
++        uint8_t const busId = _configuration.routes[i].busId;
++        bool firstOnBus     = true;
++        for (size_t j = 0U; j < i; ++j)
++        {
++            if (_configuration.routes[j].busId == busId)
++            {
++                firstOnBus = false;
++            }
++        }
++        if (!firstOnBus)
++        {
++            continue;
++        }
++        TransportMessage* copy = nullptr;
++        {
++            ::async::LockType const lock;
++            (void)allocate(message.getPayloadLength(), NO_ROUTE, copy);
++        }
++        if (copy == nullptr)
++        {
++            continue;
++        }
++        copy->setSourceAddress(_configuration.gatewayTesterAddress);
++        copy->setTargetAddress(_configuration.functionalAddress);
++        copy->setPayloadLength(message.getPayloadLength());
++        (void)copy->append(message.getPayload(), message.getPayloadLength());
++        if (forward(busId, *copy, &_functionalCopyListener) != ReceiveResult::RECEIVED_NO_ERROR)
++        {
++            releaseTransportMessage(*copy);
++        }
++    }
++    // the local diagnostic server is part of the functional group
++    return forward(_configuration.localBusId, message, listener);
++}
++
++ITransportMessageListener::ReceiveResult TransportRouter::routeNodeResponse(
++    size_t const index,
++    TransportMessage& message,
++    ITransportMessageProcessedListener* const listener)
++{
++    bool const pending  = isResponsePending(message);
++    bool finished       = false;
++    bool deliver        = true;
++    uint16_t tester     = 0U;
++    uint8_t testerBusId = INVALID_BUS;
++    {
++        ::async::LockType const lock;
++        RouteContext& route = _routes[index];
++        if ((route.state == RouteState::SENDING) || (route.state == RouteState::WAIT_RESPONSE))
++        {
++            tester      = route.tester;
++            testerBusId = route.testerBusId;
++            if (pending)
++            {
++                route.state    = RouteState::WAIT_RESPONSE;
++                route.deadline = _nowMs() + _configuration.routes[index].p2StarMs;
++            }
++            else
++            {
++                route.state = RouteState::IDLE;
++                finished    = true;
++            }
++        }
++        else if (_functionalActive)
++        {
++            tester      = _functionalTester;
++            testerBusId = _functionalTesterBusId;
++            finished    = !pending;
++        }
++        else
++        {
++            deliver = false;
++        }
++        _statistics.count(
++            index,
++            (!deliver)  ? RouteCounter::DISCARDED
++            : (pending) ? RouteCounter::PENDING
++                        : RouteCounter::RESPONSES);
++    }
++    if (!deliver)
++    {
++        return ReceiveResult::RECEIVED_ERROR;
++    }
++    if (finished)
++    {
++        notify(index, true);
++    }
++    message.setTargetAddress(tester);
++    return forward(testerBusId, message, listener);
++}
++
++void TransportRouter::RouteContext::transportMessageProcessed(
++    TransportMessage& transportMessage, ProcessingResult const result)
++{
++    ITransportMessageProcessedListener* const original = processed;
++    transportMessage.setSourceAddress(tester);
++    router->routeProcessed(*this, result == ProcessingResult::PROCESSED_NO_ERROR);
++    if (original != nullptr)
++    {
++        original->transportMessageProcessed(transportMessage, result);
++    }
++}
++
++void TransportRouter::routeProcessed(RouteContext& route, bool const success)
++{
++    bool failed = false;
++    {
++        ::async::LockType const lock;
++        if (route.state == RouteState::SENDING)
++        {
++            if (success)
++            {
++                route.state    = RouteState::WAIT_RESPONSE;
++                route.deadline = _nowMs() + _configuration.routes[route.index].p2Ms;
++            }
++            else
++            {
++                route.state = RouteState::IDLE;
++                failed      = true;
++                _statistics.count(route.index, RouteCounter::TX_FAILURES);
++            }
++        }
++    }
++    if (failed)
++    {
++        notify(route.index, false);
++    }
++}
++
++void TransportRouter::FunctionalCopyListener::transportMessageProcessed(
++    TransportMessage& transportMessage, ProcessingResult const /* result */)
++{
++    router->releaseTransportMessage(transportMessage);
++}
++
++void TransportRouter::cyclic()
++{
++    uint32_t const now = _nowMs();
++    for (size_t i = 0U; i < _configuration.routes.size(); ++i)
++    {
++        bool timedOut = false;
++        {
++            ::async::LockType const lock;
++            RouteContext& route = _routes[i];
++            if (((route.state == RouteState::SENDING) || (route.state == RouteState::WAIT_RESPONSE))
++                && expired(now, route.deadline))
++            {
++                route.state = RouteState::IDLE;
++                timedOut    = true;
++                _statistics.count(i, RouteCounter::TIMEOUTS);
++            }
++        }
++        if (timedOut)
++        {
++            Logger::info(
++                TPGATEWAY,
++                "no response from 0x%04x (%s)",
++                _configuration.routes[i].logicalAddress,
++                (_configuration.routes[i].name != nullptr) ? _configuration.routes[i].name : "");
++            notify(i, false);
++        }
++    }
++    ::async::LockType const lock;
++    if (_functionalActive && expired(now, _functionalDeadline))
++    {
++        _functionalActive = false;
++    }
++}
++
++void TransportRouter::releaseTester(uint16_t const testerAddress)
++{
++    ::async::LockType const lock;
++    for (size_t i = 0U; i < _configuration.routes.size(); ++i)
++    {
++        RouteContext& route = _routes[i];
++        if (((route.state == RouteState::SENDING) || (route.state == RouteState::WAIT_RESPONSE))
++            && (route.tester == testerAddress))
++        {
++            route.state = RouteState::IDLE;
++        }
++    }
++    if (_functionalActive && (_functionalTester == testerAddress))
++    {
++        _functionalActive = false;
++    }
++}
++
++ITransportMessageListener::ReceiveResult TransportRouter::forward(
++    uint8_t const busId,
++    TransportMessage& message,
++    ITransportMessageProcessedListener* const listener)
++{
++    for (AbstractTransportLayer& layer : _transportLayers)
++    {
++        if (layer.getBusId() == busId)
++        {
++            return (layer.send(message, listener) == AbstractTransportLayer::ErrorCode::TP_OK)
++                       ? ReceiveResult::RECEIVED_NO_ERROR
++                       : ReceiveResult::RECEIVED_ERROR;
++        }
++    }
++    return ReceiveResult::RECEIVED_ERROR;
++}
++
++void TransportRouter::notify(size_t const index, bool const responded)
++{
++    if (_observer == nullptr)
++    {
++        return;
++    }
++    if (responded)
++    {
++        _observer->routeResponded(index);
++    }
++    else
++    {
++        _observer->routeTimedOut(index);
++    }
++}
++
++bool TransportRouter::isResponsePending(TransportMessage const& message)
++{
++    return (message.getPayloadLength() >= 3U) && (message.getPayload()[0] == 0x7FU)
++           && (message.getPayload()[2] == 0x78U);
++}
++
++} // namespace transport
++
++// NOLINTEND(cppcoreguidelines-pro-type-vararg)
+diff --git a/libs/bsw/transportRouter/src/transport/routing/TransportRouterStatistics.cpp b/libs/bsw/transportRouter/src/transport/routing/TransportRouterStatistics.cpp
+new file mode 100644
+index 0000000..1fae93f
+--- /dev/null
++++ b/libs/bsw/transportRouter/src/transport/routing/TransportRouterStatistics.cpp
+@@ -0,0 +1,55 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#include "transport/routing/TransportRouterStatistics.h"
++
++namespace transport
++{
++void TransportRouterStatistics::increment(uint16_t& value)
++{
++    if (value < 0xFFFFU)
++    {
++        ++value;
++    }
++}
++
++void TransportRouterStatistics::count(size_t const routeIndex, RouteCounter const counter)
++{
++    if (routeIndex < MAX_ROUTES)
++    {
++        increment(_route[routeIndex][static_cast<size_t>(counter)]);
++    }
++}
++
++void TransportRouterStatistics::count(RouterCounter const counter)
++{
++    increment(_router[static_cast<size_t>(counter)]);
++}
++
++uint16_t TransportRouterStatistics::get(size_t const routeIndex, RouteCounter const counter) const
++{
++    return (routeIndex < MAX_ROUTES) ? _route[routeIndex][static_cast<size_t>(counter)] : 0U;
++}
++
++uint16_t TransportRouterStatistics::get(RouterCounter const counter) const
++{
++    return _router[static_cast<size_t>(counter)];
++}
++
++void TransportRouterStatistics::reset()
++{
++    for (auto& route : _route)
++    {
++        route.fill(0U);
++    }
++    _router.fill(0U);
++}
++
++} // namespace transport
+diff --git a/libs/bsw/transportRouter/test/CMakeLists.txt b/libs/bsw/transportRouter/test/CMakeLists.txt
+new file mode 100644
+index 0000000..c28e2bf
+--- /dev/null
++++ b/libs/bsw/transportRouter/test/CMakeLists.txt
+@@ -0,0 +1,23 @@
++# *******************************************************************************
++# Copyright (c) 2026 Jefferson Nascimento
++#
++# This program and the accompanying materials are made available under the
++# terms of the Apache License Version 2.0 which is available at
++# https://www.apache.org/licenses/LICENSE-2.0
++#
++# SPDX-License-Identifier: Apache-2.0
++# *******************************************************************************
++
++add_executable(transportRouterTest src/TransportRouterTest.cpp)
++
++target_link_libraries(
++    transportRouterTest
++    PRIVATE transportRouter
++            asyncMockImpl
++            gmock_main
++            transportMock
++            utilMock
++            etl)
++
++gtest_discover_tests(transportRouterTest PROPERTIES LABELS
++                                                    "transportRouterTest")
+diff --git a/libs/bsw/transportRouter/test/src/TransportRouterTest.cpp b/libs/bsw/transportRouter/test/src/TransportRouterTest.cpp
+new file mode 100644
+index 0000000..225acda
+--- /dev/null
++++ b/libs/bsw/transportRouter/test/src/TransportRouterTest.cpp
+@@ -0,0 +1,952 @@
++/********************************************************************************
++ * Copyright (c) 2026 Jefferson Nascimento
++ *
++ * This program and the accompanying materials are made available under the
++ * terms of the Apache License Version 2.0 which is available at
++ * https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ ********************************************************************************/
++
++#include "transport/routing/TransportRouter.h"
++
++#include "transport/AbstractTransportLayerMock.h"
++#include "transport/TransportMessageProcessedListenerMock.h"
++
++#include <async/LockMock.h>
++#include <etl/array.h>
++#include <gtest/gtest.h>
++
++#include <vector>
++
++namespace
++{
++using namespace ::testing;
++using namespace ::transport;
++
++using ErrorCode     = ITransportMessageProvider::ErrorCode;
++using ReceiveResult = ITransportMessageListener::ReceiveResult;
++using TpError       = AbstractTransportLayer::ErrorCode;
++using Processing    = ITransportMessageProcessedListener::ProcessingResult;
++using RouteCounter  = TransportRouterStatistics::RouteCounter;
++using RouterCounter = TransportRouterStatistics::RouterCounter;
++using RouteState    = TransportRouter::RouteState;
++
++uint8_t const BUS_ETH   = 1U; // DoIP testers
++uint8_t const BUS_CAN_A = 2U;
++uint8_t const BUS_CAN_B = 3U;
++uint8_t const BUS_LOCAL = 4U; // gateway diagnostic server
++
++uint16_t const LOCAL      = 0x1010U;
++uint16_t const FUNCTIONAL = 0xE400U;
++uint16_t const GW_TESTER  = 0x0E10U;
++uint16_t const TESTER     = 0x0E80U;
++uint16_t const TESTER_2   = 0x0E81U;
++uint16_t const NODE_A     = 0x1020U; // on CAN A
++uint16_t const NODE_B     = 0x1030U; // on CAN A
++uint16_t const NODE_C     = 0x1040U; // on CAN B
++
++uint32_t fakeNowMs = 0U;
++
++uint32_t nowMs() { return fakeNowMs; }
++
++DiagnosticRoute const ROUTES[] = {
++    {NODE_A, BUS_CAN_A, 150U, 5000U, 4095U, "nodeA"},
++    {NODE_B, BUS_CAN_A, 150U, 5000U, 4095U, "nodeB"},
++    {NODE_C, BUS_CAN_B, 100U, 3000U, 64U, nullptr},
++};
++
++TransportRouterConfiguration configuration(::etl::span<DiagnosticRoute const> const routes)
++{
++    return TransportRouterConfiguration{
++        LOCAL, BUS_LOCAL, FUNCTIONAL, GW_TESTER, 0x0E00U, 0x0EFFU, 150U, 7U, routes};
++}
++
++class ObserverMock : public IRouteObserver
++{
++public:
++    MOCK_METHOD(void, routeResponded, (size_t), (override));
++    MOCK_METHOD(void, routeTimedOut, (size_t), (override));
++};
++
++class TransportRouterTest : public Test
++{
++protected:
++    TransportRouterTest()
++    : _router(configuration(ROUTES), _statistics, TransportRouter::NowMsType::create<&nowMs>())
++    , _eth(BUS_ETH)
++    , _canA(BUS_CAN_A)
++    , _canB(BUS_CAN_B)
++    , _local(BUS_LOCAL)
++    {}
++
++    void SetUp() override
++    {
++        fakeNowMs = 1000U;
++        // every lock must be released again
++        ON_CALL(_lock, lock()).WillByDefault(Invoke([this] { ++_locks; }));
++        ON_CALL(_lock, unlock()).WillByDefault(Invoke([this] { --_locks; }));
++        _router.init();
++        _router.addTransportLayer(_eth);
++        _router.addTransportLayer(_canA);
++        _router.addTransportLayer(_canB);
++        _router.addTransportLayer(_local);
++        _router.setObserver(&_observer);
++    }
++
++    void TearDown() override
++    {
++        EXPECT_EQ(0, _locks);
++        _router.shutdown();
++    }
++
++    /// Requests a buffer like a transport layer does, fills it and returns it.
++    TransportMessage* message(
++        uint8_t busId,
++        uint16_t source,
++        uint16_t target,
++        std::vector<uint8_t> const& payload,
++        ErrorCode expected = ErrorCode::TPMSG_OK)
++    {
++        TransportMessage* msg = nullptr;
++        EXPECT_EQ(
++            expected,
++            _router.getTransportMessage(
++                busId, source, target, static_cast<uint16_t>(payload.size()), {}, msg));
++        if (msg == nullptr)
++        {
++            return nullptr;
++        }
++        msg->setSourceAddress(source);
++        msg->setTargetAddress(target);
++        msg->setPayloadLength(static_cast<uint16_t>(payload.size()));
++        (void)msg->append(payload.data(), static_cast<uint16_t>(payload.size()));
++        return msg;
++    }
++
++    /// Sends a physical request from TESTER to a node and confirms delivery on CAN.
++    TransportMessage* sendRequest(
++        uint16_t node,
++        AbstractTransportLayerMock& bus,
++        std::vector<uint8_t> const& payload = {0x22, 0xF1, 0x95})
++    {
++        TransportMessage* request = message(BUS_ETH, TESTER, node, payload);
++        EXPECT_CALL(bus, send(_, _))
++            .WillOnce(Invoke(
++                [this](TransportMessage& msg, ITransportMessageProcessedListener* listener)
++                {
++                    _pendingListener = listener;
++                    EXPECT_EQ(GW_TESTER, msg.getSourceId());
++                    return TpError::TP_OK;
++                }));
++        EXPECT_EQ(
++            ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++        return request;
++    }
++
++    /// The transport layer confirms delivery; the tester side then releases its buffer.
++    void
++    confirmDelivery(TransportMessage& request, Processing result = Processing::PROCESSED_NO_ERROR)
++    {
++        EXPECT_CALL(_tester, transportMessageProcessed(Ref(request), result))
++            .WillOnce(Invoke(
++                [this](TransportMessage& msg, Processing)
++                {
++                    EXPECT_EQ(TESTER, msg.getSourceId()) << "tester address restored";
++                    _router.releaseTransportMessage(msg);
++                }));
++        _pendingListener->transportMessageProcessed(request, result);
++    }
++
++    /// A node response arriving on its bus; returns the router's result.
++    ReceiveResult nodeResponse(
++        uint8_t busId,
++        uint16_t node,
++        std::vector<uint8_t> const& payload,
++        uint16_t* target   = nullptr,
++        ErrorCode expected = ErrorCode::TPMSG_OK)
++    {
++        TransportMessage* response = message(busId, node, GW_TESTER, payload, expected);
++        if (response == nullptr)
++        {
++            return ReceiveResult::RECEIVED_ERROR;
++        }
++        ReceiveResult const result = _router.messageReceived(busId, *response, &_nodeSide);
++        if (target != nullptr)
++        {
++            *target = response->getTargetId();
++        }
++        _router.releaseTransportMessage(*response);
++        return result;
++    }
++
++    void advance(uint32_t ms)
++    {
++        fakeNowMs += ms;
++        _router.cyclic();
++    }
++
++    NiceMock<::async::LockMock> _lock;
++    int _locks = 0;
++    TransportRouterStatistics _statistics;
++    TransportRouter _router;
++    StrictMock<AbstractTransportLayerMock> _eth;
++    StrictMock<AbstractTransportLayerMock> _canA;
++    StrictMock<AbstractTransportLayerMock> _canB;
++    StrictMock<AbstractTransportLayerMock> _local;
++    StrictMock<TransportMessageProcessedListenerMock> _tester;
++    NiceMock<TransportMessageProcessedListenerMock> _nodeSide;
++    StrictMock<ObserverMock> _observer;
++    ITransportMessageProcessedListener* _pendingListener = nullptr;
++};
++
++// --- configuration ---------------------------------------------------------------------------
++
++TEST_F(TransportRouterTest, validConfigurationPassesValidation)
++{
++    size_t bad = 0U;
++    EXPECT_EQ(TransportRouter::ValidationError::NONE, _router.validate(bad));
++    EXPECT_EQ(TransportRouter::INVALID_ROUTE, bad);
++    EXPECT_STREQ("ok", TransportRouter::toString(TransportRouter::ValidationError::NONE));
++}
++
++TEST_F(TransportRouterTest, invalidConfigurationsAreRejectedWithTheOffendingRoute)
++{
++    struct Case
++    {
++        DiagnosticRoute route;
++        TransportRouter::ValidationError error;
++    };
++
++    Case const cases[] = {
++        {{LOCAL, BUS_CAN_A, 150U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::ADDRESS_CONFLICT},
++        {{FUNCTIONAL, BUS_CAN_A, 150U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::ADDRESS_CONFLICT},
++        {{0x0E55U, BUS_CAN_A, 150U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::ADDRESS_CONFLICT},
++        {{GW_TESTER, BUS_CAN_A, 150U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::ADDRESS_CONFLICT},
++        {{0x1050U, BUS_LOCAL, 150U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::ADDRESS_CONFLICT},
++        {{NODE_A, BUS_CAN_B, 150U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::DUPLICATE_ADDRESS},
++        {{0x1050U, BUS_CAN_A, 0U, 5000U, 100U, nullptr},
++         TransportRouter::ValidationError::INVALID_TIMING},
++        {{0x1050U, BUS_CAN_A, 300U, 200U, 100U, nullptr},
++         TransportRouter::ValidationError::INVALID_TIMING},
++        {{0x1050U, BUS_CAN_A, 150U, 5000U, 0U, nullptr},
++         TransportRouter::ValidationError::INVALID_LENGTH},
++        {{0x1050U, BUS_CAN_A, 150U, 5000U, 4096U, nullptr},
++         TransportRouter::ValidationError::INVALID_LENGTH},
++    };
++    for (Case const& c : cases)
++    {
++        DiagnosticRoute const routes[] = {ROUTES[0], c.route};
++        TransportRouterStatistics statistics;
++        TransportRouter router(
++            configuration(routes), statistics, TransportRouter::NowMsType::create<&nowMs>());
++        size_t bad = 0U;
++        EXPECT_EQ(c.error, router.validate(bad)) << c.route.logicalAddress;
++        EXPECT_EQ(1U, bad);
++        EXPECT_STRNE("unknown", TransportRouter::toString(c.error));
++    }
++}
++
++TEST_F(TransportRouterTest, invalidGlobalConfigurationsAreRejected)
++{
++    TransportRouterStatistics statistics;
++    size_t bad = 0U;
++    {
++        TransportRouter router(
++            configuration({}), statistics, TransportRouter::NowMsType::create<&nowMs>());
++        EXPECT_EQ(TransportRouter::ValidationError::NO_ROUTES, router.validate(bad));
++    }
++    {
++        DiagnosticRoute routes[TransportRouter::MAX_ROUTES + 1U];
++        for (size_t i = 0U; i < (TransportRouter::MAX_ROUTES + 1U); ++i)
++        {
++            routes[i] = {static_cast<uint16_t>(0x2000U + i), BUS_CAN_A, 150U, 5000U, 100U, nullptr};
++        }
++        TransportRouter router(
++            configuration(routes), statistics, TransportRouter::NowMsType::create<&nowMs>());
++        EXPECT_EQ(TransportRouter::ValidationError::TOO_MANY_ROUTES, router.validate(bad));
++    }
++    {
++        auto cfg             = configuration(ROUTES);
++        cfg.testerAddressMin = 0x1000U;
++        TransportRouter router(cfg, statistics, TransportRouter::NowMsType::create<&nowMs>());
++        EXPECT_EQ(TransportRouter::ValidationError::INVALID_TESTER_RANGE, router.validate(bad));
++    }
++    {
++        auto cfg                = configuration(ROUTES);
++        cfg.maxFunctionalLength = TransportRouter::SMALL_BUFFER_SIZE + 1U;
++        TransportRouter router(cfg, statistics, TransportRouter::NowMsType::create<&nowMs>());
++        EXPECT_EQ(TransportRouter::ValidationError::INVALID_LENGTH, router.validate(bad));
++    }
++}
++
++TEST_F(TransportRouterTest, everyValidationErrorHasAText)
++{
++    using E = TransportRouter::ValidationError;
++    for (E const error :
++         {E::NONE,
++          E::NO_ROUTES,
++          E::TOO_MANY_ROUTES,
++          E::INVALID_TESTER_RANGE,
++          E::ADDRESS_CONFLICT,
++          E::DUPLICATE_ADDRESS,
++          E::INVALID_TIMING,
++          E::INVALID_LENGTH})
++    {
++        EXPECT_STRNE("unknown", TransportRouter::toString(error));
++    }
++    EXPECT_STREQ("unknown", TransportRouter::toString(static_cast<E>(0xFFU)));
++}
++
++TEST_F(TransportRouterTest, invalidAddressSetupsAreRejected)
++{
++    TransportRouterStatistics statistics;
++    size_t bad = 0U;
++    auto check
++        = [&](TransportRouterConfiguration const& cfg, TransportRouter::ValidationError expected)
++    {
++        TransportRouter router(cfg, statistics, TransportRouter::NowMsType::create<&nowMs>());
++        EXPECT_EQ(expected, router.validate(bad));
++    };
++    auto cfg         = configuration(ROUTES);
++    cfg.localAddress = 0x0E20U; // inside the tester range
++    check(cfg, TransportRouter::ValidationError::INVALID_TESTER_RANGE);
++    cfg                   = configuration(ROUTES);
++    cfg.functionalAddress = 0x0E20U;
++    check(cfg, TransportRouter::ValidationError::INVALID_TESTER_RANGE);
++    cfg                   = configuration(ROUTES);
++    cfg.functionalAddress = LOCAL;
++    check(cfg, TransportRouter::ValidationError::INVALID_TESTER_RANGE);
++    cfg                     = configuration(ROUTES);
++    cfg.maxFunctionalLength = 0U;
++    check(cfg, TransportRouter::ValidationError::INVALID_LENGTH);
++}
++
++TEST_F(TransportRouterTest, transportLayerOfABusIsRegisteredOnlyOnce)
++{
++    StrictMock<AbstractTransportLayerMock> second(BUS_CAN_A);
++    _router.addTransportLayer(second);
++    EXPECT_EQ(nullptr, second.fProvidingListenerHelper.fpMessageListener);
++    _router.removeTransportLayer(second); // not registered: no effect
++    _router.removeTransportLayer(_canB);
++    EXPECT_EQ(nullptr, _canB.fProvidingListenerHelper.fpMessageListener);
++}
++
++// --- local and unknown targets ---------------------------------------------------------------
++
++TEST_F(TransportRouterTest, requestToLocalAddressGoesToLocalBusWithFullSizeBuffer)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, LOCAL, {0x22, 0xF1, 0x90});
++    ASSERT_NE(nullptr, request);
++    EXPECT_EQ(TransportRouter::BUFFER_SIZE, request->getMaxPayloadLength());
++    EXPECT_CALL(_local, send(Ref(*request), &_tester)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++    EXPECT_EQ(TESTER, request->getSourceId()) << "local requests keep the tester address";
++    EXPECT_EQ(1U, _statistics.get(RouterCounter::LOCAL_REQUESTS));
++    _router.releaseTransportMessage(*request);
++}
++
++TEST_F(TransportRouterTest, localResponseGoesBackToTheTestersBus)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, LOCAL, {0x3E, 0x00});
++    EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    _router.messageReceived(BUS_ETH, *request, &_tester);
++    _router.releaseTransportMessage(*request);
++
++    TransportMessage* response = message(BUS_LOCAL, LOCAL, TESTER, {0x7E, 0x00});
++    ASSERT_NE(nullptr, response);
++    EXPECT_CALL(_eth, send(Ref(*response), &_nodeSide)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR,
++        _router.messageReceived(BUS_LOCAL, *response, &_nodeSide));
++    _router.releaseTransportMessage(*response);
++}
++
++TEST_F(TransportRouterTest, localResponseToAnUnknownTesterIsAnError)
++{
++    TransportMessage* response = message(BUS_LOCAL, LOCAL, 0x0E99U, {0x7E, 0x00});
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_LOCAL, *response, &_nodeSide));
++    _router.releaseTransportMessage(*response);
++}
++
++TEST_F(TransportRouterTest, unknownTargetIsRejectedAndCounted)
++{
++    EXPECT_EQ(
++        nullptr,
++        message(BUS_ETH, TESTER, 0x1099U, {0x3E, 0x00}, ErrorCode::TPMSG_INVALID_TGT_ADDRESS));
++    EXPECT_EQ(1U, _statistics.get(RouterCounter::UNKNOWN_TARGET));
++}
++
++TEST_F(TransportRouterTest, messagesFromUnknownSourcesAreNotAccepted)
++{
++    TransportMessage* msg = nullptr;
++    EXPECT_EQ(
++        ErrorCode::TPMSG_NOT_RESPONSIBLE,
++        _router.getTransportMessage(BUS_CAN_A, 0x1234U, GW_TESTER, 8U, {}, msg));
++    // a node address on the wrong bus is not that node
++    EXPECT_EQ(
++        ErrorCode::TPMSG_NOT_RESPONSIBLE,
++        _router.getTransportMessage(BUS_CAN_B, NODE_A, GW_TESTER, 8U, {}, msg));
++    uint8_t buffer[8];
++    TransportMessage stray(buffer, sizeof(buffer));
++    stray.setSourceAddress(0x1234U);
++    EXPECT_EQ(ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_CAN_A, stray, nullptr));
++    stray.setSourceAddress(TESTER);
++    stray.setTargetAddress(0x1099U);
++    EXPECT_EQ(ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_ETH, stray, nullptr));
++}
++
++// --- physical routing ------------------------------------------------------------------------
++
++TEST_F(TransportRouterTest, physicalRequestAndResponseRoundTrip)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    EXPECT_EQ(RouteState::SENDING, _router.routeState(0U));
++    confirmDelivery(*request);
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++
++    uint16_t target = 0U;
++    EXPECT_CALL(_eth, send(_, &_nodeSide))
++        .WillOnce(Invoke(
++            [](TransportMessage& msg, ITransportMessageProcessedListener*)
++            {
++                EXPECT_EQ(NODE_A, msg.getSourceId());
++                EXPECT_EQ(0x62U, msg.getPayload()[0]);
++                return TpError::TP_OK;
++            }));
++    EXPECT_CALL(_observer, routeResponded(0U));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR,
++        nodeResponse(BUS_CAN_A, NODE_A, {0x62, 0xF1, 0x95, 0x01}, &target));
++    EXPECT_EQ(TESTER, target);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::REQUESTS));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::RESPONSES));
++    EXPECT_EQ(
++        _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
++}
++
++TEST_F(TransportRouterTest, responseBeforeDeliveryConfirmationIsAccepted)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    EXPECT_CALL(_eth, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_CALL(_observer, routeResponded(0U));
++    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}));
++    confirmDelivery(*request); // late confirmation does not reopen the route
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++}
++
++TEST_F(TransportRouterTest, requestsToTwoRoutesAreOutstandingTogether)
++{
++    TransportMessage* a = sendRequest(NODE_A, _canA);
++    TransportMessage* c = sendRequest(NODE_C, _canB);
++    confirmDelivery(*a);
++    confirmDelivery(*c);
++    EXPECT_CALL(_eth, send(_, _)).Times(2).WillRepeatedly(Return(TpError::TP_OK));
++    EXPECT_CALL(_observer, routeResponded(2U));
++    EXPECT_CALL(_observer, routeResponded(0U));
++    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_B, NODE_C, {0x7E, 0x00}));
++    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}));
++}
++
++TEST_F(TransportRouterTest, secondRequestToABusyRouteIsRejected)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    EXPECT_EQ(
++        nullptr,
++        message(BUS_ETH, TESTER_2, NODE_A, {0x3E, 0x00}, ErrorCode::TPMSG_NO_MSG_AVAILABLE));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::NACK_BUSY));
++    confirmDelivery(*request);
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    advance(200U);
++}
++
++TEST_F(TransportRouterTest, requestLargerThanTheRouteLimitIsRejected)
++{
++    std::vector<uint8_t> payload(65U, 0x22U);
++    EXPECT_EQ(nullptr, message(BUS_ETH, TESTER, NODE_C, payload, ErrorCode::TPMSG_SIZE_TOO_LARGE));
++    EXPECT_EQ(1U, _statistics.get(2U, RouteCounter::NACK_TOO_LARGE));
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(2U));
++}
++
++TEST_F(TransportRouterTest, bufferReleasedBeforeForwardingFreesTheRoute)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, NODE_A, {0x22, 0xF1, 0x95});
++    EXPECT_EQ(RouteState::RESERVED, _router.routeState(0U));
++    _router.releaseTransportMessage(*request);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++}
++
++TEST_F(TransportRouterTest, failedForwardingKeepsTheTesterAddressAndFreesTheRouteOnRelease)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, NODE_A, {0x22, 0xF1, 0x95});
++    EXPECT_CALL(_canA, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
++    EXPECT_EQ(ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++    EXPECT_EQ(TESTER, request->getSourceId());
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::TX_FAILURES));
++    _router.releaseTransportMessage(*request);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++}
++
++TEST_F(TransportRouterTest, missingTransportLayerIsAnError)
++{
++    _router.removeTransportLayer(_canB);
++    TransportMessage* request = message(BUS_ETH, TESTER, NODE_C, {0x3E, 0x00});
++    EXPECT_EQ(ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++    _router.releaseTransportMessage(*request);
++}
++
++TEST_F(TransportRouterTest, failedDeliveryFreesTheRouteAndReportsTheNode)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    confirmDelivery(*request, Processing::PROCESSED_ERROR_TIMEOUT);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::TX_FAILURES));
++}
++
++// --- timing ----------------------------------------------------------------------------------
++
++TEST_F(TransportRouterTest, noResponseWithinP2FreesTheRoute)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    advance(149U);
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    advance(1U);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::TIMEOUTS));
++}
++
++TEST_F(TransportRouterTest, unconfirmedDeliveryTimesOut)
++{
++    sendRequest(NODE_A, _canA);
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    advance(TransportRouter::TRANSFER_TIMEOUT_MS);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++}
++
++TEST_F(TransportRouterTest, responsePendingIsForwardedAndExtendsToP2Star)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    EXPECT_CALL(_eth, send(_, _)).Times(2).WillRepeatedly(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7F, 0x22, 0x78}));
++    advance(4999U);
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++    EXPECT_CALL(_observer, routeResponded(0U));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x62, 0xF1, 0x95}));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::PENDING));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::RESPONSES));
++}
++
++TEST_F(TransportRouterTest, responsePendingTimesOutAfterP2Star)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    EXPECT_CALL(_eth, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    nodeResponse(BUS_CAN_A, NODE_A, {0x7F, 0x22, 0x78});
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    advance(5000U);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++}
++
++TEST_F(TransportRouterTest, segmentedResponseGetsMoreThanP2)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    advance(100U);
++    // first frame of a long response: the reception may outlast P2
++    TransportMessage* response
++        = message(BUS_CAN_A, NODE_A, GW_TESTER, std::vector<uint8_t>(1000U, 0x62U));
++    advance(1000U);
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++    EXPECT_CALL(_eth, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_CALL(_observer, routeResponded(0U));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR,
++        _router.messageReceived(BUS_CAN_A, *response, &_nodeSide));
++    _router.releaseTransportMessage(*response);
++}
++
++TEST_F(TransportRouterTest, deadlinesWorkAcrossTimerWrapAround)
++{
++    fakeNowMs                 = 0xFFFFFFF0U;
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    advance(100U); // wraps
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    advance(50U);
++}
++
++TEST_F(TransportRouterTest, negativeResponseOtherThanPendingEndsTheRequest)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    EXPECT_CALL(_eth, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_CALL(_observer, routeResponded(0U));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7F, 0x22, 0x31}));
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::RESPONSES));
++}
++
++TEST_F(TransportRouterTest, segmentedResponseWithShortP2StarGetsTheTransferBudget)
++{
++    DiagnosticRoute const routes[] = {{NODE_A, BUS_CAN_A, 50U, 500U, 4095U, nullptr}};
++    TransportRouterStatistics statistics;
++    TransportRouter router(
++        configuration(routes), statistics, TransportRouter::NowMsType::create<&nowMs>());
++    // a transport layer belongs to one router at a time
++    _router.removeTransportLayer(_eth);
++    _router.removeTransportLayer(_canA);
++    router.init();
++    router.addTransportLayer(_eth);
++    router.addTransportLayer(_canA);
++    router.setObserver(&_observer);
++    TransportMessage* request = nullptr;
++    ASSERT_EQ(
++        ErrorCode::TPMSG_OK, router.getTransportMessage(BUS_ETH, TESTER, NODE_A, 3U, {}, request));
++    request->setSourceAddress(TESTER);
++    request->setTargetAddress(NODE_A);
++    EXPECT_CALL(_canA, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, router.messageReceived(BUS_ETH, *request, nullptr));
++    TransportMessage* response = nullptr;
++    ASSERT_EQ(
++        ErrorCode::TPMSG_OK,
++        router.getTransportMessage(BUS_CAN_A, NODE_A, GW_TESTER, 500U, {}, response));
++    fakeNowMs += TransportRouter::TRANSFER_TIMEOUT_MS - 1U;
++    router.cyclic();
++    EXPECT_EQ(RouteState::SENDING, router.routeState(0U));
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    fakeNowMs += 1U;
++    router.cyclic(); // unnamed route: logged without a name
++    EXPECT_EQ(RouteState::IDLE, router.routeState(0U));
++    router.releaseTransportMessage(*response);
++    router.releaseTransportMessage(*request);
++    EXPECT_EQ(RouteState::IDLE, router.routeState(TransportRouter::MAX_ROUTES));
++    router.removeTransportLayer(_eth);
++    router.removeTransportLayer(_canA);
++}
++
++TEST_F(TransportRouterTest, requestWithoutProcessedListenerIsRouted)
++{
++    TransportMessage* request                    = message(BUS_ETH, TESTER, NODE_A, {0x3E, 0x00});
++    ITransportMessageProcessedListener* listener = nullptr;
++    EXPECT_CALL(_canA, send(_, _)).WillOnce(DoAll(SaveArg<1>(&listener), Return(TpError::TP_OK)));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, nullptr));
++    listener->transportMessageProcessed(*request, Processing::PROCESSED_NO_ERROR);
++    _router.releaseTransportMessage(*request);
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++    EXPECT_CALL(_observer, routeTimedOut(0U));
++    advance(150U);
++}
++
++TEST_F(TransportRouterTest, routeRequestWithoutFreeBufferIsRejected)
++{
++    std::vector<TransportMessage*> held;
++    TransportMessage* msg = nullptr;
++    while (_router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg)
++           == ErrorCode::TPMSG_OK)
++    {
++        held.push_back(msg);
++    }
++    EXPECT_EQ(
++        nullptr,
++        message(
++            BUS_ETH,
++            TESTER,
++            NODE_A,
++            std::vector<uint8_t>(100U, 0U),
++            ErrorCode::TPMSG_NO_MSG_AVAILABLE));
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    for (TransportMessage* m : held)
++    {
++        _router.releaseTransportMessage(*m);
++    }
++}
++
++TEST_F(TransportRouterTest, releasingAnotherTesterKeepsSendingRoutesAndFunctionalWindow)
++{
++    sendRequest(NODE_A, _canA); // SENDING
++    TransportMessage* functional = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x80});
++    EXPECT_CALL(_canA, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
++    EXPECT_CALL(_canB, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
++    EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    _router.messageReceived(BUS_ETH, *functional, &_tester);
++    _router.releaseTransportMessage(*functional);
++    _router.releaseTester(TESTER_2);
++    EXPECT_EQ(RouteState::SENDING, _router.routeState(0U));
++    _router.releaseTester(TESTER);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    advance(10U); // functional window already closed: nothing to do
++}
++
++// --- unsolicited and late responses ------------------------------------------------------------
++
++TEST_F(TransportRouterTest, unsolicitedResponseIsDiscardedAndCounted)
++{
++    TransportMessage* msg = nullptr;
++    EXPECT_EQ(
++        ErrorCode::TPMSG_NOT_RESPONSIBLE,
++        _router.getTransportMessage(BUS_CAN_A, NODE_A, GW_TESTER, 2U, {}, msg));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::DISCARDED));
++    // a complete message that arrives anyway is not forwarded either
++    uint8_t buffer[8];
++    TransportMessage late(buffer, sizeof(buffer));
++    late.setSourceAddress(NODE_A);
++    late.setTargetAddress(GW_TESTER);
++    late.setPayloadLength(2U);
++    EXPECT_EQ(ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_CAN_A, late, nullptr));
++    EXPECT_EQ(2U, _statistics.get(0U, RouteCounter::DISCARDED));
++}
++
++TEST_F(TransportRouterTest, releasedTesterFreesItsRoutesAtOnce)
++{
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    _router.releaseTester(TESTER_2); // other tester: no effect
++    EXPECT_EQ(RouteState::WAIT_RESPONSE, _router.routeState(0U));
++    _router.releaseTester(TESTER);
++    EXPECT_EQ(RouteState::IDLE, _router.routeState(0U));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_ERROR,
++        nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, nullptr, ErrorCode::TPMSG_NOT_RESPONSIBLE));
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::DISCARDED));
++    // a new tester can use the route immediately
++    TransportMessage* next = message(BUS_ETH, TESTER_2, NODE_A, {0x3E, 0x00});
++    EXPECT_NE(nullptr, next);
++    _router.releaseTransportMessage(*next);
++}
++
++// --- functional routing ------------------------------------------------------------------------
++
++TEST_F(TransportRouterTest, functionalRequestGoesToLocalAndOncePerRouteBus)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x00});
++    ASSERT_NE(nullptr, request);
++    std::vector<TransportMessage*> copies;
++    auto const copy = [&](TransportMessage& msg, ITransportMessageProcessedListener*)
++    {
++        EXPECT_EQ(GW_TESTER, msg.getSourceId());
++        EXPECT_EQ(FUNCTIONAL, msg.getTargetId());
++        EXPECT_EQ(2U, msg.getPayloadLength());
++        copies.push_back(&msg);
++        return TpError::TP_OK;
++    };
++    ITransportMessageProcessedListener* copyListener = nullptr;
++    EXPECT_CALL(_canA, send(_, _)).WillOnce(DoAll(SaveArg<1>(&copyListener), Invoke(copy)));
++    EXPECT_CALL(_canB, send(_, _)).WillOnce(Invoke(copy));
++    EXPECT_CALL(_local, send(Ref(*request), &_tester)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++    ASSERT_EQ(2U, copies.size());
++    EXPECT_EQ(1U, _statistics.get(RouterCounter::FUNCTIONAL_REQUESTS));
++
++    // responses of every node within the window reach the tester
++    EXPECT_CALL(_eth, send(_, _)).Times(3).WillRepeatedly(Return(TpError::TP_OK));
++    EXPECT_CALL(_observer, routeResponded(_)).Times(3);
++    uint16_t target = 0U;
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, &target));
++    EXPECT_EQ(TESTER, target);
++    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_A, NODE_B, {0x7E, 0x00}));
++    EXPECT_EQ(ReceiveResult::RECEIVED_NO_ERROR, nodeResponse(BUS_CAN_B, NODE_C, {0x7E, 0x00}));
++
++    // the copies are released when their delivery is confirmed
++    for (TransportMessage* msg : copies)
++    {
++        copyListener->transportMessageProcessed(*msg, Processing::PROCESSED_NO_ERROR);
++    }
++    _router.releaseTransportMessage(*request);
++    EXPECT_EQ(
++        _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
++
++    // after the window, responses are discarded
++    advance(150U);
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_ERROR,
++        nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, nullptr, ErrorCode::TPMSG_NOT_RESPONSIBLE));
++}
++
++TEST_F(TransportRouterTest, functionalRequestLargerThanASingleFrameIsRejected)
++{
++    EXPECT_EQ(
++        nullptr,
++        message(
++            BUS_ETH,
++            TESTER,
++            FUNCTIONAL,
++            std::vector<uint8_t>(8U, 0U),
++            ErrorCode::TPMSG_SIZE_TOO_LARGE));
++}
++
++TEST_F(TransportRouterTest, functionalCopyThatCannotBeSentIsReleased)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x80});
++    EXPECT_CALL(_canA, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
++    EXPECT_CALL(_canB, send(_, _)).WillOnce(Return(TpError::TP_QUEUE_FULL));
++    EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++    _router.releaseTransportMessage(*request);
++    EXPECT_EQ(
++        _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
++}
++
++TEST_F(TransportRouterTest, functionalRequestWithoutFreeBufferReachesOnlyLocal)
++{
++    // hold every buffer except one full-size buffer for the request itself
++    std::vector<TransportMessage*> held;
++    TransportMessage* msg = nullptr;
++    for (size_t i = 0U; i < TransportRouter::NUM_SMALL_BUFFERS; ++i)
++    {
++        EXPECT_EQ(
++            ErrorCode::TPMSG_OK,
++            _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 2U, {}, msg));
++        held.push_back(msg);
++    }
++    for (size_t i = 1U; i < TransportRouter::NUM_BUFFERS; ++i)
++    {
++        EXPECT_EQ(
++            ErrorCode::TPMSG_OK,
++            _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg));
++        held.push_back(msg);
++    }
++    TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x00});
++    ASSERT_NE(nullptr, request);
++    EXPECT_CALL(_local, send(Ref(*request), &_tester)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_ETH, *request, &_tester));
++    EXPECT_EQ(2U, _statistics.get(RouterCounter::NO_BUFFER)); // one per route bus
++    _router.releaseTransportMessage(*request);
++    for (TransportMessage* m : held)
++    {
++        _router.releaseTransportMessage(*m);
++    }
++}
++
++TEST_F(TransportRouterTest, releasedTesterClosesItsFunctionalWindow)
++{
++    TransportMessage* request = message(BUS_ETH, TESTER, FUNCTIONAL, {0x3E, 0x80});
++    ITransportMessageProcessedListener* copyListener = nullptr;
++    TransportMessage* copyA                          = nullptr;
++    EXPECT_CALL(_canA, send(_, _))
++        .WillOnce(DoAll(
++            SaveArg<1>(&copyListener),
++            Invoke(
++                [&](TransportMessage& m, ITransportMessageProcessedListener*)
++                {
++                    copyA = &m;
++                    return TpError::TP_OK;
++                })));
++    EXPECT_CALL(_canB, send(_, _)).WillOnce(Return(TpError::TP_SEND_FAIL));
++    EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    _router.messageReceived(BUS_ETH, *request, &_tester);
++    _router.releaseTester(TESTER);
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_ERROR,
++        nodeResponse(BUS_CAN_A, NODE_A, {0x7E, 0x00}, nullptr, ErrorCode::TPMSG_NOT_RESPONSIBLE));
++    copyListener->transportMessageProcessed(*copyA, Processing::PROCESSED_NO_ERROR);
++    _router.releaseTransportMessage(*request);
++}
++
++// --- buffers and statistics ------------------------------------------------------------------
++
++TEST_F(TransportRouterTest, buffersRunOutAndAreCounted)
++{
++    std::vector<TransportMessage*> held;
++    TransportMessage* msg = nullptr;
++    for (size_t i = 0U; i < TransportRouter::NUM_BUFFERS; ++i)
++    {
++        EXPECT_EQ(
++            ErrorCode::TPMSG_OK,
++            _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg));
++        held.push_back(msg);
++    }
++    EXPECT_EQ(
++        ErrorCode::TPMSG_NO_MSG_AVAILABLE,
++        _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 100U, {}, msg));
++    EXPECT_EQ(1U, _statistics.get(RouterCounter::NO_BUFFER));
++    // small messages still fit into the small buffers
++    EXPECT_EQ(
++        ErrorCode::TPMSG_OK, _router.getTransportMessage(BUS_LOCAL, LOCAL, TESTER, 2U, {}, msg));
++    EXPECT_EQ(TransportRouter::SMALL_BUFFER_SIZE, msg->getMaxPayloadLength());
++    held.push_back(msg);
++    for (TransportMessage* m : held)
++    {
++        _router.releaseTransportMessage(*m);
++    }
++    uint8_t foreign[4];
++    TransportMessage notOurs(foreign, sizeof(foreign));
++    _router.releaseTransportMessage(notOurs); // ignored
++    EXPECT_EQ(
++        _router.freeBuffers(), TransportRouter::NUM_BUFFERS + TransportRouter::NUM_SMALL_BUFFERS);
++}
++
++TEST_F(TransportRouterTest, statisticsSaturateAndReset)
++{
++    TransportRouterStatistics statistics;
++    for (uint32_t i = 0U; i < 0x10005U; ++i)
++    {
++        statistics.count(1U, RouteCounter::REQUESTS);
++    }
++    statistics.count(TransportRouterStatistics::MAX_ROUTES, RouteCounter::REQUESTS); // ignored
++    statistics.count(RouterCounter::LOCAL_REQUESTS);
++    EXPECT_EQ(0xFFFFU, statistics.get(1U, RouteCounter::REQUESTS));
++    EXPECT_EQ(0U, statistics.get(TransportRouterStatistics::MAX_ROUTES, RouteCounter::REQUESTS));
++    EXPECT_EQ(1U, statistics.get(RouterCounter::LOCAL_REQUESTS));
++    statistics.reset();
++    EXPECT_EQ(0U, statistics.get(1U, RouteCounter::REQUESTS));
++    EXPECT_EQ(0U, statistics.get(RouterCounter::LOCAL_REQUESTS));
++}
++
++TEST_F(TransportRouterTest, routerWorksWithoutObserver)
++{
++    _router.setObserver(nullptr);
++    TransportMessage* request = sendRequest(NODE_A, _canA);
++    confirmDelivery(*request);
++    advance(200U);
++    EXPECT_EQ(1U, _statistics.get(0U, RouteCounter::TIMEOUTS));
++}
++
++TEST_F(TransportRouterTest, testerTableRemembersTheLatestBusAndWraps)
++{
++    // more testers than table entries: the oldest is replaced
++    for (uint16_t i = 0U; i <= TransportRouter::MAX_TESTERS; ++i)
++    {
++        TransportMessage* request
++            = message(BUS_ETH, static_cast<uint16_t>(0x0EA0U + i), LOCAL, {0x3E, 0x00});
++        EXPECT_CALL(_local, send(_, _)).WillOnce(Return(TpError::TP_OK));
++        _router.messageReceived(BUS_ETH, *request, &_tester);
++        _router.releaseTransportMessage(*request);
++    }
++    TransportMessage* toFirst = message(BUS_LOCAL, LOCAL, 0x0EA0U, {0x7E, 0x00});
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_ERROR, _router.messageReceived(BUS_LOCAL, *toFirst, &_nodeSide));
++    _router.releaseTransportMessage(*toFirst);
++    TransportMessage* toLast = message(
++        BUS_LOCAL,
++        LOCAL,
++        static_cast<uint16_t>(0x0EA0U + TransportRouter::MAX_TESTERS),
++        {0x7E, 0x00});
++    EXPECT_CALL(_eth, send(_, _)).WillOnce(Return(TpError::TP_OK));
++    EXPECT_EQ(
++        ReceiveResult::RECEIVED_NO_ERROR, _router.messageReceived(BUS_LOCAL, *toLast, &_nodeSide));
++    _router.releaseTransportMessage(*toLast);
++}
++
++} // namespace
+-- 
+2.34.1
+

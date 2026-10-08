@@ -1,1 +1,0 @@
-../OpenDut/tests/opendut_receiver_smoke.py

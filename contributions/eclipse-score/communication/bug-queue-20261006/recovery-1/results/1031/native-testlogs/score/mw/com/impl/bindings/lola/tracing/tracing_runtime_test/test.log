@@ -1,0 +1,214 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //score/mw/com/impl/bindings/lola/tracing:tracing_runtime_test
+-----------------------------------------------------------------------------
+Running main() from gmock_main.cc
+[0;32m[==========] [mRunning 41 tests from 16 test suites.
+[0;32m[----------] [mGlobal test environment set-up.
+[0;32m[----------] [m1 test from TracingRuntimeRegisterServiceElementDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeRegisterServiceElementDeathTest.RegisteringUInt16MaxServiceElementsWillTerminate
+2026/10/06 20:47:54.9674405 876540548 000 ECU1 NONE lola log fatal verbose 5 Could not register service element. Space needed to accommodate the requested tracing slots of this  service element, plus the number of all tracing slots of previously registered service elements  exceeds the size of the total requested number of tracing slots ( 65535 ). Terminating. 
+[0;32m[       OK ] [mTracingRuntimeRegisterServiceElementDeathTest.RegisteringUInt16MaxServiceElementsWillTerminate (128 ms)
+[0;32m[----------] [m1 test from TracingRuntimeRegisterServiceElementDeathTest (128 ms total)
+
+[0;32m[----------] [m2 tests from TracingRuntimeRegisterServiceElementFixtureDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeRegisterServiceElementFixtureDeathTest.RegisteringTooManyServiceElementsWillTerminate
+2026/10/06 20:47:54.9674526 876541763 000 ECU1 NONE lola log fatal verbose 5 Could not register service element. Space needed to accommodate the requested tracing slots of this  service element, plus the number of all tracing slots of previously registered service elements  exceeds the size of the total requested number of tracing slots ( 35 ). Terminating. 
+[0;32m[       OK ] [mTracingRuntimeRegisterServiceElementFixtureDeathTest.RegisteringTooManyServiceElementsWillTerminate (109 ms)
+[0;32m[ RUN      ] [mTracingRuntimeRegisterServiceElementFixtureDeathTest.RegisteringServiceElementWithZeroTracingSlotsWillTerminate
+2026/10/06 20:47:54.9674635 876542850 000 ECU1 NONE lola log fatal verbose 2 Value of number_of_ipc_tracing_slots is zero! Requesting zero ipc tracing slots for a trace enabled  service element makes no sense. Something has gone wrong! Terminating. 
+[0;32m[       OK ] [mTracingRuntimeRegisterServiceElementFixtureDeathTest.RegisteringServiceElementWithZeroTracingSlotsWillTerminate (113 ms)
+[0;32m[----------] [m2 tests from TracingRuntimeRegisterServiceElementFixtureDeathTest (222 ms total)
+
+[0;32m[----------] [m1 test from TracingRuntimeTypeErasedSamplePtrDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrDeathTest.EmplacingTypeErasedSamplePtrBeforeRegisteringServiceElementTerminates
+2026/10/06 20:47:54.9674748 876543981 000 ECU1 NONE lola log fatal verbose 3 Cannot set type erased sample pointer as provided service element with range start at 1 was never registered. Terminating. 
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrDeathTest.EmplacingTypeErasedSamplePtrBeforeRegisteringServiceElementTerminates (99 ms)
+[0;32m[----------] [m1 test from TracingRuntimeTypeErasedSamplePtrDeathTest (99 ms total)
+
+[0;32m[----------] [m2 tests from TracingRuntimeRegisterShmObjectDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeRegisterShmObjectDeathTest.RegisterShmObjectWithNotTheExpectedDummyElementNameTerminates
+[0;32m[       OK ] [mTracingRuntimeRegisterShmObjectDeathTest.RegisterShmObjectWithNotTheExpectedDummyElementNameTerminates (109 ms)
+[0;32m[ RUN      ] [mTracingRuntimeRegisterShmObjectDeathTest.RegisterShmObjectWithNotTheExpectedDummyElementTypeTerminates
+[0;32m[       OK ] [mTracingRuntimeRegisterShmObjectDeathTest.RegisterShmObjectWithNotTheExpectedDummyElementTypeTerminates (95 ms)
+[0;32m[----------] [m2 tests from TracingRuntimeRegisterShmObjectDeathTest (205 ms total)
+
+[0;32m[----------] [m1 test from TracingRuntimeShmObjectHandleDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeShmObjectHandleDeathTest.CallingRegisterShmObjectTwiceForTheSameServiceElementTerminates
+2026/10/06 20:47:55.9675053 876547024 000 ECU1 NONE lola log fatal verbose 3 Could not insert shm object handle 5 into map. Terminating. 
+[0;32m[       OK ] [mTracingRuntimeShmObjectHandleDeathTest.CallingRegisterShmObjectTwiceForTheSameServiceElementTerminates (100 ms)
+[0;32m[----------] [m1 test from TracingRuntimeShmObjectHandleDeathTest (100 ms total)
+
+[0;32m[----------] [m1 test from TracingRuntimeCachedFileDescriptorDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeCachedFileDescriptorDeathTest.CachingTheSameFileDescriptorTwiceTerminates
+2026/10/06 20:47:55.9675155 876548045 000 ECU1 NONE lola log fatal verbose 3 Could not insert file descriptor 200 for shm object which failed registration into map. Terminating. 
+[0;32m[       OK ] [mTracingRuntimeCachedFileDescriptorDeathTest.CachingTheSameFileDescriptorTwiceTerminates (116 ms)
+[0;32m[----------] [m1 test from TracingRuntimeCachedFileDescriptorDeathTest (116 ms total)
+
+[0;32m[----------] [m2 tests from TracingRuntimeConvertToTracingServiceInstanceElementDeathTest
+[0;32m[ RUN      ] [mTracingRuntimeConvertToTracingServiceInstanceElementDeathTest.CallingConvertFunctionOnElementWithoutInstanceIdTerminates
+2026/10/06 20:47:55.9675273 876549226 000 ECU1 NONE lola log fatal verbose 1 Tracing should not be done on service element without configured instance ID. Terminating. 
+[0;32m[       OK ] [mTracingRuntimeConvertToTracingServiceInstanceElementDeathTest.CallingConvertFunctionOnElementWithoutInstanceIdTerminates (117 ms)
+[0;32m[ RUN      ] [mTracingRuntimeConvertToTracingServiceInstanceElementDeathTest.CallingConvertFunctionOnElementWithInvalidElementTypeTerminates
+2026/10/06 20:47:55.9675389 876550384 000 ECU1 NONE lola log fatal verbose 3 Service element type:  INVALID  is invalid. Terminating. 
+[0;32m[       OK ] [mTracingRuntimeConvertToTracingServiceInstanceElementDeathTest.CallingConvertFunctionOnElementWithInvalidElementTypeTerminates (123 ms)
+[0;32m[----------] [m2 tests from TracingRuntimeConvertToTracingServiceInstanceElementDeathTest (241 ms total)
+
+[0;32m[----------] [m3 tests from TracingRuntimeDataLossFlagFixture
+[0;32m[ RUN      ] [mTracingRuntimeDataLossFlagFixture.DataLossFlagIsFalseByDefault
+[0;32m[       OK ] [mTracingRuntimeDataLossFlagFixture.DataLossFlagIsFalseByDefault (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeDataLossFlagFixture.GettingDataLossFlagAfterSettingReturnsTrue
+[0;32m[       OK ] [mTracingRuntimeDataLossFlagFixture.GettingDataLossFlagAfterSettingReturnsTrue (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeDataLossFlagFixture.GettingDataLossFlagAfterClearingReturnsFalse
+[0;32m[       OK ] [mTracingRuntimeDataLossFlagFixture.GettingDataLossFlagAfterClearingReturnsFalse (0 ms)
+[0;32m[----------] [m3 tests from TracingRuntimeDataLossFlagFixture (0 ms total)
+
+[0;32m[----------] [m2 tests from TracingRuntimeRegisterServiceElementFixture
+[0;32m[ RUN      ] [mTracingRuntimeRegisterServiceElementFixture.SamplePtrArrayShouldBeNeverBeResized
+[0;32m[       OK ] [mTracingRuntimeRegisterServiceElementFixture.SamplePtrArrayShouldBeNeverBeResized (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeRegisterServiceElementFixture.RegisteringMultipleServiceElementsWillSetConsecutiveElementsInArray
+[0;32m[       OK ] [mTracingRuntimeRegisterServiceElementFixture.RegisteringMultipleServiceElementsWillSetConsecutiveElementsInArray (0 ms)
+[0;32m[----------] [m2 tests from TracingRuntimeRegisterServiceElementFixture (0 ms total)
+
+[0;32m[----------] [m9 tests from TracingRuntimeTypeErasedSamplePtrFixture
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrOnceWillReturnFirstIndexOfTypeErasedSamplePtrs
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrOnceWillReturnFirstIndexOfTypeErasedSamplePtrs (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrForTheSameServiceElementWillReturnNextIndexOfTypeErasedSamplePtrs
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrForTheSameServiceElementWillReturnNextIndexOfTypeErasedSamplePtrs (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrForDifferentSameServiceElementWillReturnValidId
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrForDifferentSameServiceElementWillReturnValidId (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingMaxNumberOfTypeErasedSamplePtrsReturnsSequentialTraceContextIds
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingMaxNumberOfTypeErasedSamplePtrsReturnsSequentialTraceContextIds (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrWhenNoTypeErasedSamplePtrSlotsAvailableForServiceElementReturnsEmptyOptional
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrWhenNoTypeErasedSamplePtrSlotsAvailableForServiceElementReturnsEmptyOptional (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrDoesNotDestroySamplePtrUntilItIsCleared
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.EmplacingTypeErasedSamplePtrDoesNotDestroySamplePtrUntilItIsCleared (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.ServiceElementTracingIsActiveAfterEmplacingTypeErasedSamplePtr
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.ServiceElementTracingIsActiveAfterEmplacingTypeErasedSamplePtr (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.ClearTypeErasedSamplePtrSetsSlotForTraceContextIdAsUnused
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.ClearTypeErasedSamplePtrSetsSlotForTraceContextIdAsUnused (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeTypeErasedSamplePtrFixture.AllServiceElementTracingSlotsAreUnusedAfterClearingTypeErasedSamplePtrs
+[0;32m[       OK ] [mTracingRuntimeTypeErasedSamplePtrFixture.AllServiceElementTracingSlotsAreUnusedAfterClearingTypeErasedSamplePtrs (0 ms)
+[0;32m[----------] [m9 tests from TracingRuntimeTypeErasedSamplePtrFixture (0 ms total)
+
+[0;32m[----------] [m1 test from TracingRuntimeUnregisterShmObjectFixture
+[0;32m[ RUN      ] [mTracingRuntimeUnregisterShmObjectFixture.UnregisteringShmObjectWhichWasNeverRegisteredDoesNotTerminate
+mw::log initialization error: Error No logging configuration files could be found. occurred with context information: Failed to load configuration files. Fallback to console logging.
+2026/10/06 20:47:55.9675509 876551587 000 ECU1 NONE lola log warn verbose 1 UnregisterShmObject called on non-existing shared memory object. Ignoring. 
+[0;32m[       OK ] [mTracingRuntimeUnregisterShmObjectFixture.UnregisteringShmObjectWhichWasNeverRegisteredDoesNotTerminate (0 ms)
+[0;32m[----------] [m1 test from TracingRuntimeUnregisterShmObjectFixture (0 ms total)
+
+[0;32m[----------] [m5 tests from TracingRuntimeShmObjectHandleFixture
+[0;32m[ RUN      ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAndStartAddressAfterRegisteringReturnsHandle
+[0;32m[       OK ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAndStartAddressAfterRegisteringReturnsHandle (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAndStartAddressWithoutRegistrationReturnsEmpty
+[0;32m[       OK ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAndStartAddressWithoutRegistrationReturnsEmpty (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAndStartAddressAfterUnregisteringReturnsEmpty
+[0;32m[       OK ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAndStartAddressAfterUnregisteringReturnsEmpty (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAfterRegisteringAndUnregisteringShmObjectReturnsEmpty
+[0;32m[       OK ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAfterRegisteringAndUnregisteringShmObjectReturnsEmpty (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAfterReRegisteringShmObjectReturnsHandle
+[0;32m[       OK ] [mTracingRuntimeShmObjectHandleFixture.GettingShmObjectHandleAfterReRegisteringShmObjectReturnsHandle (0 ms)
+[0;32m[----------] [m5 tests from TracingRuntimeShmObjectHandleFixture (0 ms total)
+
+[0;32m[----------] [m4 tests from TracingRuntimeCachedFileDescriptorFixture
+[0;32m[ RUN      ] [mTracingRuntimeCachedFileDescriptorFixture.GettingFileDescriptorAfterCachingReturnsFileDescriptor
+[0;32m[       OK ] [mTracingRuntimeCachedFileDescriptorFixture.GettingFileDescriptorAfterCachingReturnsFileDescriptor (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeCachedFileDescriptorFixture.GettingFileDescriptorWithoutCachingReturnsEmpty
+[0;32m[       OK ] [mTracingRuntimeCachedFileDescriptorFixture.GettingFileDescriptorWithoutCachingReturnsEmpty (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeCachedFileDescriptorFixture.GettingFileDescriptorAfterClearingReturnsEmpty
+[0;32m[       OK ] [mTracingRuntimeCachedFileDescriptorFixture.GettingFileDescriptorAfterClearingReturnsEmpty (0 ms)
+[0;32m[ RUN      ] [mTracingRuntimeCachedFileDescriptorFixture.ClearingFileDescriptorThatWasNeverCachedDoesNotTerminate
+2026/10/06 20:47:55.9675509 876551591 000 ECU1 NONE lola log warn verbose 1 ClearCachedFileDescriptorForReregisteringShmObject called on non-existing cached file descriptor. Ignoring. 
+[0;32m[       OK ] [mTracingRuntimeCachedFileDescriptorFixture.ClearingFileDescriptorThatWasNeverCachedDoesNotTerminate (0 ms)
+[0;32m[----------] [m4 tests from TracingRuntimeCachedFileDescriptorFixture (0 ms total)
+
+[0;32m[----------] [m3 tests from RegisterWithGenericTraceApiFixture
+[0;32m[ RUN      ] [mRegisterWithGenericTraceApiFixture.Registration_OK
+[0;32m[       OK ] [mRegisterWithGenericTraceApiFixture.Registration_OK (0 ms)
+[0;32m[ RUN      ] [mRegisterWithGenericTraceApiFixture.Registration_Error
+2026/10/06 20:47:55.9675510 876551595 000 ECU1 NONE lola log error verbose 4 Lola TracingRuntime: RegisterClient with the GenericTraceAPI failed with error: Error  Not enough memory for allocation  occurred 
+[0;32m[       OK ] [mRegisterWithGenericTraceApiFixture.Registration_Error (0 ms)
+[0;32m[ RUN      ] [mRegisterWithGenericTraceApiFixture.RegistrationTraceDoneCB_Error
+2026/10/06 20:47:55.9675510 876551597 000 ECU1 NONE lola log error verbose 4 Lola TracingRuntime: RegisterTraceDoneCB with the GenericTraceAPI failed with error:  Error  Daemon connection failed  occurred 
+[0;32m[       OK ] [mRegisterWithGenericTraceApiFixture.RegistrationTraceDoneCB_Error (0 ms)
+[0;32m[----------] [m3 tests from RegisterWithGenericTraceApiFixture (0 ms total)
+
+[0;32m[----------] [m3 tests from TraceDoneCallbackFixture
+[0;32m[ RUN      ] [mTraceDoneCallbackFixture.ServiceElementTracingIsInactiveAfterCallingTraceDoneCallbackWithCorrectContextId
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/tracing/tracing_runtime_test.cpp:822:
+    Function call: RegisterClient(1-byte object <00>, @0x7ffe24ae1fc0 "MyApp")
+          Returns: 40-byte object <2A-20 AE-24 FE-7F 00-00 30-00 00-00 00-00 00-00 CA-F4 34-96 6F-7C 00-00 C0-20 AE-24 FE-7F 00-00 00-20 AE-24 FE-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/tracing/tracing_runtime_test.cpp:828:
+    Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <90-44 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 38-4D 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 E8-1B AE-24 FE-7F 00-00 B0-4E 63-62 36-5C 00-00 A0-4E 63-62 36-5C 00-00 00-00 00-00 00-00 00-00 38-4D 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 18-1C AE-24 FE-7F 00-00 20-1C AE-24 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 C0-63 63-62 36-5C 00-00>)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mTraceDoneCallbackFixture.ServiceElementTracingIsInactiveAfterCallingTraceDoneCallbackWithCorrectContextId (0 ms)
+[0;32m[ RUN      ] [mTraceDoneCallbackFixture.ServiceElementTracingIsUnchangedAfterCallingTraceDoneCallbackWithCorrectContextIdASecondTime
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/tracing/tracing_runtime_test.cpp:822:
+    Function call: RegisterClient(1-byte object <00>, @0x7ffe24ae1fd0 "MyApp")
+          Returns: 40-byte object <2A-20 AE-24 FE-7F 00-00 30-00 00-00 00-00 00-00 CA-F4 34-96 6F-7C 00-00 C0-20 AE-24 FE-7F 00-00 00-20 AE-24 FE-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/tracing/tracing_runtime_test.cpp:828:
+    Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <90-44 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 38-4D 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 F8-1B AE-24 FE-7F 00-00 B0-4E 63-62 36-5C 00-00 A0-4E 63-62 36-5C 00-00 00-00 00-00 00-00 00-00 38-4D 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 28-1C AE-24 FE-7F 00-00 30-1C AE-24 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 70-8C 63-62 36-5C 00-00>)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning directly.
+    Function call: LogUint32(@0x7ffe24ae1de0 24-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>, 0)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning directly.
+    Function call: StopRecord(@0x7ffe24ae1de0 24-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mTraceDoneCallbackFixture.ServiceElementTracingIsUnchangedAfterCallingTraceDoneCallbackWithCorrectContextIdASecondTime (0 ms)
+[0;32m[ RUN      ] [mTraceDoneCallbackFixture.ServiceElementTracingIsUnchangedAfterCallingTraceDoneCallbackWithIncorrectContextId
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/tracing/tracing_runtime_test.cpp:822:
+    Function call: RegisterClient(1-byte object <00>, @0x7ffe24ae1fd0 "MyApp")
+          Returns: 40-byte object <2A-20 AE-24 FE-7F 00-00 30-00 00-00 00-00 00-00 CA-F4 34-96 6F-7C 00-00 C0-20 AE-24 FE-7F 00-00 00-20 AE-24 FE-7F 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - taking default action specified at:
+score/mw/com/impl/bindings/lola/tracing/tracing_runtime_test.cpp:828:
+    Function call: RegisterTraceDoneCB('*' (42, 0x2A), 120-byte object <90-44 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 38-4D 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 F8-1B AE-24 FE-7F 00-00 B0-4E 63-62 36-5C 00-00 A0-4E 63-62 36-5C 00-00 00-00 00-00 00-00 00-00 38-4D 66-4C 36-5C 00-00 00-00 00-00 00-00 00-00 28-1C AE-24 FE-7F 00-00 30-1C AE-24 FE-7F 00-00 18-00 00-00 00-00 00-00 08-00 00-00 00-00 00-00 E0-5B 63-62 36-5C 00-00>)
+          Returns: 40-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning directly.
+    Function call: LogUint32(@0x7ffe24ae1de0 24-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>, 1)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+
+GMOCK WARNING:
+Uninteresting mock function call - returning directly.
+    Function call: StopRecord(@0x7ffe24ae1de0 24-byte object <00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00 00-00>)
+NOTE: You can safely ignore the above warning unless this call should not happen.  Do not suppress it by blindly adding an EXPECT_CALL() if you don't mean to enforce the call.  See https://github.com/google/googletest/blob/main/docs/gmock_cook_book.md#knowing-when-to-expect-useoncall for details.
+[0;32m[       OK ] [mTraceDoneCallbackFixture.ServiceElementTracingIsUnchangedAfterCallingTraceDoneCallbackWithIncorrectContextId (0 ms)
+[0;32m[----------] [m3 tests from TraceDoneCallbackFixture (0 ms total)
+
+[0;32m[----------] [m1 test from TracingRuntimeConvertToTracingServiceInstanceElementFixture
+[0;32m[ RUN      ] [mTracingRuntimeConvertToTracingServiceInstanceElementFixture.ConvertFunctionGeneratesServiceInstanceElementFromConfig
+[0;32m[       OK ] [mTracingRuntimeConvertToTracingServiceInstanceElementFixture.ConvertFunctionGeneratesServiceInstanceElementFromConfig (0 ms)
+[0;32m[----------] [m1 test from TracingRuntimeConvertToTracingServiceInstanceElementFixture (0 ms total)
+
+[0;32m[----------] [mGlobal test environment tear-down
+[0;32m[==========] [m41 tests from 16 test suites ran. (1118 ms total)
+[0;32m[  PASSED  ] [m41 tests.

@@ -1,0 +1,7 @@
+# Terminal and export reconciliation for #250
+
+This operator binding completes the pending lifecycle/export observations in the immutable independent Codex final review. Native run 01M49K2BBQRANK8JAT3KGDMMR4 reached succeeded; all63703events retained, onlyDeepSeekFlash used in exactlytwoagentstages(implementation,supervisor), no stage retries or fallback. Catalogue cost estimate is not actual billing. All six selected native check groups passed:68real childcases,2ignored doctests;5librarySARIFreports retain4warnings.
+
+Native export failed on Git intent-to-add ignored .vscode; native success therefore does not prove export success. Failure and pre-recovery control/partialreports preserved. The separate operator export added force intent-to-add only exact bound native paths in the disposable Git index and generated full19filebaselinepatch. No source edit, model retry, native test rerun or source-budget increment occurred. All2883finalsubjects byte-match measured checks. Export-recovery.json binds before/aftercontrols and source.
+
+The independent source/evidence dispositions remain: narrowed typedAnybehavior measured; unqualifiedall-systeminterpretation and1261heterogeneousstream unfulfilled; async snapshotoverwritesuntilready-poll, nooffer coverage is sync, asyncwaitboundedbyhost180s; queryaliases are notproduceridentity; callbackallocationreclamation, externalABI/APIcompatibility, qualification/nativeTrace and offlineengineeringacceptance unresolved. Correction3/3 exhausted; stop all250source work. No issueclosure or publishing.

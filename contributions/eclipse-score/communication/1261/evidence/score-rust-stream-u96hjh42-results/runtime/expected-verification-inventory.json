@@ -1,0 +1,108 @@
+{
+  "issue": 1261,
+  "baseline": "381d43dec900ab6a9076f3f30e7bfbdee019e26e",
+  "source_bindings": {
+    "score/mw/com/impl/instance_identifier.h": "1da96a3201da0482aac0744ea9cb7ecfba7bfb21bc5f358a00efa4c33180e6c3",
+    "score/mw/com/impl/handle_type.h": "8b8c1840690c75f9fbf4f6fc6e66612fd41161b56045e320a8eeb8bcecb2bd9c",
+    "score/mw/com/impl/configuration/configuration.h": "970a3a391bd5afe76b7683ae5b8b0c66579e4ac23262197f132ba38fc86b57c4",
+    "score/mw/com/impl/runtime.h": "47c80715ecd1ce130d63100191772440ad1f7ef520cd3a8b3170e71de48b0b84",
+    "score/mw/com/impl/i_runtime.h": "78867dbed9f0ed480cea2726e3208e30cb07d82649c013d0d4284778afd4f823",
+    "score/mw/com/impl/rust/com-api/com-api-ffi-lola/registry_bridge_macro.h": "ca6ceb8b9845203581638747d45acf7ce3625f9eccc8b00c4c260173a9b16b41",
+    "score/mw/com/rust/score_com_concept/concept.rs": "4f3776803800e697819535760a5afc22cc119e3b2c8fd2fffeed941da219d336"
+  },
+  "obligations": [
+    {
+      "obligation": "Continuously report initial and later available services from multiple native interfaces",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Observed interface includes native service/version/binding identity and actual instance ID; no fabricated query alias",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Wildcard all instances including provider absent from consumer instance entries; configure-universe limitations explicit",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Dedup unchanged snapshots, handle observed removals and later re-offers",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Open with empty snapshot stays pending, never completes as one-shot",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Drop/cancel/partial-start-failure stop all watch handles with callback synchronization/ownership",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Existing Specific sync/async APIs and supported trait implementers remain compatible, ABI/exhaustive matches disposition",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Dedicated actual Linux LoLa integration with multiple interfaces and delayed offers; meaningful failure/cancellation unit checks",
+      "status": "requires_actual_source_and_measured_case_review"
+    },
+    {
+      "obligation": "Allocation/qualification/native trace and unknown/unconfigured service coverage gaps retained",
+      "status": "requires_actual_source_and_measured_case_review"
+    }
+  ],
+  "selected_common_checks": {
+    "checks": [
+      {
+        "config": "linux_x64",
+        "kind": "test",
+        "native_obligation": "Native BUILD/CI and issue1261; no QNX, no automatic acceptance.",
+        "reason": "Native compatibility checks for the actual changed heterogeneous discovery subjects; dedicated new-stream integration required separately.",
+        "targets": [
+          "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests",
+          "//score/mw/com/impl/configuration:configuration_test",
+          "//score/mw/com/impl:runtime_test",
+          "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+          "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests"
+        ]
+      },
+      {
+        "config": "linux_x64",
+        "kind": "test",
+        "native_obligation": "Native BUILD/CI and issue1261; no QNX, no automatic acceptance.",
+        "reason": "Native compatibility checks for the actual changed heterogeneous discovery subjects; dedicated new-stream integration required separately.",
+        "targets": [
+          "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+          "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+          "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+        ]
+      },
+      {
+        "config": "linux_x64_gcc_15",
+        "kind": "doctest",
+        "native_obligation": "Native BUILD/CI and issue1261; no QNX, no automatic acceptance.",
+        "reason": "Native compatibility checks for the actual changed heterogeneous discovery subjects; dedicated new-stream integration required separately.",
+        "targets": [
+          "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+        ]
+      },
+      {
+        "config": "linux_x64",
+        "kind": "lint",
+        "native_obligation": "Native BUILD/CI and issue1261; no QNX, no automatic acceptance.",
+        "reason": "Native compatibility checks for the actual changed heterogeneous discovery subjects; dedicated new-stream integration required separately.",
+        "targets": [
+          "//score/mw/com/rust/score_com_concept:score_com_concept",
+          "//score/mw/com/rust:score_com",
+          "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+          "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+          "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola"
+        ]
+      }
+    ]
+  },
+  "not_measured": [
+    "QNX excluded by user",
+    "All-system unknown/unconfigured-interface discovery acceptance",
+    "Broad C++ static analysis and test-code Clippy",
+    "Sanitizers and broad downstream supported-target matrix"
+  ],
+  "acceptance": "pending_offline"
+}

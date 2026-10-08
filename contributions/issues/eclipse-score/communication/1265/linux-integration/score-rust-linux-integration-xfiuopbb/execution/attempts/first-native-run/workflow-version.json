@@ -1,8 +1,0 @@
-{
-  "entrypoint": "workflow.fabro",
-  "files": {
-    "workflow.fabro": "digraph communication1265 {\n graph [goal=\"Measure native Rust COM integration on Linux\", on_failure=\"exit\"];\n start [type=\"start\"];\n preflight [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py preflight\", max_retries=0, timeout=\"6m\"];\n verify [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py verify\", max_retries=0, timeout=\"60m\"];\n export [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/collector.py export\", max_retries=0, timeout=\"1m\"];\n exit [type=\"exit\"];\n start -> preflight;\n preflight -> verify;\n preflight -> export [condition=\"outcome=failed\"];\n verify -> export [condition=\"outcome=failed\"];\n verify -> export;\n export -> exit;\n}\n",
-    "workflow.toml": "_version = 1\n[workflow]\ngraph = \"workflow.fabro\"\n[run]\ngoal = \"Export native Linux Rust COM integration measurements and pending offline acceptance\"\nworking_dir = \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-rust-linux-integration-xfiuopbb/candidate\"\n[run.clone]\nenabled = false\n[run.run_branch]\nenabled = false\npush = false\n[run.agent]\nfabro_tools = false\n"
-  },
-  "workflow_dependencies": {}
-}

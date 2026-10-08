@@ -1,0 +1,69 @@
+C901 `check_impacts` is too complex (28 > 10)
+  --> score_harness/consistency.py:63:5
+   |
+63 | def check_impacts(
+   |     ^^^^^^^^^^^^^
+64 |     before: dict[str, Any],
+65 |     after: dict[str, Any],
+   |
+
+SIM102 Use a single `if` statement instead of nested `if` statements
+   --> score_harness/consistency.py:100:13
+    |
+ 98 |               if target in old and target not in new:
+ 99 |                   add(source_id, "CR-001", "direct_recheck", "complies_target_removed")
+100 | /             elif (
+101 | |                 target in old
+102 | |                 and target in new
+103 | |                 and old[target]["type"] != new[target]["type"]
+104 | |             ):
+105 | |                 if source.get("type") in {"gd_guidl", "gd_req"}:
+    | |________________________________________________________________^
+106 |                       add(
+107 |                           source_id,
+    |
+help: Combine `if` statements using `and`
+
+SIM114 [*] Combine `if` branches using logical `or` operator
+   --> score_harness/consistency.py:127:17
+    |
+125 |           if source.get("type") in REQUIREMENT_TYPES:
+126 |               for target in links(source.get("testlink", source.get("tests"))):
+127 | /                 if target not in new or new[target].get("type") != "testcase":
+128 | |                     add(
+129 | |                         source_id,
+130 | |                         "CR-003",
+131 | |                         "revision_required",
+132 | |                         "broken_test_reference",
+133 | |                     )
+134 | |                 elif any(
+135 | |                     ref not in new
+136 | |                     for field in ("fully_verifies", "partially_verifies")
+137 | |                     for ref in links(new[target].get(field))
+138 | |                 ):
+139 | |                     add(
+140 | |                         source_id,
+141 | |                         "CR-003",
+142 | |                         "revision_required",
+143 | |                         "broken_test_reference",
+144 | |                     )
+    | |_____________________^
+145 |                   elif new[target].get("result") in {"failed", "error"} and old.get(
+146 |                       target, {}
+    |
+help: Combine `if` branches
+
+E731 Do not assign a `lambda` expression, use a `def`
+   --> score_harness/evaluate.py:230:9
+    |
+228 |             for impact in impacts
+229 |         ]
+230 |         order = lambda item: (item["need_id"], item["rule_id"], item["impact_class"])
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+231 |         impacts_correct = sorted(actual, key=order) == sorted(
+232 |             task["expected_impacts"], key=order
+    |
+help: Rewrite `order` as a `def`
+
+Found 4 errors.
+[*] 1 fixable with the `--fix` option (2 hidden fixes can be enabled with the `--unsafe-fixes` option).

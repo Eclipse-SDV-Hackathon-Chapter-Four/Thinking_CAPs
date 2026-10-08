@@ -1,0 +1,1147 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //tests/integration_test:test_tcpdump
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.1.1, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/bazel-output/16df730b0babb9c4a4b46d33742bb204/sandbox/linux-sandbox/631/execroot/_main/bazel-out/k8-fastbuild/bin/tests/integration_test/test_tcpdump.runfiles/score_itf+
+configfile: pytest.ini
+collected 5 items
+
+../score_itf+::test_tcpdump_with_ping_from_target_execute 
+-------------------------------- live log setup --------------------------------
+[2026-10-07 16:22:20.165] [INFO] [score.itf.plugins.qemu.config] Loading configuration from ../os_images+/ubuntu_x86_64/qemu_config.json
+[2026-10-07 16:22:20.165] [INFO] [score.itf.plugins.qemu] Starting tests on host: master
+[2026-10-07 16:22:20.330] [INFO] [score.itf.plugins.qemu] Created qcow2 overlay: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp/qemu_overlay_y24icgvl.qcow2 (backing: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/bazel-output/16df730b0babb9c4a4b46d33742bb204/sandbox/linux-sandbox/631/execroot/_main/bazel-out/k8-fastbuild/bin/tests/integration_test/test_tcpdump.runfiles/os_images+/ubuntu_x86_64/ubuntu-x86_64-itf/ubuntu-24.04-minimal-cloudimg-amd64.img)
+[2026-10-07 16:22:20.370] [INFO] [score.itf.plugins.qemu] Created qcow2 overlay: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp/qemu_overlay_i8ebhcph.qcow2 (backing: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/bazel-output/16df730b0babb9c4a4b46d33742bb204/sandbox/linux-sandbox/631/execroot/_main/bazel-out/k8-fastbuild/bin/tests/integration_test/test_tcpdump.runfiles/_main/tests/integration_test/qemu_disk_test_tcpdump.ext4)
+[2026-10-07 16:22:20.371] [INFO] [score.itf.plugins.qemu.qemu_process] Starting Qemu...
+[2026-10-07 16:22:20.371] [INFO] [score.itf.plugins.qemu.qemu_process] Using QEMU root filesystem image: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp/qemu_overlay_y24icgvl.qcow2
+[2026-10-07 16:22:20.371] [INFO] [score.itf.plugins.qemu.qemu_process] Using QEMU additional disk image: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp/qemu_overlay_i8ebhcph.qcow2
+[2026-10-07 16:22:20.371] [DEBUG] [score.itf.plugins.qemu.qemu] ['/usr/bin/qemu-system-x86_64', '-accel', 'kvm', '-accel', 'tcg', '-smp', '2,maxcpus=2,cores=2', '-machine', 'pc', '-cpu', 'Cascadelake-Server-v5', '-m', '2G', '-nographic', '-serial', 'mon:stdio', '-object', 'rng-random,filename=/dev/urandom,id=rng0', '-device', 'virtio-rng-pci,rng=rng0', '-netdev', 'tap,id=t1,ifname=tap0,script=no,downscript=no', '-device', 'virtio-net-pci,netdev=t1,id=nic1,guest_csum=off', '-device', 'virtio-blk-pci,drive=vd0', '-drive', 'if=none,format=qcow2,file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp/qemu_overlay_y24icgvl.qcow2,id=vd0', '-device', 'virtio-blk-pci,drive=vd1', '-drive', 'if=none,format=qcow2,file=/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/native/.llm_tmp/tmp/qemu_overlay_i8ebhcph.qcow2,id=vd1']
+[2026-10-07 16:22:20.398] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512f [bit 16]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512dq [bit 17]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512cd [bit 28]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512bw [bit 30]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512vl [bit 31]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:ECX.avx512vnni [bit 11]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.0DH:EAX [bit 5]
+[2026-10-07 16:22:20.399] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.0DH:EAX [bit 6]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.0DH:EAX [bit 7]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512f [bit 16]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512dq [bit 17]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512cd [bit 28]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512bw [bit 30]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:EBX.avx512vl [bit 31]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.07H:ECX.avx512vnni [bit 11]
+[2026-10-07 16:22:20.400] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.0DH:EAX [bit 5]
+[2026-10-07 16:22:20.401] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.0DH:EAX [bit 6]
+[2026-10-07 16:22:20.401] [INFO] [QEMU] qemu-system-x86_64: warning: host doesn't support requested feature: CPUID.0DH:EAX [bit 7]
+[2026-10-07 16:22:20.747] [INFO] [QEMU] c[2J[0mSeaBIOS (version 1.15.0-1)
+[2026-10-07 16:22:20.748] [INFO] [QEMU] 
+[2026-10-07 16:22:20.748] [INFO] [QEMU] 
+[2026-10-07 16:22:20.750] [INFO] [QEMU] iPXE (https://ipxe.org) 00:04.0 CA00 PCI2.10 PnP PMM+7FF8B380+7FECB380 CA00
+[2026-10-07 16:22:20.757] [INFO] [QEMU] Press Ctrl-B to configure iPXE (PCI 00:04.0)...
+[2026-10-07 16:22:20.757] [INFO] [QEMU] 
+[2026-10-07 16:22:20.757] [INFO] [QEMU] 
+[2026-10-07 16:22:20.831] [INFO] [QEMU] Booting from Hard Disk...
+[2026-10-07 16:22:21.270] [INFO] [QEMU] GRUB_FORCE_PARTUUID set, attempting initrdless boot.
+[2026-10-07 16:22:24.402] [INFO] [QEMU] [    0.000000] Linux version 6.8.0-136-generic (buildd@lcy02-amd64-041) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #136-Ubuntu SMP PREEMPT_DYNAMIC Wed Jul  1 21:53:05 UTC 2026 (Ubuntu 6.8.0-136.136-generic 6.8.12)
+[2026-10-07 16:22:24.408] [INFO] [QEMU] [    0.000000] Command line: BOOT_IMAGE=/vmlinuz-6.8.0-136-generic root=PARTUUID=91defc72-0e0a-4749-973f-2bd295668950 ro console=tty1 console=ttyS0 panic=-1
+[2026-10-07 16:22:24.409] [INFO] [QEMU] [    0.000000] KERNEL supported cpus:
+[2026-10-07 16:22:24.410] [INFO] [QEMU] [    0.000000]   Intel GenuineIntel
+[2026-10-07 16:22:24.411] [INFO] [QEMU] [    0.000000]   AMD AuthenticAMD
+[2026-10-07 16:22:24.412] [INFO] [QEMU] [    0.000000]   Hygon HygonGenuine
+[2026-10-07 16:22:24.414] [INFO] [QEMU] [    0.000000]   Centaur CentaurHauls
+[2026-10-07 16:22:24.415] [INFO] [QEMU] [    0.000000]   zhaoxin   Shanghai
+[2026-10-07 16:22:24.417] [INFO] [QEMU] [    0.000000] BIOS-provided physical RAM map:
+[2026-10-07 16:22:24.419] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x0000000000000000-0x000000000009fbff] usable
+[2026-10-07 16:22:24.422] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x000000000009fc00-0x000000000009ffff] reserved
+[2026-10-07 16:22:24.424] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x00000000000f0000-0x00000000000fffff] reserved
+[2026-10-07 16:22:24.427] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x0000000000100000-0x000000007ffd9fff] usable
+[2026-10-07 16:22:24.430] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x000000007ffda000-0x000000007fffffff] reserved
+[2026-10-07 16:22:24.432] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x00000000feffc000-0x00000000feffffff] reserved
+[2026-10-07 16:22:24.435] [INFO] [QEMU] [    0.000000] BIOS-e820: [mem 0x00000000fffc0000-0x00000000ffffffff] reserved
+[2026-10-07 16:22:24.437] [INFO] [QEMU] [    0.000000] NX (Execute Disable) protection: active
+[2026-10-07 16:22:24.438] [INFO] [QEMU] [    0.000000] APIC: Static calls initialized
+[2026-10-07 16:22:24.439] [INFO] [QEMU] [    0.000000] SMBIOS 2.8 present.
+[2026-10-07 16:22:24.442] [INFO] [QEMU] [    0.000000] DMI: QEMU Standard PC (i440FX + PIIX, 1996), BIOS 1.15.0-1 04/01/2014
+[2026-10-07 16:22:24.443] [INFO] [QEMU] [    0.000000] Hypervisor detected: KVM
+[2026-10-07 16:22:24.445] [INFO] [QEMU] [    0.000000] kvm-clock: Using msrs 4b564d01 and 4b564d00
+[2026-10-07 16:22:24.448] [INFO] [QEMU] [    0.000001] kvm-clock: using sched offset of 3512944789 cycles
+[2026-10-07 16:22:24.452] [INFO] [QEMU] [    0.000005] clocksource: kvm-clock: mask: 0xffffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[2026-10-07 16:22:24.453] [INFO] [QEMU] [    0.000009] tsc: Detected 2419.200 MHz processor
+[2026-10-07 16:22:24.455] [INFO] [QEMU] [    0.001660] last_pfn = 0x7ffda max_arch_pfn = 0x400000000
+[2026-10-07 16:22:24.458] [INFO] [QEMU] [    0.001718] MTRR map: 4 entries (3 fixed + 1 variable; max 19), built from 8 variable MTRRs
+[2026-10-07 16:22:24.461] [INFO] [QEMU] [    0.001723] x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT
+[2026-10-07 16:22:24.463] [INFO] [QEMU] [    0.010875] found SMP MP-table at [mem 0x000f5b80-0x000f5b8f]
+[2026-10-07 16:22:24.465] [INFO] [QEMU] [    0.010911] Using GB pages for direct mapping
+[2026-10-07 16:22:24.467] [INFO] [QEMU] [    0.011153] RAMDISK: [mem 0x3631f000-0x37186fff]
+[2026-10-07 16:22:24.469] [INFO] [QEMU] [    0.011163] ACPI: Early table checksum verification disabled
+[2026-10-07 16:22:24.471] [INFO] [QEMU] [    0.011169] ACPI: RSDP 0x00000000000F59C0 000014 (v00 BOCHS )
+[2026-10-07 16:22:24.474] [INFO] [QEMU] [    0.011177] ACPI: RSDT 0x000000007FFE1975 000034 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[2026-10-07 16:22:24.477] [INFO] [QEMU] [    0.011187] ACPI: FACP 0x000000007FFE1821 000074 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[2026-10-07 16:22:24.481] [INFO] [QEMU] [    0.011208] ACPI: DSDT 0x000000007FFE0040 0017E1 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[2026-10-07 16:22:24.482] [INFO] [QEMU] [    0.011214] ACPI: FACS 0x000000007FFE0000 000040
+[2026-10-07 16:22:24.486] [INFO] [QEMU] [    0.011218] ACPI: APIC 0x000000007FFE1895 000080 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[2026-10-07 16:22:24.489] [INFO] [QEMU] [    0.011223] ACPI: HPET 0x000000007FFE1915 000038 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[2026-10-07 16:22:24.492] [INFO] [QEMU] [    0.011228] ACPI: WAET 0x000000007FFE194D 000028 (v01 BOCHS  BXPC     00000001 BXPC 00000001)
+[2026-10-07 16:22:24.495] [INFO] [QEMU] [    0.011232] ACPI: Reserving FACP table memory at [mem 0x7ffe1821-0x7ffe1894]
+[2026-10-07 16:22:24.497] [INFO] [QEMU] [    0.011235] ACPI: Reserving DSDT table memory at [mem 0x7ffe0040-0x7ffe1820]
+[2026-10-07 16:22:24.500] [INFO] [QEMU] [    0.011237] ACPI: Reserving FACS table memory at [mem 0x7ffe0000-0x7ffe003f]
+[2026-10-07 16:22:24.502] [INFO] [QEMU] [    0.011238] ACPI: Reserving APIC table memory at [mem 0x7ffe1895-0x7ffe1914]
+[2026-10-07 16:22:24.505] [INFO] [QEMU] [    0.011239] ACPI: Reserving HPET table memory at [mem 0x7ffe1915-0x7ffe194c]
+[2026-10-07 16:22:24.508] [INFO] [QEMU] [    0.011241] ACPI: Reserving WAET table memory at [mem 0x7ffe194d-0x7ffe1974]
+[2026-10-07 16:22:24.509] [INFO] [QEMU] [    0.012030] No NUMA configuration found
+[2026-10-07 16:22:24.512] [INFO] [QEMU] [    0.012036] Faking a node at [mem 0x0000000000000000-0x000000007ffd9fff]
+[2026-10-07 16:22:24.514] [INFO] [QEMU] [    0.012050] NODE_DATA(0) allocated [mem 0x7ffaf000-0x7ffd9fff]
+[2026-10-07 16:22:24.515] [INFO] [QEMU] [    0.012365] Zone ranges:
+[2026-10-07 16:22:24.517] [INFO] [QEMU] [    0.012367]   DMA      [mem 0x0000000000001000-0x0000000000ffffff]
+[2026-10-07 16:22:24.520] [INFO] [QEMU] [    0.012371]   DMA32    [mem 0x0000000001000000-0x000000007ffd9fff]
+[2026-10-07 16:22:24.521] [INFO] [QEMU] [    0.012374]   Normal   empty
+[2026-10-07 16:22:24.522] [INFO] [QEMU] [    0.012376]   Device   empty
+[2026-10-07 16:22:24.523] [INFO] [QEMU] [    0.012378] Movable zone start for each node
+[2026-10-07 16:22:24.525] [INFO] [QEMU] [    0.012381] Early memory node ranges
+[2026-10-07 16:22:24.527] [INFO] [QEMU] [    0.012382]   node   0: [mem 0x0000000000001000-0x000000000009efff]
+[2026-10-07 16:22:24.529] [INFO] [QEMU] [    0.012385]   node   0: [mem 0x0000000000100000-0x000000007ffd9fff]
+[2026-10-07 16:22:24.532] [INFO] [QEMU] [    0.012388] Initmem setup node 0 [mem 0x0000000000001000-0x000000007ffd9fff]
+[2026-10-07 16:22:24.534] [INFO] [QEMU] [    0.034971] On node 0, zone DMA: 1 pages in unavailable ranges
+[2026-10-07 16:22:24.536] [INFO] [QEMU] [    0.035285] On node 0, zone DMA: 97 pages in unavailable ranges
+[2026-10-07 16:22:24.539] [INFO] [QEMU] [    0.070148] On node 0, zone DMA32: 38 pages in unavailable ranges
+[2026-10-07 16:22:24.540] [INFO] [QEMU] [    0.071243] ACPI: PM-Timer IO Port: 0x608
+[2026-10-07 16:22:24.542] [INFO] [QEMU] [    0.071276] ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+[2026-10-07 16:22:24.545] [INFO] [QEMU] [    0.071339] IOAPIC[0]: apic_id 0, version 17, address 0xfec00000, GSI 0-23
+[2026-10-07 16:22:24.547] [INFO] [QEMU] [    0.071346] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+[2026-10-07 16:22:24.550] [INFO] [QEMU] [    0.071349] ACPI: INT_SRC_OVR (bus 0 bus_irq 5 global_irq 5 high level)
+[2026-10-07 16:22:24.552] [INFO] [QEMU] [    0.071351] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+[2026-10-07 16:22:24.555] [INFO] [QEMU] [    0.071353] ACPI: INT_SRC_OVR (bus 0 bus_irq 10 global_irq 10 high level)
+[2026-10-07 16:22:24.557] [INFO] [QEMU] [    0.071356] ACPI: INT_SRC_OVR (bus 0 bus_irq 11 global_irq 11 high level)
+[2026-10-07 16:22:24.560] [INFO] [QEMU] [    0.071362] ACPI: Using ACPI (MADT) for SMP configuration information
+[2026-10-07 16:22:24.562] [INFO] [QEMU] [    0.071364] ACPI: HPET id: 0x8086a201 base: 0xfed00000
+[2026-10-07 16:22:24.563] [INFO] [QEMU] [    0.071372] TSC deadline timer available
+[2026-10-07 16:22:24.565] [INFO] [QEMU] [    0.071373] smpboot: Allowing 2 CPUs, 0 hotplug CPUs
+[2026-10-07 16:22:24.568] [INFO] [QEMU] [    0.071405] kvm-guest: APIC: eoi() replaced with kvm_guest_apic_eoi_write()
+[2026-10-07 16:22:24.570] [INFO] [QEMU] [    0.071431] PM: hibernation: Registered nosave memory: [mem 0x00000000-0x00000fff]
+[2026-10-07 16:22:24.573] [INFO] [QEMU] [    0.071434] PM: hibernation: Registered nosave memory: [mem 0x0009f000-0x000fffff]
+[2026-10-07 16:22:24.575] [INFO] [QEMU] [    0.071437] [mem 0x80000000-0xfeffbfff] available for PCI devices
+[2026-10-07 16:22:24.577] [INFO] [QEMU] [    0.071440] Booting paravirtualized kernel on KVM
+[2026-10-07 16:22:24.581] [INFO] [QEMU] [    0.071443] clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1910969940391419 ns
+[2026-10-07 16:22:24.584] [INFO] [QEMU] [    0.071455] setup_percpu: NR_CPUS:8192 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
+[2026-10-07 16:22:24.587] [INFO] [QEMU] [    0.078684] percpu: Embedded 86 pages/cpu s229376 r8192 d114688 u1048576
+[2026-10-07 16:22:24.589] [INFO] [QEMU] [    0.078752] kvm-guest: PV spinlocks disabled, no host support
+[2026-10-07 16:22:24.594] [INFO] [QEMU] [    0.078754] Kernel command line: BOOT_IMAGE=/vmlinuz-6.8.0-136-generic root=PARTUUID=91defc72-0e0a-4749-973f-2bd295668950 ro console=tty1 console=ttyS0 panic=-1
+[2026-10-07 16:22:24.595] [INFO] [QEMU] [    0.078847] random: crng init done
+[2026-10-07 16:22:24.598] [INFO] [QEMU] [    0.085628] Dentry cache hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+[2026-10-07 16:22:24.601] [INFO] [QEMU] [    0.086133] Inode-cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+[2026-10-07 16:22:24.603] [INFO] [QEMU] [    0.086223] Fallback order for Node 0: 0
+[2026-10-07 16:22:24.605] [INFO] [QEMU] [    0.086230] Built 1 zonelists, mobility grouping on.  Total pages: 515802
+[2026-10-07 16:22:24.607] [INFO] [QEMU] [    0.086233] Policy zone: DMA32
+[2026-10-07 16:22:24.609] [INFO] [QEMU] [    0.086246] mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+[2026-10-07 16:22:24.614] [INFO] [QEMU] [    0.093131] Memory: 1990880K/2096608K available (22528K kernel code, 4441K rwdata, 14428K rodata, 4932K init, 4776K bss, 105468K reserved, 0K cma-reserved)
+[2026-10-07 16:22:24.617] [INFO] [QEMU] [    0.094609] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+[2026-10-07 16:22:24.619] [INFO] [QEMU] [    0.094672] ftrace: allocating 58332 entries in 228 pages
+[2026-10-07 16:22:24.621] [INFO] [QEMU] [    0.111447] ftrace: allocated 228 pages with 4 groups
+[2026-10-07 16:22:24.622] [INFO] [QEMU] [    0.112939] Dynamic Preempt: voluntary
+[2026-10-07 16:22:24.625] [INFO] [QEMU] [    0.113049] rcu: Preemptible hierarchical RCU implementation.
+[2026-10-07 16:22:24.627] [INFO] [QEMU] [    0.113051] rcu: 	RCU restricting CPUs from NR_CPUS=8192 to nr_cpu_ids=2.
+[2026-10-07 16:22:24.628] [INFO] [QEMU] [    0.113054] 	Trampoline variant of Tasks RCU enabled.
+[2026-10-07 16:22:24.630] [INFO] [QEMU] [    0.113055] 	Rude variant of Tasks RCU enabled.
+[2026-10-07 16:22:24.632] [INFO] [QEMU] [    0.113056] 	Tracing variant of Tasks RCU enabled.
+[2026-10-07 16:22:24.635] [INFO] [QEMU] [    0.113057] rcu: RCU calculated value of scheduler-enlistment delay is 100 jiffies.
+[2026-10-07 16:22:24.637] [INFO] [QEMU] [    0.113059] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=2
+[2026-10-07 16:22:24.641] [INFO] [QEMU] [    0.113074] RCU Tasks: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[2026-10-07 16:22:24.644] [INFO] [QEMU] [    0.113077] RCU Tasks Rude: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[2026-10-07 16:22:24.647] [INFO] [QEMU] [    0.113079] RCU Tasks Trace: Setting shift to 1 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=2.
+[2026-10-07 16:22:24.650] [INFO] [QEMU] [    0.118503] NR_IRQS: 524544, nr_irqs: 440, preallocated irqs: 16
+[2026-10-07 16:22:24.652] [INFO] [QEMU] [    0.118793] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[2026-10-07 16:22:24.654] [INFO] [QEMU] [    0.150392] Console: colour VGA+ 80x25
+[2026-10-07 16:22:24.655] [INFO] [QEMU] [    0.150406] printk: legacy console [tty1] enabled
+[2026-10-07 16:22:24.657] [INFO] [QEMU] [    0.217008] printk: legacy console [ttyS0] enabled
+[2026-10-07 16:22:24.659] [INFO] [QEMU] [    0.481715] ACPI: Core revision 20230628
+[2026-10-07 16:22:24.663] [INFO] [QEMU] [    0.484147] clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604467 ns
+[2026-10-07 16:22:24.666] [INFO] [QEMU] [    0.488705] APIC: Switch to symmetric I/O mode setup
+[2026-10-07 16:22:24.668] [INFO] [QEMU] [    0.491566] x2apic enabled
+[2026-10-07 16:22:24.671] [INFO] [QEMU] [    0.493687] APIC: Switched APIC routing to: physical x2apic
+[2026-10-07 16:22:24.676] [INFO] [QEMU] [    0.498123] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+[2026-10-07 16:22:24.681] [INFO] [QEMU] [    0.501093] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x22df1149949, max_idle_ns: 440795312789 ns
+[2026-10-07 16:22:24.685] [INFO] [QEMU] [    0.506106] Calibrating delay loop (skipped) preset value.. 4838.40 BogoMIPS (lpj=2419200)
+[2026-10-07 16:22:24.688] [INFO] [QEMU] [    0.508414] Last level iTLB entries: 4KB 0, 2MB 0, 4MB 0
+[2026-10-07 16:22:24.691] [INFO] [QEMU] [    0.510105] Last level dTLB entries: 4KB 0, 2MB 0, 4MB 0, 1GB 0
+[2026-10-07 16:22:24.695] [INFO] [QEMU] [    0.512123] Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+[2026-10-07 16:22:24.699] [INFO] [QEMU] [    0.514113] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on vm exit
+[2026-10-07 16:22:24.702] [INFO] [QEMU] [    0.515737] Spectre V2 : Spectre BHI mitigation: SW BHB clearing on syscall
+[2026-10-07 16:22:24.705] [INFO] [QEMU] [    0.517105] Spectre V2 : Mitigation: Enhanced / Automatic IBRS
+[2026-10-07 16:22:24.708] [INFO] [QEMU] [    0.519105] Spectre V2 : Spectre v2 / PBRSB-eIBRS: Retire a single CALL on VMEXIT
+[2026-10-07 16:22:24.711] [INFO] [QEMU] [    0.520853] RETBleed: Mitigation: Enhanced IBRS
+[2026-10-07 16:22:24.715] [INFO] [QEMU] [    0.522114] Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+[2026-10-07 16:22:24.719] [INFO] [QEMU] [    0.524107] Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+[2026-10-07 16:22:24.723] [INFO] [QEMU] [    0.526120] MMIO Stale Data: Vulnerable: Clear CPU buffers attempted, no microcode
+[2026-10-07 16:22:24.726] [INFO] [QEMU] [    0.528108] GDS: Unknown: Dependent on hypervisor status
+[2026-10-07 16:22:24.728] [INFO] [QEMU] [    0.530105] active return thunk: its_return_thunk
+[2026-10-07 16:22:24.731] [INFO] [QEMU] [    0.532105] ITS: Mitigation: Aligned branch/return thunks
+[2026-10-07 16:22:24.735] [INFO] [QEMU] [    0.534146] x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+[2026-10-07 16:22:24.738] [INFO] [QEMU] [    0.536107] x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+[2026-10-07 16:22:24.742] [INFO] [QEMU] [    0.538106] x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+[2026-10-07 16:22:24.745] [INFO] [QEMU] [    0.539780] x86/fpu: Supporting XSAVE feature 0x200: 'Protection Keys User registers'
+[2026-10-07 16:22:24.749] [INFO] [QEMU] [    0.541107] x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+[2026-10-07 16:22:24.752] [INFO] [QEMU] [    0.543107] x86/fpu: xstate_offset[9]:  832, xstate_sizes[9]:    8
+[2026-10-07 16:22:24.756] [INFO] [QEMU] [    0.545105] x86/fpu: Enabled xstate features 0x207, context size is 840 bytes, using 'compacted' format.
+[2026-10-07 16:22:24.829] [INFO] [QEMU] [    0.616694] Freeing SMP alternatives memory: 48K
+[2026-10-07 16:22:24.831] [INFO] [QEMU] [    0.618107] pid_max: default: 32768 minimum: 301
+[2026-10-07 16:22:24.835] [INFO] [QEMU] [    0.619771] LSM: initializing lsm=lockdown,capability,landlock,yama,apparmor,integrity
+[2026-10-07 16:22:24.838] [INFO] [QEMU] [    0.621115] landlock: Up and running.
+[2026-10-07 16:22:24.840] [INFO] [QEMU] [    0.623105] Yama: becoming mindful.
+[2026-10-07 16:22:24.842] [INFO] [QEMU] [    0.625186] AppArmor: AppArmor initialized
+[2026-10-07 16:22:24.846] [INFO] [QEMU] [    0.627198] Mount-cache hash table entries: 4096 (order: 3, 32768 bytes, linear)
+[2026-10-07 16:22:24.850] [INFO] [QEMU] [    0.629117] Mountpoint-cache hash table entries: 4096 (order: 3, 32768 bytes, linear)
+[2026-10-07 16:22:24.855] [INFO] [QEMU] [    0.632288] smpboot: CPU0: Intel Xeon Processor (Cascadelake) (family: 0x6, model: 0x55, stepping: 0x6)
+[2026-10-07 16:22:24.860] [INFO] [QEMU] [    0.634474] Performance Events: unsupported p6 CPU model 85 no PMU driver, software events only.
+[2026-10-07 16:22:24.863] [INFO] [QEMU] [    0.636232] signal: max sigframe size: 3632
+[2026-10-07 16:22:24.865] [INFO] [QEMU] [    0.637808] rcu: Hierarchical SRCU implementation.
+[2026-10-07 16:22:24.868] [INFO] [QEMU] [    0.638696] rcu: 	Max phase no-delay instances is 400.
+[2026-10-07 16:22:24.884] [INFO] [QEMU] [    0.642886] NMI watchdog: Perf NMI watchdog permanently disabled
+[2026-10-07 16:22:24.887] [INFO] [QEMU] [    0.643912] smp: Bringing up secondary CPUs ...
+[2026-10-07 16:22:24.890] [INFO] [QEMU] [    0.644989] smpboot: x86: Booting SMP configuration:
+[2026-10-07 16:22:24.895] [INFO] [QEMU] [    0.645726] .... node  #0, CPUs:      #1
+[2026-10-07 16:22:24.897] [INFO] [QEMU] [    0.647158] smp: Brought up 1 node, 2 CPUs
+[2026-10-07 16:22:24.899] [INFO] [QEMU] [    0.649675] smpboot: Max logical packages: 1
+[2026-10-07 16:22:24.902] [INFO] [QEMU] [    0.650682] smpboot: Total of 2 processors activated (9676.80 BogoMIPS)
+[2026-10-07 16:22:24.905] [INFO] [QEMU] [    0.652474] devtmpfs: initialized
+[2026-10-07 16:22:24.907] [INFO] [QEMU] [    0.653692] x86/mm: Memory block size: 128MB
+[2026-10-07 16:22:24.912] [INFO] [QEMU] [    0.655335] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1911260446275000 ns
+[2026-10-07 16:22:24.916] [INFO] [QEMU] [    0.657093] futex hash table entries: 512 (order: 3, 32768 bytes, linear)
+[2026-10-07 16:22:24.919] [INFO] [QEMU] [    0.657971] pinctrl core: initialized pinctrl subsystem
+[2026-10-07 16:22:24.922] [INFO] [QEMU] [    0.659107] PM: RTC time: 16:22:24, date: 2026-10-07
+[2026-10-07 16:22:24.926] [INFO] [QEMU] [    0.661789] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[2026-10-07 16:22:24.930] [INFO] [QEMU] [    0.663028] DMA: preallocated 256 KiB GFP_KERNEL pool for atomic allocations
+[2026-10-07 16:22:24.934] [INFO] [QEMU] [    0.663887] DMA: preallocated 256 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
+[2026-10-07 16:22:24.938] [INFO] [QEMU] [    0.665027] DMA: preallocated 256 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+[2026-10-07 16:22:24.941] [INFO] [QEMU] [    0.666045] audit: initializing netlink subsys (disabled)
+[2026-10-07 16:22:24.945] [INFO] [QEMU] [    0.666831] audit: type=2000 audit(1791390144.462:1): state=initialized audit_enabled=0 res=1
+[2026-10-07 16:22:24.948] [INFO] [QEMU] [    0.667132] thermal_sys: Registered thermal governor 'fair_share'
+[2026-10-07 16:22:24.951] [INFO] [QEMU] [    0.668985] thermal_sys: Registered thermal governor 'bang_bang'
+[2026-10-07 16:22:24.954] [INFO] [QEMU] [    0.669789] thermal_sys: Registered thermal governor 'step_wise'
+[2026-10-07 16:22:24.957] [INFO] [QEMU] [    0.670795] thermal_sys: Registered thermal governor 'user_space'
+[2026-10-07 16:22:24.961] [INFO] [QEMU] [    0.671759] thermal_sys: Registered thermal governor 'power_allocator'
+[2026-10-07 16:22:24.963] [INFO] [QEMU] [    0.672826] cpuidle: using governor ladder
+[2026-10-07 16:22:24.965] [INFO] [QEMU] [    0.674696] cpuidle: using governor menu
+[2026-10-07 16:22:24.968] [INFO] [QEMU] [    0.675904] acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+[2026-10-07 16:22:24.972] [INFO] [QEMU] [    0.677151] PCI: Using configuration type 1 for base access
+[2026-10-07 16:22:24.976] [INFO] [QEMU] [    0.679044] kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+[2026-10-07 16:22:24.998] [INFO] [QEMU] [    0.698606] HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+[2026-10-07 16:22:25.002] [INFO] [QEMU] [    0.701823] HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+[2026-10-07 16:22:25.005] [INFO] [QEMU] [    0.704815] HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+[2026-10-07 16:22:25.008] [INFO] [QEMU] [    0.707807] HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+[2026-10-07 16:22:25.017] [INFO] [QEMU] [    0.717547] ACPI: Added _OSI(Module Device)
+[2026-10-07 16:22:25.019] [INFO] [QEMU] [    0.719711] ACPI: Added _OSI(Processor Device)
+[2026-10-07 16:22:25.022] [INFO] [QEMU] [    0.721687] ACPI: Added _OSI(Processor Aggregator Device)
+[2026-10-07 16:22:25.026] [INFO] [QEMU] [    0.725937] ACPI: 1 ACPI AML tables successfully acquired and loaded
+[2026-10-07 16:22:25.037] [INFO] [QEMU] [    0.736819] ACPI: _OSC evaluation for CPUs failed, trying _PDC
+[2026-10-07 16:22:25.039] [INFO] [QEMU] [    0.740034] ACPI: Interpreter enabled
+[2026-10-07 16:22:25.041] [INFO] [QEMU] [    0.741684] ACPI: PM: (supports S0 S3 S4 S5)
+[2026-10-07 16:22:25.044] [INFO] [QEMU] [    0.743816] ACPI: Using IOAPIC for interrupt routing
+[2026-10-07 16:22:25.048] [INFO] [QEMU] [    0.746951] PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+[2026-10-07 16:22:25.052] [INFO] [QEMU] [    0.751110] PCI: Using E820 reservations for host bridge windows
+[2026-10-07 16:22:25.055] [INFO] [QEMU] [    0.754011] ACPI: Enabled 2 GPEs in block 00 to 0F
+[2026-10-07 16:22:25.063] [INFO] [QEMU] [    0.761389] ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+[2026-10-07 16:22:25.066] [INFO] [QEMU] [    0.764851] acpi PNP0A03:00: _OSC: OS supports [ASPM ClockPM Segments MSI EDR HPX-Type3]
+[2026-10-07 16:22:25.071] [INFO] [QEMU] [    0.769084] acpi PNP0A03:00: _OSC: not requesting OS control; OS requires [ExtendedConfig ASPM ClockPM MSI]
+[2026-10-07 16:22:25.077] [INFO] [QEMU] [    0.773150] acpi PNP0A03:00: fail to add MMCONFIG information, can't access extended configuration space under this bridge
+[2026-10-07 16:22:25.080] [INFO] [QEMU] [    0.779750] acpiphp: Slot [3] registered
+[2026-10-07 16:22:25.083] [INFO] [QEMU] [    0.781736] acpiphp: Slot [4] registered
+[2026-10-07 16:22:25.085] [INFO] [QEMU] [    0.784485] acpiphp: Slot [5] registered
+[2026-10-07 16:22:25.086] [INFO] [QEMU] [    0.786443] acpiphp: Slot [6] registered
+[2026-10-07 16:22:25.087] [INFO] [QEMU] [    0.787120] acpiphp: Slot [7] registered
+[2026-10-07 16:22:25.088] [INFO] [QEMU] [    0.788042] acpiphp: Slot [8] registered
+[2026-10-07 16:22:25.089] [INFO] [QEMU] [    0.789399] acpiphp: Slot [9] registered
+[2026-10-07 16:22:25.090] [INFO] [QEMU] [    0.790132] acpiphp: Slot [10] registered
+[2026-10-07 16:22:25.091] [INFO] [QEMU] [    0.791089] acpiphp: Slot [11] registered
+[2026-10-07 16:22:25.091] [INFO] [QEMU] [    0.791407] acpiphp: Slot [12] registered
+[2026-10-07 16:22:25.092] [INFO] [QEMU] [    0.793123] acpiphp: Slot [13] registered
+[2026-10-07 16:22:25.093] [INFO] [QEMU] [    0.794068] acpiphp: Slot [14] registered
+[2026-10-07 16:22:25.094] [INFO] [QEMU] [    0.794404] acpiphp: Slot [15] registered
+[2026-10-07 16:22:25.095] [INFO] [QEMU] [    0.795120] acpiphp: Slot [16] registered
+[2026-10-07 16:22:25.096] [INFO] [QEMU] [    0.796074] acpiphp: Slot [17] registered
+[2026-10-07 16:22:25.097] [INFO] [QEMU] [    0.797408] acpiphp: Slot [18] registered
+[2026-10-07 16:22:25.098] [INFO] [QEMU] [    0.798120] acpiphp: Slot [19] registered
+[2026-10-07 16:22:25.099] [INFO] [QEMU] [    0.799125] acpiphp: Slot [20] registered
+[2026-10-07 16:22:25.100] [INFO] [QEMU] [    0.800079] acpiphp: Slot [21] registered
+[2026-10-07 16:22:25.101] [INFO] [QEMU] [    0.801396] acpiphp: Slot [22] registered
+[2026-10-07 16:22:25.102] [INFO] [QEMU] [    0.802119] acpiphp: Slot [23] registered
+[2026-10-07 16:22:25.103] [INFO] [QEMU] [    0.803084] acpiphp: Slot [24] registered
+[2026-10-07 16:22:25.104] [INFO] [QEMU] [    0.804416] acpiphp: Slot [25] registered
+[2026-10-07 16:22:25.105] [INFO] [QEMU] [    0.805119] acpiphp: Slot [26] registered
+[2026-10-07 16:22:25.106] [INFO] [QEMU] [    0.806085] acpiphp: Slot [27] registered
+[2026-10-07 16:22:25.107] [INFO] [QEMU] [    0.807406] acpiphp: Slot [28] registered
+[2026-10-07 16:22:25.108] [INFO] [QEMU] [    0.808118] acpiphp: Slot [29] registered
+[2026-10-07 16:22:25.109] [INFO] [QEMU] [    0.809068] acpiphp: Slot [30] registered
+[2026-10-07 16:22:25.110] [INFO] [QEMU] [    0.809400] acpiphp: Slot [31] registered
+[2026-10-07 16:22:25.111] [INFO] [QEMU] [    0.811120] PCI host bridge to bus 0000:00
+[2026-10-07 16:22:25.112] [INFO] [QEMU] [    0.812073] pci_bus 0000:00: root bus resource [io  0x0000-0x0cf7 window]
+[2026-10-07 16:22:25.114] [INFO] [QEMU] [    0.813490] pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+[2026-10-07 16:22:25.115] [INFO] [QEMU] [    0.814476] pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000bffff window]
+[2026-10-07 16:22:25.117] [INFO] [QEMU] [    0.816783] pci_bus 0000:00: root bus resource [mem 0x80000000-0xfebfffff window]
+[2026-10-07 16:22:25.119] [INFO] [QEMU] [    0.818550] pci_bus 0000:00: root bus resource [mem 0x100000000-0x17fffffff window]
+[2026-10-07 16:22:25.121] [INFO] [QEMU] [    0.820564] pci_bus 0000:00: root bus resource [bus 00-ff]
+[2026-10-07 16:22:25.122] [INFO] [QEMU] [    0.821515] pci 0000:00:00.0: [8086:1237] type 00 class 0x060000 conventional PCI endpoint
+[2026-10-07 16:22:25.129] [INFO] [QEMU] [    0.826173] pci 0000:00:01.0: [8086:7000] type 00 class 0x060100 conventional PCI endpoint
+[2026-10-07 16:22:25.135] [INFO] [QEMU] [    0.831573] pci 0000:00:01.1: [8086:7010] type 00 class 0x010180 conventional PCI endpoint
+[2026-10-07 16:22:25.140] [INFO] [QEMU] [    0.837733] pci 0000:00:01.1: BAR 4 [io  0xc140-0xc14f]
+[2026-10-07 16:22:25.143] [INFO] [QEMU] [    0.840888] pci 0000:00:01.1: BAR 0 [io  0x01f0-0x01f7]: legacy IDE quirk
+[2026-10-07 16:22:25.147] [INFO] [QEMU] [    0.843834] pci 0000:00:01.1: BAR 1 [io  0x03f6]: legacy IDE quirk
+[2026-10-07 16:22:25.150] [INFO] [QEMU] [    0.846813] pci 0000:00:01.1: BAR 2 [io  0x0170-0x0177]: legacy IDE quirk
+[2026-10-07 16:22:25.154] [INFO] [QEMU] [    0.850841] pci 0000:00:01.1: BAR 3 [io  0x0376]: legacy IDE quirk
+[2026-10-07 16:22:25.158] [INFO] [QEMU] [    0.854243] pci 0000:00:01.3: [8086:7113] type 00 class 0x068000 conventional PCI endpoint
+[2026-10-07 16:22:25.163] [INFO] [QEMU] [    0.860139] pci 0000:00:01.3: quirk: [io  0x0600-0x063f] claimed by PIIX4 ACPI
+[2026-10-07 16:22:25.167] [INFO] [QEMU] [    0.863009] pci 0000:00:01.3: quirk: [io  0x0700-0x070f] claimed by PIIX4 SMB
+[2026-10-07 16:22:25.172] [INFO] [QEMU] [    0.867503] pci 0000:00:02.0: [1234:1111] type 00 class 0x030000 conventional PCI endpoint
+[2026-10-07 16:22:25.186] [INFO] [QEMU] [    0.876219] pci 0000:00:02.0: BAR 0 [mem 0xfd000000-0xfdffffff pref]
+[2026-10-07 16:22:25.188] [INFO] [QEMU] [    0.877552] pci 0000:00:02.0: BAR 2 [mem 0xfeb90000-0xfeb90fff]
+[2026-10-07 16:22:25.189] [INFO] [QEMU] [    0.879496] pci 0000:00:02.0: ROM [mem 0xfeb80000-0xfeb8ffff pref]
+[2026-10-07 16:22:25.193] [INFO] [QEMU] [    0.880758] pci 0000:00:02.0: Video device with shadowed ROM at [mem 0x000c0000-0x000dffff]
+[2026-10-07 16:22:25.201] [INFO] [QEMU] [    0.888552] pci 0000:00:03.0: [1af4:1005] type 00 class 0x00ff00 conventional PCI endpoint
+[2026-10-07 16:22:25.205] [INFO] [QEMU] [    0.894155] pci 0000:00:03.0: BAR 0 [io  0xc100-0xc11f]
+[2026-10-07 16:22:25.206] [INFO] [QEMU] [    0.896151] pci 0000:00:03.0: BAR 4 [mem 0xfe000000-0xfe003fff 64bit pref]
+[2026-10-07 16:22:25.210] [INFO] [QEMU] [    0.899006] pci 0000:00:04.0: [1af4:1000] type 00 class 0x020000 conventional PCI endpoint
+[2026-10-07 16:22:25.213] [INFO] [QEMU] [    0.902113] pci 0000:00:04.0: BAR 0 [io  0xc120-0xc13f]
+[2026-10-07 16:22:25.214] [INFO] [QEMU] [    0.903113] pci 0000:00:04.0: BAR 1 [mem 0xfeb91000-0xfeb91fff]
+[2026-10-07 16:22:25.216] [INFO] [QEMU] [    0.905140] pci 0000:00:04.0: BAR 4 [mem 0xfe004000-0xfe007fff 64bit pref]
+[2026-10-07 16:22:25.217] [INFO] [QEMU] [    0.906488] pci 0000:00:04.0: ROM [mem 0xfeb00000-0xfeb7ffff pref]
+[2026-10-07 16:22:25.220] [INFO] [QEMU] [    0.908825] pci 0000:00:05.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[2026-10-07 16:22:25.225] [INFO] [QEMU] [    0.914119] pci 0000:00:05.0: BAR 0 [io  0xc000-0xc07f]
+[2026-10-07 16:22:25.227] [INFO] [QEMU] [    0.915118] pci 0000:00:05.0: BAR 1 [mem 0xfeb92000-0xfeb92fff]
+[2026-10-07 16:22:25.231] [INFO] [QEMU] [    0.917891] pci 0000:00:05.0: BAR 4 [mem 0xfe008000-0xfe00bfff 64bit pref]
+[2026-10-07 16:22:25.239] [INFO] [QEMU] [    0.925297] pci 0000:00:06.0: [1af4:1001] type 00 class 0x010000 conventional PCI endpoint
+[2026-10-07 16:22:25.244] [INFO] [QEMU] [    0.931135] pci 0000:00:06.0: BAR 0 [io  0xc080-0xc0ff]
+[2026-10-07 16:22:25.247] [INFO] [QEMU] [    0.934775] pci 0000:00:06.0: BAR 1 [mem 0xfeb93000-0xfeb93fff]
+[2026-10-07 16:22:25.251] [INFO] [QEMU] [    0.937873] pci 0000:00:06.0: BAR 4 [mem 0xfe00c000-0xfe00ffff 64bit pref]
+[2026-10-07 16:22:25.270] [INFO] [QEMU] [    0.957881] ACPI: PCI: Interrupt link LNKA configured for IRQ 10
+[2026-10-07 16:22:25.271] [INFO] [QEMU] [    0.959613] ACPI: PCI: Interrupt link LNKB configured for IRQ 10
+[2026-10-07 16:22:25.273] [INFO] [QEMU] [    0.960577] ACPI: PCI: Interrupt link LNKC configured for IRQ 11
+[2026-10-07 16:22:25.274] [INFO] [QEMU] [    0.962574] ACPI: PCI: Interrupt link LNKD configured for IRQ 11
+[2026-10-07 16:22:25.275] [INFO] [QEMU] [    0.963534] ACPI: PCI: Interrupt link LNKS configured for IRQ 9
+[2026-10-07 16:22:25.279] [INFO] [QEMU] [    0.966740] iommu: Default domain type: Translated
+[2026-10-07 16:22:25.282] [INFO] [QEMU] [    0.967739] iommu: DMA domain TLB invalidation policy: lazy mode
+[2026-10-07 16:22:25.286] [INFO] [QEMU] [    0.969911] SCSI subsystem initialized
+[2026-10-07 16:22:25.289] [INFO] [QEMU] [    0.971102] ACPI: bus type USB registered
+[2026-10-07 16:22:25.291] [INFO] [QEMU] [    0.973220] usbcore: registered new interface driver usbfs
+[2026-10-07 16:22:25.294] [INFO] [QEMU] [    0.975761] usbcore: registered new interface driver hub
+[2026-10-07 16:22:25.296] [INFO] [QEMU] [    0.977727] usbcore: registered new device driver usb
+[2026-10-07 16:22:25.299] [INFO] [QEMU] [    0.980850] pps_core: LinuxPPS API ver. 1 registered
+[2026-10-07 16:22:25.303] [INFO] [QEMU] [    0.982697] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[2026-10-07 16:22:25.306] [INFO] [QEMU] [    0.987079] PTP clock support registered
+[2026-10-07 16:22:25.308] [INFO] [QEMU] [    0.990194] EDAC MC: Ver: 3.0.0
+[2026-10-07 16:22:25.313] [INFO] [QEMU] [    0.994408] NetLabel: Initializing
+[2026-10-07 16:22:25.315] [INFO] [QEMU] [    0.996627] NetLabel:  domain hash size = 128
+[2026-10-07 16:22:25.318] [INFO] [QEMU] [    0.998693] NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+[2026-10-07 16:22:25.321] [INFO] [QEMU] [    1.000899] NetLabel:  unlabeled traffic allowed by default
+[2026-10-07 16:22:25.324] [INFO] [QEMU] [    1.004375] mctp: management component transport protocol core
+[2026-10-07 16:22:25.327] [INFO] [QEMU] [    1.007759] NET: Registered PF_MCTP protocol family
+[2026-10-07 16:22:25.329] [INFO] [QEMU] [    1.009778] PCI: Using ACPI for IRQ routing
+[2026-10-07 16:22:25.333] [INFO] [QEMU] [    1.013180] pci 0000:00:02.0: vgaarb: setting as boot VGA device
+[2026-10-07 16:22:25.335] [INFO] [QEMU] [    1.014097] pci 0000:00:02.0: vgaarb: bridge control possible
+[2026-10-07 16:22:25.339] [INFO] [QEMU] [    1.014097] pci 0000:00:02.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[2026-10-07 16:22:25.341] [INFO] [QEMU] [    1.022119] vgaarb: loaded
+[2026-10-07 16:22:25.345] [INFO] [QEMU] [    1.024555] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+[2026-10-07 16:22:25.348] [INFO] [QEMU] [    1.025837] hpet0: 3 comparators, 64-bit 100.000000 MHz counter
+[2026-10-07 16:22:25.354] [INFO] [QEMU] [    1.029361] clocksource: Switched to clocksource kvm-clock
+[2026-10-07 16:22:25.360] [INFO] [QEMU] [    1.035467] VFS: Disk quotas dquot_6.6.0
+[2026-10-07 16:22:25.364] [INFO] [QEMU] [    1.037773] VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+[2026-10-07 16:22:25.368] [INFO] [QEMU] [    1.042580] AppArmor: AppArmor Filesystem Enabled
+[2026-10-07 16:22:25.370] [INFO] [QEMU] [    1.045267] pnp: PnP ACPI init
+[2026-10-07 16:22:25.373] [INFO] [QEMU] [    1.048065] pnp: PnP ACPI: found 6 devices
+[2026-10-07 16:22:25.387] [INFO] [QEMU] [    1.060551] clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+[2026-10-07 16:22:25.390] [INFO] [QEMU] [    1.065352] NET: Registered PF_INET protocol family
+[2026-10-07 16:22:25.394] [INFO] [QEMU] [    1.068401] IP idents hash table entries: 32768 (order: 6, 262144 bytes, linear)
+[2026-10-07 16:22:25.423] [INFO] [QEMU] [    1.099040] tcp_listen_portaddr_hash hash table entries: 1024 (order: 2, 16384 bytes, linear)
+[2026-10-07 16:22:25.425] [INFO] [QEMU] [    1.100877] Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[2026-10-07 16:22:25.429] [INFO] [QEMU] [    1.102605] TCP established hash table entries: 16384 (order: 5, 131072 bytes, linear)
+[2026-10-07 16:22:25.433] [INFO] [QEMU] [    1.106764] TCP bind hash table entries: 16384 (order: 7, 524288 bytes, linear)
+[2026-10-07 16:22:25.436] [INFO] [QEMU] [    1.110486] TCP: Hash tables configured (established 16384 bind 16384)
+[2026-10-07 16:22:25.440] [INFO] [QEMU] [    1.113939] MPTCP token hash table entries: 2048 (order: 4, 49152 bytes, linear)
+[2026-10-07 16:22:25.443] [INFO] [QEMU] [    1.117682] UDP hash table entries: 1024 (order: 3, 32768 bytes, linear)
+[2026-10-07 16:22:25.447] [INFO] [QEMU] [    1.120961] UDP-Lite hash table entries: 1024 (order: 3, 32768 bytes, linear)
+[2026-10-07 16:22:25.450] [INFO] [QEMU] [    1.124595] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[2026-10-07 16:22:25.452] [INFO] [QEMU] [    1.127444] NET: Registered PF_XDP protocol family
+[2026-10-07 16:22:25.455] [INFO] [QEMU] [    1.129897] pci_bus 0000:00: resource 4 [io  0x0000-0x0cf7 window]
+[2026-10-07 16:22:25.458] [INFO] [QEMU] [    1.132906] pci_bus 0000:00: resource 5 [io  0x0d00-0xffff window]
+[2026-10-07 16:22:25.461] [INFO] [QEMU] [    1.135908] pci_bus 0000:00: resource 6 [mem 0x000a0000-0x000bffff window]
+[2026-10-07 16:22:25.464] [INFO] [QEMU] [    1.139029] pci_bus 0000:00: resource 7 [mem 0x80000000-0xfebfffff window]
+[2026-10-07 16:22:25.468] [INFO] [QEMU] [    1.142125] pci_bus 0000:00: resource 8 [mem 0x100000000-0x17fffffff window]
+[2026-10-07 16:22:25.471] [INFO] [QEMU] [    1.145507] pci 0000:00:01.0: PIIX3: Enabling Passive Release
+[2026-10-07 16:22:25.473] [INFO] [QEMU] [    1.148195] pci 0000:00:00.0: Limiting direct PCI/PCI transfers
+[2026-10-07 16:22:25.476] [INFO] [QEMU] [    1.151178] PCI: CLS 0 bytes, default 64
+[2026-10-07 16:22:25.480] [INFO] [QEMU] [    1.153486] clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x22df1149949, max_idle_ns: 440795312789 ns
+[2026-10-07 16:22:25.481] [INFO] [QEMU] [    1.153547] Trying to unpack rootfs image as initramfs...
+[2026-10-07 16:22:25.483] [INFO] [QEMU] [    1.158180] Initialise system trusted keyrings
+[2026-10-07 16:22:25.486] [INFO] [QEMU] [    1.161389] Key type blacklist registered
+[2026-10-07 16:22:25.490] [INFO] [QEMU] [    1.164454] workingset: timestamp_bits=36 max_order=19 bucket_order=0
+[2026-10-07 16:22:25.492] [INFO] [QEMU] [    1.167636] zbud: loaded
+[2026-10-07 16:22:25.495] [INFO] [QEMU] [    1.169778] squashfs: version 4.0 (2009/01/31) Phillip Lougher
+[2026-10-07 16:22:25.498] [INFO] [QEMU] [    1.173474] fuse: init (API version 7.39)
+[2026-10-07 16:22:25.501] [INFO] [QEMU] [    1.176209] integrity: Platform Keyring initialized
+[2026-10-07 16:22:25.504] [INFO] [QEMU] [    1.178736] integrity: Machine keyring initialized
+[2026-10-07 16:22:25.507] [INFO] [QEMU] [    1.182938] Freeing initrd memory: 14752K
+[2026-10-07 16:22:25.523] [INFO] [QEMU] [    1.197934] Key type asymmetric registered
+[2026-10-07 16:22:25.525] [INFO] [QEMU] [    1.200092] Asymmetric key parser 'x509' registered
+[2026-10-07 16:22:25.528] [INFO] [QEMU] [    1.202673] Block layer SCSI generic (bsg) driver version 0.4 loaded (major 243)
+[2026-10-07 16:22:25.531] [INFO] [QEMU] [    1.206601] io scheduler mq-deadline registered
+[2026-10-07 16:22:25.535] [INFO] [QEMU] [    1.209514] shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+[2026-10-07 16:22:25.539] [INFO] [QEMU] [    1.213359] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input0
+[2026-10-07 16:22:25.541] [INFO] [QEMU] [    1.216938] ACPI: button: Power Button [PWRF]
+[2026-10-07 16:22:25.562] [INFO] [QEMU] [    1.237762] ACPI: \_SB_.LNKC: Enabled at IRQ 11
+[2026-10-07 16:22:25.583] [INFO] [QEMU] [    1.259225] ACPI: \_SB_.LNKD: Enabled at IRQ 10
+[2026-10-07 16:22:25.604] [INFO] [QEMU] [    1.280224] ACPI: \_SB_.LNKA: Enabled at IRQ 10
+[2026-10-07 16:22:25.630] [INFO] [QEMU] [    1.304976] ACPI: \_SB_.LNKB: Enabled at IRQ 11
+[2026-10-07 16:22:25.636] [INFO] [QEMU] [    1.310594] Serial: 8250/16550 driver, 32 ports, IRQ sharing enabled
+[2026-10-07 16:22:25.667] [INFO] [QEMU] [    1.341169] 00:04: ttyS0 at I/O 0x3f8 (irq = 4, base_baud = 115200) is a 16550A
+[2026-10-07 16:22:25.674] [INFO] [QEMU] [    1.349502] Linux agpgart interface v0.103
+[2026-10-07 16:22:25.680] [INFO] [QEMU] [    1.356090] loop: module loaded
+[2026-10-07 16:22:25.683] [INFO] [QEMU] [    1.358089] virtio_blk virtio2: 2/0/0 default/read/poll queues
+[2026-10-07 16:22:25.690] [INFO] [QEMU] [    1.363621] virtio_blk virtio2: [vda] 16777216 512-byte logical blocks (8.59 GB/8.00 GiB)
+[2026-10-07 16:22:25.694] [INFO] [QEMU] [    1.369129]  vda: vda1 vda14 vda15 vda16
+[2026-10-07 16:22:25.697] [INFO] [QEMU] [    1.371819] virtio_blk virtio3: 2/0/0 default/read/poll queues
+[2026-10-07 16:22:25.703] [INFO] [QEMU] [    1.376902] virtio_blk virtio3: [vdb] 123376 512-byte logical blocks (63.2 MB/60.2 MiB)
+[2026-10-07 16:22:25.709] [INFO] [QEMU] [    1.384663] scsi host0: ata_piix
+[2026-10-07 16:22:25.711] [INFO] [QEMU] [    1.386662] scsi host1: ata_piix
+[2026-10-07 16:22:25.714] [INFO] [QEMU] [    1.388455] ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xc140 irq 14 lpm-pol 0
+[2026-10-07 16:22:25.718] [INFO] [QEMU] [    1.391957] ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xc148 irq 15 lpm-pol 0
+[2026-10-07 16:22:25.721] [INFO] [QEMU] [    1.395645] ACPI: bus type drm_connector registered
+[2026-10-07 16:22:25.724] [INFO] [QEMU] [    1.398801] tun: Universal TUN/TAP device driver, 1.6
+[2026-10-07 16:22:25.731] [INFO] [QEMU] [    1.406190] PPP generic driver version 2.4.2
+[2026-10-07 16:22:25.733] [INFO] [QEMU] [    1.408885] i8042: PNP: PS/2 Controller [PNP0303:KBD,PNP0f13:MOU] at 0x60,0x64 irq 1,12
+[2026-10-07 16:22:25.735] [INFO] [QEMU] [    1.411637] serio: i8042 KBD port at 0x60,0x64 irq 1
+[2026-10-07 16:22:25.736] [INFO] [QEMU] [    1.412646] serio: i8042 AUX port at 0x60,0x64 irq 12
+[2026-10-07 16:22:25.738] [INFO] [QEMU] [    1.413913] mousedev: PS/2 mouse device common for all mice
+[2026-10-07 16:22:25.740] [INFO] [QEMU] [    1.415430] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input1
+[2026-10-07 16:22:25.741] [INFO] [QEMU] [    1.417196] rtc_cmos 00:05: RTC can wake from S4
+[2026-10-07 16:22:25.743] [INFO] [QEMU] [    1.419163] rtc_cmos 00:05: registered as rtc0
+[2026-10-07 16:22:25.744] [INFO] [QEMU] [    1.420170] rtc_cmos 00:05: setting system clock to 2026-10-07T16:22:25 UTC (1791390145)
+[2026-10-07 16:22:25.746] [INFO] [QEMU] [    1.421835] rtc_cmos 00:05: alarms up to one day, y3k, 242 bytes nvram, hpet irqs
+[2026-10-07 16:22:25.747] [INFO] [QEMU] [    1.423332] i2c_dev: i2c /dev entries driver
+[2026-10-07 16:22:25.749] [INFO] [QEMU] [    1.424253] device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+[2026-10-07 16:22:25.750] [INFO] [QEMU] [    1.426561] device-mapper: uevent: version 1.0.3
+[2026-10-07 16:22:25.752] [INFO] [QEMU] [    1.427767] device-mapper: ioctl: 4.48.0-ioctl (2023-03-01) initialised: dm-devel@redhat.com
+[2026-10-07 16:22:25.753] [INFO] [QEMU] [    1.429453] intel_pstate: CPU model not supported
+[2026-10-07 16:22:25.754] [INFO] [QEMU] [    1.430457] ledtrig-cpu: registered to indicate activity on CPUs
+[2026-10-07 16:22:25.756] [INFO] [QEMU] [    1.431777] drop_monitor: Initializing network drop monitor service
+[2026-10-07 16:22:25.757] [INFO] [QEMU] [    1.433194] NET: Registered PF_INET6 protocol family
+[2026-10-07 16:22:25.760] [INFO] [QEMU] [    1.435694] Segment Routing with IPv6
+[2026-10-07 16:22:25.762] [INFO] [QEMU] [    1.437620] In-situ OAM (IOAM) with IPv6
+[2026-10-07 16:22:25.765] [INFO] [QEMU] [    1.439664] NET: Registered PF_PACKET protocol family
+[2026-10-07 16:22:25.766] [INFO] [QEMU] [    1.442203] Key type dns_resolver registered
+[2026-10-07 16:22:25.767] [INFO] [QEMU] [    1.443653] No MBM correction factor available
+[2026-10-07 16:22:25.768] [INFO] [QEMU] [    1.444621] IPI shorthand broadcast: enabled
+[2026-10-07 16:22:25.772] [INFO] [QEMU] [    1.447563] sched_clock: Marking stable (1068002713, 379291572)->(1594642438, -147348153)
+[2026-10-07 16:22:25.773] [INFO] [QEMU] [    1.449674] registered taskstats version 1
+[2026-10-07 16:22:25.775] [INFO] [QEMU] [    1.450905] Loading compiled-in X.509 certificates
+[2026-10-07 16:22:25.780] [INFO] [QEMU] [    1.453159] Loaded X.509 cert 'Build time autogenerated kernel key: eea4a9707394bf26b4f59ee0ef16383ba94b4361'
+[2026-10-07 16:22:25.785] [INFO] [QEMU] [    1.458510] Loaded X.509 cert 'Canonical Ltd. Live Patch Signing 2025 Kmod: d541cef61dc7e793b7eb7e899970a2eef0b5dc8c'
+[2026-10-07 16:22:25.791] [INFO] [QEMU] [    1.464170] Loaded X.509 cert 'Canonical Ltd. Live Patch Signing: 14df34d1a87cf37625abec039ef2bf521249b969'
+[2026-10-07 16:22:25.797] [INFO] [QEMU] [    1.469502] Loaded X.509 cert 'Canonical Ltd. Kernel Module Signing 2025 Kmod: 4627603d2357a2a3f81006370894c221175893e9'
+[2026-10-07 16:22:25.802] [INFO] [QEMU] [    1.475180] Loaded X.509 cert 'Canonical Ltd. Kernel Module Signing: 88f752e560a1e0737e31163a466ad7b70a850c19'
+[2026-10-07 16:22:25.805] [INFO] [QEMU] [    1.479721] blacklist: Loading compiled-in revocation X.509 certificates
+[2026-10-07 16:22:25.809] [INFO] [QEMU] [    1.482883] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing: 61482aa2830d0ab2ad5af10b7250da9033ddcef0'
+[2026-10-07 16:22:25.814] [INFO] [QEMU] [    1.487453] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2017): 242ade75ac4a15e50d50c84b0d45ff3eae707a03'
+[2026-10-07 16:22:25.819] [INFO] [QEMU] [    1.492163] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (ESM 2018): 365188c1d374d6b07c3c8f240f8ef722433d6a8b'
+[2026-10-07 16:22:25.822] [INFO] [QEMU] [    1.497108] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2019): c0746fd6c5da3ae827864651ad66ae47fe24b3e8'
+[2026-10-07 16:22:25.824] [INFO] [QEMU] [    1.499402] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2021 v1): a8d54bbb3825cfb94fa13c9f8a594a195c107b8d'
+[2026-10-07 16:22:25.826] [INFO] [QEMU] [    1.501481] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2021 v2): 4cf046892d6fd3c9a5b03f98d845f90851dc6a8c'
+[2026-10-07 16:22:25.828] [INFO] [QEMU] [    1.503553] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (2021 v3): 100437bb6de6e469b581e61cd66bce3ef4ed53af'
+[2026-10-07 16:22:25.830] [INFO] [QEMU] [    1.505653] Loaded X.509 cert 'Canonical Ltd. Secure Boot Signing (Ubuntu Core 2019): c1d57b8f6b743f23ee41f4f7ee292f06eecadfb9'
+[2026-10-07 16:22:25.837] [INFO] [QEMU] [    1.512400] Key type .fscrypt registered
+[2026-10-07 16:22:25.839] [INFO] [QEMU] [    1.514391] Key type fscrypt-provisioning registered
+[2026-10-07 16:22:25.843] [INFO] [QEMU] [    1.518131] Key type encrypted registered
+[2026-10-07 16:22:25.845] [INFO] [QEMU] [    1.520269] AppArmor: AppArmor sha256 policy hashing enabled
+[2026-10-07 16:22:25.848] [INFO] [QEMU] [    1.523075] ima: No TPM chip found, activating TPM-bypass!
+[2026-10-07 16:22:25.851] [INFO] [QEMU] [    1.525815] Loading compiled-in module X.509 certificates
+[2026-10-07 16:22:25.856] [INFO] [QEMU] [    1.529156] Loaded X.509 cert 'Build time autogenerated kernel key: eea4a9707394bf26b4f59ee0ef16383ba94b4361'
+[2026-10-07 16:22:25.858] [INFO] [QEMU] [    1.533554] ima: Allocated hash algorithm: sha256
+[2026-10-07 16:22:25.860] [INFO] [QEMU] [    1.535869] ima: No architecture policies found
+[2026-10-07 16:22:25.863] [INFO] [QEMU] [    1.538101] evm: Initialising EVM extended attributes:
+[2026-10-07 16:22:25.865] [INFO] [QEMU] [    1.540574] evm: security.selinux
+[2026-10-07 16:22:25.867] [INFO] [QEMU] [    1.542389] evm: security.SMACK64
+[2026-10-07 16:22:25.869] [INFO] [QEMU] [    1.544160] evm: security.SMACK64EXEC
+[2026-10-07 16:22:25.871] [INFO] [QEMU] [    1.546065] evm: security.SMACK64TRANSMUTE
+[2026-10-07 16:22:25.873] [INFO] [QEMU] [    1.548168] evm: security.SMACK64MMAP
+[2026-10-07 16:22:25.874] [INFO] [QEMU] [    1.550095] evm: security.apparmor
+[2026-10-07 16:22:25.876] [INFO] [QEMU] [    1.551936] evm: security.ima
+[2026-10-07 16:22:25.877] [INFO] [QEMU] [    1.553608] evm: security.capability
+[2026-10-07 16:22:25.878] [INFO] [QEMU] [    1.554532] evm: HMAC attrs: 0x1
+[2026-10-07 16:22:25.879] [INFO] [QEMU] [    1.554541] ata2: found unknown device (class 0)
+[2026-10-07 16:22:25.881] [INFO] [QEMU] [    1.556978] PM:   Magic number: 14:71:388
+[2026-10-07 16:22:25.881] [INFO] [QEMU] [    1.556991] ata2.00: ATAPI: QEMU DVD-ROM, 2.5+, max UDMA/100
+[2026-10-07 16:22:25.885] [INFO] [QEMU] [    1.560441] scsi 1:0:0:0: CD-ROM            QEMU     QEMU DVD-ROM     2.5+ PQ: 0 ANSI: 5
+[2026-10-07 16:22:25.887] [INFO] [QEMU] [    1.563388] RAS: Correctable Errors collector initialized.
+[2026-10-07 16:22:25.888] [INFO] [QEMU] [    1.564810] clk: Disabling unused clocks
+[2026-10-07 16:22:25.898] [INFO] [QEMU] [    1.573947] sr 1:0:0:0: [sr0] scsi3-mmc drive: 4x/4x cd/rw xa/form2 tray
+[2026-10-07 16:22:25.914] [INFO] [QEMU] [    1.589154] cdrom: Uniform CD-ROM driver Revision: 3.20
+[2026-10-07 16:22:25.924] [INFO] [QEMU] [    1.599133] sr 1:0:0:0: Attached scsi generic sg0 type 5
+[2026-10-07 16:22:25.925] [INFO] [QEMU] [    1.601673] md: Waiting for all devices to be available before autodetect
+[2026-10-07 16:22:25.926] [INFO] [QEMU] [    1.602776] md: If you don't use raid, use raid=noautodetect
+[2026-10-07 16:22:25.927] [INFO] [QEMU] [    1.603685] md: Autodetecting RAID arrays.
+[2026-10-07 16:22:25.928] [INFO] [QEMU] [    1.604395] md: autorun ...
+[2026-10-07 16:22:25.931] [INFO] [QEMU] [    1.604911] md: ... autorun DONE.
+[2026-10-07 16:22:25.934] [INFO] [QEMU] [    1.608218] EXT4-fs (vda1): mounted filesystem 03bf9af0-1bed-46b6-a5c1-32fc5e52d0c6 ro with ordered data mode. Quota mode: none.
+[2026-10-07 16:22:25.937] [INFO] [QEMU] [    1.612479] VFS: Mounted root (ext4 filesystem) readonly on device 253:1.
+[2026-10-07 16:22:25.939] [INFO] [QEMU] [    1.615286] devtmpfs: mounted
+[2026-10-07 16:22:25.945] [INFO] [QEMU] [    1.620853] Freeing unused decrypted memory: 2028K
+[2026-10-07 16:22:25.953] [INFO] [QEMU] [    1.627966] Freeing unused kernel image (initmem) memory: 4932K
+[2026-10-07 16:22:25.955] [INFO] [QEMU] [    1.630255] Write protecting the kernel read-only data: 38912k
+[2026-10-07 16:22:25.960] [INFO] [QEMU] [    1.635157] Freeing unused kernel image (rodata/data gap) memory: 1956K
+[2026-10-07 16:22:25.976] [INFO] [QEMU] [    1.651892] x86/mm: Checked W+X mappings: passed, no W+X pages found.
+[2026-10-07 16:22:25.976] [INFO] [QEMU] [    1.653023] Run /sbin/init as init process
+[2026-10-07 16:22:26.107] [INFO] [QEMU] [    1.783055] systemd[1]: Inserted module 'autofs4'
+[2026-10-07 16:22:26.151] [INFO] [QEMU] [    1.823109] systemd[1]: systemd 255.4-1ubuntu8.16 running in system mode (+PAM +AUDIT +SELINUX +APPARMOR +IMA +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +IPTC +KMOD +LIBCRYPTSETUP +LIBFDISK +PCRE2 -PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD -BPF_FRAMEWORK -XKBCOMMON +UTMP +SYSVINIT default-hierarchy=unified)
+[2026-10-07 16:22:26.159] [INFO] [QEMU] [    1.835230] systemd[1]: Detected virtualization kvm.
+[2026-10-07 16:22:26.160] [INFO] [QEMU] [    1.836266] systemd[1]: Detected architecture x86-64.
+[2026-10-07 16:22:26.161] [INFO] [QEMU] 
+[2026-10-07 16:22:26.162] [INFO] [QEMU] Welcome to [1mUbuntu 24.04.4 LTS[0m!
+[2026-10-07 16:22:26.162] [INFO] [QEMU] 
+[2026-10-07 16:22:26.164] [INFO] [QEMU] [    1.839971] systemd[1]: Hostname set to <score-itf>.
+[2026-10-07 16:22:26.384] [INFO] [QEMU] [    2.059676] systemd[1]: Queued start job for default target graphical.target.
+[2026-10-07 16:22:26.398] [INFO] [QEMU] [    2.073023] systemd[1]: Created slice system-modprobe.slice - Slice /system/modprobe.
+[2026-10-07 16:22:26.402] [INFO] [QEMU] [[0;32m  OK  [0m] Created slice [0;1;39msystem-modprobe.slice[0m - Slice /system/modprobe.
+[2026-10-07 16:22:26.405] [INFO] [QEMU] [    2.079720] systemd[1]: Created slice system-serial\x2dgetty.slice - Slice /system/serial-getty.
+[2026-10-07 16:22:26.409] [INFO] [QEMU] [[0;32m  OK  [0m] Created slice [0;1;39msystem-serial\x2dget���slice[0m - Slice /system/serial-getty.
+[2026-10-07 16:22:26.412] [INFO] [QEMU] [    2.086686] systemd[1]: Created slice system-systemd\x2dfsck.slice - Slice /system/systemd-fsck.
+[2026-10-07 16:22:26.416] [INFO] [QEMU] [[0;32m  OK  [0m] Created slice [0;1;39msystem-systemd\x2dfs���slice[0m - Slice /system/systemd-fsck.
+[2026-10-07 16:22:26.418] [INFO] [QEMU] [    2.093614] systemd[1]: Created slice user.slice - User and Session Slice.
+[2026-10-07 16:22:26.422] [INFO] [QEMU] [[0;32m  OK  [0m] Created slice [0;1;39muser.slice[0m - User and Session Slice.
+[2026-10-07 16:22:26.425] [INFO] [QEMU] [    2.098781] systemd[1]: Started systemd-ask-password-console.path - Dispatch Password Requests to Console Directory Watch.
+[2026-10-07 16:22:26.429] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-ask-password-conso���[0mequests to Console Directory Watch.
+[2026-10-07 16:22:26.432] [INFO] [QEMU] [    2.105821] systemd[1]: Started systemd-ask-password-wall.path - Forward Password Requests to Wall Directory Watch.
+[2026-10-07 16:22:26.436] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-ask-password-wall.���[0md Requests to Wall Directory Watch.
+[2026-10-07 16:22:26.439] [INFO] [QEMU] [    2.112909] systemd[1]: Set up automount proc-sys-fs-binfmt_misc.automount - Arbitrary Executable File Formats File System Automount Point.
+[2026-10-07 16:22:26.443] [INFO] [QEMU] [[0;32m  OK  [0m] Set up automount [0;1;39mproc-sys-fs-binfm���[0mormats File System Automount Point.
+[2026-10-07 16:22:26.446] [INFO] [QEMU] [    2.120339] systemd[1]: Expecting device dev-disk-by\x2dlabel-BOOT.device - /dev/disk/by-label/BOOT...
+[2026-10-07 16:22:26.449] [INFO] [QEMU] Expecting device [0;1;39mdev-disk-by\x2dla���device[0m - /dev/disk/by-label/BOOT...
+[2026-10-07 16:22:26.452] [INFO] [QEMU] [    2.126470] systemd[1]: Expecting device dev-disk-by\x2dlabel-UEFI.device - /dev/disk/by-label/UEFI...
+[2026-10-07 16:22:26.456] [INFO] [QEMU] Expecting device [0;1;39mdev-disk-by\x2dla���device[0m - /dev/disk/by-label/UEFI...
+[2026-10-07 16:22:26.457] [INFO] [QEMU] [    2.132671] systemd[1]: Expecting device dev-ttyS0.device - /dev/ttyS0...
+[2026-10-07 16:22:26.460] [INFO] [QEMU] Expecting device [0;1;39mdev-ttyS0.device[0m - /dev/ttyS0...
+[2026-10-07 16:22:26.462] [INFO] [QEMU] [    2.137342] systemd[1]: Expecting device dev-vdb.device - /dev/vdb...
+[2026-10-07 16:22:26.465] [INFO] [QEMU] Expecting device [0;1;39mdev-vdb.device[0m - /dev/vdb...
+[2026-10-07 16:22:26.467] [INFO] [QEMU] [    2.141865] systemd[1]: Reached target cryptsetup.target - Local Encrypted Volumes.
+[2026-10-07 16:22:26.470] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mcryptsetup.target[0m - Local Encrypted Volumes.
+[2026-10-07 16:22:26.473] [INFO] [QEMU] [    2.147378] systemd[1]: Reached target integritysetup.target - Local Integrity Protected Volumes.
+[2026-10-07 16:22:26.476] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mintegritysetup.targ���[0m Local Integrity Protected Volumes.
+[2026-10-07 16:22:26.478] [INFO] [QEMU] [    2.153380] systemd[1]: Reached target remote-fs.target - Remote File Systems.
+[2026-10-07 16:22:26.481] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mremote-fs.target[0m - Remote File Systems.
+[2026-10-07 16:22:26.483] [INFO] [QEMU] [    2.158448] systemd[1]: Reached target slices.target - Slice Units.
+[2026-10-07 16:22:26.486] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mslices.target[0m - Slice Units.
+[2026-10-07 16:22:26.486] [INFO] [QEMU] [    2.162682] systemd[1]: Reached target snapd.mounts-pre.target - Mounting snaps.
+[2026-10-07 16:22:26.488] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39msnapd.mounts-pre.target[0m - Mounting snaps.
+[2026-10-07 16:22:26.489] [INFO] [QEMU] [    2.164953] systemd[1]: Reached target snapd.mounts.target - Mounted snaps.
+[2026-10-07 16:22:26.490] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39msnapd.mounts.target[0m - Mounted snaps.
+[2026-10-07 16:22:26.491] [INFO] [QEMU] [    2.167036] systemd[1]: Reached target swap.target - Swaps.
+[2026-10-07 16:22:26.492] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mswap.target[0m - Swaps.
+[2026-10-07 16:22:26.493] [INFO] [QEMU] [    2.168788] systemd[1]: Reached target veritysetup.target - Local Verity Protected Volumes.
+[2026-10-07 16:22:26.494] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mveritysetup.target[0m - Local Verity Protected Volumes.
+[2026-10-07 16:22:26.495] [INFO] [QEMU] [    2.171514] systemd[1]: Listening on systemd-fsckd.socket - fsck to fsckd communication Socket.
+[2026-10-07 16:22:26.497] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-fsckd.socket[0m ���fsck to fsckd communication Socket.
+[2026-10-07 16:22:26.498] [INFO] [QEMU] [    2.174189] systemd[1]: Listening on systemd-initctl.socket - initctl Compatibility Named Pipe.
+[2026-10-07 16:22:26.500] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-initctl.socke���[0m- initctl Compatibility Named Pipe.
+[2026-10-07 16:22:26.501] [INFO] [QEMU] [    2.176954] systemd[1]: Listening on systemd-journald-dev-log.socket - Journal Socket (/dev/log).
+[2026-10-07 16:22:26.502] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-journald-dev-���socket[0m - Journal Socket (/dev/log).
+[2026-10-07 16:22:26.503] [INFO] [QEMU] [    2.179605] systemd[1]: Listening on systemd-journald.socket - Journal Socket.
+[2026-10-07 16:22:26.505] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-journald.socket[0m - Journal Socket.
+[2026-10-07 16:22:26.506] [INFO] [QEMU] [    2.181902] systemd[1]: Listening on systemd-networkd.socket - Network Service Netlink Socket.
+[2026-10-07 16:22:26.507] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-networkd.socket[0m - Network Service Netlink Socket.
+[2026-10-07 16:22:26.509] [INFO] [QEMU] [    2.184419] systemd[1]: systemd-pcrextend.socket - TPM2 PCR Extension (Varlink) was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
+[2026-10-07 16:22:26.511] [INFO] [QEMU] [    2.186719] systemd[1]: Listening on systemd-udevd-control.socket - udev Control Socket.
+[2026-10-07 16:22:26.512] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-udevd-control.socket[0m - udev Control Socket.
+[2026-10-07 16:22:26.513] [INFO] [QEMU] [    2.189240] systemd[1]: Listening on systemd-udevd-kernel.socket - udev Kernel Socket.
+[2026-10-07 16:22:26.515] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-udevd-kernel.socket[0m - udev Kernel Socket.
+[2026-10-07 16:22:26.523] [INFO] [QEMU] [    2.197526] systemd[1]: Mounting dev-hugepages.mount - Huge Pages File System...
+[2026-10-07 16:22:26.526] [INFO] [QEMU] Mounting [0;1;39mdev-hugepages.mount[0m - Huge Pages File System...
+[2026-10-07 16:22:26.533] [INFO] [QEMU] [    2.207467] systemd[1]: Mounting dev-mqueue.mount - POSIX Message Queue File System...
+[2026-10-07 16:22:26.536] [INFO] [QEMU] Mounting [0;1;39mdev-mqueue.mount[0m - POSIX Message Queue File System...
+[2026-10-07 16:22:26.538] [INFO] [QEMU] [    2.214233] systemd[1]: Mounting sys-kernel-debug.mount - Kernel Debug File System...
+[2026-10-07 16:22:26.541] [INFO] [QEMU] Mounting [0;1;39msys-kernel-debug.mount[0m - Kernel Debug File System...
+[2026-10-07 16:22:26.557] [INFO] [QEMU] [    2.233490] systemd[1]: Mounting sys-kernel-tracing.mount - Kernel Trace File System...
+[2026-10-07 16:22:26.559] [INFO] [QEMU] Mounting [0;1;39msys-kernel-tracing.mount[0m - Kernel Trace File System...
+[2026-10-07 16:22:26.563] [INFO] [QEMU] [    2.238839] systemd[1]: Starting systemd-journald.service - Journal Service...
+[2026-10-07 16:22:26.564] [INFO] [QEMU] Starting [0;1;39msystemd-journald.service[0m - Journal Service...
+[2026-10-07 16:22:26.567] [INFO] [QEMU] [    2.243433] systemd[1]: Starting keyboard-setup.service - Set the console keyboard layout...
+[2026-10-07 16:22:26.570] [INFO] [QEMU] Starting [0;1;39mkeyboard-setup.service[0m - Set the console keyboard layout...
+[2026-10-07 16:22:26.573] [INFO] [QEMU] [    2.248643] systemd[1]: Starting kmod-static-nodes.service - Create List of Static Device Nodes...
+[2026-10-07 16:22:26.577] [INFO] [QEMU] Starting [0;1;39mkmod-static-nodes.service[0m���eate List of Static Device Nodes...
+[2026-10-07 16:22:26.583] [INFO] [QEMU] [    2.258456] systemd[1]: Starting modprobe@configfs.service - Load Kernel Module configfs...
+[2026-10-07 16:22:26.585] [INFO] [QEMU] Starting [0;1;39mmodprobe@configfs.service[0m - Load Kernel Module configfs...
+[2026-10-07 16:22:26.586] [INFO] [QEMU] [    2.262447] systemd-journald[121]: Collecting audit messages is disabled.
+[2026-10-07 16:22:26.588] [INFO] [QEMU] [    2.264521] systemd[1]: Starting modprobe@dm_mod.service - Load Kernel Module dm_mod...
+[2026-10-07 16:22:26.597] [INFO] [QEMU] Starting [0;1;39mmodprobe@dm_mod.service[0m - Load Kernel Module dm_mod...
+[2026-10-07 16:22:26.604] [INFO] [QEMU] [    2.280045] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[2026-10-07 16:22:26.606] [INFO] [QEMU] Starting [0;1;39mmodprobe@drm.service[0m - Load Kernel Module drm...
+[2026-10-07 16:22:26.611] [INFO] [QEMU] [    2.287476] systemd[1]: Starting modprobe@efi_pstore.service - Load Kernel Module efi_pstore...
+[2026-10-07 16:22:26.615] [INFO] [QEMU] Starting [0;1;39mmodprobe@efi_pstore.servi���[0m - Load Kernel Module efi_pstore...
+[2026-10-07 16:22:26.625] [INFO] [QEMU] [    2.300832] systemd[1]: Starting modprobe@fuse.service - Load Kernel Module fuse...
+[2026-10-07 16:22:26.628] [INFO] [QEMU] Starting [0;1;39mmodprobe@fuse.service[0m - Load Kernel Module fuse...
+[2026-10-07 16:22:26.632] [INFO] [QEMU] [    2.307750] systemd[1]: Starting modprobe@loop.service - Load Kernel Module loop...
+[2026-10-07 16:22:26.636] [INFO] [QEMU] Starting [0;1;39mmodprobe@loop.service[0m - Load Kernel Module loop...
+[2026-10-07 16:22:26.638] [INFO] [QEMU] [    2.313458] systemd[1]: netplan-ovs-cleanup.service - OpenVSwitch configuration for cleanup was skipped because of an unmet condition check (ConditionFileIsExecutable=/usr/bin/ovs-vsctl).
+[2026-10-07 16:22:26.646] [INFO] [QEMU] [    2.321743] systemd[1]: Starting systemd-fsck-root.service - File System Check on Root Device...
+[2026-10-07 16:22:26.648] [INFO] [QEMU] Starting [0;1;39msystemd-fsck-root.service[0m���File System Check on Root Device...
+[2026-10-07 16:22:26.652] [INFO] [QEMU] [    2.326615] systemd[1]: Starting systemd-modules-load.service - Load Kernel Modules...
+[2026-10-07 16:22:26.656] [INFO] [QEMU] Starting [0;1;39msystemd-modules-load.service[0m - Load Kernel Modules...
+[2026-10-07 16:22:26.660] [INFO] [QEMU] [    2.332673] systemd[1]: systemd-pcrmachine.service - TPM2 PCR Machine ID Measurement was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
+[2026-10-07 16:22:26.666] [INFO] [QEMU] [    2.338094] systemd[1]: systemd-tpm2-setup-early.service - TPM2 SRK Setup (Early) was skipped because of an unmet condition check (ConditionSecurity=measured-uki).
+[2026-10-07 16:22:26.676] [INFO] [QEMU] [    2.350591] systemd[1]: Starting systemd-udev-trigger.service - Coldplug All udev Devices...
+[2026-10-07 16:22:26.680] [INFO] [QEMU] Starting [0;1;39msystemd-udev-trigger.service[0m - Coldplug All udev Devices...
+[2026-10-07 16:22:26.689] [INFO] [QEMU] [    2.364100] systemd[1]: Started systemd-journald.service - Journal Service.
+[2026-10-07 16:22:26.693] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-journald.service[0m - Journal Service.
+[2026-10-07 16:22:26.697] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39mdev-hugepages.mount[0m - Huge Pages File System.
+[2026-10-07 16:22:26.700] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39mdev-mqueue.mount[0m - POSIX Message Queue File System.
+[2026-10-07 16:22:26.704] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39msys-kernel-debug.mount[0m - Kernel Debug File System.
+[2026-10-07 16:22:26.706] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39msys-kernel-tracing.mount[0m - Kernel Trace File System.
+[2026-10-07 16:22:26.710] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mkeyboard-setup.service[0m - Set the console keyboard layout.
+[2026-10-07 16:22:26.713] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mkmod-static-nodes.service[0m���Create List of Static Device Nodes.
+[2026-10-07 16:22:26.717] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mmodprobe@configfs.service[0m - Load Kernel Module configfs.
+[2026-10-07 16:22:26.721] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mmodprobe@dm_mod.service[0m - Load Kernel Module dm_mod.
+[2026-10-07 16:22:26.725] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mmodprobe@drm.service[0m - Load Kernel Module drm.
+[2026-10-07 16:22:26.728] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mmodprobe@efi_pstore.service[0m - Load Kernel Module efi_pstore.
+[2026-10-07 16:22:26.732] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mmodprobe@fuse.service[0m - Load Kernel Module fuse.
+[2026-10-07 16:22:26.735] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mmodprobe@loop.service[0m - Load Kernel Module loop.
+[2026-10-07 16:22:26.739] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-fsck-root.service[0m - File System Check on Root Device.
+[2026-10-07 16:22:26.742] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-modules-load.service[0m - Load Kernel Modules.
+[2026-10-07 16:22:26.765] [INFO] [QEMU] Mounting [0;1;39msys-fs-fuse-connections.mount[0m - FUSE Control File System...
+[2026-10-07 16:22:26.779] [INFO] [QEMU] Mounting [0;1;39msys-kernel-config.mount[0m - Kernel Configuration File System...
+[2026-10-07 16:22:26.794] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-fsckd.service[0m - Fi���stem Check Daemon to report status.
+[2026-10-07 16:22:26.810] [INFO] [QEMU] Starting [0;1;39msystemd-remount-fs.servic���[0munt Root and Kernel File Systems...
+[2026-10-07 16:22:26.821] [INFO] [QEMU] Starting [0;1;39msystemd-sysctl.service[0m - Apply Kernel Variables...
+[2026-10-07 16:22:26.829] [INFO] [QEMU] Starting [0;1;39msystemd-tmpfiles-setup-de���[0m Device Nodes in /dev gracefully...
+[2026-10-07 16:22:26.837] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-udev-trigger.service[0m - Coldplug All udev Devices.
+[2026-10-07 16:22:26.841] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39msys-fs-fuse-connections.mount[0m - FUSE Control File System.
+[2026-10-07 16:22:26.845] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39msys-kernel-config.mount[0m - Kernel Configuration File System.
+[2026-10-07 16:22:26.867] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-tmpfiles-setup-de���[0mic Device Nodes in /dev gracefully.
+[2026-10-07 16:22:26.871] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-sysctl.service[0m - Apply Kernel Variables.
+[2026-10-07 16:22:27.507] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-remount-fs.servic���[0mmount Root and Kernel File Systems.
+[2026-10-07 16:22:27.512] [INFO] [QEMU] Starting [0;1;39msystemd-journal-flush.ser���[0msh Journal to Persistent Storage...
+[2026-10-07 16:22:27.516] [INFO] [QEMU] Starting [0;1;39msystemd-random-seed.service[0m - Load/Save OS Random Seed...
+[2026-10-07 16:22:27.521] [INFO] [QEMU] Starting [0;1;39msystemd-tmpfiles-setup-de���[0meate Static Device Nodes in /dev...
+[2026-10-07 16:22:27.550] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-tmpfiles-setup-de���[0mCreate Static Device Nodes in /dev.
+[2026-10-07 16:22:27.561] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mlocal-fs-pre.target[0m���Preparation for Local File Systems.
+[2026-10-07 16:22:27.565] [INFO] [QEMU] Starting [0;1;39msystemd-udevd.service[0m - R���ager for Device Events and Files...
+[2026-10-07 16:22:27.676] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-udevd.service[0m - Ru���anager for Device Events and Files.
+[2026-10-07 16:22:27.687] [INFO] [QEMU] Starting [0;1;39msystemd-networkd.service[0m - Network Configuration...
+[2026-10-07 16:22:27.698] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-random-seed.service[0m - Load/Save OS Random Seed.
+[2026-10-07 16:22:27.918] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-networkd.service[0m - Network Configuration.
+[2026-10-07 16:22:27.942] [INFO] [QEMU] [[0;32m  OK  [0m] Found device [0;1;39mdev-vdb.device[0m - /dev/vdb.
+[2026-10-07 16:22:27.989] [INFO] [QEMU] Mounting [0;1;39mopt.mount[0m - /opt...
+[2026-10-07 16:22:28.005] [INFO] [QEMU] [[0;32m  OK  [0m] Found device [0;1;39mdev-disk-by\x2dlabel-���T.device[0m - /dev/disk/by-label/BOOT.
+[2026-10-07 16:22:28.015] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-journal-flush.ser���[0mlush Journal to Persistent Storage.
+[2026-10-07 16:22:28.020] [INFO] [QEMU] [[0;32m  OK  [0m] Found device [0;1;39mdev-ttyS0.device[0m - /dev/ttyS0.
+[2026-10-07 16:22:28.032] [INFO] [QEMU] [[0;32m  OK  [0m] Found device [0;1;39mdev-disk-by\x2dlabel-���I.device[0m - /dev/disk/by-label/UEFI.
+[2026-10-07 16:22:28.052] [INFO] [QEMU] Starting [0;1;39msystemd-fsck@dev-disk-by\���[0mCheck on /dev/disk/by-label/BOOT...
+[2026-10-07 16:22:28.065] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39mopt.mount[0m - /opt.
+[2026-10-07 16:22:28.131] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-fsck@dev-disk-by\���[0mm Check on /dev/disk/by-label/BOOT.
+[2026-10-07 16:22:28.141] [INFO] [QEMU] Mounting [0;1;39mboot.mount[0m - /boot...
+[2026-10-07 16:22:28.165] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39mboot.mount[0m - /boot.
+[2026-10-07 16:22:28.177] [INFO] [QEMU] Mounting [0;1;39mboot-efi.mount[0m - /boot/efi...
+[2026-10-07 16:22:28.197] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-rfkill.socket[0m���ll Switch Status /dev/rfkill Watch.
+[2026-10-07 16:22:28.204] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39mboot-efi.mount[0m - /boot/efi.
+[2026-10-07 16:22:28.207] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mlocal-fs.target[0m - Local File Systems.
+[2026-10-07 16:22:28.214] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msystemd-sysext.socket[0m���tension Image Management (Varlink).
+[2026-10-07 16:22:28.226] [INFO] [QEMU] Starting [0;1;39mapparmor.service[0m - Load AppArmor profiles...
+[2026-10-07 16:22:28.265] [INFO] [QEMU] Starting [0;1;39mconsole-setup.service[0m - Set console font and keymap...
+[2026-10-07 16:22:28.435] [INFO] [QEMU] Starting [0;1;39msystemd-binfmt.service[0m - Set Up Additional Binary Formats...
+[2026-10-07 16:22:28.447] [INFO] [QEMU] Starting [0;1;39msystemd-tmpfiles-setup.se���[0me Volatile Files and Directories...
+[2026-10-07 16:22:28.451] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mconsole-setup.service[0m - Set console font and keymap.
+[2026-10-07 16:22:28.476] [INFO] [QEMU] Mounting [0;1;39mproc-sys-fs-binfmt_misc.m���[0mcutable File Formats File System...
+[2026-10-07 16:22:28.500] [INFO] [QEMU] [[0;32m  OK  [0m] Mounted [0;1;39mproc-sys-fs-binfmt_misc.mo���[0mxecutable File Formats File System.
+[2026-10-07 16:22:28.513] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-binfmt.service[0m - Set Up Additional Binary Formats.
+[2026-10-07 16:22:28.527] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-tmpfiles-setup.se���[0mate Volatile Files and Directories.
+[2026-10-07 16:22:28.546] [INFO] [QEMU] Starting [0;1;39msystemd-resolved.service[0m - Network Name Resolution...
+[2026-10-07 16:22:28.563] [INFO] [QEMU] Starting [0;1;39msystemd-timesyncd.service[0m - Network Time Synchronization...
+[2026-10-07 16:22:28.592] [INFO] [QEMU] Starting [0;1;39msystemd-update-utmp.servi���[0mord System Boot/Shutdown in UTMP...
+[2026-10-07 16:22:28.694] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-update-utmp.servi���[0mecord System Boot/Shutdown in UTMP.
+[2026-10-07 16:22:28.732] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-timesyncd.service[0m - Network Time Synchronization.
+[2026-10-07 16:22:28.736] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mtime-set.target[0m - System Time Set.
+[2026-10-07 16:22:28.751] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mapparmor.service[0m - Load AppArmor profiles.
+[2026-10-07 16:22:28.760] [INFO] [QEMU] Starting [0;1;39msnapd.apparmor.service[0m - ���iles managed internally by snapd...
+[2026-10-07 16:22:28.818] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-resolved.service[0m - Network Name Resolution.
+[2026-10-07 16:22:28.820] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msnapd.apparmor.service[0m - ���ofiles managed internally by snapd.
+[2026-10-07 16:22:28.821] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mnetwork.target[0m - Network.
+[2026-10-07 16:22:28.823] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mnss-lookup.target[0m - Host and Network Name Lookups.
+[2026-10-07 16:22:28.824] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39msysinit.target[0m - System Initialization.
+[2026-10-07 16:22:28.826] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mapt-daily.timer[0m - Daily apt download activities.
+[2026-10-07 16:22:28.827] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mapt-daily-upgrade.timer[0m - ���y apt upgrade and clean activities.
+[2026-10-07 16:22:28.828] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mdpkg-db-backup.timer[0m - Daily dpkg database backup timer.
+[2026-10-07 16:22:28.830] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39me2scrub_all.timer[0m - Period���Metadata Check for All Filesystems.
+[2026-10-07 16:22:28.831] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mfstrim.timer[0m - Discard unused filesystem blocks once a week.
+[2026-10-07 16:22:28.832] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mmotd-news.timer[0m - Message of the Day.
+[2026-10-07 16:22:28.834] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-tmpfiles-clean.tim���[0my Cleanup of Temporary Directories.
+[2026-10-07 16:22:28.835] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mpaths.target[0m - Path Units.
+[2026-10-07 16:22:28.836] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mtimers.target[0m - Timer Units.
+[2026-10-07 16:22:28.837] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39mdbus.socket[0m - D-Bus System Message Bus Socket.
+[2026-10-07 16:22:28.840] [INFO] [QEMU] Starting [0;1;39mlxd-installer.socket[0m - He���er to install lxd snap on demand...
+[2026-10-07 16:22:28.848] [INFO] [QEMU] Starting [0;1;39msnapd.socket[0m - Socket activation for snappy daemon...
+[2026-10-07 16:22:28.852] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39mssh.socket[0m - OpenBSD Secure Shell server socket.
+[2026-10-07 16:22:28.854] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39mlxd-installer.socket[0m ���lper to install lxd snap on demand.
+[2026-10-07 16:22:28.855] [INFO] [QEMU] [[0;32m  OK  [0m] Listening on [0;1;39msnapd.socket[0m - Socket activation for snappy daemon.
+[2026-10-07 16:22:28.856] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39msockets.target[0m - Socket Units.
+[2026-10-07 16:22:28.857] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mbasic.target[0m - Basic System.
+[2026-10-07 16:22:28.860] [INFO] [QEMU] Starting [0;1;39mapport.service[0m - automatic crash report generation...
+[2026-10-07 16:22:28.864] [INFO] [QEMU] Starting [0;1;39mdbus.service[0m - D-Bus System Message Bus...
+[2026-10-07 16:22:28.870] [INFO] [QEMU] Starting [0;1;39me2scrub_reap.service[0m - Re���ne ext4 Metadata Check Snapshots...
+[2026-10-07 16:22:28.878] [INFO] [QEMU] Starting [0;1;39mgrub-common.service[0m - Record successful boot for GRUB...
+[2026-10-07 16:22:28.891] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mgetty-pre.target[0m - Preparation for Logins.
+[2026-10-07 16:22:28.914] [INFO] [QEMU] Starting [0;1;39msnapd.seeded.service[0m - Wait until snapd is fully seeded...
+[2026-10-07 16:22:28.925] [INFO] [QEMU] Starting [0;1;39msnapd.service[0m - Snap Daemon...
+[2026-10-07 16:22:29.013] [INFO] [QEMU] Starting [0;1;39msystemd-logind.service[0m - User Login Management...
+[2026-10-07 16:22:29.048] [INFO] [QEMU] Starting [0;1;39msystemd-user-sessions.service[0m - Permit User Sessions...
+[2026-10-07 16:22:29.061] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mdbus.service[0m - D-Bus System Message Bus.
+[2026-10-07 16:22:29.081] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39me2scrub_reap.service[0m - Re���line ext4 Metadata Check Snapshots.
+[2026-10-07 16:22:29.126] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-user-sessions.service[0m - Permit User Sessions.
+[2026-10-07 16:22:29.183] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mserial-getty@ttyS0.service[0m - Serial Getty on ttyS0.
+[2026-10-07 16:22:29.200] [INFO] [QEMU] Starting [0;1;39msetvtrgb.service[0m - Set console scheme...
+[2026-10-07 16:22:29.260] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-logind.service[0m - User Login Management.
+[2026-10-07 16:22:29.263] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msetvtrgb.service[0m - Set console scheme.
+[2026-10-07 16:22:29.360] [INFO] [QEMU] [[0;32m  OK  [0m] Created slice [0;1;39msystem-getty.slice[0m - Slice /system/getty.
+[2026-10-07 16:22:29.545] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39mgetty@tty1.service[0m - Getty on tty1.
+[2026-10-07 16:22:29.550] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mgetty.target[0m - Login Prompts.
+[2026-10-07 16:22:29.572] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39munattended-upgrades.service[0m - Unattended Upgrades Shutdown.
+[2026-10-07 16:22:29.581] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mgrub-common.service[0m - Record successful boot for GRUB.
+[2026-10-07 16:22:29.626] [INFO] [QEMU] Starting [0;1;39mgrub-initrd-fallback.service[0m - GRUB failed boot detection...
+[2026-10-07 16:22:29.764] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mgrub-initrd-fallback.service[0m - GRUB failed boot detection.
+[2026-10-07 16:22:30.033] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39mapport.service[0m - automatic crash report generation.
+[2026-10-07 16:22:30.576] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msnapd.service[0m - Snap Daemon.
+[2026-10-07 16:22:30.592] [INFO] [QEMU] Starting [0;1;39msystemd-timedated.service[0m - Time & Date Service...
+[2026-10-07 16:22:30.642] [INFO] [QEMU] [[0;32m  OK  [0m] Started [0;1;39msystemd-timedated.service[0m - Time & Date Service.
+[2026-10-07 16:22:30.688] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msnapd.seeded.service[0m - Wait until snapd is fully seeded.
+[2026-10-07 16:22:30.691] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mmulti-user.target[0m - Multi-User System.
+[2026-10-07 16:22:30.693] [INFO] [QEMU] [[0;32m  OK  [0m] Reached target [0;1;39mgraphical.target[0m - Graphical Interface.
+[2026-10-07 16:22:30.701] [INFO] [QEMU] Starting [0;1;39msystemd-update-utmp-runle���[0m- Record Runlevel Change in UTMP...
+[2026-10-07 16:22:30.708] [INFO] [QEMU] [[0;32m  OK  [0m] Finished [0;1;39msystemd-update-utmp-runle���e[0m - Record Runlevel Change in UTMP.
+[2026-10-07 16:22:31.748] [INFO] [QEMU] 
+[2026-10-07 16:22:31.749] [INFO] [QEMU] Ubuntu 24.04.4 LTS score-itf ttyS0
+[2026-10-07 16:22:31.749] [INFO] [QEMU] 
+[2026-10-07 16:22:35.399] [INFO] [score.itf.plugins.qemu.checks] Check target ping: OK
+[2026-10-07 16:22:35.400] [INFO] [score.itf.core.com.ssh] Connecting to 169.254.158.190 ...
+[2026-10-07 16:22:35.486] [INFO] [paramiko.transport] Connected (version 2.0, client OpenSSH_9.6p1)
+[2026-10-07 16:22:35.582] [INFO] [paramiko.transport] Authentication (password) successful!
+[2026-10-07 16:22:35.582] [INFO] [score.itf.core.com.ssh] SSH connection to 169.254.158.190 established
+[2026-10-07 16:22:35.583] [DEBUG] [score.itf.core.com.ssh] Executing command: echo Qnx_S-core!
+[2026-10-07 16:22:35.583] [DEBUG] [score.itf.core.com.ssh] timeout: 30; max_exec_time: 180; logger_in: None; verbose: True;
+[2026-10-07 16:22:35.994] [INFO] [root] Qnx_S-core!
+[2026-10-07 16:22:35.995] [INFO] [score.itf.core.com.ssh] Closed SSH connection.
+[2026-10-07 16:22:35.995] [INFO] [score.itf.plugins.qemu.checks] Check target ssh: OK
+[2026-10-07 16:22:35.995] [INFO] [score.itf.core.com.ssh] Connecting to 169.254.158.190 ...
+[2026-10-07 16:22:36.006] [INFO] [paramiko.transport] Connected (version 2.0, client OpenSSH_9.6p1)
+[2026-10-07 16:22:36.060] [INFO] [paramiko.transport] Authentication (password) successful!
+[2026-10-07 16:22:36.060] [INFO] [score.itf.core.com.ssh] SSH connection to 169.254.158.190 established
+[2026-10-07 16:22:36.176] [INFO] [paramiko.transport.sftp] [chan 0] Opened sftp connection (server version 3)
+[2026-10-07 16:22:36.181] [INFO] [paramiko.transport.sftp] [chan 0] sftp session closed.
+[2026-10-07 16:22:36.182] [INFO] [score.itf.core.com.ssh] Closed SSH connection.
+[2026-10-07 16:22:36.182] [INFO] [score.itf.core.com.sftp] Closed SSH connection.
+[2026-10-07 16:22:36.182] [INFO] [score.itf.plugins.qemu.checks] Check target sftp: OK
+FAILED                                                                   [ 20%]
+../score_itf+::test_tcpdump_with_ping_from_target FAILED                 [ 40%]
+../score_itf+::test_tcpdump_with_long_running_ping_from_target FAILED    [ 60%]
+../score_itf+::test_killing_tcpdump FAILED                               [ 80%]
+../score_itf+::test_killing_tcpdump_while_ping_is_running FAILED         [100%]
+------------------------------ live log teardown -------------------------------
+[2026-10-07 16:22:37.449] [INFO] [score.itf.plugins.qemu.qemu_process] Stopping Qemu...
+
+[2026-10-07 16:22:37.450] [INFO] [QEMU] score-itf login: qemu-system-x86_64: terminating on signal 15 from pid 17 (/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/bazel-output/16df730b0babb9c4a4b46d33742bb204/sandbox/linux-sandbox/631/execroot/_main/bazel-out/k8-fastbuild/bin/tests/integration_test/test_tcpdump.runfiles/rules_python++python+python_3_12_x86_64-unknown-linux-gnu/bin/python3)
+
+
+=================================== FAILURES ===================================
+__________________ test_tcpdump_with_ping_from_target_execute __________________
+
+target = <score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x7371db3654c0>
+
+    def test_tcpdump_with_ping_from_target_execute(target) -> None:
+>       with tcpdump_capture("icmp", packet_count=2) as tcpdump_process:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration_test/tcpdump.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+filter_expression = 'icmp', packet_count = 2, output_file = None
+
+    def tcpdump_capture(
+        filter_expression: str,
+        packet_count: int | None = None,
+        output_file: str | None = None,
+    ) -> CaptureProcess:
+        """Start tcpdump on the host and return a CaptureProcess context manager.
+    
+        Args:
+            filter_expression: BPF filter string.
+            packet_count: Exit after this many packets; omit when using stop_capture.
+            output_file: Move the completed pcap to this path after capture stops;
+                         None streams text to stdout.
+    
+        Raises:
+            RuntimeError: tcpdump exited immediately (missing binary or CAP_NET_RAW).
+        """
+        # -Z <current_user>: avoids tcpdump dropping to its default user, which fails without CAP_SETUID in CI (even as root).
+        try:
+            _z_user = pwd.getpwuid(os.getuid()).pw_name
+        except KeyError:
+            # uid has no /etc/passwd entry (minimal container); use numeric fallback
+            _z_user = str(os.getuid())
+    
+        args = ["/usr/bin/tcpdump", "-n", "-i", "any", "-Z", _z_user]
+    
+        # Write pcap to /tmp, which is writable in all sandbox configurations.
+        # CaptureProcess.__exit__ moves it to output_file after capture stops.
+        text_mode = output_file is None
+        tmp_pcap: str | None = None
+        if output_file is not None:
+            tmp_pcap = f"/tmp/tcpdump_{os.urandom(8).hex()}.pcap"
+            args.extend(["-U", "-w", tmp_pcap])  # -U: packet-buffered
+        else:
+            args.append("-l")  # line-buffered output for text mode
+    
+        if packet_count is not None:
+            args.extend(["-c", str(packet_count)])
+        if filter_expression:
+            args.append(filter_expression)
+    
+        try:
+            proc = subprocess.Popen(
+                args,
+                stdout=subprocess.PIPE if output_file is None else subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"Failed to start tcpdump ({exc}). Check that /usr/bin/tcpdump exists and "
+                f"the process has CAP_NET_RAW capability."
+            ) from exc
+    
+        # tcpdump exits within milliseconds if CAP_NET_RAW is missing or binary absent.
+        time.sleep(0.2)
+        if proc.poll() is not None and proc.returncode != 0:
+            stderr_text = _get_content_of_file_object(proc.stderr)
+>           raise RuntimeError(
+                f"tcpdump failed to start (exit code {proc.returncode}). "
+                f"Check that /usr/bin/tcpdump exists and the process has "
+                f"CAP_NET_RAW capability. stderr: {stderr_text}"
+            )
+E           RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2
+E           tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted
+
+tests/common/capture.py:281: RuntimeError
+______________________ test_tcpdump_with_ping_from_target ______________________
+
+target = <score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x7371db3654c0>
+
+    def test_tcpdump_with_ping_from_target(target):
+>       with tcpdump_capture("icmp", packet_count=2) as tcpdump_process:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration_test/tcpdump.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+filter_expression = 'icmp', packet_count = 2, output_file = None
+
+    def tcpdump_capture(
+        filter_expression: str,
+        packet_count: int | None = None,
+        output_file: str | None = None,
+    ) -> CaptureProcess:
+        """Start tcpdump on the host and return a CaptureProcess context manager.
+    
+        Args:
+            filter_expression: BPF filter string.
+            packet_count: Exit after this many packets; omit when using stop_capture.
+            output_file: Move the completed pcap to this path after capture stops;
+                         None streams text to stdout.
+    
+        Raises:
+            RuntimeError: tcpdump exited immediately (missing binary or CAP_NET_RAW).
+        """
+        # -Z <current_user>: avoids tcpdump dropping to its default user, which fails without CAP_SETUID in CI (even as root).
+        try:
+            _z_user = pwd.getpwuid(os.getuid()).pw_name
+        except KeyError:
+            # uid has no /etc/passwd entry (minimal container); use numeric fallback
+            _z_user = str(os.getuid())
+    
+        args = ["/usr/bin/tcpdump", "-n", "-i", "any", "-Z", _z_user]
+    
+        # Write pcap to /tmp, which is writable in all sandbox configurations.
+        # CaptureProcess.__exit__ moves it to output_file after capture stops.
+        text_mode = output_file is None
+        tmp_pcap: str | None = None
+        if output_file is not None:
+            tmp_pcap = f"/tmp/tcpdump_{os.urandom(8).hex()}.pcap"
+            args.extend(["-U", "-w", tmp_pcap])  # -U: packet-buffered
+        else:
+            args.append("-l")  # line-buffered output for text mode
+    
+        if packet_count is not None:
+            args.extend(["-c", str(packet_count)])
+        if filter_expression:
+            args.append(filter_expression)
+    
+        try:
+            proc = subprocess.Popen(
+                args,
+                stdout=subprocess.PIPE if output_file is None else subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"Failed to start tcpdump ({exc}). Check that /usr/bin/tcpdump exists and "
+                f"the process has CAP_NET_RAW capability."
+            ) from exc
+    
+        # tcpdump exits within milliseconds if CAP_NET_RAW is missing or binary absent.
+        time.sleep(0.2)
+        if proc.poll() is not None and proc.returncode != 0:
+            stderr_text = _get_content_of_file_object(proc.stderr)
+>           raise RuntimeError(
+                f"tcpdump failed to start (exit code {proc.returncode}). "
+                f"Check that /usr/bin/tcpdump exists and the process has "
+                f"CAP_NET_RAW capability. stderr: {stderr_text}"
+            )
+E           RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2
+E           tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted
+
+tests/common/capture.py:281: RuntimeError
+_______________ test_tcpdump_with_long_running_ping_from_target ________________
+
+target = <score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x7371db3654c0>
+
+    def test_tcpdump_with_long_running_ping_from_target(target):
+>       with tcpdump_capture("icmp", packet_count=5) as tcpdump_process:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration_test/tcpdump.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+filter_expression = 'icmp', packet_count = 5, output_file = None
+
+    def tcpdump_capture(
+        filter_expression: str,
+        packet_count: int | None = None,
+        output_file: str | None = None,
+    ) -> CaptureProcess:
+        """Start tcpdump on the host and return a CaptureProcess context manager.
+    
+        Args:
+            filter_expression: BPF filter string.
+            packet_count: Exit after this many packets; omit when using stop_capture.
+            output_file: Move the completed pcap to this path after capture stops;
+                         None streams text to stdout.
+    
+        Raises:
+            RuntimeError: tcpdump exited immediately (missing binary or CAP_NET_RAW).
+        """
+        # -Z <current_user>: avoids tcpdump dropping to its default user, which fails without CAP_SETUID in CI (even as root).
+        try:
+            _z_user = pwd.getpwuid(os.getuid()).pw_name
+        except KeyError:
+            # uid has no /etc/passwd entry (minimal container); use numeric fallback
+            _z_user = str(os.getuid())
+    
+        args = ["/usr/bin/tcpdump", "-n", "-i", "any", "-Z", _z_user]
+    
+        # Write pcap to /tmp, which is writable in all sandbox configurations.
+        # CaptureProcess.__exit__ moves it to output_file after capture stops.
+        text_mode = output_file is None
+        tmp_pcap: str | None = None
+        if output_file is not None:
+            tmp_pcap = f"/tmp/tcpdump_{os.urandom(8).hex()}.pcap"
+            args.extend(["-U", "-w", tmp_pcap])  # -U: packet-buffered
+        else:
+            args.append("-l")  # line-buffered output for text mode
+    
+        if packet_count is not None:
+            args.extend(["-c", str(packet_count)])
+        if filter_expression:
+            args.append(filter_expression)
+    
+        try:
+            proc = subprocess.Popen(
+                args,
+                stdout=subprocess.PIPE if output_file is None else subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"Failed to start tcpdump ({exc}). Check that /usr/bin/tcpdump exists and "
+                f"the process has CAP_NET_RAW capability."
+            ) from exc
+    
+        # tcpdump exits within milliseconds if CAP_NET_RAW is missing or binary absent.
+        time.sleep(0.2)
+        if proc.poll() is not None and proc.returncode != 0:
+            stderr_text = _get_content_of_file_object(proc.stderr)
+>           raise RuntimeError(
+                f"tcpdump failed to start (exit code {proc.returncode}). "
+                f"Check that /usr/bin/tcpdump exists and the process has "
+                f"CAP_NET_RAW capability. stderr: {stderr_text}"
+            )
+E           RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2
+E           tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted
+
+tests/common/capture.py:281: RuntimeError
+_____________________________ test_killing_tcpdump _____________________________
+
+target = <score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x7371db3654c0>
+
+    def test_killing_tcpdump(target):
+        # No traffic here, so force_stop() (not signals; unreliable in this sandbox) is needed to end it.
+>       capture = tcpdump_capture("icmp", packet_count=500)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration_test/tcpdump.py:117: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+filter_expression = 'icmp', packet_count = 500, output_file = None
+
+    def tcpdump_capture(
+        filter_expression: str,
+        packet_count: int | None = None,
+        output_file: str | None = None,
+    ) -> CaptureProcess:
+        """Start tcpdump on the host and return a CaptureProcess context manager.
+    
+        Args:
+            filter_expression: BPF filter string.
+            packet_count: Exit after this many packets; omit when using stop_capture.
+            output_file: Move the completed pcap to this path after capture stops;
+                         None streams text to stdout.
+    
+        Raises:
+            RuntimeError: tcpdump exited immediately (missing binary or CAP_NET_RAW).
+        """
+        # -Z <current_user>: avoids tcpdump dropping to its default user, which fails without CAP_SETUID in CI (even as root).
+        try:
+            _z_user = pwd.getpwuid(os.getuid()).pw_name
+        except KeyError:
+            # uid has no /etc/passwd entry (minimal container); use numeric fallback
+            _z_user = str(os.getuid())
+    
+        args = ["/usr/bin/tcpdump", "-n", "-i", "any", "-Z", _z_user]
+    
+        # Write pcap to /tmp, which is writable in all sandbox configurations.
+        # CaptureProcess.__exit__ moves it to output_file after capture stops.
+        text_mode = output_file is None
+        tmp_pcap: str | None = None
+        if output_file is not None:
+            tmp_pcap = f"/tmp/tcpdump_{os.urandom(8).hex()}.pcap"
+            args.extend(["-U", "-w", tmp_pcap])  # -U: packet-buffered
+        else:
+            args.append("-l")  # line-buffered output for text mode
+    
+        if packet_count is not None:
+            args.extend(["-c", str(packet_count)])
+        if filter_expression:
+            args.append(filter_expression)
+    
+        try:
+            proc = subprocess.Popen(
+                args,
+                stdout=subprocess.PIPE if output_file is None else subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"Failed to start tcpdump ({exc}). Check that /usr/bin/tcpdump exists and "
+                f"the process has CAP_NET_RAW capability."
+            ) from exc
+    
+        # tcpdump exits within milliseconds if CAP_NET_RAW is missing or binary absent.
+        time.sleep(0.2)
+        if proc.poll() is not None and proc.returncode != 0:
+            stderr_text = _get_content_of_file_object(proc.stderr)
+>           raise RuntimeError(
+                f"tcpdump failed to start (exit code {proc.returncode}). "
+                f"Check that /usr/bin/tcpdump exists and the process has "
+                f"CAP_NET_RAW capability. stderr: {stderr_text}"
+            )
+E           RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2
+E           tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted
+
+tests/common/capture.py:281: RuntimeError
+__________________ test_killing_tcpdump_while_ping_is_running __________________
+
+target = <score.itf.plugins.qemu.qemu_target.QemuTarget object at 0x7371db3654c0>
+
+    def test_killing_tcpdump_while_ping_is_running(target):
+>       capture = tcpdump_capture("icmp", packet_count=500)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/integration_test/tcpdump.py:127: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+filter_expression = 'icmp', packet_count = 500, output_file = None
+
+    def tcpdump_capture(
+        filter_expression: str,
+        packet_count: int | None = None,
+        output_file: str | None = None,
+    ) -> CaptureProcess:
+        """Start tcpdump on the host and return a CaptureProcess context manager.
+    
+        Args:
+            filter_expression: BPF filter string.
+            packet_count: Exit after this many packets; omit when using stop_capture.
+            output_file: Move the completed pcap to this path after capture stops;
+                         None streams text to stdout.
+    
+        Raises:
+            RuntimeError: tcpdump exited immediately (missing binary or CAP_NET_RAW).
+        """
+        # -Z <current_user>: avoids tcpdump dropping to its default user, which fails without CAP_SETUID in CI (even as root).
+        try:
+            _z_user = pwd.getpwuid(os.getuid()).pw_name
+        except KeyError:
+            # uid has no /etc/passwd entry (minimal container); use numeric fallback
+            _z_user = str(os.getuid())
+    
+        args = ["/usr/bin/tcpdump", "-n", "-i", "any", "-Z", _z_user]
+    
+        # Write pcap to /tmp, which is writable in all sandbox configurations.
+        # CaptureProcess.__exit__ moves it to output_file after capture stops.
+        text_mode = output_file is None
+        tmp_pcap: str | None = None
+        if output_file is not None:
+            tmp_pcap = f"/tmp/tcpdump_{os.urandom(8).hex()}.pcap"
+            args.extend(["-U", "-w", tmp_pcap])  # -U: packet-buffered
+        else:
+            args.append("-l")  # line-buffered output for text mode
+    
+        if packet_count is not None:
+            args.extend(["-c", str(packet_count)])
+        if filter_expression:
+            args.append(filter_expression)
+    
+        try:
+            proc = subprocess.Popen(
+                args,
+                stdout=subprocess.PIPE if output_file is None else subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+            )
+        except OSError as exc:
+            raise RuntimeError(
+                f"Failed to start tcpdump ({exc}). Check that /usr/bin/tcpdump exists and "
+                f"the process has CAP_NET_RAW capability."
+            ) from exc
+    
+        # tcpdump exits within milliseconds if CAP_NET_RAW is missing or binary absent.
+        time.sleep(0.2)
+        if proc.poll() is not None and proc.returncode != 0:
+            stderr_text = _get_content_of_file_object(proc.stderr)
+>           raise RuntimeError(
+                f"tcpdump failed to start (exit code {proc.returncode}). "
+                f"Check that /usr/bin/tcpdump exists and the process has "
+                f"CAP_NET_RAW capability. stderr: {stderr_text}"
+            )
+E           RuntimeError: tcpdump failed to start (exit code 1). Check that /usr/bin/tcpdump exists and the process has CAP_NET_RAW capability. stderr: tcpdump: data link type LINUX_SLL2
+E           tcpdump: Couldn't change to 'root' uid=0 gid=0: Operation not permitted
+
+tests/common/capture.py:281: RuntimeError
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-someip84-full-6w80fgob/bazel-output/16df730b0babb9c4a4b46d33742bb204/sandbox/linux-sandbox/631/execroot/_main/bazel-out/k8-fastbuild/testlogs/tests/integration_test/test_tcpdump/test.xml -
+=========================== short test summary info ============================
+FAILED ../score_itf+::test_tcpdump_with_ping_from_target_execute - RuntimeErr...
+FAILED ../score_itf+::test_tcpdump_with_ping_from_target - RuntimeError: tcpd...
+FAILED ../score_itf+::test_tcpdump_with_long_running_ping_from_target - Runti...
+FAILED ../score_itf+::test_killing_tcpdump - RuntimeError: tcpdump failed to ...
+FAILED ../score_itf+::test_killing_tcpdump_while_ping_is_running - RuntimeErr...
+============================== 5 failed in 17.79s ==============================

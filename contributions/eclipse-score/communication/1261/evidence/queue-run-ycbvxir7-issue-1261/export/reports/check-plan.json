@@ -1,0 +1,117 @@
+{
+  "checks": [
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock",
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust:score_com_mock"
+      ],
+      "reason": "Compile the changed abstraction surface plus every in-tree Runtime implementer and the public re-export crate; this is the minimum build that detects a broken trait/associated-type/descriptor change in score_com_concept or the lola/mock implementations.",
+      "native_obligation": "Native verification reference, Rust library/API row: native build plus downstream compilation is required for a Rust library/API change; targets discovered from score/mw/com/rust/score_com_concept/BUILD, score/mw/com/impl/rust/com-api/com-api-runtime-lola/BUILD, score/mw/com/impl/rust/com-api/com-api-runtime-mock/BUILD and score/mw/com/rust/BUILD.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api:bigdata_com_api_gen_rs",
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis:bigdata-consumer-async",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis:bigdata-consumer",
+        "//score/mw/com/test/basic_rust_api/producer_app:bigdata-producer"
+      ],
+      "reason": "Downstream compilation of the public score_com surface through generated interface code and real consumer/producer binaries; detects source-compatibility breaks in find_service, ServiceDiscovery and descriptor types.",
+      "native_obligation": "Native verification reference, Rust library/API row (downstream compilation) and issue acceptance criterion 4 'existing interface-scoped discovery APIs remain available'; labels taken from score/mw/com/test/basic_rust_api/BUILD, .../consumer_async_apis/BUILD, .../consumer_sync_apis/BUILD and .../producer_app/BUILD.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-test",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-tests"
+      ],
+      "reason": "Linux-only crate unit tests for the abstraction layer and the LoLa runtime discovery/subscription code; regression evidence for descriptor/stream behavior and preserved existing APIs.",
+      "native_obligation": "Native verification reference, Rust library/API row (native unit tests); both targets declare target_compatible_with @platforms//os:linux in their BUILD files.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-unit-tests",
+        "//score/mw/com/rust/score_com_macros:score-com-macros-tests"
+      ],
+      "reason": "Macro unit test and macro doc test covering the interface generation that produces Consumer/Producer types used with discovery; guards generated-API compatibility.",
+      "native_obligation": "Native verification reference, Macro or dependency row (supported invocation cases, generated API compatibility); labels from score/mw/com/rust/score_com_concept/BUILD and score/mw/com/rust/score_com_macros/BUILD.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "test",
+      "targets": [
+        "//score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test:test_com_api_async",
+        "//score/mw/com/test/basic_rust_api/consumer_sync_apis/integration_test:test_com_api_sync",
+        "//score/mw/com/test/find_any_semantics/integration_test:test_find_any_semantics"
+      ],
+      "reason": "End-to-end offer/discover/receive integration on Linux; find_any_semantics exercises the ANY discovery semantics that are the backend prerequisite for a system-wide stream.",
+      "native_obligation": "Native verification reference, Communication behavior row (producer/consumer and IPC integration tests); targets from score/mw/com/test/basic_rust_api/consumer_async_apis/integration_test/BUILD, .../consumer_sync_apis/integration_test/BUILD and score/mw/com/test/find_any_semantics/integration_test/BUILD.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "docs",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola-doc-tests",
+        "//score/mw/com/rust/score_com_macros:score-com-macros-tests",
+        "//score/mw/com/rust/score_com_concept:score_com_concept-macros-tests"
+      ],
+      "reason": "Rustdoc examples/documentation for the runtime and concept macro surface; required by acceptance criterion 3 (document initial results, errors, stream lifetime/termination). Note the score_com_concept doc test is tagged manual and carries a documented native-linking limitation, so it may be excluded by default.",
+      "native_obligation": "Native verification reference, Rust library/API row (rustdoc/examples) and native documentation/qualification row; the manual tag and linking limitation are recorded in score/mw/com/rust/score_com_concept/BUILD lines 46-56 and are a known omission, not a pass.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "lint",
+      "targets": [
+        "//:format_test",
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-mock:com-api-runtime-mock"
+      ],
+      "reason": "Native rustfmt check (//:format_test) plus the native clippy_strict aspect applied to the changed Rust libraries; the aspect is the repository's Rust lint policy and must not be replaced by a generic lint list.",
+      "native_obligation": "Native lint policy: quality/static_analysis/static_analysis.bazelrc selects @score_rust_policies//clippy:linters.bzl%clippy_strict under the native 'clippy' config, and CI.md 'Linting for Rust (x86-64 linux)' documents the Rust lint job; //:format_test is defined in the root BUILD. No lint exception or warning suppression is proposed.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/rust:score_com",
+        "//score/mw/com/rust/score_com_concept:score_com_concept",
+        "//score/mw/com/impl/rust/com-api/com-api-runtime-lola:com-api-runtime-lola"
+      ],
+      "reason": "Enumerate dependency/reverse-dependency edges to bound the public API consumers of the changed trait surface and confirm no existing system-wide discovery symbol is present; used to size the downstream compilation denominator rather than to claim a pass.",
+      "native_obligation": "Native verification reference, discovery guidance: discover aliases/downstream targets from query results rather than inventing names; all three labels are real BUILD targets.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "query",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_mock"
+      ],
+      "reason": "Enumerate the FFI bridge targets and their providers to confirm/deny an ALL or system-wide find-service entry point and per-handle identity accessors at the C++ boundary before any implementation is designed.",
+      "native_obligation": "Explicitly unknown: baseline source shows start_find_service/find_service take a single InstanceSpecifier (bridge_ffi.rs) and HandleType exposes no identity (common.rs); whether an upstream all-services capability exists is the open #250-class prerequisite, so this query cannot assert availability.",
+      "config": "linux_x64"
+    },
+    {
+      "kind": "build",
+      "targets": [
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_rs",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_lola",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:bridge_ffi_mock",
+        "//score/mw/com/impl/rust/com-api/com-api-ffi-lola:registry_bridge_macro_cpp"
+      ],
+      "reason": "Compile the FFI layer and its C++ registry bridge when the backend all-services path is added or its callback/identity types change.",
+      "native_obligation": "Unknown pending the backend decision: the FFI obligations follow only after the ALL-selector and descriptor identity design is accepted; no new FFI symbol is asserted at this baseline.",
+      "config": "linux_x64"
+    }
+  ]
+}

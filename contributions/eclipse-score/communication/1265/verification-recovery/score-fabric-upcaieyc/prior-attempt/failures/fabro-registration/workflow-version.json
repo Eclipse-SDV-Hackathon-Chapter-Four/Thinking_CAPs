@@ -1,0 +1,8 @@
+{
+  "entrypoint": "workflow.toml",
+  "files": {
+    "workflow.fabro": "digraph communication1265 {\n graph [goal=\"Measure documentation assessment against pinned native baseline\", on_failure=\"route\"];\n start [type=\"start\"];\n verify [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3t71eiin/collector.py verify\", max_retries=0, timeout=\"21m\"];\n export [type=\"command\", script=\"/home/jefferson/s-core_sw_fabric/.venv/bin/python /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3t71eiin/collector.py export\", max_retries=0, timeout=\"1m\"];\n exit [type=\"exit\"];\n start -> verify;\n verify -> export [condition=\"outcome=failed\"];\n verify -> export;\n export -> exit;\n}\n",
+    "workflow.toml": "_version = 1\n[workflow]\ngraph = \"workflow.fabro\"\n[run]\ngoal = \"Export scoped communication issue 1265 assessment with measured checks and preserved gaps\"\nworking_dir = \"/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-fabric-3t71eiin/candidate\"\n[run.clone]\nenabled = false\n[run.run_branch]\nenabled = false\npush = false\n[run.agent]\nfabro_tools = false\n"
+  },
+  "workflow_dependencies": {}
+}

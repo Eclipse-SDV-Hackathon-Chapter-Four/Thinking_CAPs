@@ -1,0 +1,67 @@
+exec ${PAGER:-/usr/bin/less} "$0" || exit 1
+Executing tests from //src/helper_lib:helper_lib_tests
+-----------------------------------------------------------------------------
+============================= test session starts ==============================
+platform linux -- Python 3.12.12, pytest-9.0.3, pluggy-1.6.0
+rootdir: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/11/execroot/_main/bazel-out/k8-fastbuild/bin/src/helper_lib/helper_lib_tests.runfiles/_main
+configfile: pyproject.toml
+plugins: anyio-4.13.0
+collected 18 items
+
+src/helper_lib/test_helper_lib.py::test_config_setdefault_sets_when_not_in_raw_config PASSED [  5%]
+src/helper_lib/test_helper_lib.py::test_config_setdefault_does_not_overwrite_user_value PASSED [ 11%]
+src/helper_lib/test_helper_lib.py::test_git_operations_with_no_commits 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.531] [WARNING] [sphinx.src.helper_lib] Unexpected error while trying to get git_hash. Executed in: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tmp/tmpf5b6_fhq/empty_repo
+Traceback (most recent call last):
+  File "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/11/execroot/_main/bazel-out/k8-fastbuild/bin/src/helper_lib/helper_lib_tests.runfiles/_main/src/helper_lib/__init__.py", line 169, in get_current_git_hash
+    result = subprocess.run(
+             ^^^^^^^^^^^^^^^
+  File "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/external/rules_python++python+python_3_12_x86_64-unknown-linux-gnu/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'log', '-n', '1', '--pretty=format:%H']' returned non-zero exit status 128.
+PASSED                                                                   [ 16%]
+src/helper_lib/test_helper_lib.py::test_git_repo_with_no_remotes 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.663] [INFO] [sphinx.src.helper_lib] Did not find origin remote name. Will now take first result from:'git remote -v'
+[2026-10-07 14:53:29.663] [WARNING] [sphinx.src.helper_lib] Got wrong input line from 'get_github_repo_info'. Input: . Expected example: 'origin git@github.com:user/repo.git'
+PASSED                                                                   [ 22%]
+src/helper_lib/test_helper_lib.py::test_parse_git_output_ssh_format PASSED [ 27%]
+src/helper_lib/test_helper_lib.py::test_parse_git_output_https_format PASSED [ 33%]
+src/helper_lib/test_helper_lib.py::test_parse_git_output_ssh_format_without_git_suffix PASSED [ 38%]
+src/helper_lib/test_helper_lib.py::test_parse_git_output_invalid_format 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.673] [WARNING] [sphinx.src.helper_lib] Got wrong input line from 'get_github_repo_info'. Input: invalid. Expected example: 'origin git@github.com:user/repo.git'
+PASSED                                                                   [ 44%]
+src/helper_lib/test_helper_lib.py::test_parse_git_output_empty_string 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.674] [WARNING] [sphinx.src.helper_lib] Got wrong input line from 'get_github_repo_info'. Input: . Expected example: 'origin git@github.com:user/repo.git'
+PASSED                                                                   [ 50%]
+src/helper_lib/test_helper_lib.py::test_get_github_repo_info_ssh_remote PASSED [ 55%]
+src/helper_lib/test_helper_lib.py::test_get_github_repo_info_https_remote PASSED [ 61%]
+src/helper_lib/test_helper_lib.py::test_get_github_repo_info_multiple_remotes PASSED [ 66%]
+src/helper_lib/test_helper_lib.py::test_get_current_git_hash PASSED      [ 72%]
+src/helper_lib/test_helper_lib.py::test_get_current_git_hash_invalid_repo 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.919] [WARNING] [sphinx.src.helper_lib] Unexpected error while trying to get git_hash. Executed in: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/tool-tmp/tmpy7zqxiy4
+Traceback (most recent call last):
+  File "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/11/execroot/_main/bazel-out/k8-fastbuild/bin/src/helper_lib/helper_lib_tests.runfiles/_main/src/helper_lib/__init__.py", line 169, in get_current_git_hash
+    result = subprocess.run(
+             ^^^^^^^^^^^^^^^
+  File "/media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/execroot/_main/external/rules_python++python+python_3_12_x86_64-unknown-linux-gnu/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', 'log', '-n', '1', '--pretty=format:%H']' returned non-zero exit status 128.
+PASSED                                                                   [ 77%]
+src/helper_lib/test_helper_lib.py::test_runfiles_dir_found PASSED        [ 83%]
+src/helper_lib/test_helper_lib.py::test_runfiles_dir_missing_triggers_exit PASSED [ 88%]
+src/helper_lib/test_helper_lib.py::test_git_root_search_success 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.953] [DEBUG] [sphinx.src.helper_lib] Running outside bazel.
+PASSED                                                                   [ 94%]
+src/helper_lib/test_helper_lib.py::test_git_root_search_not_found 
+-------------------------------- live log call ---------------------------------
+[2026-10-07 14:53:29.975] [DEBUG] [sphinx.src.helper_lib] Running outside bazel.
+PASSED                                                                   [100%]
+
+- generated xml file: /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/.s-core-build/runs/score-2850-native-_qjqrtmg/draft-bazel-output/sandbox/linux-sandbox/11/execroot/_main/bazel-out/k8-fastbuild/testlogs/src/helper_lib/helper_lib_tests/test.xml -
+============================== 18 passed in 0.97s ==============================
