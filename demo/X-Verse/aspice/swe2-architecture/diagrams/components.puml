@@ -26,7 +26,15 @@ node "Host" {
   node "cuttlefish-orchestration-cont" {
     component "AAOS + cluster app" as CF
   }
+  node "OpenSOVD vECU (external_hackathon_ecus)" {
+    component "opensovd-gateway\n(PR #40) :7690" as OG
+    component "sovd-adapter-console\n:8080" as CON
+    component "CDA :20002" as CDA
+    component "ECU simulator :8181" as SIM
+  }
+  component "Zenoh2CAN bridge\n(ThreadX ctl.sh)" as Z2C
 }
+node "MXChip AZ3166\n(ThreadX lighting ECU)" as AZ
 node "Raspberry Pi 4 (AAOS)" as PI
 L ..> Z : starts if absent
 L ..> VV
@@ -35,6 +43,8 @@ L ..> BR
 L ..> CC
 L ..> BE
 L ..> CF
+L ..> OG
+L ..> Z2C : board present
 VV -- CS : CARLA API
 VV --> Z : IF-01
 MC --> Z : IF-02
@@ -51,4 +61,11 @@ RTCU --> CF : IF-10 adb
 RTCU --> PI : IF-10 adb
 CF --> Z : cluster data
 PI --> Z : cluster data
+CON --> Z : speed (IF-01)
+CON --> OG : IF-11 SOVD
+CON --> SIM : IF-12 set DTC
+CON --> CDA : IF-12 read DTC
+CDA --> SIM : UDS / DoIP
+Z2C <--> Z : vcu status / lights
+Z2C <--> AZ : IF-13 SLCAN 0x1F1 / 0x1F4
 @enduml

@@ -10,13 +10,19 @@ rectangle "X-Verse end-to-end system" as SYS {
   usecase "Diagnose a lost\nspeed signal (SYS-03)" as UC2
   usecase "Update the cluster app\nover the air (SYS-04)" as UC3
   usecase "Start / stop everything\n(SYS-05)" as UC4
+  usecase "Correlate SOVD and classic\ndiagnostics (SYS-06)" as UC5
+  usecase "Switch brake / reverse\nlights (SYS-07)" as UC6
 }
 node "CARLA simulator" as CARLA
 node "Android targets\n(Cuttlefish, Raspberry Pi 4)" as AND
+node "MXChip AZ3166\n(ThreadX)" as AZ
 Driver --> UC1
 Driver --> UC4
 Tester --> UC2
+Tester --> UC5
+Driver --> UC6
 Operator --> UC3
 UC1 --> CARLA
 UC3 --> AND
+UC6 --> AZ
 @enduml

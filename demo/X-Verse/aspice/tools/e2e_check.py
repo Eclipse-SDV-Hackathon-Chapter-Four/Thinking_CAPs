@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: Apache-2.0
-"""Integration test cases ITC-01..ITC-13 against the running X-Verse system.
+"""Integration test cases ITC-01..ITC-16 against the running X-Verse system.
 
-Read-only: it subscribes, queries and inspects; it injects and changes nothing.
+Read-only towards the vehicle: it subscribes, queries and inspects. The only write is the
+SOVD Adapter Console's classic round trip (ITC-15), which sets and deletes one test DTC
+in the ECU simulator. A case whose element is not present (ThreadX without the AZ3166
+board) reports NOT RUN.
 Run while `run_autoverse.py --enable-camera-display --vcu-zenoh` is up:
 
     python3 aspice/tools/e2e_check.py [--out results.json]
@@ -27,7 +30,10 @@ SOVD = "http://127.0.0.1:7691/sovd/v1"
 OPERATOR = "https://127.0.0.1:9444"
 DEVICE = ("127.0.0.1", 9443)
 CONTAINERS = ["bridge-e2e", "docker_setup-adas_score-1", "ota-backend", "ota-rtcu",
-              "cuttlefish-orchestration-cont"]
+              "cuttlefish-orchestration-cont", "opensovd-gateway", "sovd-adapter-console",
+              "testcontainer-cda-1", "testcontainer-ecu-sim-1"]
+GATEWAY = "http://127.0.0.1:7690/sovd/v1"
+THREADX = ROOT / "external_hackathon_ecus" / "ThreadX"
 TARGETS = ["PC-CUTTLEFISH-01", "PI-ANDROID-15"]
 
 results = []
@@ -41,9 +47,10 @@ def case(case_id, title):
                 ok, detail = fn()
             except Exception as exc:  # a crashing check is a failed check
                 ok, detail = False, f"{type(exc).__name__}: {exc}"
-            results.append({"id": case_id, "title": title, "status": "PASS" if ok else "FAIL",
+            status = "NOT RUN" if ok is None else "PASS" if ok else "FAIL"
+            results.append({"id": case_id, "title": title, "status": status,
                             "detail": detail, "duration_s": round(time.time() - started, 2)})
-            print(f"{case_id} {'PASS' if ok else 'FAIL'}  {title}  — {detail}")
+            print(f"{case_id} {status}  {title}  — {detail}")
         return run
     return wrap
 
@@ -205,18 +212,59 @@ def itc13():
     return boot == "1" and installed, f"boot_completed={boot or '?'}, cluster app {'installed' if installed else 'missing'}"
 
 
+@case("ITC-14", "OpenSOVD gateway (PR #40) serves the cruise component")
+def itc14():
+    expected = {"vehicle_speed": "currentData", "cruise_state": "currentData",
+                "speed_sensor_fault_status": "currentData", "speed_sensor_stuck": "storedData"}
+    comps = [c["id"] for c in get_json(f"{GATEWAY}/components")["items"]]
+    items = {d["id"]: d.get("category") for d in get_json(f"{GATEWAY}/components/cruise/data")["items"]}
+    wrong = [f"{k} ({items.get(k)})" for k, cat in expected.items() if items.get(k) != cat]
+    fault = get_json(f"{GATEWAY}/components/cruise/data/speed_sensor_fault_status")["data"]
+    ok = "cruise" in comps and not wrong and fault.get("status") in ("passed", "prefailed", "failed", "prepassed")
+    return ok, (f"component cruise with {', '.join(f'{k} ({v})' for k, v in items.items())}; "
+                f"{fault.get('fault')} {fault.get('status')}" + (f"; wrong: {', '.join(wrong)}" if wrong else ""))
+
+
+@case("ITC-15", "SOVD Adapter Console checks (Zenoh, gateway, CDA, ECU simulator)")
+def itc15():
+    r = subprocess.run(["docker", "exec", "sovd-adapter-console", "python", "runner.py"],
+                       capture_output=True, text=True, timeout=180)
+    lines = r.stdout.strip().splitlines()
+    failed = [l.split()[1] + " " + " ".join(l.split()[2:6]) for l in lines if l.startswith("FAIL")]
+    total = lines[-1] if lines else r.stderr.strip()[-120:]
+    return r.returncode == 0 and not failed, total + (f"; failed: {'; '.join(failed)}" if failed else "")
+
+
+@case("ITC-16", "ThreadX zonal lighting ECU on the AZ3166 board")
+def itc16():
+    if not list(Path("/dev/serial/by-id").glob("usb-STMicroelectronics_STM32_STLink_*-if02")):
+        return None, "AZ3166 board not connected"
+    out = subprocess.run([str(THREADX / "ctl.sh"), "status"], capture_output=True, text=True, timeout=30).stdout
+    state = dict(l.split(":", 1) for l in out.splitlines() if ":" in l)
+    running = "running" in state.get("watchdog", "") and state.get("bridge", "").strip() != ""
+    connected = "not connected" not in state.get("board", "not connected")
+    seen = zenoh_keys(["vehicle/lights/brake_lights_cmd", "vehicle/lights/reverse_lights_cmd"], seconds=3)
+    return running and connected and bool(seen), (f"watchdog {state.get('watchdog', '?').strip()}, bridge "
+                                                  f"{state.get('bridge', '').strip() or 'down'}, board "
+                                                  f"{state.get('board', '?').strip()}, light commands seen: {sorted(seen)}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, help="write the results as JSON")
     args = parser.parse_args()
-    for check in (itc01, itc02, itc03, itc04, itc05, itc06, itc07, itc08, itc09, itc10, itc11, itc12, itc13):
+    for check in (itc01, itc02, itc03, itc04, itc05, itc06, itc07, itc08, itc09, itc10, itc11, itc12, itc13,
+                  itc14, itc15, itc16):
         check()
     record = {"when": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "host": socket.gethostname(), "cases": results}
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(record, indent=2) + "\n")
-    failed = [r["id"] for r in results if r["status"] != "PASS"]
-    print(f"{len(results) - len(failed)}/{len(results)} passed" + (f"; failed: {', '.join(failed)}" if failed else ""))
+    failed = [r["id"] for r in results if r["status"] == "FAIL"]
+    passed = sum(r["status"] == "PASS" for r in results)
+    not_run = [r["id"] for r in results if r["status"] == "NOT RUN"]
+    print(f"{passed}/{len(results)} passed" + (f"; not run: {', '.join(not_run)}" if not_run else "")
+          + (f"; failed: {', '.join(failed)}" if failed else ""))
     return 1 if failed else 0
 
 

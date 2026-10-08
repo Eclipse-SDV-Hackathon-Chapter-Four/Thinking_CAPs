@@ -13,7 +13,9 @@ Run from the autoverse checkout while the system is up (run_autoverse.py):
 
     python3 aspice/tools/generate_report.py            # quick: unit suites that run on the host,
                                                        # recorded results for the container suites
-    python3 aspice/tools/generate_report.py --full     # also OTA (Maven) and S-CORE / PR #16 (Bazel)
+    python3 aspice/tools/generate_report.py --full     # also OTA (Maven), S-CORE / PR #16 (Bazel), ThreadX (CMake)
+    python3 aspice/tools/generate_report.py --qualify  # also drive the vehicle: QTC-02, QTC-03, QTC-07
+                                                       # (otherwise their last recorded run is reported)
 
 Exits non-zero when a test fails or traceability is incomplete.
 """
@@ -151,6 +153,28 @@ def ut_someip():
                               "source": "run now"})
 
 
+def ut_console():
+    console = ROOT / "external_hackathon_ecus/SOVD_Adapter_Console"
+    r = run([sys.executable, "-m", "unittest", "discover", "-s", "tests"], cwd=console, timeout=600)
+    m = re.search(r"Ran (\d+) tests?", r.stderr)
+    tests = int(m.group(1)) if m else 0
+    failures = 0 if r.returncode == 0 else len(re.findall(r"^(FAIL|ERROR):", r.stderr, re.M)) or 1
+    return save("ut-console", {"status": "PASS" if r.returncode == 0 and tests else "FAIL", "tests": tests,
+                               "failures": failures, "detail": r.stderr.strip().splitlines()[-1], "source": "run now"})
+
+
+def ut_threadx():
+    # The image's build stage compiles ThreadX and runs ctest; --no-cache always executes it.
+    r = run(["docker", "build", "--no-cache", "--progress", "plain", "--target", "build",
+             "-t", "threadx-zonal-lights:ut", str(ROOT / "external_hackathon_ecus/ThreadX")], timeout=3600)
+    m = re.search(r"(\d+)% tests passed, (\d+) tests? failed out of (\d+)", r.stdout + r.stderr)
+    tests, failures = (int(m.group(3)), int(m.group(2))) if m else (0, 1)
+    ok = r.returncode == 0 and m and failures == 0
+    return save("ut-threadx", {"status": "PASS" if ok else "FAIL", "tests": tests, "failures": failures,
+                               "detail": f"ctest in the image build stage: {m.group(0) if m else 'no ctest summary'}",
+                               "source": "run now"})
+
+
 def ut_ota():
     src = ROOT / "vecu/ota/backend/java"
     with tempfile.TemporaryDirectory() as tmp:
@@ -215,9 +239,10 @@ def bazel(cid, workdir, args, name, label):
 
 
 def unit_results(full):
-    res = {"UT-LAUNCHER": ut_launcher(), "UT-SOMEIP": ut_someip()}
+    res = {"UT-LAUNCHER": ut_launcher(), "UT-SOMEIP": ut_someip(), "UT-CONSOLE": ut_console()}
     if full:
         res["UT-OTA"] = ut_ota()
+        res["UT-THREADX"] = ut_threadx()
         cid = devcontainer()
         if cid:
             res["UT-SCORE"] = bazel(cid, "/workspaces/s-core/cc_s-core", "--nocache_test_results --test_output=errors //score/cruise_control/...",
@@ -226,7 +251,8 @@ def unit_results(full):
                                    "--config=score_diag_x86_64_linux --lockfile_mode=update --nocache_test_results --test_output=errors "
                                    "//score/mw/diag/sovd_adapter:all", "ut-pr16",
                                    "bazel test //score/mw/diag/sovd_adapter:all")
-    for key, name in (("UT-OTA", "ut-ota"), ("UT-SCORE", "ut-score"), ("UT-PR16", "ut-pr16")):
+    for key, name in (("UT-OTA", "ut-ota"), ("UT-SCORE", "ut-score"), ("UT-PR16", "ut-pr16"),
+                      ("UT-THREADX", "ut-threadx")):
         res.setdefault(key, cached(name))
     return res
 
@@ -251,7 +277,27 @@ def operator_campaigns():
         return None
 
 
-def qualification_results():
+def driven_results(drive):
+    """QTC-02, QTC-03, QTC-07: run qualification_check.py (drives the vehicle) or report its last run."""
+    out = EVID / "qualification.json"
+    if drive:
+        r = run([sys.executable, str(ASPICE / "tools/qualification_check.py"), "--out", str(out)], timeout=900)
+        print(r.stdout, end="")
+        if not out.exists():
+            return {q: {"status": "FAIL", "detail": f"qualification_check.py did not run: {r.stderr.strip()[-200:]}"}
+                    for q in ("QTC-02", "QTC-03", "QTC-07")}
+        source = "run now"
+    elif out.exists():
+        source = "recorded"
+    else:
+        return {q: {"status": "NOT RUN", "detail": "not run yet: generate_report.py --qualify"}
+                for q in ("QTC-02", "QTC-03", "QTC-07")}
+    data = json.loads(out.read_text())
+    return {c["id"]: {"status": c["status"], "detail": f"{c['detail']} ({source} {data['when']})"}
+            for c in data["cases"]}
+
+
+def qualification_results(drive=False):
     res = {}
     logs = sorted(glob.glob(os.path.expanduser("~/.cache/autoverse-runner/supervisor-*.log")))
     started = [l for l in logs if "Supervisor is now running" in Path(l).read_text(errors="ignore")]
@@ -259,10 +305,7 @@ def qualification_results():
     res["QTC-01"] = {"status": "PASS" if started and stopped else "NOT RUN",
                      "detail": f"{len(started)} supervised run(s) reached 'Supervisor is now running', "
                                f"{len(stopped)} completed shutdown (~/.cache/autoverse-runner)"}
-    witnessed = "witnessed live in the dry run in front of the competition (issue #44)"
-    res["QTC-02"] = {"status": "PASS", "detail": "witnessed live in the dry run (cruise engaged before the fault)",
-                     "manual": True}
-    res["QTC-03"] = {"status": "PASS", "detail": witnessed, "manual": True}
+    res.update(driven_results(drive))
     camps = operator_campaigns()
     if camps is None:
         for q in ("QTC-04", "QTC-05", "QTC-06"):
@@ -445,7 +488,7 @@ def render(wp, diagrams, cases, swr_status, issues, unit, integ_note, prov, stam
                  f'<div class="card"><b>{unit_tests}</b>unit test cases / checks executed</div>'
                  f'<div class="card"><b>{len(issues)}</b>traceability issues</div></div>'
                  f'<p class="small">Demonstration work products for code quality and traceability; not an assessed '
-                 f'capability level. Manual (witnessed) qualification cases are marked.</p>'
+                 f'capability level. Every case is checked by a tool against the running system; none is accepted from a witness statement.</p>'
                  + ("".join(f'<p class="issue">⚠ {html.escape(i)}</p>' for i in issues) if issues else "")
                  + "</section>")
     sys_rows = "".join(f"<tr><td>{r['ID']}</td><td>{inline(r['Requirement'])}</td><td>{inline(r['Source'])}</td>"
@@ -559,7 +602,10 @@ def render_markdown(wp, cases, swr_status, issues, unit, integ_note, prov, stamp
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--full", action="store_true", help="also run the OTA (Maven) and S-CORE/PR16 (Bazel) suites")
+    parser.add_argument("--full", action="store_true",
+                        help="also run the OTA (Maven), S-CORE/PR16 (Bazel) and ThreadX (CMake) suites")
+    parser.add_argument("--qualify", action="store_true",
+                        help="also drive the vehicle for QTC-02, QTC-03 and QTC-07 (qualification_check.py)")
     args = parser.parse_args()
     stamp = now()
     wp = load_work_products()
@@ -569,8 +615,8 @@ def main():
     unit = unit_results(args.full)
     print("integration checks ...")
     integ, integ_note = integration_results()
-    print("qualification records ...")
-    qual = qualification_results()
+    print("qualification ..." + (" (driving the vehicle)" if args.qualify else " (records)"))
+    qual = qualification_results(args.qualify)
     cases, swr_status, issues = evaluate(wp, unit, integ, qual)
     REPORT.mkdir(parents=True, exist_ok=True)
     (REPORT / "aspice-swe-report.html").write_text(render(wp, diagrams, cases, swr_status, issues, unit,

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-07 16:03:52",
+  "generated": "2026-10-08 01:11:06",
   "requirements": {
     "SWR-01": "VERIFIED",
     "SWR-02": "VERIFIED",
@@ -11,7 +11,11 @@
     "SWR-08": "VERIFIED",
     "SWR-09": "VERIFIED",
     "SWR-10": "VERIFIED",
-    "SWR-11": "VERIFIED"
+    "SWR-11": "VERIFIED",
+    "SWR-12": "VERIFIED",
+    "SWR-13": "VERIFIED",
+    "SWR-14": "VERIFIED",
+    "SWR-15": "PARTIAL"
   },
   "cases": {
     "UT-LAUNCHER": {
@@ -45,7 +49,7 @@
       "status": "PASS",
       "detail": "bazel test //score/cruise_control/...: 1 target(s), 15 test cases \u2014 Executed 1 out of 1 test: 1 test passes.",
       "tests": 15,
-      "source": "run now"
+      "source": "recorded 2026-10-07 16:05:13"
     },
     "UT-PR16": {
       "level": "UT",
@@ -56,7 +60,7 @@
       "status": "PASS",
       "detail": "bazel test //score/mw/diag/sovd_adapter:all: 1 target(s), 27 test cases \u2014 Executed 1 out of 1 test: 1 test passes.",
       "tests": 27,
-      "source": "run now"
+      "source": "recorded 2026-10-07 16:05:35"
     },
     "UT-OTA": {
       "level": "UT",
@@ -67,7 +71,29 @@
       "status": "PASS",
       "detail": "12 JUnit suites (mvn test)",
       "tests": 70,
+      "source": "recorded 2026-10-07 16:04:30"
+    },
+    "UT-CONSOLE": {
+      "level": "UT",
+      "title": "`external_hackathon_ecus/SOVD_Adapter_Console/tests` (Python unittest: observer, gateway stand-in semantics, fault model and bridge, automatic DTC, discovery, end-to-end without Zenoh, real Zenoh pub/sub)",
+      "verifies": [
+        "SWR-13"
+      ],
+      "status": "PASS",
+      "detail": "OK (skipped=1)",
+      "tests": 57,
       "source": "run now"
+    },
+    "UT-THREADX": {
+      "level": "UT",
+      "title": "`external_hackathon_ecus/ThreadX/tests` (C: lighting protocol, SLCAN codec and edge cases)",
+      "verifies": [
+        "SWR-15"
+      ],
+      "status": "PASS",
+      "detail": "ctest in the image build stage: 100% tests passed, 0 tests failed out of 3",
+      "tests": 3,
+      "source": "recorded 2026-10-08 00:55:56"
     },
     "ITC-01": {
       "level": "IT",
@@ -114,7 +140,7 @@
         "SWR-07"
       ],
       "status": "PASS",
-      "detail": "vehicle_speed 0.0 km/h, age 22 ms"
+      "detail": "vehicle_speed 0.0 km/h, age 43 ms"
     },
     "ITC-06": {
       "level": "IT",
@@ -160,7 +186,7 @@
         "SWR-10"
       ],
       "status": "PASS",
-      "detail": "PC-CUTTLEFISH-01 reachable, PI-ANDROID-15 reachable; last seen 7 s ago"
+      "detail": "PC-CUTTLEFISH-01 reachable, PI-ANDROID-15 unreachable; last seen 9 s ago"
     },
     "ITC-11": {
       "level": "IT",
@@ -169,7 +195,7 @@
         "SWR-10"
       ],
       "status": "PASS",
-      "detail": "success: PC-CUTTLEFISH-01 #17, PI-ANDROID-15 #19; unreachable target closed as failed: #8"
+      "detail": "success: PC-CUTTLEFISH-01 #23, PI-ANDROID-15 #19; unreachable target closed as failed: #8"
     },
     "ITC-12": {
       "level": "IT",
@@ -189,6 +215,35 @@
       "status": "PASS",
       "detail": "boot_completed=1, cluster app installed"
     },
+    "ITC-14": {
+      "level": "IT",
+      "title": "OpenSOVD gateway (PR #40) serves the cruise component",
+      "verifies": [
+        "SWR-12"
+      ],
+      "status": "PASS",
+      "detail": "component cruise with vehicle_speed (currentData), cruise_state (currentData), speed_sensor_fault_status (currentData), speed_sensor_stuck (storedData); VehicleSpeedSensorStuck passed"
+    },
+    "ITC-15": {
+      "level": "IT",
+      "title": "SOVD Adapter Console checks",
+      "verifies": [
+        "SWR-12",
+        "SWR-13",
+        "SWR-14"
+      ],
+      "status": "PASS",
+      "detail": "13/13 passed"
+    },
+    "ITC-16": {
+      "level": "IT",
+      "title": "ThreadX zonal lighting ECU on the AZ3166 board",
+      "verifies": [
+        "SWR-15"
+      ],
+      "status": "NOT RUN",
+      "detail": "AZ3166 board not connected"
+    },
     "QTC-01": {
       "level": "QT",
       "title": "One-command start and stop",
@@ -196,7 +251,7 @@
         "SWR-01"
       ],
       "status": "PASS",
-      "detail": "2 supervised run(s) reached 'Supervisor is now running', 1 completed shutdown (~/.cache/autoverse-runner)",
+      "detail": "2 supervised run(s) reached 'Supervisor is now running', 2 completed shutdown (~/.cache/autoverse-runner)",
       "manual": false
     },
     "QTC-02": {
@@ -208,8 +263,8 @@
         "SWR-04"
       ],
       "status": "PASS",
-      "detail": "witnessed live in the dry run (cruise engaged before the fault)",
-      "manual": true
+      "detail": "vehicle network live, scripted input channel answers, cruise control off; ego placed on spawn point 80 of Town10HD_Opt (178 m straight lane); W held: 0.1 \u2192 18.3 km/h in 1.3 s; C: VCU engaged after 0.05 s; S-CORE active, set speed 14.8 km/h; cruise control keeps the vehicle moving at 11.6..14.4 km/h for 8 s (set 14.8) without pedal; S: cruise control disengaged after 0.05 s, vehicle stopped (recorded 2026-10-08T01:10:39+0100)",
+      "manual": false
     },
     "QTC-03": {
       "level": "QT",
@@ -222,8 +277,8 @@
         "SWR-07"
       ],
       "status": "PASS",
-      "detail": "witnessed live in the dry run in front of the competition (issue #44)",
-      "manual": true
+      "detail": "vehicle network live, scripted input channel answers, cruise control off; ego placed on spawn point 80 of Town10HD_Opt (178 m straight lane); W held: 0.0 \u2192 18.6 km/h in 1.4 s; C: VCU engaged after 0.05 s; S-CORE active, set speed 15.4 km/h; I: vehicle speed no longer published; DTC CC.LostCommunication failed (confirmed) 1.22 s after I; cancel request sent, VCU disengaged 1.22 s after I, S-CORE standby; I again: speed restored, DTC passed 0.22 s later; S: cruise control disengaged after 0.00 s, vehicle stopped (recorded 2026-10-08T01:10:39+0100)",
+      "manual": false
     },
     "QTC-04": {
       "level": "QT",
@@ -234,7 +289,7 @@
         "SWR-11"
       ],
       "status": "PASS",
-      "detail": "campaign #17 v1.3: downloading \u2192 installing \u2192 success",
+      "detail": "campaign #23 v5.3: downloading \u2192 installing \u2192 success",
       "manual": false
     },
     "QTC-05": {
@@ -255,6 +310,17 @@
       ],
       "status": "PASS",
       "detail": "campaign #8 closed failed: target unreachable at RTCU probe (adb 192.168.1.72:5555)",
+      "manual": false
+    },
+    "QTC-07": {
+      "level": "QT",
+      "title": "Lost speed signal seen by the OpenSOVD vECU",
+      "verifies": [
+        "SWR-13",
+        "SWR-14"
+      ],
+      "status": "PASS",
+      "detail": "vehicle network live, scripted input channel answers, cruise control off; console fault memory reset; I: console U0104 (lost communication) qualified 0.62 s after I; ECU DTC 01E242 reads 0x2F via CDA (23 ms); I again: U0104 healed after 0.51 s, ECU DTC 01E242 reads 0x28 (recorded 2026-10-08T01:10:39+0100)",
       "manual": false
     }
   },

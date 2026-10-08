@@ -1,8 +1,9 @@
 # Software architecture — X-Verse end-to-end demonstration
 
 The demonstration is a set of cooperating processes and containers on one host, plus the
-optional Raspberry Pi. They communicate over three buses: **Zenoh** (vehicle network),
-**SOME/IP** (S-CORE ECU) and **HTTPS** (SOVD diagnostics, OTA). The launcher owns the
+optional Raspberry Pi and the MXChip AZ3166 board. They communicate over four buses:
+**Zenoh** (vehicle network), **SOME/IP** (S-CORE ECU), **CAN** (lighting ECU, through the
+Zenoh2CAN bridge) and **HTTP(S)** (SOVD diagnostics, classic CDA, OTA). The launcher owns the
 lifecycle of all of them.
 
 ## Views
@@ -22,7 +23,7 @@ The report embeds the rendered views.
 | --- | --- | --- | --- |
 | Launcher | `run_autoverse.py` (autoverse) | Start/stop order, Zenoh router, supervision | SWR-01 |
 | Virtual vehicle | `bridges/carla/examples/virtual_vehicle.py` (carla-simulator-bridge) | CARLA ego vehicle ↔ Zenoh vehicle state and commands | SWR-02 |
-| Manual control | `bridges/carla/examples/vehicle_manual_control.py` | Driver requests, `I`-key speed inhibit | SWR-03 |
+| Manual control | `bridges/carla/examples/vehicle_manual_control.py` | Driver requests, `I`-key speed inhibit, scripted input channel for automated tests | SWR-03 |
 | VCU | `vecu/vcu_zenoh` (vcu-zenoh-python) | Throttle/brake, cruise-control engagement | SWR-04 |
 | SOME/IP bridge | `bridges/someip/zenoh-someip-bridge`, container `bridge-e2e` | Zenoh ↔ SOME/IP payload conversion | SWR-05 |
 | Cruise-control app | `vecu/s-core/cc_s-core/score/cruise_control`, container `docker_setup-adas_score-1` | Cruise control, signal-loss guard, cancel request | SWR-06 |
@@ -31,6 +32,10 @@ The report embeds the rendered views.
 | OTA backend | `vecu/ota/backend/java`, container `ota-backend` | Operator console/API `:9444`, mTLS device API `:9443`, campaigns | SWR-09 |
 | RTCU | `vecu/ota/rtcu`, container `ota-rtcu` | Vehicle OTA agent: poll, verify, adb install, report | SWR-10 |
 | Android target | `vecu/aaos_cuttlefish` (Cuttlefish), Raspberry Pi 4 | Runs the cluster app, accepts adb installs | SWR-11 |
+| OpenSOVD gateway | `external_hackathon_ecus/OpenSOVD` (inc_diagnostics PR #40 `opensovd-gateway`), container `opensovd-gateway` | SOVD component `cruise` on `:7690`, time-based fault debounce, injection switch | SWR-12 |
+| SOVD Adapter Console | `external_hackathon_ecus/SOVD_Adapter_Console`, container `sovd-adapter-console` | Live console `:8080`: Zenoh speed monitors (P0500, U0104), bridge into the gateway, automatic classic DTC | SWR-13 |
+| CDA + ECU simulator | upstream classic-diagnostic-adapter test containers `testcontainer-cda-1`, `testcontainer-ecu-sim-1` | Classic path: ECU fault memory over UDS/DoIP, served by the CDA's SOVD API `:20002` | SWR-14 |
+| ThreadX lighting ECU | `external_hackathon_ecus/ThreadX` (firmware on the MXChip AZ3166, `ctl.sh` with the Zenoh2CAN bridge) | Brake/reverse lights from the VCU status over CAN | SWR-15 |
 
 ## Interfaces
 
@@ -46,6 +51,9 @@ The report embeds the rendered views.
 | IF-08 OTA operator | Operator → OTA backend | HTTPS `:9444` | console, artifacts, campaigns, devices |
 | IF-09 OTA device | RTCU → OTA backend | HTTPS `:9443`, mutual TLS | register, targets, manifest, artifact, status |
 | IF-10 Installation | RTCU → Android targets | adb (private server `:5038`) | `adb install -r` |
+| IF-11 SOVD gateway | Console → OpenSOVD gateway | HTTP `:7690/sovd/v1` | component `cruise`: read items, write `speed_sensor_stuck` |
+| IF-12 Classic diagnostics | Console → ECU simulator, CDA → ECU simulator, console → CDA | HTTP `:8181` (simulator control), UDS over DoIP `:13400`, HTTP `:20002` (CDA SOVD API) | set/read/delete ECU DTCs |
+| IF-13 Lighting CAN | Zenoh2CAN bridge ↔ ThreadX ECU | SLCAN over the AZ3166 USB serial port | `0x1F1` VCU status in, `0x1F4` light commands out |
 
 ## Allocation rationale
 
@@ -56,3 +64,8 @@ The report embeds the rendered views.
   endpoint. An unreachable target is a reported state, never a hang (SWR-10).
 - The launcher treats control-script components (containers, detached services) and
   processes uniformly, so one command starts and stops the whole system (SWR-01).
+- The OpenSOVD vECU observes the vehicle independently of the S-CORE ECU: the console
+  reads the speed on Zenoh itself, so a lost signal is seen by both diagnostic paths
+  (SWR-07 and SWR-13) and can be compared.
+- Automated qualification drives the vehicle through Manual Control's scripted input
+  channel, so the real driver path (toggle logic, inhibit, pedals) is exercised (SWR-03).
