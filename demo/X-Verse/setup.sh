@@ -59,6 +59,9 @@ This script is for setting up the XVerse environment and repos after cloning the
 - Builds the OpenSOVD vECU images (external_hackathon_ecus/OpenSOVD: gateway,
   SOVD Adapter Console, CDA + ECU simulator), so its first start fits
   run_autoverse.py's start timeout.
+- Loads the vcan kernel module (now and at boot) and builds the ThreadX AutoSD
+  digital twin image (external_hackathon_ecus/ThreadX_AutoSD_Twin), started by
+  run_autoverse.py when no AZ3166 board is plugged in.
 
 Options:
     --carla      Download and install CARLA server and client. Does not by default.
@@ -272,6 +275,18 @@ pushd "${OPENSOVD_VECU_DIR:-$AUTOVERSE_DIR/external_hackathon_ecus/OpenSOVD}"
     ./ctl.sh build
 popd
 
+## ThreadX AutoSD digital twin: the container creates its own vcan0, so the host
+## needs the vcan module (loaded now and at every boot); then build its image.
+if [[ ! -d /sys/module/vcan ]]; then
+    sudo modprobe vcan
+fi
+if [[ ! -f /etc/modules-load.d/vcan.conf ]]; then
+    echo vcan | sudo tee /etc/modules-load.d/vcan.conf > /dev/null
+fi
+pushd "${THREADX_TWIN_DIR:-$AUTOVERSE_DIR/external_hackathon_ecus/ThreadX_AutoSD_Twin}"
+    ./ctl.sh build
+popd
+
 if [ $INSTALL_CUTTLEFISH == "true" ]; then
     pushd vecu/aaos_cuttlefish
         sudo apt install -y android-tools-adb
@@ -289,7 +304,9 @@ Next steps:
 - Hackathon ECUs in external_hackathon_ecus/: OpenSOVD (images built above;
   run_autoverse.py starts it and opens the SOVD Adapter Console on
   http://localhost:8080), ThreadX (started when the AZ3166 board is plugged
-  in; prepare with --threadx), and the v1 demo_console (run by hand).
+  in; prepare with --threadx), its AutoSD digital twin (image built above,
+  started instead when no board is plugged in), and the v1 demo_console (run
+  by hand).
 - Zenoh router: run_autoverse.py starts one in Docker (eclipse/zenoh:1.3.4)
   when nothing answers on tcp/127.0.0.1:7447.
 - Start everything:  python3 $AUTOVERSE_DIR/run_autoverse.py --enable-camera-display --vcu-zenoh

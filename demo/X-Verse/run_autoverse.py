@@ -220,6 +220,25 @@ def build_steps(
             "kill_patterns": [],
             "startup_delay_sec": 1.0,
         })
+    else:
+        # Without the board: the AutoSD digital twin of the same ThreadX controller
+        # (external_hackathon_ecus/ThreadX_AutoSD_Twin), the same Zenoh2CAN bridge
+        # profile on the container's own vcan0, so the vehicle's lights still
+        # follow the VCU.  Only one lighting ECU runs at a time.  ctl.sh up builds
+        # (cached; setup.sh pre-builds the image) and waits for the controller.
+        # Overrides: AUTOVERSE_THREADX_TWIN=0 (leave it out), THREADX_TWIN_DIR.
+        twin_dir = os.path.expandvars(os.environ.get(
+            "THREADX_TWIN_DIR", "$AUTOVERSE_ROOT/external_hackathon_ecus/ThreadX_AutoSD_Twin"))
+        if os.environ.get("AUTOVERSE_THREADX_TWIN", "1") != "0" and os.path.isfile(os.path.join(twin_dir, "ctl.sh")):
+            steps.append({
+                "name": "ThreadX AutoSD digital twin (no AZ3166 board)",
+                "containers": ["autosd-threadx-twin"],
+                "cwd": twin_dir,
+                "cmd": ["./ctl.sh", "up"],
+                "stp": ["./ctl.sh", "down"],
+                "kill_patterns": [],
+                "startup_delay_sec": 1.0,
+            })
 
     # Conditionally add modules based on the communication protocol
     if only_zenoh_modules:

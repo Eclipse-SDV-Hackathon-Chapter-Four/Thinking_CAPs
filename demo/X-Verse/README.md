@@ -96,6 +96,7 @@ The vehicle baseline uses the Python Zenoh VCU with the SOME/IP bridge and S-COR
 | ThreadX | Zonal controller for brake/reverse lights over CAN and Zenoh2CAN (Linux simulation and MXChip AZ3166 board) | `external_hackathon_ecus/ThreadX` |
 | OpenSOVD vECU | `opensovd-gateway` of inc_diagnostics PR #40 (`:7690`) with the SOVD Adapter Console and the upstream CDA + ECU simulator, started by `run_autoverse.py` | `external_hackathon_ecus/OpenSOVD` |
 | SOVD Adapter Console | Live console (`:8080`): Zenoh vehicle speed next to the gateway, fault bridge, automatic classic DTC | `external_hackathon_ecus/SOVD_Adapter_Console` |
+| ThreadX AutoSD digital twin | The ThreadX lighting controller and Zenoh2CAN bridge in an AutoSD container (own `vcan0`); started by `run_autoverse.py` when no AZ3166 board is plugged in | `external_hackathon_ecus/ThreadX_AutoSD_Twin` |
 | Demo Console (v1) | Earlier console for the two diagnostic paths, run by hand | `external_hackathon_ecus/demo_console` |
 | AutoSD | QEMU/KVM vehicle computer hosting ThreadX/Zenoh2CAN, native OpenSOVD lighting resources and optional managed openDuT Ethernet | `~/eclipse_sdv_hackathon_2026/AutoSD/` |
 | Campaign runner | Controlled disturbance, diagnostic/regression assertions, cleanup, and evidence | `~/eclipse_sdv_hackathon_2026/scripts/run_campaign.py` |
