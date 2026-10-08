@@ -5,7 +5,7 @@
 -->
 # Thinking CAPs – Demo architecture and contributions
 
-![Demo architecture with the team's contributions: Legends, Core Architecture and Aspice Dark Factory](System_Architecture_contributions.png)
+![Demo architecture with the team's contributions: Legends, Core Architecture and Aspice Dark Factory](System_Architecture_contributions.jpeg)
 
 *Figure 1 – `System_Architecture_contributions.drawio`. Colours: white = Eclipse project used as is · blue = brought to the hackathon · blue with green dashed border = brought and extended during the hackathon · green = built during the hackathon · orange chip = upstream pull request (dark orange with tick = merged) · grey dashed chip = issue work without a PR yet. Solid line = implemented, dashed line = in progress.*
 
