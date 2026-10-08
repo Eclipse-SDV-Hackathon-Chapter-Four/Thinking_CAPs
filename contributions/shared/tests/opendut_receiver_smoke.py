@@ -1,1 +1,1 @@
-../OpenDut/tests/opendut_receiver_smoke.py
+../../eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py

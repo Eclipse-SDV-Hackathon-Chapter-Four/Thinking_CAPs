@@ -2,7 +2,7 @@
 
 Observed **4 October 2026**, Europe/Lisbon. GitHub issue/PR state was refreshed through read-only API requests. Local source was inspected without changing upstream checkouts. This is a preparation audit. **AAOS FOTA and native update orchestration are deferred by the user's later instruction.**
 
-The machine-readable snapshot, selected source hashes, probe commands and results are in [`config/upstream-observations.json`](../config/upstream-observations.json). Open issues identify dependencies; they do not establish that every remote branch lacks a capability.
+The machine-readable snapshot, selected source hashes, probe commands and results are in [`contributions/shared/config/upstream-observations.json`](../config/upstream-observations.json). Open issues identify dependencies; they do not establish that every remote branch lacks a capability.
 
 ## Decisions supported by the inspected sources
 
@@ -65,7 +65,7 @@ The sample `dfm` example performs queries and then exits on this source revision
 
 Observe error semantics when adapting queries: `get_all_faults` warns and substitutes default state on a storage read error, whereas `get_fault` returns a storage error. Never infer receiving-side freshness or collector availability from the absence of an active DTC alone. Expose collector/fault-query health independently. See [SovdFaultManager](https://github.com/eclipse-opensovd/fault-lib/blob/12dac502616701734f90a61edca1326ae2ac6506/src/dfm_lib/src/sovd_fault_manager.rs).
 
-**Persistence limitation:** the upstream restart test explicitly reuses a process-global KVS pool. Storage `put` updates KVS without calling `flush`, and the standalone smoke left its storage directory empty. Disk/process-restart persistence remains unproved; do not advertise durable DFM history on this evidence. See the pinned [restart test](https://github.com/eclipse-opensovd/fault-lib/blob/12dac502616701734f90a61edca1326ae2ac6506/tests/integration/src/test_persistent_storage.rs) and [storage implementation](https://github.com/eclipse-opensovd/fault-lib/blob/12dac502616701734f90a61edca1326ae2ac6506/src/dfm_lib/src/sovd_fault_storage.rs). Further integration guidance is in [fault-integration-research.md](../OpenSOVD/docs/fault-integration-research.md).
+**Persistence limitation:** the upstream restart test explicitly reuses a process-global KVS pool. Storage `put` updates KVS without calling `flush`, and the standalone smoke left its storage directory empty. Disk/process-restart persistence remains unproved; do not advertise durable DFM history on this evidence. See the pinned [restart test](https://github.com/eclipse-opensovd/fault-lib/blob/12dac502616701734f90a61edca1326ae2ac6506/tests/integration/src/test_persistent_storage.rs) and [storage implementation](https://github.com/eclipse-opensovd/fault-lib/blob/12dac502616701734f90a61edca1326ae2ac6506/src/dfm_lib/src/sovd_fault_storage.rs). Further integration guidance is in [fault-integration-research.md](../../eclipse-opensovd/OpenSOVD/docs/fault-integration-research.md).
 
 ## openDuT source limitations
 

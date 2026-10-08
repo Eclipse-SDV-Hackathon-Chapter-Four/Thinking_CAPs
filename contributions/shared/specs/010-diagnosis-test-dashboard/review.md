@@ -35,7 +35,7 @@ The separate human reproduction requirement is user-deferred, not satisfied.
 
 ## Verification boundaries
 
-`evidence/f010-review/verification.json` records31 project regressions on Python3.10
+`contributions/shared/evidence/f010-review/verification.json` records31 project regressions on Python3.10
 and3.13, syntax/whitespace gates and identities of the evidence records. Real core
 passes42 native checks; physical passes46. Actual cancellation cleanup passes while
 execution fails. Browser acceptance18 and keyboard fixture14 pass. Native adapter8

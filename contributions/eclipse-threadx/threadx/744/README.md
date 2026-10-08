@@ -138,16 +138,16 @@ outputs are bind-mounted onto loop4.
 ## Inspect and run
 
 ```bash
-python3 contributions/threadx-744/workflow/fabro_control.py status
+python3 contributions/eclipse-threadx/threadx/744/workflow/fabro_control.py status
 /home/jefferson/.fabro/bin/fabro validate \
-  contributions/threadx-744/workflow/workflow.fabro
+  contributions/eclipse-threadx/threadx/744/workflow/workflow.fabro
 ```
 
 The dedicated server and clean isolated source checkout must exist before
 starting a new run:
 
 ```bash
-python3 contributions/threadx-744/workflow/fabro_control.py launch
+python3 contributions/eclipse-threadx/threadx/744/workflow/fabro_control.py launch
 ```
 
 Recovery entrypoints preserve measured work without pretending a failed run

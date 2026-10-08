@@ -2,7 +2,7 @@
 # Prepare the OpenBSW SIL workspace on the external build volume and build
 # the POSIX reference application. Runs as the normal user; no sudo.
 #
-#   OpenBSW/scripts/bootstrap.sh [preset]     # default: preset from the lock file
+#   contributions/eclipse-openbsw/OpenBSW/scripts/bootstrap.sh [preset]     # default: preset from the lock file
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 

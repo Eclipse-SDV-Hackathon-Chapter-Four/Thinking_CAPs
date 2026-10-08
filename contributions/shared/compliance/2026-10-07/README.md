@@ -29,7 +29,7 @@ This packet records subsequent corrections and
   preserve source bytes. Spec Kit helpers retain GitHub's MIT notice; upstream
   vendor and legacy notices remain applicable. Individual ownership and historical
   AI-generation extent are still matters for the responsible contributors.
-- [Contribution guidance](../../../CONTRIBUTING.md) documents identity, AI
+- [Contribution guidance](../../../../CONTRIBUTING.md) documents identity, AI
   disclosures, review, native checks and IP dispositions.
 - The registry now verifies all five historical diagnostics patches and the
   recovered CDA patch. Current published revisions have separate snapshots,
@@ -48,7 +48,7 @@ This packet records subsequent corrections and
   Fault-storage has a portable, exact-byte copy with a new outer file manifest.
   [Additional inventory](additional-inventory.json) distinguishes native patches,
   branch scaffolds, integration examples and plans.
-- The [prework declaration](../../../prework/README.md) acknowledges September
+- The [prework declaration](../../prework/README.md) acknowledges September
   implementation/evidence. No organizer eligibility decision is implied.
 
 ## Prepared native submission drafts
@@ -91,10 +91,10 @@ review signature, DCO certification, IP approval or competition acceptance.
 ## Verification
 
 ```bash
-python3 scripts/test_verify_contributions.py
-python3 scripts/verify_contributions.py --json
-python3 scripts/verify_missing_contributions.py
-python3 contributions/issues/eclipse-score/score/3115/verify_packet.py
+python3 contributions/shared/scripts/test_verify_contributions.py
+python3 contributions/shared/scripts/verify_contributions.py --json
+python3 contributions/shared/scripts/verify_missing_contributions.py
+python3 contributions/eclipse-score/score/3115/verify_packet.py
 ```
 
 These checks establish retained byte integrity and preparation consistency. They

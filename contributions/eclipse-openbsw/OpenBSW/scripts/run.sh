@@ -2,7 +2,7 @@
 # Run the OpenBSW POSIX build from the external build volume (Ctrl-C stops it).
 # Needs vcan0 and tap0 from scripts/net-up.sh.
 #
-#   OpenBSW/scripts/run.sh [preset]
+#   contributions/eclipse-openbsw/OpenBSW/scripts/run.sh [preset]
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 

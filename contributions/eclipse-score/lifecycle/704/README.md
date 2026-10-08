@@ -103,4 +103,4 @@ Use the prepared title, improvement-template body and approved current patch. Th
 local contribution branch is uncommitted and nothing has been published. Refresh
 against the intended upstream branch, satisfy ECA/DCO requirements, and open the PR
 as Draft when publication is authorized. Record the actual PR/merge links
-in [the registry](../../../../registry.json) when available.
+in [the registry](../../../registry.json) when available.

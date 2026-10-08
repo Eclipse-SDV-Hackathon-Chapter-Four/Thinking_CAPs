@@ -5,11 +5,11 @@ Eclipse SDV Hackathon submission. Inventory captured on **2026-10-04**.
 
 | Project / issue | Contribution | Local result | Upstream / next action |
 | --- | --- | --- | --- |
-| [SOME/IP #84](issues/eclipse-score/inc_someip_gateway/84/README.md) | Reject duplicate SOCom servers across minor versions | Scoped fix verified; local user approval recorded; patch and full portable evidence retained | Issue open; prepared upstream PR body; broader identifier/discovery work remains |
-| [Lifecycle #704](issues/eclipse-score/lifecycle/704/README.md) | Generate three communication configurations from shared definitions | Fabro/DeepSeek Flash patch verified; 113 native cases pass; scoped local owner approval recorded | Issue open; upstream-template PR body and title prepared; upstream review/CI pending |
-| [Diagnostics #16](issues/eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Evidence missing in this checkout | Issue open; recover implementation, baseline and original test records |
+| [SOME/IP #84](eclipse-score/inc_someip_gateway/84/README.md) | Reject duplicate SOCom servers across minor versions | Scoped fix verified; local user approval recorded; patch and full portable evidence retained | Issue open; prepared upstream PR body; broader identifier/discovery work remains |
+| [Lifecycle #704](eclipse-score/lifecycle/704/README.md) | Generate three communication configurations from shared definitions | Fabro/DeepSeek Flash patch verified; 113 native cases pass; scoped local owner approval recorded | Issue open; upstream-template PR body and title prepared; upstream review/CI pending |
+| [Diagnostics #16](eclipse-score/inc_diagnostics/16/README.md) | Diagnostic API to OpenSOVD provider adapter | Evidence missing in this checkout | Issue open; recover implementation, baseline and original test records |
 
-| [Communication #1265](issues/eclipse-score/communication/1265/linux-integration/score-rust-linux-integration-xfiuopbb/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch prepared; fresh native Linux integration: six cases passed, zero failures/errors/skips; three runtime fixes used | Issue open; offline review and qualification/adoption pending; older unit/copyright results preserved separately |
+| [Communication #1265](eclipse-score/communication/1265/linux-integration/score-rust-linux-integration-xfiuopbb/README.md) | Assess Rust COM identifier-pasting dependency; generic Rust workflow retained | Documentation patch prepared; fresh native Linux integration: six cases passed, zero failures/errors/skips; three runtime fixes used | Issue open; offline review and qualification/adoption pending; older unit/copyright results preserved separately |
 
 The first two rows are completed local implementations with retained measurements.
 Upstream review, merge and issue closure have their own statuses. The diagnostics row
@@ -21,7 +21,7 @@ handoffs and this repository; add other completed work as its artifacts are reco
 ## Contents
 
 - [registry.json](registry.json): issue identity, scope, baseline, evidence and PR status.
-- `issues/<organization>/<project>/<issue>/`: readable record, upstream snapshot,
+- `<organization>/<project>/<issue>/`: readable record, upstream snapshot,
   provenance, original patches/logs/licenses and SHA-256 artifact manifest.
 - [templates/issue.md](templates/issue.md): reusable record for additional issues.
 - [Evidence gaps](EVIDENCE_GAPS.md): references still needing original artifacts.
@@ -35,8 +35,8 @@ handoffs and this repository; add other completed work as its artifacts are reco
 From the repository root, with Python 3.10 or later:
 
 ```bash
-python3 scripts/verify_contributions.py
-python3 scripts/verify_contributions.py --json
+python3 contributions/shared/scripts/verify_contributions.py
+python3 contributions/shared/scripts/verify_contributions.py --json
 ```
 
 The verifier checks every captured file, the current patches, the lifecycle bundle's original
@@ -52,7 +52,7 @@ approved Flash patch. Missing legacy envelopes and wider unmeasured checks remai
 
 ## Add or update a contribution
 
-1. Create `issues/<organization>/<project>/<issue>/README.md` using the template.
+1. Create `<organization>/<project>/<issue>/README.md` using the template.
 2. Capture the actual upstream issue URL/status/date and implementation baseline.
 3. Copy original patches, test commands, logs, results, relevant licenses and notices;
    keep failed attempts and known gaps. Record their source and SHA-256 hashes in

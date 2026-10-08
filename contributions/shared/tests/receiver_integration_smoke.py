@@ -1,1 +1,1 @@
-../OpenSOVD/tests/receiver_integration_smoke.py
+../../eclipse-opensovd/OpenSOVD/tests/receiver_integration_smoke.py

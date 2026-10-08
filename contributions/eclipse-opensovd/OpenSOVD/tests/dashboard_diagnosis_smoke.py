@@ -11,7 +11,7 @@ import sys
 import tempfile
 import time
 
-ROOT=Path(__file__).resolve().parents[2];sys.path.insert(0,str(ROOT))
+ROOT=Path(__file__).resolve().parents[4];sys.path.insert(0,str(ROOT/'contributions/shared'))
 from integration.dashboard.service import Diagnosis
 
 
@@ -64,7 +64,7 @@ def main():
             process.terminate()
             try:process.wait(timeout=5)
             except subprocess.TimeoutExpired:process.kill();process.wait(timeout=3)
-    result['binary_sha256']=hashlib.sha256(args.binary.read_bytes()).hexdigest();result['source_sha256']=hashlib.sha256((ROOT/'integration/dashboard/service.py').read_bytes()).hexdigest()
+    result['binary_sha256']=hashlib.sha256(args.binary.read_bytes()).hexdigest();result['source_sha256']=hashlib.sha256((ROOT/'contributions/shared/integration/dashboard/service.py').read_bytes()).hexdigest()
     (args.output/'verification.json').write_text(json.dumps(result,indent=2)+'\n');(args.output/'snapshots.json').write_text(json.dumps(snapshots,indent=2)+'\n')
     print(json.dumps(result));return 0 if result['status']=='passed' else 1
 

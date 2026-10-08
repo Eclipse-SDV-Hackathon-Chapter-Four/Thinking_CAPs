@@ -14,8 +14,8 @@ import threading
 import urllib.request
 import urllib.error
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / 'contributions/shared'))
 from integration.dashboard.service import Artifacts, Coordinator, cleanup_verdict, Diagnosis, Dashboard, server
 
 
@@ -141,7 +141,7 @@ class DashboardBoundaries(unittest.TestCase):
             with (state/'campaign.lock').open('a') as lease:
                 fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
                 identity='b'*32
-                process=subprocess.run([sys.executable,str(ROOT/'scripts/run_campaign.py'),
+                process=subprocess.run([sys.executable,str(ROOT/'contributions/shared/scripts/run_campaign.py'),
                     '--config',str(inputs),'--output',str(root/'blocked'),'--run-id',identity],capture_output=True,timeout=5)
             self.assertEqual(process.returncode,2)
             result=json.loads((root/'blocked/results.json').read_text())

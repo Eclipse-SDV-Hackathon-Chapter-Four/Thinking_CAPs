@@ -1,10 +1,10 @@
 # Native integration scripts
 - `audit_baseline.py`: read-only source/runtime audit; blocked2 is distinct from failure1.
-- [OpenDut/scripts/opendut_testbench.py](../OpenDut/scripts/opendut_testbench.py): owned prepare/up/status/down for the matched local release.
-- [OpenSOVD/scripts/build_fault_diagnostics.py](../OpenSOVD/scripts/build_fault_diagnostics.py): audited native storage patch/private feature build and checks.
+- [contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py](../../eclipse-opendut/OpenDut/scripts/opendut_testbench.py): owned prepare/up/status/down for the matched local release.
+- [contributions/eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py](../../eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py): audited native storage patch/private feature build and checks.
 - `reproduce_core.py`: clean frozen-source build, tests and actual native core campaign.
 - `run_campaign.py`: named campaign, explicit manifest/results/JUnit/timeline/summary.
-- [OpenSOVD/scripts/receiver_container_entrypoint.sh](../OpenSOVD/scripts/receiver_container_entrypoint.sh): original gateway/daemon plus instrumented receiver in private IPC.
+- [contributions/eclipse-opensovd/OpenSOVD/scripts/receiver_container_entrypoint.sh](../../eclipse-opensovd/OpenSOVD/scripts/receiver_container_entrypoint.sh): original gateway/daemon plus instrumented receiver in private IPC.
 - `owned_carla.py`: optional owned server/actor harness reusing existing X-Verse/VCU classes.
 - `render_campaign_replay.py`: source-hash-verified, standalone historical playback of a passed physical campaign; no live service access.
 - `verify_contributions.py`: retained artifact hashes only; not upstream engineering acceptance.

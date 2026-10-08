@@ -40,11 +40,11 @@ git remote add fork git@github.com:<your-user>/communication.git   # once
 git rebase origin/main feature/560-subscription-state-apis        # optional; re-run the checks if you rebase
 git push fork feature/560-subscription-state-apis
 gh pr create -R eclipse-score/communication --draft --head <your-user>:feature/560-subscription-state-apis \
-  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/560/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/560/pr-description.md
+  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/560/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/560/pr-description.md
 ```
 
 Elsewhere, recreate the branch from the bundle:
-`git fetch /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/560/feature-560-subscription-state-apis.bundle feature/560-subscription-state-apis:feature/560-subscription-state-apis` (the clone must contain `381d43dec900`).
+`git fetch /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/560/feature-560-subscription-state-apis.bundle feature/560-subscription-state-apis:feature/560-subscription-state-apis` (the clone must contain `381d43dec900`).
 
 ## Open items
 

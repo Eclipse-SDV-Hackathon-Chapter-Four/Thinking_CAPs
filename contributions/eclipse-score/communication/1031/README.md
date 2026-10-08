@@ -2,9 +2,9 @@
 
 Current status: **public_aou_api_verified_production_integration_blocked**. Public AoU API/fixture verified; actual Config Management provider build/TRLC pass. Production safety decisions are deferred at user request to a separate Config Management follow-up; the recorded full-index failure and remaining integration checks are retained. Native migration approval remains pending.
 
-Use the [2026-10-07 native contribution packet](../../../../communication-followup-20261007/README.md),
-[final verification](../../../../communication-followup-20261007/verification.md) and
-[PR draft](../../../../communication-followup-20261007/pr-communication.md).
+Use the [2026-10-07 native contribution packet](../followup-20261007/README.md),
+[final verification](../followup-20261007/verification.md) and
+[PR draft](../followup-20261007/pr-communication.md).
 The submission patch targets `cef680454e8586daca9f953084dca33fb3759d0c`.
 Native owner acceptance and required hosted checks remain pending.
 [Draft PR #1342](https://github.com/eclipse-score/communication/pull/1342) is open for user review; no merge or issue closure is claimed. For #1031, complete production integration remains
@@ -25,10 +25,10 @@ file URIs. See the packet’s license review and final source-bound evidence.
 
 Status: **draft_imported_integration_pending**. Scoped native AoU/visibility checks retained; real production Config Management/profile and FMEA/LOBSTER integration remain unmeasured.
 
-The [imported queue](../../../../communication-bug-queue-20261006/IMPORT.md)
+The [imported queue](../bug-queue-20261006/IMPORT.md)
 retains the full original run, failed attempts, corrections, diagnostics and
-review history. [Latest recovery handoff](../../../../communication-bug-queue-20261006/recovery-1/RESUME.md)
-and [later diagnosis](../../../../communication-bug-queue-20261006/recovery-1/offline-followup/DIAGNOSIS-20261007.md)
+review history. [Latest recovery handoff](../bug-queue-20261006/recovery-1/RESUME.md)
+and [later diagnosis](../bug-queue-20261006/recovery-1/offline-followup/DIAGNOSIS-20261007.md)
 provide the chronology. The frozen source inventory identifies the captured bytes.
 
 [Candidate patch](communication-1031.patch) and [original PR draft](pr-description.md)
@@ -38,4 +38,4 @@ baseline: `381d43dec900ab6a9076f3f30e7bfbdee019e26e`.
 
 Human review, remaining native checks and qualification are pending. No native
 upstream PR, merge or issue closure is performed. Verify retained evidence with
-`python3 scripts/verify_missing_contributions.py` and the repository-wide verifier.
+`python3 contributions/shared/scripts/verify_missing_contributions.py` and the repository-wide verifier.

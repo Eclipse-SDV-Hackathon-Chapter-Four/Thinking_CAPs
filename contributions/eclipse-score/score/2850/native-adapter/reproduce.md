@@ -3,8 +3,8 @@
 ## Offline integrity
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 python3 contributions/issues/eclipse-score/score/2850/native-adapter/verify_native_packet.py
-PYTHONDONTWRITEBYTECODE=1 python3 contributions/issues/eclipse-score/score/2850/verify_packet.py
+PYTHONDONTWRITEBYTECODE=1 python3 contributions/eclipse-score/score/2850/native-adapter/verify_native_packet.py
+PYTHONDONTWRITEBYTECODE=1 python3 contributions/eclipse-score/score/2850/verify_packet.py
 ```
 
 These commands verify hashes, archive contents, final candidate/contract binding,

@@ -1,1 +1,1 @@
-../OpenSOVD/scripts/run_diagnostics.sh
+../../eclipse-opensovd/OpenSOVD/scripts/run_diagnostics.sh

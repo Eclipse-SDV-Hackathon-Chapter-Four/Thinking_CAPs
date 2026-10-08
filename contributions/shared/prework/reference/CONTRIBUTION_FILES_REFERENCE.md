@@ -148,10 +148,10 @@ fn get_dtc(&self) -> Result<DtcInfo, AdapterError>
 | **cruise-gateway** | `demo/gateway/crates/cruise-gateway/` | 3 | Main gateway binary |
 | **cruise_diag** | `demo/gateway/crates/cruise_diag/` | 2 | Fault monitoring |
 | **cruise_sim** | `demo/gateway/crates/cruise_sim/` | 2 | Cruise simulation |
-| **sovd_adapter** | `demo/gateway/crates/sovd_adapter/` | 1 | SOVD adapter crate |
-| **diag_api** | `demo/gateway/crates/diag_api/` | 1 | Diagnostic API |
-| **diag_json** | `demo/gateway/crates/diag_json/` | 2 | JSON serialization |
-| **data_resource** | `demo/gateway/crates/data_resource/` | 1 | Data resources |
+| **sovd_adapter** | `demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness/crates/sovd_adapter/` | 1 | SOVD adapter crate |
+| **diag_api** | `demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness/crates/diag_api/` | 1 | Diagnostic API |
+| **diag_json** | `demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness/crates/diag_json/` | 2 | JSON serialization |
+| **data_resource** | `demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness/crates/data_resource/` | 1 | Data resources |
 
 #### Key Rust Files
 
@@ -211,7 +211,7 @@ fn get_dtc(&self) -> Result<DtcInfo, AdapterError>
 | File | Path | Description |
 |------|------|-------------|
 | **peer.yaml** | `demo/opendut/peer.yaml` | Peer configuration |
-| **cda-test-config.toml** | `demo/cda/cda-test-config.toml` | CDA test config |
+| **cda-test-config.toml** | `demo/X-Verse/external_hackathon_ecus/OpenSOVD/cda/cda-test-config.toml` | CDA test config |
 
 ---
 
@@ -316,7 +316,7 @@ cd third_party/opensovd-core
 cargo build --release
 
 # Build cruise-gateway (Demo)
-cd demo/gateway
+cd demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness
 cargo build --release
 
 # Build cc-app (Cruise Control)

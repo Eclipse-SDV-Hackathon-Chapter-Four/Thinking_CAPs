@@ -4,7 +4,7 @@
 # unmodified Eclipse OpenBSW checkout (OPENBSW_DIR), mirroring the OpenBSW root
 # CMakeLists.txt for the referenceApp build with our own application in app/.
 #
-#   cmake -S OpenBSW/gateway -B <build> -G Ninja -DOPENBSW_DIR=<openbsw checkout>
+#   cmake -S contributions/eclipse-openbsw/OpenBSW/gateway -B <build> -G Ninja -DOPENBSW_DIR=<openbsw checkout>
 #   S32K148EVB: add -DBUILD_TARGET_PLATFORM=S32K148EVB
 #               -DCMAKE_TOOLCHAIN_FILE=<openbsw>/cmake/toolchains/ArmNoneEabi.cmake
 cmake_minimum_required(VERSION 3.28 FATAL_ERROR)
@@ -79,7 +79,7 @@ if (TARGET bspMcu)
                       ${OPENBSW_DIR}/libs/3rdparty/cmsis/m-profile)
 endif ()
 
-# The upstream contribution libs/bsw/transportRouter is built from OpenBSW/contrib, so the
+# The upstream contribution libs/bsw/transportRouter is built from contributions/eclipse-openbsw/OpenBSW/contrib, so the
 # gateway runs exactly the code proposed to OpenBSW.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../contrib/libs/bsw/transportRouter
                  ${CMAKE_BINARY_DIR}/contrib/transportRouter)

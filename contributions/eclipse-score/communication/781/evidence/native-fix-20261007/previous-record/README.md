@@ -39,11 +39,11 @@ git remote add fork git@github.com:<your-user>/communication.git   # once
 git rebase origin/main draft/781-method-in-arg-ptr        # optional; re-run the checks if you rebase
 git push fork draft/781-method-in-arg-ptr
 gh pr create -R eclipse-score/communication --draft --head <your-user>:draft/781-method-in-arg-ptr \
-  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/781/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/781/pr-description.md
+  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/781/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/781/pr-description.md
 ```
 
 Elsewhere, recreate the branch from the bundle:
-`git fetch /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/781/draft-781-method-in-arg-ptr.bundle draft/781-method-in-arg-ptr:draft/781-method-in-arg-ptr` (the clone must contain `381d43dec900`).
+`git fetch /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/781/draft-781-method-in-arg-ptr.bundle draft/781-method-in-arg-ptr:draft/781-method-in-arg-ptr` (the clone must contain `381d43dec900`).
 
 ## Open items
 

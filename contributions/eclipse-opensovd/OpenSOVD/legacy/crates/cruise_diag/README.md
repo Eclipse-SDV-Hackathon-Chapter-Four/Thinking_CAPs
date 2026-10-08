@@ -9,4 +9,4 @@ FaultProvider prototype for producer-confirmed cc-app DTC events.
 - Status-mask filtering and configurable max-age checks.
 - No local fault detection or debounce; those belong to the cc-app DTC backend.
 
-See `docs/hackathon/FAULT_PROVIDER_DESIGN.md` for the I1/I2 handover gap and vehicle-integration requirements.
+See `contributions/shared/docs/hackathon/FAULT_PROVIDER_DESIGN.md` for the I1/I2 handover gap and vehicle-integration requirements.

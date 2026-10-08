@@ -9,7 +9,7 @@ import tempfile
 import time
 import unittest
 
-SCRIPT = Path(__file__).resolve().parents[1] / 'scripts/reproduce_core.py'
+SCRIPT = Path(__file__).resolve().parents[3] / 'contributions/shared/scripts/reproduce_core.py'
 spec = importlib.util.spec_from_file_location('reproduction_lifecycle', SCRIPT)
 reproduction = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(reproduction)

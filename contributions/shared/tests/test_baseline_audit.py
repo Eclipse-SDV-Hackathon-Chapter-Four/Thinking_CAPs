@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 spec = importlib.util.spec_from_file_location(
-    "audit", Path(__file__).parents[1] / "scripts/audit_baseline.py"
+    "audit", Path(__file__).resolve().parents[3] / "contributions/shared/scripts/audit_baseline.py"
 )
 audit = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(audit)

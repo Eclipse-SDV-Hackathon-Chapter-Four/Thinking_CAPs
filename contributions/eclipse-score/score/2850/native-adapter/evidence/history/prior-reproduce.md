@@ -3,8 +3,8 @@
 From the Thinking_CAPs root:
 
 ```bash
-python3 contributions/issues/eclipse-score/score/2850/verify_packet.py
-python3 scripts/verify_contributions.py
+python3 contributions/eclipse-score/score/2850/verify_packet.py
+python3 contributions/shared/scripts/verify_contributions.py
 ```
 
 The first command checks the packet SHA-256 manifest, every file inside the source
@@ -24,7 +24,7 @@ need internet if packages are not cached):
 
 ```bash
 work=$(mktemp -d)
-tar -xzf contributions/issues/eclipse-score/score/2850/evidence/source/s-core-bot-source.tar.gz -C "$work"
+tar -xzf contributions/eclipse-score/score/2850/evidence/source/s-core-bot-source.tar.gz -C "$work"
 cd "$work"
 uv sync --locked --all-groups --offline
 uv run --no-sync ruff format --check .

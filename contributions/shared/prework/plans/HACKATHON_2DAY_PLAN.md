@@ -242,7 +242,7 @@ cd inc_diagnostics
 cargo build --release -p sovd_adapter
 
 # Demo
-cd demo/gateway
+cd demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness
 cargo build --release
 python3 demo/live/server.py
 ```

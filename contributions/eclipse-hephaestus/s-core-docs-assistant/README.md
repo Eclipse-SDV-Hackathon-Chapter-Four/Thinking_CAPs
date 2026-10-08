@@ -31,7 +31,7 @@ This is a proposal record, excluded from completed or accepted implementation co
 Verify the retained packet from any directory:
 
 ```bash
-python /home/jefferson/Thinking_CAPs/contributions/proposals/eclipse-hephaestus/s-core-docs-assistant/verify_evidence.py
+python /home/jefferson/Thinking_CAPs/contributions/eclipse-hephaestus/s-core-docs-assistant/verify_evidence.py
 ```
 
 This checks artifact integrity and recorded bindings. It does not rerun builds or establish engineering acceptance.

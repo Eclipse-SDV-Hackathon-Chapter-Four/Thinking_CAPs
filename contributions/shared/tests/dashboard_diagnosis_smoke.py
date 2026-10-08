@@ -1,1 +1,1 @@
-../OpenSOVD/tests/dashboard_diagnosis_smoke.py
+../../eclipse-opensovd/OpenSOVD/tests/dashboard_diagnosis_smoke.py

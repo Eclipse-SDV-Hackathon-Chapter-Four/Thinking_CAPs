@@ -43,11 +43,11 @@ git remote add fork git@github.com:<your-user>/communication.git   # once
 git rebase origin/main feature/250-find-service-any        # optional; re-run the checks if you rebase
 git push fork feature/250-find-service-any
 gh pr create -R eclipse-score/communication --draft --head <your-user>:feature/250-find-service-any \
-  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/250/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/250/pr-description.md
+  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/250/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/250/pr-description.md
 ```
 
 Elsewhere, recreate the branch from the bundle:
-`git fetch /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/250/feature-250-find-service-any.bundle feature/250-find-service-any:feature/250-find-service-any` (the clone must contain `381d43dec900`).
+`git fetch /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/250/feature-250-find-service-any.bundle feature/250-find-service-any:feature/250-find-service-any` (the clone must contain `381d43dec900`).
 
 ## Open items
 

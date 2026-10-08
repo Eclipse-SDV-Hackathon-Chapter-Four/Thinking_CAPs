@@ -31,7 +31,7 @@ an installed software version from a source commit alone.
 Preflight found no live CARLA RPC on 127.0.0.1:2000 and both function containers stopped.
 Preflight exits 2 (blocked), while its four contract tests pass. These are different claims.
 A bounded existing-container startup smoke is retained separately in
-`evidence/f001-baseline-smoke/`; startup alone is not vehicle or bidirectional control acceptance.
+`contributions/shared/evidence/f001-baseline-smoke/`; startup alone is not vehicle or bidirectional control acceptance.
 The published hackathon README's 13/13 assertions have no executable demo/test artifacts
 in this checkout and are historical, unverified claims.
 

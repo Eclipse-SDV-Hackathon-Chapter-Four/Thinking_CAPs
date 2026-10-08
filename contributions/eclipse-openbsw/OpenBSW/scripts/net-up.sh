@@ -3,7 +3,7 @@
 #   vcan0  SocketCAN, shared with X-Verse (reused if it already exists)
 #   tap0   Ethernet for lwIP/DoIP; host 192.168.0.10/24, ECU 192.168.0.201
 # Mirrors OpenBSW tools/can/bring-up-vcan0.sh and tools/enet/bring-up-ethernet.sh,
-# without the VLAN sub-interface. Run: sudo OpenBSW/scripts/net-up.sh
+# without the VLAN sub-interface. Run: sudo contributions/eclipse-openbsw/OpenBSW/scripts/net-up.sh
 set -euo pipefail
 owner="${SUDO_USER:-$USER}"
 

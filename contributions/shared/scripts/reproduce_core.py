@@ -15,7 +15,7 @@ import subprocess
 import sys
 import uuid
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[3]
 SCORE_PIN = '93f8ea1e6f76714496c092902e00c9b91c58cdc8'
 BRIDGE_PIN = '0d53a2af8b37121e54d742c6cefd0297dd9e4b92'
 
@@ -158,7 +158,7 @@ def main():
                                          'clean_before_patch': True, 'source_subdirectory': relative}
         integration = args.state / 'integration'
         score = args.state / 'score'
-        patch = integration / 'OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch'
+        patch = integration / 'contributions/eclipse-opensovd/OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch'
         # Frozen revisions from before the component layout retain the original paths.
         if not patch.exists():
             patch = integration / 'patches/receiver-diagnostics/s-core-observation.patch'
@@ -199,9 +199,9 @@ def main():
         config['flatc'] = execution_root + '/' + candidates[0]
         config['gateway_schema'] = output_base + '/external/score_someip_gateway+/score/config/mw_someip_config.fbs'
         target = args.state / 'rust-target'
-        fault_builder = integration / 'OpenSOVD/scripts/build_fault_diagnostics.py'
+        fault_builder = integration / 'contributions/eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py'
         if not fault_builder.exists():
-            fault_builder = integration / 'scripts/build_fault_diagnostics.py'
+            fault_builder = integration / 'contributions/shared/scripts/build_fault_diagnostics.py'
         run([sys.executable, fault_builder, '--state', args.state / 'fault-build',
              '--target-dir', target, '--output', args.output / 'fault-build', '--check'], timeout=1800)
         config['binary'] = str(target / 'debug/sdv-receiver-diagnostics')
@@ -211,7 +211,7 @@ def main():
         local.write_text(json.dumps(config, indent=2) + '\n')
         manifest['native_binary_sha256'] = hashlib.sha256(Path(config['binary']).read_bytes()).hexdigest()
         manifest['bazel_output_base_path'] = output_base
-        run([sys.executable, integration / 'scripts/run_campaign.py', '--config', local,
+        run([sys.executable, integration / 'contributions/shared/scripts/run_campaign.py', '--config', local,
              '--scenario', 'core', '--output', args.output / 'campaign'], timeout=240)
         manifest['status'] = 'passed'
         code = 0

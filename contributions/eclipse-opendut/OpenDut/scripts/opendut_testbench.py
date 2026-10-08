@@ -13,8 +13,8 @@ import time
 import urllib.request
 import uuid
 
-REPO = Path(__file__).resolve().parents[2]
-PINS = json.loads((REPO / "OpenDut/config/testbench/versions.json").read_text())
+REPO = Path(__file__).resolve().parents[4]
+PINS = json.loads((REPO / "contributions/eclipse-opendut/OpenDut/config/testbench/versions.json").read_text())
 LABEL = "sdv.opendut.run"
 
 
@@ -61,8 +61,8 @@ class Bench:
         if cleo is None:
             raise RuntimeError("CLEO executable absent")
         run(["docker", "pull", PINS["carl_image"]], timeout=600)
-        run(["docker", "build", "-f", REPO / "OpenDut/config/testbench/Peer.Dockerfile", "-t",
-             "sdv-opendut-peer:0.10.2", REPO / "OpenDut/config/testbench"], timeout=600)
+        run(["docker", "build", "-f", REPO / "contributions/eclipse-opendut/OpenDut/config/testbench/Peer.Dockerfile", "-t",
+             "sdv-opendut-peer:0.10.2", REPO / "contributions/eclipse-opendut/OpenDut/config/testbench"], timeout=600)
         peer_image = run(["docker", "image", "inspect", "--format", "{{.Id}}", "sdv-opendut-peer:0.10.2"])
         pki = self.path / "pki"
         pki.mkdir(mode=0o755)

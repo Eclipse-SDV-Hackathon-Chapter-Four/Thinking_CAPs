@@ -17,7 +17,7 @@ if [[ -z "${OBSW_WORKSPACE:-}" ]]; then
   mount_point="$(findmnt -rn -S "UUID=$OBSW_VOLUME_UUID" -o TARGET | head -n1)"
   if [[ -z "$mount_point" ]]; then
     echo "error: build volume UUID=$OBSW_VOLUME_UUID is not mounted." >&2
-    echo "       See OpenBSW/README.md#virtual-environment-sil to attach and mount it." >&2
+    echo "       See contributions/eclipse-openbsw/OpenBSW/README.md#virtual-environment-sil to attach and mount it." >&2
     return 1 2>/dev/null || exit 1
   fi
   OBSW_WORKSPACE="$mount_point/$OBSW_SUBDIR"

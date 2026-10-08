@@ -22,6 +22,6 @@ not every poll; recovery requires held freshness. Native DFM status/history is s
 Initial policy: timeout300ms, startup2000ms, debounce100ms, recovery150ms, monitor25ms,
 query50ms. Declare and measure baseline before timing acceptance; no safety certification.
 ## Structure
-OpenSOVD/integration/diagnostics/src/{monitor.rs,faults.rs}; OpenSOVD/config/faults/cruise-control.json;
-OpenSOVD/patches/fault-storage/{write-through.patch,README.md}; OpenDut/tests/opendut_receiver_smoke.py --fault-lifecycle;
-OpenSOVD/scripts/build_fault_diagnostics.py; OpenSOVD/specs/004-fault-lifecycle/; evidence/f004-*.
+contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/src/{monitor.rs,faults.rs}; contributions/eclipse-opensovd/OpenSOVD/config/faults/cruise-control.json;
+contributions/eclipse-opensovd/OpenSOVD/patches/fault-storage/{write-through.patch,README.md}; contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py --fault-lifecycle;
+contributions/eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py; contributions/eclipse-opensovd/OpenSOVD/specs/004-fault-lifecycle/; evidence/f004-*.

@@ -8,7 +8,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT.parent / 'OpenDut/scripts'))
+sys.path.insert(0, str(ROOT.parents[2] / 'contributions/eclipse-opendut/OpenDut/scripts'))
 from opendut_testbench import Bench, run
 
 LABEL = 'sdv.autosd.vm'

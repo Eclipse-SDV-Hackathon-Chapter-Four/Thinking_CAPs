@@ -5,7 +5,7 @@ Follow [the selected branch instructions](integration-20261007/reproduce.md) bef
 Verify the entire contribution packet without executing archived source:
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 python3 contributions/issues/eclipse-score/score/2850/verify_packet.py
+PYTHONDONTWRITEBYTECODE=1 python3 contributions/eclipse-score/score/2850/verify_packet.py
 ```
 
 Verify/reproduce the [native implementation](native-adapter/reproduce.md) separately.

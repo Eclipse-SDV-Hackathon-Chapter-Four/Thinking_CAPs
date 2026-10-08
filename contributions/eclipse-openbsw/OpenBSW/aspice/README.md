@@ -20,8 +20,8 @@ Open the report at [report/aspice-swe-report.html](report/aspice-swe-report.html
 ## Regenerate
 
 ```bash
-OpenBSW/scripts/gateway-it.sh                     # refresh SWE.5 evidence after a code change
-python3 OpenBSW/aspice/tools/generate_report.py   # runs every gate and analysis (a few minutes)
+contributions/eclipse-openbsw/OpenBSW/scripts/gateway-it.sh                     # refresh SWE.5 evidence after a code change
+python3 contributions/eclipse-openbsw/OpenBSW/aspice/tools/generate_report.py   # runs every gate and analysis (a few minutes)
 ```
 
 The generator does the following:
@@ -50,7 +50,7 @@ The generator does the following:
 
 ```bash
 java -Djava.awt.headless=true -jar X-Verse/.cache/tools/plantuml-1.2024.7.jar \
-  -tsvg OpenBSW/aspice/swe2-architecture/diagrams/*.puml
+  -tsvg contributions/eclipse-openbsw/OpenBSW/aspice/swe2-architecture/diagrams/*.puml
 ```
 
 The PlantUML jar is the one the Serial2CAN report generator downloads and

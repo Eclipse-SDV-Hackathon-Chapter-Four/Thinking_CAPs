@@ -27,9 +27,9 @@ archives are not exported. Disposable/debug runs remain ignored under `runs/`.
 Verify integrity from the repository root without starting anything:
 
 ```bash
-python3 AutoSD/scripts/verify_artifacts.py
+python3 contributions/eclipse-autosd/AutoSD/scripts/verify_artifacts.py
 # Also check whether the currently checked-out application sources match the tested packet:
-python3 AutoSD/scripts/verify_artifacts.py --sources
+python3 contributions/eclipse-autosd/AutoSD/scripts/verify_artifacts.py --sources
 ```
 
 Hash verification does not rerun the native tests or grant engineering acceptance.

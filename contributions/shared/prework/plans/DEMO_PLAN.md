@@ -183,7 +183,7 @@ cd cc_s-core/deployment/xverse/docker_setup
 docker-compose up -d
 
 # 2. Start our bridge
-cd demo/gateway
+cd demo/X-Verse/external_hackathon_ecus/OpenSOVD/gateway/harness
 cargo run --release &
 
 # 3. Start OpenSOVD

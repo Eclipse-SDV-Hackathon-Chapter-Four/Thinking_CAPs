@@ -16,4 +16,4 @@ Same-Wi-Fi UI: [fabro_dashboard](http://172.18.17.0:8787), service `fabro-monito
 
 Submission preparation: [submission packet](submission/README.md), including the staged-source archive, final PR text, clean current-main applicability check and official ECA lookup. Official ECA lookup now confirms a signed ECA for user-declared Eclipse account `jnascimento6p0`. The earlier GitHub-name lookup does not establish missing linkage. Future commit-author validation, publication instruction and the uncompleted human engineering decision remain outstanding.
 
-Local hackathon contribution branch: `contributions/communication-1167` (isolated worktree recorded in `local-commit/plan.json`). All portable artifacts are packaged as ordinary files; nested Git internals and generated caches stay local. Remote pushing remains prohibited.
+Local hackathon contribution branch: `contributions/eclipse-score/communication/1167` (isolated worktree recorded in `local-commit/plan.json`). All portable artifacts are packaged as ordinary files; nested Git internals and generated caches stay local. Remote pushing remains prohibited.

@@ -6,7 +6,7 @@ Researched **4 October 2026**. This records actual APIs and proposed integration
 
 Fault-library source: `/tmp/sdv-fault-lib-research`, revision `12dac502616701734f90a61edca1326ae2ac6506`. Preserve its `Cargo.lock`, which pins iceoryx2 `eba5da4b8d8cb03bccf1394d88a05e31f58838dc` and persistency `5d9f8225aa5622f52a31003bec937d5ef227dba7`. The temporary clone must become a reproducibly fetched pinned dependency before handover. Never put a `/tmp` path in a committed production dependency.
 
-Built artifacts are `/tmp/sdv-fault-lib-research/target/debug/dfm_bin` and `/tmp/sdv-fault-lib-research/target/debug/examples/tst_app`. The installed stable Rust 1.98.1 successfully compiled these and passed 66 upstream integration tests. The required upstream nightly remains uninstalled. OpenSOVD check artifacts are `/tmp/sdv-opensovd-research-target`. See [upstream-status.md](../../docs/upstream-status.md) for the exact evidence boundary.
+Built artifacts are `/tmp/sdv-fault-lib-research/target/debug/dfm_bin` and `/tmp/sdv-fault-lib-research/target/debug/examples/tst_app`. The installed stable Rust 1.98.1 successfully compiled these and passed 66 upstream integration tests. The required upstream nightly remains uninstalled. OpenSOVD check artifacts are `/tmp/sdv-opensovd-research-target`. See [upstream-status.md](../../../shared/docs/upstream-status.md) for the exact evidence boundary.
 
 An integration crate needs `common`, `fault_lib` and `dfm_lib`, all from the same pinned repository revision. For Git dependencies, Cargo can select each package from its workspace using the same `git` URL and `rev`. Keep an integration lockfile; no direct iceoryx2 dependency is needed solely to use the public reporter/query interfaces.
 

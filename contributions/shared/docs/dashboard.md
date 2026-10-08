@@ -9,8 +9,8 @@ and does not stop current implementation. AAOS/FOTA remains deferred.
 
 ```sh
 cd /home/jefferson/eclipse_sdv_hackathon_2026
-cp config/dashboard/local.example.json .local/dashboard.json
-/usr/bin/python3 scripts/run_dashboard.py --config .local/dashboard.json --port 8791
+cp contributions/shared/config/dashboard/local.example.json .local/dashboard.json
+/usr/bin/python3 contributions/shared/scripts/run_dashboard.py --config .local/dashboard.json --port 8791
 ```
 
 Open http://127.0.0.1:8791. The example identifies current verified native inputs
@@ -23,7 +23,7 @@ same local port for remote access. It is a local demo service, not public hostin
 Deploy the existing owned bench before running native campaigns:
 
 ```sh
-/usr/bin/python3 OpenDut/scripts/opendut_testbench.py up --state .local/opendut-f009 --output .local/dashboard-bench-up
+/usr/bin/python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py up --state .local/opendut-f009 --output .local/dashboard-bench-up
 ```
 
 Use new output directories. The dashboard does not provision/delete the bench.
@@ -73,18 +73,18 @@ is hash checked and sandboxed; it remains a historical recording.
 
 Current evidence:
 
-- `evidence/f010-live/verification.json`:53 actual API/browser/download checks;
+- `contributions/shared/evidence/f010-live/verification.json`:53 actual API/browser/download checks;
  42 native core assertions; cancellation during real managed-tunnel disturbance
  with cleanup acknowledged;46 physical CARLA assertions after an actual dashboard
  SIGSTOP/outage/resume. Two clients and reload retain the same UUID.
 - `evidence/f010-native-diagnosis/verification.json`:8 actual native-provider/adapter
  checks using explicitly synthetic observations, including stale/new-session/outage.
-- `evidence/f010-browser-acceptance/verification.json`: actual Chromium keyboard
+- `contributions/shared/evidence/f010-browser-acceptance/verification.json`: actual Chromium keyboard
  navigation, responsive rendering, historical downloads, text-injection and reconnect.
-- `evidence/f010-keyboard-cancel/verification.json`: actual Chromium keyboard
+- `contributions/shared/evidence/f010-keyboard-cancel/verification.json`: actual Chromium keyboard
  start/reload/cancel at both viewport widths, using an explicitly owned wait-process
  fixture. Missing native cleanup remains unknown and inhibits further starts.
-- `tests/test_dashboard.py` (31 total project regressions): concurrent admission, unresolved restart, cleanup
+- `contributions/shared/tests/test_dashboard.py` (31 total project regressions): concurrent admission, unresolved restart, cleanup
  completeness, blocked runner, HTTP boundaries and artifact tamper/symlink tests.
 
 These prove the current host slice, not a new-machine build, second human run,

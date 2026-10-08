@@ -27,7 +27,7 @@ bazel build --action_env=LD_LIBRARY_PATH=$X --host_action_env=LD_LIBRARY_PATH=$X
 ## Result: the full architecture runs (2026-09-25)
 
 `DEMO=score demo/start.sh`, then `demo/run-demo.sh`: **13/13 PASS**, three runs in a row
-(`evidence/runs/20260925T155109Z`, `…155133Z`, `…155143Z`), after a cold start.
+(`contributions/shared/evidence/runs/20260925T155109Z`, `…155133Z`, `…155143Z`), after a cold start.
 
 ```
 SOVD client ─①─ opensovd_server ─②─ sovd_adapter ─③─ cruise diag ─TCP :7700─ cruise_bridge
@@ -72,7 +72,7 @@ turns `unavailable` 5.1 s later; after release it goes to `standby`, then `activ
 
 - ④ ⑤ are real and work on this laptop; the handshakes on page 1 of
   `docs/architecture/sdv-hackathon-final.drawio` match what the logs show.
-- Our gateway builds with Cargo (its Bazel build is blocked, `evidence/pr6-gateway/FINDINGS.md`),
+- Our gateway builds with Cargo (its Bazel build is blocked, `contributions/shared/evidence/pr6-gateway/FINDINGS.md`),
   and `score_com` needs S-CORE's Bazel + Ferrocene. So the mw::com side of cruise diag goes into a
   **small Bazel-built bridge process**, not into the gateway binary. It talks mw::com to gatewayd
   and hands the values to the gateway's `CruiseLink` over a local socket: one extra local hop.

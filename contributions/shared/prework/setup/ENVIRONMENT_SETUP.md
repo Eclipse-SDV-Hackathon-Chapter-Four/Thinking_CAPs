@@ -80,7 +80,7 @@ mkdir -p layer6-dashboard/{web,static}
 mkdir -p testing/{opendut,integration,unit}
 mkdir -p docker/{compose,images}
 mkdir -p docs
-mkdir -p evidence/runs
+mkdir -p contributions/shared/evidence/runs
 
 # Verify structure
 tree -L 2

@@ -290,7 +290,7 @@ def verify(root, selected_issues=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1] / "contributions", help="Contribution directory (default: this repository's contributions/)")
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[3] / "contributions", help="Contribution directory (default: this repository's contributions/)")
     parser.add_argument("--json", action="store_true", help="Print a machine-readable result")
     parser.add_argument("--issue", action="append", help="Verify only this exact registry issue ID; repeat for multiple issues")
     args = parser.parse_args()

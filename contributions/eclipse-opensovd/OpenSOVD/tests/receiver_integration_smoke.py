@@ -25,7 +25,7 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=False)
-    repo = Path(__file__).resolve().parents[2]
+    repo = Path(__file__).resolve().parents[4]
     name = "sdv-receiver-" + uuid.uuid4().hex[:10]
     names, records, checks, returns = [], [], [], []
     mutex = threading.Lock()
@@ -92,7 +92,7 @@ def main():
                 "-v", str(args.score_source.resolve()) + ":/home/source:ro",
                 "-v", str(args.baseline_source.resolve()) + ":/home/baseline:ro",
                 "-v", "eclipse-s-core-bazel-cache:/var/cache/bazel:ro", "-v", str(local) + ":/tmp",
-                "-v", str(repo / "OpenSOVD/scripts/receiver_container_entrypoint.sh") + ":/entrypoint.sh:ro",
+                "-v", str(repo / "contributions/eclipse-opensovd/OpenSOVD/scripts/receiver_container_entrypoint.sh") + ":/entrypoint.sh:ro",
                 "-e", "SCORE_DIAGNOSTIC_SOCKET=/tmp/receiver.sock", "-e", "SCORE_BUILD_IDENTITY=sha256:" + digest,
                 "docker_setup-adas_score:latest", "/entrypoint.sh"])
             names.append(name + "-score")

@@ -11,7 +11,7 @@ publisher continues. Graceful native diagnostic shutdown is checked separately;
 stopping the whole middleware stack gracefully can produce another real stream
 fault before the receiver exits.
 
-The [AutoSD managed profile](../AutoSD/docs/managed-network.md) attaches a guest
+The [AutoSD managed profile](../../eclipse-autosd/AutoSD/docs/managed-network.md) attaches a guest
 Ethernet NIC to peer B's managed bridge and verifies ThreadX lighting over the
 actual GRE path. `prepare --management-subnet <IPv4-/24>` can select a separate
 management network for that bench; the existing S-CORE profile keeps its default.
@@ -32,18 +32,18 @@ management network for that bench; the existing S-CORE profile keeps its default
 Run from the repository root with a new state/output path for preparation:
 
 ```sh
-python3 OpenDut/scripts/opendut_testbench.py prepare --state OpenDut/.local/my-bench --output OpenDut/evidence/my-prepare
-python3 OpenDut/scripts/opendut_testbench.py up --state OpenDut/.local/my-bench --output OpenDut/evidence/my-up
-python3 OpenDut/scripts/opendut_testbench.py status --state OpenDut/.local/my-bench --output OpenDut/evidence/my-status
-python3 OpenDut/scripts/opendut_testbench.py down --state OpenDut/.local/my-bench --output OpenDut/evidence/my-down
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py prepare --state OpenDut/.local/my-bench --output OpenDut/evidence/my-prepare
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py up --state OpenDut/.local/my-bench --output OpenDut/evidence/my-up
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py status --state OpenDut/.local/my-bench --output OpenDut/evidence/my-status
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py down --state OpenDut/.local/my-bench --output OpenDut/evidence/my-down
 ```
 
 Each output directory must be new. Preparation requires Docker, download access
 and the tools listed in the [testbench quickstart](specs/003-opendut-testbench/quickstart.md).
 Configure shared campaigns with this bench's state path and the
-[OpenSOVD native binary](../OpenSOVD/README.md). The [reproduction guide](../docs/reproduction.md)
-describes the source/image pins; the [web UI guide](../docs/dashboard.md) describes
-Diagnosis and Test Manager. Shared `scripts/run_campaign.py` drives the relocated
+[OpenSOVD native binary](../../eclipse-opensovd/OpenSOVD/README.md). The [reproduction guide](../../shared/docs/reproduction.md)
+describes the source/image pins; the [web UI guide](../../shared/docs/dashboard.md) describes
+Diagnosis and Test Manager. Shared `contributions/shared/scripts/run_campaign.py` drives the relocated
 receiver harness and preserves the shared CARLA evidence at the repository root.
 
 Old paths remain compatibility links. Historical evidence retains its original

@@ -25,7 +25,13 @@ def main():
     entries = json.loads((directory / 'manifest.json').read_text())['files']
     verify(directory, entries)
     if a.sources:
-        verify(ROOT.parent, json.loads((directory / 'provenance.json').read_text())['source_files'])
+        # Provenance records the earlier root layout; translate it to where each component lives now.
+        relocated = {'AutoSD/': 'contributions/eclipse-autosd/AutoSD/', 'OpenSOVD/': 'contributions/eclipse-opensovd/OpenSOVD/',
+                     'ThreadX/': 'demo/X-Verse/external_hackathon_ecus/ThreadX/'}
+        sources = json.loads((directory / 'provenance.json').read_text())['source_files']
+        sources = {next((new + name[len(old):] for old, new in relocated.items() if name.startswith(old)), name): sha
+                   for name, sha in sources.items()}
+        verify(ROOT.parents[2], sources)
     print(json.dumps({'status': 'failed' if failures else 'passed', 'artifact_files': len(entries),
                       'current_sources_checked': a.sources, 'failures': failures}, indent=2))
     return 1 if failures else 0

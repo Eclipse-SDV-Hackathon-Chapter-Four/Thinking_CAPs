@@ -27,11 +27,11 @@ Post-design: no deviations. Datagrams may be dropped and availability then becom
 
 ## Project Structure
 ```text
-OpenSOVD/integration/diagnostics/{Cargo.toml,Cargo.lock,src/lib.rs,src/main.rs}
-OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch
-OpenSOVD/scripts/run_diagnostics.sh
-OpenSOVD/tests/diagnostic_http_smoke.py
-OpenSOVD/specs/002-receiver-diagnostics/{research,data-model,quickstart,tasks,completion}.md
+contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/{Cargo.toml,Cargo.lock,src/lib.rs,src/main.rs}
+contributions/eclipse-opensovd/OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch
+contributions/eclipse-opensovd/OpenSOVD/scripts/run_diagnostics.sh
+contributions/eclipse-opensovd/OpenSOVD/tests/diagnostic_http_smoke.py
+contributions/eclipse-opensovd/OpenSOVD/specs/002-receiver-diagnostics/{research,data-model,quickstart,tasks,completion}.md
 ```
 Upstream worktree: /home/jefferson/sdv-score-diagnostics; base 93f8ea1e6f76714496c092902e00c9b91c58cdc8.
 

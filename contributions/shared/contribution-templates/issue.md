@@ -27,7 +27,7 @@ Record where the bytes originated and when they were captured. Add
 `artifact-manifest.json` with an SHA-256 `files` mapping of relative paths.
 Explain how to reproduce relevant checks in an isolated checkout and what tools
 or platforms are required. Add a `registry.json` entry with paths relative to
-`contributions/`, then run `python3 scripts/verify_contributions.py`.
+`contributions/`, then run `python3 contributions/shared/scripts/verify_contributions.py`.
 
 ## Later upstream PR
 

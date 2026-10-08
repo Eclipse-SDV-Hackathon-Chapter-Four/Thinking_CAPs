@@ -114,7 +114,7 @@ def verify(contributions, restore=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path,
-                        default=Path(__file__).resolve().parents[1] / "contributions")
+                        default=Path(__file__).resolve().parents[3] / "contributions")
     parser.add_argument("--restore-to", type=Path,
                         help="Restore original queue files into a separate empty directory")
     args = parser.parse_args()

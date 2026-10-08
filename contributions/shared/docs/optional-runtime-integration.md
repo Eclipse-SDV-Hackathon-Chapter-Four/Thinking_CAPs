@@ -1,14 +1,14 @@
 # ThreadX and AutoSD feasibility
 
-**Current implementation:** [ThreadX zonal lighting](../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) now
+**Current implementation:** [ThreadX zonal lighting](../../../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) now
 implements brake/reverse control over SocketCAN and Zenoh2CAN on Linux. The
-sensor/liveness role below is the original proposal. [AutoSD](../AutoSD/README.md)
+sensor/liveness role below is the original proposal. [AutoSD](../../eclipse-autosd/AutoSD/README.md)
 now hosts this workload in a real QEMU/KVM guest with a separate native OpenSOVD
 lighting App and an optional actual openDuT Ethernet/GRE path. The existing
 S-CORE dashboard/DFM campaign admission remains separate work.
 
-Component development is organized under [ThreadX](../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) and
-[AutoSD](../AutoSD/README.md), with separate proposals and artifact status.
+Component development is organized under [ThreadX](../../../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md) and
+[AutoSD](../../eclipse-autosd/AutoSD/README.md), with separate proposals and artifact status.
 This document retains the shared feasibility research.
 
 Prepared 4 October 2026 after the user asked whether ThreadX and AutoSD could be

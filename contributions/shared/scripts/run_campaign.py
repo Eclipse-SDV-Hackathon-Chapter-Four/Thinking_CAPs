@@ -15,7 +15,7 @@ import time
 import uuid
 import xml.etree.ElementTree as ET
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[3]
 
 
 def digest(path):
@@ -167,12 +167,12 @@ def main():
         manifest['config_sha256'] = digest(args.config)
         manifest['native_tool_hashes'] = preflight(config, args.scenario)
         manifest['mode'] = 'fixture vehicle inputs; real receiver/openDuT/native faults' if args.scenario != 'carla' else 'real CARLA; existing X-Verse/VCU; harness operator commands'
-        for path in (args.config, REPO / 'scripts/run_campaign.py', REPO / 'OpenDut/tests/opendut_receiver_smoke.py',
-                     REPO / 'tests/campaigns/core.json', REPO / 'OpenSOVD/integration/diagnostics/Cargo.toml',
-                     REPO / 'OpenSOVD/integration/diagnostics/fault-build.lock', REPO / 'OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch',
-                     REPO / 'OpenSOVD/patches/fault-storage/write-through.patch', REPO / 'OpenSOVD/scripts/receiver_container_entrypoint.sh',
-                     REPO / 'scripts/owned_carla.py', REPO / 'OpenSOVD/config/faults/cruise-control.json',
-                     *sorted((REPO / 'OpenSOVD/integration/diagnostics/src').glob('*.rs')), Path(config['binary'])):
+        for path in (args.config, REPO / 'contributions/shared/scripts/run_campaign.py', REPO / 'contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py',
+                     REPO / 'contributions/shared/tests/campaigns/core.json', REPO / 'contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/Cargo.toml',
+                     REPO / 'contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/fault-build.lock', REPO / 'contributions/eclipse-opensovd/OpenSOVD/patches/receiver-diagnostics/s-core-observation.patch',
+                     REPO / 'contributions/eclipse-opensovd/OpenSOVD/patches/fault-storage/write-through.patch', REPO / 'contributions/eclipse-opensovd/OpenSOVD/scripts/receiver_container_entrypoint.sh',
+                     REPO / 'contributions/shared/scripts/owned_carla.py', REPO / 'contributions/eclipse-opensovd/OpenSOVD/config/faults/cruise-control.json',
+                     *sorted((REPO / 'contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/src').glob('*.rs')), Path(config['binary'])):
             manifest['inputs'][str(path.resolve())] = digest(path)
         if args.scenario == 'carla':
             for key in ('vehicle_module', 'vcu_module', 'signals', 'vulkan_icd'):
@@ -185,9 +185,9 @@ def main():
                                     [(k, config[k]) for k in ('score_source', 'baseline_source', 'bridge_source')]}
         local = args.output / 'inputs.json'
         local.write_text(json.dumps(config, indent=2) + '\n')
-        definitions = json.loads((REPO / 'tests/campaigns/core.json').read_text())
+        definitions = json.loads((REPO / 'contributions/shared/tests/campaigns/core.json').read_text())
         child_dir = args.output / 'native'
-        invocation = [sys.executable, str(REPO / 'OpenDut/tests/opendut_receiver_smoke.py'), '--fault-lifecycle',
+        invocation = [sys.executable, str(REPO / 'contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py'), '--fault-lifecycle',
                       '--inputs', str(local.resolve()), '--output', str(child_dir.resolve())]
         for key, flag in (('state', '--state'), ('binary', '--binary'), ('score_source', '--score-source'),
                           ('baseline_source', '--baseline-source'), ('bridge_source', '--bridge-source')):

@@ -24,18 +24,18 @@ Dependencies: T002 before T003; T004 before T005/T006; verification before T007/
 - [X] T012 Verify the current committed reproduction helper with new clean source/native build directories, explicit fresh compiler/schema execution, native core and real CARLA campaigns, then owned teardown per FR005 / SC003 / original reproducible-handover requirement (partial).
 - [X] T013 Supply an offline, explicitly historical replay of the saved stable physical run, with source hashes and original verdicts, per FR005 / original F008 stable-run recording and labelled fallback deliverable (partial).
 
-T012 proof: `evidence/f009-reproduction-current/verification.json`,
-`evidence/f009-reproduction-physical/results.json` and `evidence/f009-reproduction-bench-down`.
+T012 proof: `contributions/shared/evidence/f009-reproduction-current/verification.json`,
+`contributions/shared/evidence/f009-reproduction-physical/results.json` and `contributions/shared/evidence/f009-reproduction-bench-down`.
 This is the agent's shared-host self-run. The later preservation audit is partial:
-`evidence/f009-reproduction-preservation.json` records one changed original autoverse
+`contributions/shared/evidence/f009-reproduction-preservation.json` records one changed original autoverse
 dirty-diff identity, left intact; locked application/configuration hashes remain unchanged.
-T013 proof: `evidence/f009-recorded-replay-final`, `evidence/f009-replay-browser`
-and `evidence/f009-replay-gates` (fixture, failed-run and tampered-source rejection).
+T013 proof: `contributions/shared/evidence/f009-recorded-replay-final`, `contributions/shared/evidence/f009-replay-browser`
+and `contributions/shared/evidence/f009-replay-gates` (fixture, failed-run and tampered-source rejection).
 
 ## Phase 4: Convergence
 - [X] T014 Account for the current original autoverse dirty-diff mismatch and resolve the remaining original-workspace preservation comparison without changing unrelated state per SC003 / Constitution I (partial; HIGH).
 
-T014 proof: `evidence/f009-preservation-recheck/verification.json` reruns the original
+T014 proof: `contributions/shared/evidence/f009-preservation-recheck/verification.json` reruns the original
 auditor, including universal newline normalization. All seven comparisons pass.
 The previous comparison omitted that normalization for156 CRLF sequences; it did
 not establish an original-source change. Raw/text identities and method are recorded,

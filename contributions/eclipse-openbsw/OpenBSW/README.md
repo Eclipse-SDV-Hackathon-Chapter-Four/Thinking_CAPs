@@ -2,7 +2,7 @@
 
 This folder holds the Thinking CAPs **zonal diagnostic gateway**, built on
 [Eclipse OpenBSW](https://github.com/eclipse-openbsw/openbsw). It is the
-"New Physical ECU Integration" extension from the [repository README](../README.md#new-physical-ecu-integration).
+"New Physical ECU Integration" extension from the [repository README](../../../README.md#new-physical-ecu-integration).
 
 The gateway is a single diagnostic entry point for the zonal ECUs on the
 X-Verse CAN bus:
@@ -21,7 +21,7 @@ SOVD client ─REST─► OpenSOVD ─► CDA ─DoIP─► OpenBSW gateway ─I
 
 It does not touch the cruise-control use case:
 
-- Cruise diagnostics stay on the S-CORE `sovd_adapter` path (Path A in [demo/README.md](../dashboard/README.md)).
+- Cruise diagnostics stay on the S-CORE `sovd_adapter` path (Path A in [demo/README.md](../../shared/dashboard/README.md)).
 - The gateway uses only the diagnostic CAN identifiers `0x7DF` and `0x7E1`–`0x7EF`.
 - It never joins Zenoh or SOME/IP.
 
@@ -29,7 +29,7 @@ It does not touch the cruise-control use case:
 
 The gateway runs on the OpenBSW POSIX platform with DoIP over TAP and DoCAN on
 `vcan0`. It routes through `transport::TransportRouter`, a new OpenBSW module
-prepared as an [upstream contribution](../contributions/openbsw-transport-router/README.md).
+prepared as an [upstream contribution](../transport-router/README.md).
 
 | Item | Result |
 | --- | --- |
@@ -63,7 +63,7 @@ Open items, all of them visible in the report:
 | `contrib/libs/bsw/transportRouter/` | The contributed OpenBSW module (same tree as upstream) |
 | `scripts/` | Volume, network, bootstrap, SIL suite, integration run, upstream PR preparation |
 | `evidence/` | OpenBSW SIL baseline and gateway integration runs |
-| `aspice/` | ASPICE SWE.1–SWE.6 work products and report generator, in the same layout as [Serial2CAN](https://github.com/The-Xverse/zenoh2can_bridge/blob/dev/sdv-hackathon-2026/serial2can-bridge/aspice/README.md) and [AZ3166](../ThreadX/az3166/aspice/README.md) |
+| `aspice/` | ASPICE SWE.1–SWE.6 work products and report generator, in the same layout as [Serial2CAN](https://github.com/The-Xverse/zenoh2can_bridge/blob/dev/sdv-hackathon-2026/serial2can-bridge/aspice/README.md) and [AZ3166](../../../demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/aspice/README.md) |
 
 ## Virtual environment (SIL)
 
@@ -84,13 +84,13 @@ on the internal root filesystem.
 udisksctl loop-setup -f /media/jefferson/Lexar/.s-core-build/build-volume-v1.ext4
 udisksctl mount -b /dev/loopN           # mounts at /media/jefferson/11c42dee-…
 
-sudo OpenBSW/scripts/net-up.sh          # vcan0 + tap0 (reuses existing ones)
-OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-freertos build
-OpenBSW/scripts/run.sh                  # start the POSIX app; Ctrl-C stops it
-OpenBSW/scripts/sil-test.sh             # OpenBSW's own SIL suite (uds, enet, docan)
-OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 28 integration tests, record evidence
-OpenBSW/scripts/openbsw-pr.sh all       # upstream gates and patch for the transportRouter contribution
-python3 OpenBSW/aspice/tools/generate_report.py   # ASPICE SWE report
+sudo contributions/eclipse-openbsw/OpenBSW/scripts/net-up.sh          # vcan0 + tap0 (reuses existing ones)
+contributions/eclipse-openbsw/OpenBSW/scripts/bootstrap.sh            # venv, pinned OpenBSW, posix-freertos build
+contributions/eclipse-openbsw/OpenBSW/scripts/run.sh                  # start the POSIX app; Ctrl-C stops it
+contributions/eclipse-openbsw/OpenBSW/scripts/sil-test.sh             # OpenBSW's own SIL suite (uds, enet, docan)
+contributions/eclipse-openbsw/OpenBSW/scripts/gateway-it.sh           # build the gateway, run the 28 integration tests, record evidence
+contributions/eclipse-openbsw/OpenBSW/scripts/openbsw-pr.sh all       # upstream gates and patch for the transportRouter contribution
+python3 contributions/eclipse-openbsw/OpenBSW/aspice/tools/generate_report.py   # ASPICE SWE report
 ```
 
 Run the gateway by hand with
@@ -135,10 +135,10 @@ converter. These tools live on the build volume:
   OpenBSW Dockerfile.
 
 ```bash
-OpenBSW/scripts/board.sh status                 # debugger, GDB server, console port
-OpenBSW/scripts/board.sh flash <elf>            # PEmicro GDB server + OpenBSW flash.gdb
-OpenBSW/scripts/board.sh console 10             # board console (OpenSDA CDC, 115200)
-OpenBSW/scripts/board-sil-test.sh               # OpenBSW suite against the board over DoIP
+contributions/eclipse-openbsw/OpenBSW/scripts/board.sh status                 # debugger, GDB server, console port
+contributions/eclipse-openbsw/OpenBSW/scripts/board.sh flash <elf>            # PEmicro GDB server + OpenBSW flash.gdb
+contributions/eclipse-openbsw/OpenBSW/scripts/board.sh console 10             # board console (OpenSDA CDC, 115200)
+contributions/eclipse-openbsw/OpenBSW/scripts/board-sil-test.sh               # OpenBSW suite against the board over DoIP
 ```
 
 The host side of the link is the NetworkManager profile `openbsw-board`: 
@@ -185,6 +185,6 @@ Evidence and manifest are in [evidence/board-baseline](evidence/board-baseline/)
 
 ## Dependencies on other items
 
-- **ThreadX rear lighting ECU:** it needs a minimal UDS-on-CAN server (`0x7E1`/`0x7E9`) before end-to-end routing can be shown. That is a separate change to [ThreadX](../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md).
-- **CDA diagnostic description (MDD):** it must declare the gateway and every routed ECU with the logical addresses in the routing table. The CDA rejects anything not in the MDD ([demo/README.md](../dashboard/README.md)).
+- **ThreadX rear lighting ECU:** it needs a minimal UDS-on-CAN server (`0x7E1`/`0x7E9`) before end-to-end routing can be shown. That is a separate change to [ThreadX](../../../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md).
+- **CDA diagnostic description (MDD):** it must declare the gateway and every routed ECU with the logical addresses in the routing table. The CDA rejects anything not in the MDD ([demo/README.md](../../shared/dashboard/README.md)).
 - **AZ3166 on hardware:** it needs a new Serial2CAN profile that adds `0x7E1` to `to_serial` and `0x7E9` to `from_serial`. The existing profiles stay unchanged.

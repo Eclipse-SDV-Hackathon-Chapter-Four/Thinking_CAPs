@@ -2,8 +2,8 @@
 
 | Item | Value |
 | --- | --- |
-| Software | OpenBSW zonal diagnostic gateway: `OpenBSW/gateway` (application, gateway units) and the contributed module `OpenBSW/contrib/libs/bsw/transportRouter` |
-| Inputs | [System requirements](system-requirements.md), [README](../../README.md), ISO 13400-2 (DoIP), ISO 14229-1 (UDS), ISO 15765-2 (ISO-TP), [ThreadX CAN contract](../../../ThreadX/docs/can-lighting-contract.md), Eclipse OpenBSW `libs/bsw/{doip,docan,uds,transport,transportRouterSimple}` |
+| Software | OpenBSW zonal diagnostic gateway: `contributions/eclipse-openbsw/OpenBSW/gateway` (application, gateway units) and the contributed module `contributions/eclipse-openbsw/OpenBSW/contrib/libs/bsw/transportRouter` |
+| Inputs | [System requirements](system-requirements.md), [README](../../README.md), ISO 13400-2 (DoIP), ISO 14229-1 (UDS), ISO 15765-2 (ISO-TP), [ThreadX CAN contract](../../../../../demo/X-Verse/external_hackathon_ecus/ThreadX/docs/can-lighting-contract.md), Eclipse OpenBSW `libs/bsw/{doip,docan,uds,transport,transportRouterSimple}` |
 | Status | Baselined for the hackathon demonstration, 6 October 2026 (revised after implementation) |
 
 Each requirement has:
@@ -423,7 +423,7 @@ or the CARLA scripts.
 | Type | Constraint |
 | Derived from | SYS-05 |
 | Verification | RV, QT |
-| Criterion | The `git diff` of the integration touches only `OpenBSW/` and new configuration files; the cruise-control qualification (13 assertions, `DEMO=cruise`) passes with the gateway running and with it stopped. |
+| Criterion | The `git diff` of the integration touches only `contributions/eclipse-openbsw/OpenBSW/` and new configuration files; the cruise-control qualification (13 assertions, `DEMO=cruise`) passes with the gateway running and with it stopped. |
 
 ## Robustness
 

@@ -1,5 +1,5 @@
 # Reproduction contract
-scripts/reproduce_core.py --config LOCAL_JSON --state NEW_DIR --output NEW_DIR
+contributions/shared/scripts/reproduce_core.py --config LOCAL_JSON --state NEW_DIR --output NEW_DIR
 Must refuse replacing existing state/output. Freeze integration/controller/bridge pins, apply
 only exported patch; compile native inputs and execute actual core. Capture commands/outputs.
 Results distinguish source/build/native tests from independent-person acceptance. No simulated

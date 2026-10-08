@@ -81,7 +81,7 @@
 | **Core Final** (f005) | 42/42 | PASSED |
 | **CARLA Native Final** (f009) | 46/46 | PASSED |
 
-Evidence location: `evidence/f005-core-final/`, `evidence/f009-carla-native-final/`
+Evidence location: `contributions/shared/evidence/f005-core-final/`, `contributions/shared/evidence/f009-carla-native-final/`
 
 ---
 
@@ -89,10 +89,10 @@ Evidence location: `evidence/f005-core-final/`, `evidence/f009-carla-native-fina
 
 | Component | Location | Status |
 |-----------|----------|--------|
-| **sdv-receiver-diagnostics** | `OpenSOVD/integration/diagnostics/` | Implemented |
-| **Fault catalog** | `OpenSOVD/config/faults/` | Implemented |
-| **Receiver patches** | `OpenSOVD/patches/receiver-diagnostics/` | Implemented |
-| **Fault storage patches** | `OpenSOVD/patches/fault-storage/` | Implemented |
+| **sdv-receiver-diagnostics** | `contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/` | Implemented |
+| **Fault catalog** | `contributions/eclipse-opensovd/OpenSOVD/config/faults/` | Implemented |
+| **Receiver patches** | `contributions/eclipse-opensovd/OpenSOVD/patches/receiver-diagnostics/` | Implemented |
+| **Fault storage patches** | `contributions/eclipse-opensovd/OpenSOVD/patches/fault-storage/` | Implemented |
 
 ---
 
@@ -102,8 +102,8 @@ Evidence location: `evidence/f005-core-final/`, `evidence/f009-carla-native-fina
 
 | Priority | Task | Target |
 |----------|------|--------|
-| 1 | Recover Diagnostics #16 patches | `contributions/issues/eclipse-score/inc_diagnostics/16/` |
-| 2 | Add CDA #543 to registry | `contributions/issues/eclipse-opensovd/classic-diagnostic-adapter/543/` |
+| 1 | Recover Diagnostics #16 patches | `contributions/eclipse-score/inc_diagnostics/16/` |
+| 2 | Add CDA #543 to registry | `contributions/eclipse-opensovd/classic-diagnostic-adapter/543/` |
 | 3 | Run tests and capture evidence | `evidence/` |
 
 ### Day 2: Upstream PRs
@@ -152,9 +152,9 @@ Evidence location: `evidence/f005-core-final/`, `evidence/f009-carla-native-fina
 | `contributions/registry.json` | Issue tracking registry |
 | `contributions/README.md` | Contribution overview |
 | `contributions/EVIDENCE_GAPS.md` | What needs recovery |
-| `docs/reproduction.md` | Setup guide |
-| `docs/handover.md` | Handover documentation |
-| `docs/claim-evidence.md` | Claim/evidence mapping |
+| `contributions/shared/docs/reproduction.md` | Setup guide |
+| `contributions/shared/docs/handover.md` | Handover documentation |
+| `contributions/shared/docs/claim-evidence.md` | Claim/evidence mapping |
 
 ---
 

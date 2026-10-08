@@ -3,7 +3,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-MODULE = Path(__file__).resolve().parents[1] / 'scripts/run_campaign.py'
+MODULE = Path(__file__).resolve().parents[3] / 'contributions/shared/scripts/run_campaign.py'
 spec = importlib.util.spec_from_file_location('campaign', MODULE)
 campaign = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(campaign)

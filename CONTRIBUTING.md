@@ -21,7 +21,7 @@ and dispositions for omissions. Project committers determine net new IP and
 engage Eclipse's IP Team when required. No official merge before required approvals.
 
 See the [Eclipse handbook](https://www.eclipse.org/projects/handbook/),
-[current compliance record](contributions/compliance/2026-10-07/README.md), and
+[current compliance record](contributions/shared/compliance/2026-10-07/README.md), and
 [contribution inventory](contributions/README.md). Local test success is distinct
 from upstream acceptance and competition eligibility.
 

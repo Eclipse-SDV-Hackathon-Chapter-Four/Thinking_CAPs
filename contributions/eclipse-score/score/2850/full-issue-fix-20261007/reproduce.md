@@ -3,7 +3,7 @@
 Offline integrity check (Python standard library only):
 
 ```bash
-python3 contributions/issues/eclipse-score/score/2850/full-issue-fix-20261007/verify.py
+python3 contributions/eclipse-score/score/2850/full-issue-fix-20261007/verify.py
 ```
 
 `source/baseline.tar.gz` contains the original native source, `source/current.tar.gz` contains the proposed source, and `source/native.patch` is the complete patch. Their file/hash vectors travel with them. The verifier executes no candidate, source archive or network call. It checks packet integrity, fixed-contract preservation, native XML receipts, expected outcomes, trace/raw-output bindings, and source provenance.

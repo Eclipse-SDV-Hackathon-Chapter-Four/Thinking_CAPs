@@ -71,4 +71,4 @@ Archive SHA-256: `2b8f5c40ae194ba06f8e6c95933c05727ec8f4bec563ef7c4fc10ef3e33fa6
 Use the prepared native title/body and patch. Validate patch application against the
 intended upstream branch and rerun affected checks if rebasing changes the candidate.
 Attach or link this evidence bundle, obtain required review/CI, then record the PR,
-merge commit and issue scope decision in [the registry](../../../../registry.json).
+merge commit and issue scope decision in [the registry](../../../registry.json).

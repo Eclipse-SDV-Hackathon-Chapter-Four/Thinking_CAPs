@@ -113,7 +113,7 @@ python3 create_hackathon_ppt_v4.py
 | Path | Description | Key Contents |
 |------|-------------|--------------|
 | `docs/limitations.md` | POC limitations | What's not implemented |
-| `docs/interfaces.md` | Interface definitions | API contracts |
+| `contributions/shared/docs/interfaces.md` | Interface definitions | API contracts |
 | `docs/design-note-1766.md` | Epic #1766 design | Answering the call |
 | `docs/prepared-code-declaration.md` | Pre-prepared code | Declaration for hackathon |
 | `docs/PLAN.md` | POC plan | Implementation roadmap |
@@ -123,7 +123,7 @@ python3 create_hackathon_ppt_v4.py
 | `web/serve.py` | Web server | Dashboard server |
 | `stretch/mwcom-bridge/README.md` | mw::com bridge | Bridge implementation |
 | `third_party/inc_diagnostics/` | S-CORE diagnostics fork | PR #16 code |
-| `evidence/runs/*/verdict.md` | Test verdicts | Test results |
+| `contributions/shared/evidence/runs/*/verdict.md` | Test verdicts | Test results |
 
 ---
 
@@ -169,7 +169,7 @@ python3 create_hackathon_ppt_v4.py
 |-------|------|---------|
 | 1 | HACKATHON_HANDSON_GUIDE.md | Setup instructions |
 | 2 | demo/live/server.py | Start the server |
-| 3 | evidence/runs/*/verdict.md | Verify results |
+| 3 | contributions/shared/evidence/runs/*/verdict.md | Verify results |
 
 ### Scenario 4: Understanding the Integration
 

@@ -24,12 +24,12 @@ labelled. Rechecked after design: no deviations.
 
 ## Project Structure
 ```text
-scripts/audit_baseline.py
-tests/test_baseline_audit.py
-config/dependencies.lock.json
+contributions/shared/scripts/audit_baseline.py
+contributions/shared/tests/test_baseline_audit.py
+contributions/shared/config/dependencies.lock.json
 docs/{baseline,interfaces,feature-backlog,prepared-work,upstream-status}.md
 evidence/<run-id>/{manifest,results}.json
-specs/001-baseline-audit/{research,data-model,quickstart,tasks,completion}.md
+contributions/shared/specs/001-baseline-audit/{research,data-model,quickstart,tasks,completion}.md
 ```
 
 **Structure Decision**: Use existing repository; JSON lock avoids an additional YAML parser.

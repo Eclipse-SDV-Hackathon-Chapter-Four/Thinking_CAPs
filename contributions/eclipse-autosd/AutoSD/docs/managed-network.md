@@ -37,14 +37,14 @@ peer/guest namespaces.
 
 ```bash
 export AUTO_SD_BENCH="AutoSD/.local/my-opendut"
-python3 OpenDut/scripts/opendut_testbench.py prepare \
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py prepare \
   --management-subnet 172.30.78.0/24 --state "$AUTO_SD_BENCH" \
   --output "$AUTO_SD_RUN/opendut-prepare"
-python3 OpenDut/scripts/opendut_testbench.py up --state "$AUTO_SD_BENCH" \
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py up --state "$AUTO_SD_BENCH" \
   --output "$AUTO_SD_RUN/opendut-up"
-python3 AutoSD/scripts/vm.py down --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py down --state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/before-managed-down.json"
-python3 AutoSD/scripts/managed_network.py up \
+python3 contributions/eclipse-autosd/AutoSD/scripts/managed_network.py up \
   --bench-state "$AUTO_SD_BENCH" --vm-state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/managed-attach.json"
 ```
@@ -54,9 +54,9 @@ this selected subnet they are `172.30.78.12:19092` and `tcp/172.30.78.11:7447`.
 Use the values in your receipt if you selected another subnet:
 
 ```bash
-python3 AutoSD/scripts/vm.py up --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py up --state "$AUTO_SD_STATE" \
   --dut-endpoint 172.30.78.12:19092 --output "$AUTO_SD_RUN/managed-vm-up.json"
-python3 AutoSD/scripts/managed_network.py configure \
+python3 contributions/eclipse-autosd/AutoSD/scripts/managed_network.py configure \
   --bench-state "$AUTO_SD_BENCH" --vm-state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/managed-configure.json"
 ```
@@ -69,7 +69,7 @@ NIC. The fixed PCI slots keep the boot disk stable when the second NIC is added.
 ## Test interruption and recovery
 
 ```bash
-AutoSD/.local/client/bin/python AutoSD/tests/lighting_smoke.py \
+AutoSD/.local/client/bin/python contributions/eclipse-autosd/AutoSD/tests/lighting_smoke.py \
   --state "$AUTO_SD_STATE" --endpoint tcp/172.30.78.11:7447 \
   --bench-state "$AUTO_SD_BENCH" --output "$AUTO_SD_RUN/managed-smoke"
 ```
@@ -85,7 +85,7 @@ To include the real CARLA actor check, use an existing 0.9.15 server and the
 optional Python packages installed in the AutoSD README:
 
 ```bash
-AutoSD/.local/client/bin/python AutoSD/tests/lighting_smoke.py \
+AutoSD/.local/client/bin/python contributions/eclipse-autosd/AutoSD/tests/lighting_smoke.py \
   --state "$AUTO_SD_STATE" --endpoint tcp/172.30.78.11:7447 \
   --bench-state "$AUTO_SD_BENCH" --output "$AUTO_SD_RUN/managed-carla" \
   --carla-host "$TEST_CARLA_HOST" --carla-port "$TEST_CARLA_PORT" \
@@ -103,15 +103,15 @@ While the VM is running, return the gateway to the host router from the AutoSD
 README. Keep that router running for this step:
 
 ```bash
-python3 AutoSD/scripts/managed_network.py local \
+python3 contributions/eclipse-autosd/AutoSD/scripts/managed_network.py local \
   --bench-state "$AUTO_SD_BENCH" --vm-state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/local-restored.json"
-python3 AutoSD/scripts/vm.py down --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py down --state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/managed-vm-down.json"
-python3 AutoSD/scripts/managed_network.py down \
+python3 contributions/eclipse-autosd/AutoSD/scripts/managed_network.py down \
   --bench-state "$AUTO_SD_BENCH" --vm-state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/managed-removed.json"
-python3 OpenDut/scripts/opendut_testbench.py down --state "$AUTO_SD_BENCH" \
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py down --state "$AUTO_SD_BENCH" \
   --output "$AUTO_SD_RUN/opendut-down"
 ```
 

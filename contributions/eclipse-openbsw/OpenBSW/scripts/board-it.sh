@@ -2,9 +2,9 @@
 # Build the zonal gateway for the S32K148EVB, flash it and run the board
 # integration tests (gateway/tests/test_board.py) over DoIP at 192.168.0.200.
 # Results: <volume>/openbsw-sil/runs/board-it-<timestamp>/; a full run is
-# recorded in OpenBSW/evidence/board-gateway-it/.
+# recorded in contributions/eclipse-openbsw/OpenBSW/evidence/board-gateway-it/.
 #
-#   OpenBSW/scripts/board-it.sh [pytest args...]
+#   contributions/eclipse-openbsw/OpenBSW/scripts/board-it.sh [pytest args...]
 #
 # ZGW_RTOS selects the RTOS: THREADX (default) or FREERTOS. Each RTOS has its
 # own build directory.

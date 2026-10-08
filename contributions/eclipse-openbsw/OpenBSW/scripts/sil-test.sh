@@ -6,7 +6,7 @@
 # The suite transmits on many CAN IDs (0x7DF, 0x7E0/0x7E1, 0x600/0x601,
 # 29-bit 0x18DAxxxx...). Do not run it while X-Verse uses vcan0.
 #
-#   OpenBSW/scripts/sil-test.sh [pytest paths...]     # default: uds enet docan
+#   contributions/eclipse-openbsw/OpenBSW/scripts/sil-test.sh [pytest paths...]     # default: uds enet docan
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 

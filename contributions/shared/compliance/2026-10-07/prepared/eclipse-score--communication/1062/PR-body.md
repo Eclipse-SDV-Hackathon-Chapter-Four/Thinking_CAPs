@@ -2,7 +2,7 @@
 
 # eclipse-score/communication#1062
 
-See the retained issue record: `issues/eclipse-score/communication/1062/README.md`.
+See the retained issue record: `eclipse-score/communication/1062/README.md`.
 
 
 ## AI assistance and review

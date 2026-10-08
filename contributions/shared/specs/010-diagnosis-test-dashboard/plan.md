@@ -42,16 +42,16 @@ work labelled; XII runner assertions remain deterministic. No justified violatio
 ## Project Structure
 
 ```text
-integration/dashboard/{service.py,web/index.html,web/app.js,web/style.css}
-scripts/run_dashboard.py
-config/dashboard/local.example.json
-tests/test_dashboard.py
-tests/dashboard_browser_smoke.py
+contributions/shared/integration/dashboard/{service.py,web/index.html,web/app.js,web/style.css}
+contributions/shared/scripts/run_dashboard.py
+contributions/shared/config/dashboard/local.example.json
+contributions/shared/tests/test_dashboard.py
+contributions/shared/tests/dashboard_browser_smoke.py
 evidence/f010-*/
-specs/010-diagnosis-test-dashboard/{research.md,data-model.md,contracts/api.md,quickstart.md,tasks.md}
+contributions/shared/specs/010-diagnosis-test-dashboard/{research.md,data-model.md,contracts/api.md,quickstart.md,tasks.md}
 ```
 
-Extend scripts/run_campaign.py with optional validated run ID and bench admission
-lock. Add an append-only live event journal to OpenDut/tests/opendut_receiver_smoke.py;
+Extend contributions/shared/scripts/run_campaign.py with optional validated run ID and bench admission
+lock. Add an append-only live event journal to contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py;
 final reports and algorithms are unchanged. Source layout avoids a new package
 manager and preserves existing vehicle integrations. See research and API contract.

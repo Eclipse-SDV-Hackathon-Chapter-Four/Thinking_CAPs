@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Prepare and verify the upstream OpenBSW contribution "transportRouter".
 #
-# The module source lives in OpenBSW/contrib/libs/bsw/transportRouter (the gateway builds
+# The module source lives in contributions/eclipse-openbsw/OpenBSW/contrib/libs/bsw/transportRouter (the gateway builds
 # from it). This script rebuilds the PR branch from the pinned OpenBSW base in a git worktree
 # on the external build volume and runs the checks OpenBSW CI runs on a pull request:
 #
@@ -16,7 +16,7 @@
 #   patch      commit (gitlint rules) and git format-patch into contributions/
 #   all        everything above, in order
 #
-# Results: <volume>/openbsw-sil/runs/pr-<timestamp>/ and contributions/openbsw-transport-router/
+# Results: <volume>/openbsw-sil/runs/pr-<timestamp>/ and contributions/eclipse-openbsw/transport-router/
 set -euo pipefail
 source "$(dirname "$0")/storage.sh"
 

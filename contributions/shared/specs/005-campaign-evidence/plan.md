@@ -8,7 +8,7 @@ All twelve principles checked. Preserve bridge/original receiver source; hash ve
 inputs/config/executables, truthful modes, scoped teardown, deterministic acceptance. No external
 publication, installer or event-time creation. Control never awaits diagnostic HTTP.
 ## Design
-scripts/run_campaign.py validates explicit config/prerequisites before spawning the live test.
+contributions/shared/scripts/run_campaign.py validates explicit config/prerequisites before spawning the live test.
 Missing environmental prerequisite = blocked2; selected assertion/cleanup failure = failed1.
 Child result and exit code both required. Cleanup-failure mode expects exactly the injected
 failure, verifies restore/capture/app cleanup and reports only that scenario as passed.
@@ -25,6 +25,6 @@ and wall monotonic clocks remain distinct. No new X-Verse features. Missing serv
 is a blocked result, not a substituted fixture. Reuse core receiver deployment for the bounded
 CARLA nominal return test if feasible. Fixture fault campaign remains explicit and independent.
 ## Touch points
-scripts/run_campaign.py; tests/campaigns/{core.json,local.example.json}; tests/test_campaign.py;
-OpenDut/tests/opendut_receiver_smoke.py; OpenDut/tests/opendut_receiver_smoke.py --carla-config; scripts/owned_carla.py;
-specs/005-campaign-evidence/{contracts/,quickstart.md,completion.md}; evidence/f005-*.
+contributions/shared/scripts/run_campaign.py; contributions/shared/tests/campaigns/{core.json,local.example.json}; contributions/shared/tests/test_campaign.py;
+contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py; contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py --carla-config; contributions/shared/scripts/owned_carla.py;
+contributions/shared/specs/005-campaign-evidence/{contracts/,quickstart.md,completion.md}; evidence/f005-*.

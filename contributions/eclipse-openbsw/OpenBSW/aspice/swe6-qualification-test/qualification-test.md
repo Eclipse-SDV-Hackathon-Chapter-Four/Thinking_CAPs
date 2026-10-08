@@ -29,7 +29,7 @@ The report generator parses this table: ID | Source | Test case | Method | Verif
 | QTC-07 | auto:configuration-consistency | `routing.yaml` is valid (all CAN identifiers in `0x7DF`–`0x7EF`, so the DoCAN filter accepts and the gateway sends nothing else) and every Serial2CAN profile forwards each route's request and response IDs together (or neither) | Analysis | SWR-030, SWR-033, SWR-052 |
 | QTC-08 | auto:latency | Recorded forwarding latency p95 ≤ 10 ms per direction | Test | SWR-060 |
 | QTC-09 | auto:observability | Recorded gateway logs contain the start-up identity with the current routing-table hash and a statistics line | Analysis | SWR-054 |
-| QTC-10 | auto:baseline-untouched | The branch changes only `OpenBSW/` and `contributions/`: no X-Verse, ThreadX, S-CORE, OpenSOVD or CARLA file | Inspection | SWR-033 |
+| QTC-10 | auto:baseline-untouched | The branch changes only `contributions/eclipse-openbsw/OpenBSW/` and `contributions/`: no X-Verse, ThreadX, S-CORE, OpenSOVD or CARLA file | Inspection | SWR-033 |
 | QTC-11 | manual:reviewed | DoIP generic header handling is the unmodified OpenBSW `doip` module (covered by its unit tests); no gateway change | Inspection | SWR-040 |
 | QTC-12 | manual:not-run | Live X-Verse + CARLA: cruise-control demonstration (`DEMO=cruise`, 13 assertions) passes with the gateway running and with it stopped; candump shows only diagnostic IDs from the gateway | Test | SWR-030, SWR-033 |
 | QTC-13 | manual:not-run | OpenSOVD → CDA → gateway: SOVD client reads `0x1010` identification and `0x1020` data, lists and clears U0140 | Test | SWR-001, SWR-012, SWR-021, SWR-025 |

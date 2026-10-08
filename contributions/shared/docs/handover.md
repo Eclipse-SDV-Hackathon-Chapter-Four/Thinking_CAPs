@@ -37,13 +37,13 @@ topics; native Cruise Control/VCU supplies throttle. AAOS/FOTA and second-contri
   were shared. F009 subsequently fixed shadowed compiler/schema inputs and verified actual
   fresh-tool execution in the physical and [fixture regression](../evidence/f009-fixture-regression/results.json).
   The first failed attempt is retained in `f008-reproduction-first`.
-- [Fault lifecycle](../OpenSOVD/evidence/f004-receiver-signal-fix/results.json): actual loss,
+- [Fault lifecycle](../../eclipse-opensovd/OpenSOVD/evidence/f004-receiver-signal-fix/results.json): actual loss,
   held recovery, diagnostic/DFM process restart, durable history and signal cleanup.
 - [Failure cleanup](../evidence/f005-cleanup-failure/results.json) and
   [interrupted campaign](../evidence/f005-interrupted-core/results.json): scoped
   recovery passed; the interrupted campaign correctly remains failed.
 - [Claim/evidence map](claim-evidence.md), [reproduction instructions](reproduction.md)
-  and [upstream patch packet](../OpenSOVD/contributions/fault-storage-write-through/README.md).
+  and [upstream patch packet](../../eclipse-opensovd/OpenSOVD/contributions/fault-storage-write-through/README.md).
 
 `a25868e` contains receiver diagnostics and the local testbench. `6d7bef9` freezes
 the native fault/campaign implementation used by the clean-source reproduction.
@@ -53,15 +53,15 @@ was sent. Work remains preparation before the stated 6–8 October event.
 
 ## Restart and demonstrate
 
-The owned testbench is shut down at handover. Follow `docs/reproduction.md` to prepare
+The owned testbench is shut down at handover. Follow `contributions/shared/docs/reproduction.md` to prepare
 new private state, deploy its peers and set the private input JSON. The original
 Score implementation is `/home/jefferson/autoverse/vecu/s-core/cc_s-core`; receiver
 instrumentation lives in a separate worktree and exported patch. Build caches remain
 available. Certificates expire after seven days; generate new private state later.
 
 ```sh
-/usr/bin/python3 scripts/run_campaign.py --config .local/campaign.json --scenario core --output evidence/my-demo
-/usr/bin/python3 scripts/run_campaign.py --config .local/campaign.json --scenario carla --output evidence/my-physical-demo
+/usr/bin/python3 contributions/shared/scripts/run_campaign.py --config .local/campaign.json --scenario core --output evidence/my-demo
+/usr/bin/python3 contributions/shared/scripts/run_campaign.py --config .local/campaign.json --scenario carla --output evidence/my-physical-demo
 ```
 
 Use a new output directory and a configuration naming the newly deployed state and
@@ -109,16 +109,16 @@ or full vehicle claim.
 | Native fault route | Coordinate with the existing upstream owner of native `/faults`; current App data fallback is explicit. No ownership agreement has been claimed. |
 | Upstream submission | Review the bounded storage packet, upstream account/ECA requirements and full applicable CI before any authorized public submission. Local native tests do not establish full upstream CI. |
 | AAOS/FOTA | Wait for the real asset. No installer, successful update or update regression has been substituted. |
-| Dashboard | F010 is implemented: live OpenSOVD diagnosis, authoritative project campaigns on openDuT, cancellation/cleanup and verified evidence downloads; see docs/dashboard.md. |
+| Dashboard | F010 is implemented: live OpenSOVD diagnosis, authoritative project campaigns on openDuT, cancellation/cleanup and verified evidence downloads; see contributions/shared/docs/dashboard.md. |
 | Optional extensions | E2E, plausibility/sequence profiles, native updates and VIPER remain unselected. The user added ThreadX/AutoSD feasibility; [bounded integration proposal](optional-runtime-integration.md) documents potential +0.20 eligibility and useful roles, without claiming runtime integration or awarded points. |
 | Event inventory | Record the actual event-start revision and subsequent delta; do not relabel this prepared work as event-time creation. |
 
-See `evidence/f009-bench-down` and `evidence/f009-preservation.json` for final resource
+See `contributions/shared/evidence/f009-bench-down` and `contributions/shared/evidence/f009-preservation.json` for final resource
 and original-source checks. Private credentials, captures and runtime configuration
 stay in ignored local state. Initial harmless generated CARLA configuration files
 were removed from tracked evidence; failed/blocked measurement logs are retained.
 
-The newer self-reproduction bench is also down: [teardown](../OpenDut/evidence/f009-reproduction-bench-down/results.json).
+The newer self-reproduction bench is also down: [teardown](../../eclipse-opendut/OpenDut/evidence/f009-reproduction-bench-down/results.json).
 The [current preservation recheck](../evidence/f009-preservation-recheck/verification.json)
 confirms absent owned resources, unchanged locked application/configuration hashes,
 both runtime images, original stopped containers, CARLA binary and all seven original
@@ -136,13 +136,13 @@ ownership-repair containers on timeout/SIGINT/SIGTERM. The [actual build cancell
 retains a failed verdict while both cleanup records pass. [Timeout and ownership checks](../evidence/f008-build-cleanup-after/verification.json)
 and20 Python regressions pass; an unowned container or unavailable Docker cannot
 appear as successful cleanup. The [updated wrapper's native core regression](../evidence/f008-process-group-native/verification.json)
-passes42 assertions with cached validated binaries. The [bench is down](../OpenDut/evidence/f008-process-group-bench-down/results.json),
+passes42 assertions with cached validated binaries. The [bench is down](../../eclipse-opendut/OpenDut/evidence/f008-process-group-bench-down/results.json),
 and [current preservation checks](../evidence/f008-process-group-preservation/verification.json)
 pass. This adds no claim of another successful fresh build, human rehearsal or second
 contributor's execution.
 
 The latest user instruction defers second-contributor reproduction for now.
 It no longer blocks local implementation. F010 actual dual-client/native/physical/
-cancellation/browser verification is recorded in `evidence/f010-live` and
-`evidence/f010-browser-acceptance`; original source/state preservation passes in
-`evidence/f010-preservation`. Use [dashboard.md](dashboard.md) for launch and limits.
+cancellation/browser verification is recorded in `contributions/shared/evidence/f010-live` and
+`contributions/shared/evidence/f010-browser-acceptance`; original source/state preservation passes in
+`contributions/shared/evidence/f010-preservation`. Use [dashboard.md](dashboard.md) for launch and limits.

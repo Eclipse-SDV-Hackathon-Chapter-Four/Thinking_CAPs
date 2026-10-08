@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from urllib.parse import quote
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[3]
 
 
 def sha(path):
@@ -52,7 +52,7 @@ def render(campaign, output):
             'run_id': results['run_id'], 'origin_ns': origin, 'results': results, 'identity': manifest['CARLA'],
             'samples': samples, 'events': events, 'observations': observations, 'faults': faults,
             'correlation': json.loads((native / 'carla-control-return.json').read_text()), 'sources': provenance}
-    template = REPO / 'templates/campaign_replay.html'
+    template = REPO / 'contributions/shared/templates/campaign_replay.html'
     serialized = json.dumps(data, separators=(',', ':'), allow_nan=False).replace('<', '\\u003c')
     html = template.read_text().replace('__RECORDED_DATA__', serialized)
     output.mkdir(parents=True, exist_ok=False)

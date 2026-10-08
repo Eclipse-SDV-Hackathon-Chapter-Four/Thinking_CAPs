@@ -14,4 +14,4 @@ Acceptance is decode success in existing consumer semantics, not E2E or function
 
 Sender boundary test: compile `test_sender.cpp` with C++17 and include the patched `src/`
 directory; run the resulting executable. It exercises missing/full receiver queues and delivery.
-Native provider/integration evidence: OpenSOVD/specs/002-receiver-diagnostics/completion.md.
+Native provider/integration evidence: contributions/eclipse-opensovd/OpenSOVD/specs/002-receiver-diagnostics/completion.md.

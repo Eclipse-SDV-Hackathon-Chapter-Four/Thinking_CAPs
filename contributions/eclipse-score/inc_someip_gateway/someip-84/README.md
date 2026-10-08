@@ -73,7 +73,7 @@ pre-commit run --all-files
 
 The captured harness scripts and command records document the separate focused
 and negative-control executions; their absolute workstation paths are provenance.
-From the Thinking_CAPs root, `python3 scripts/verify_contributions.py --json` checks
+From the Thinking_CAPs root, `python3 contributions/shared/scripts/verify_contributions.py --json` checks
 the prepared packet manifest, original artifacts and patch hashes offline. It
 does not rerun native tests or grant acceptance. `artifact-manifest.json` excludes
 itself; the registry supplies the current packet location.

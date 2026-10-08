@@ -12,8 +12,8 @@ scoped owner decision and upstream-template PR title/body. Its earlier Codex evi
 remains unchanged. The latest content sync reruns integrity checks, not native tests.
 
 - [ ] Check the competition's actual destination, required format, deadline and eligibility.
-- [ ] Review [the registry](../registry.json) and the solved scope of each contribution.
-- [ ] Run `python3 scripts/verify_contributions.py` from the repository root.
+- [ ] Review [the registry](../../registry.json) and the solved scope of each contribution.
+- [ ] Run `python3 contributions/shared/scripts/verify_contributions.py` from the repository root.
 - [ ] Refresh upstream issue status and record actual native PR links when available.
 - [ ] Attach required upstream review/CI/merge evidence as it becomes available.
 - [ ] Update [the hackathon PR draft](hackathon-pr-description.md) with the final entry details.
@@ -22,8 +22,8 @@ remains unchanged. The latest content sync reruns integrity checks, not native t
 
 Native upstream PR drafts:
 
-- [SOME/IP prepared PR](../issues/eclipse-score/inc_someip_gateway/84/imported/pr-preparation/pr-description.md).
-- [Lifecycle draft PR](../issues/eclipse-score/lifecycle/704/pr-description.md).
+- [SOME/IP prepared PR](../../eclipse-score/inc_someip_gateway/84/imported/pr-preparation/pr-description.md).
+- [Lifecycle draft PR](../../eclipse-score/lifecycle/704/pr-description.md).
 
 Retained evidence logs contain original absolute workstation paths. Those are
 provenance; inspect the relative artifact layout and run the portable verifier
@@ -38,17 +38,17 @@ The consolidated evidence on `main` retains 24 issue records, including the
 four newly imported communication bug records and updated #1167 publication history.
 This inventory includes draft assessments and incomplete scopes; it does not increase
 the accepted/completed-fix count by treating records as successful implementations.
-See [the contribution index](../README.md) and
+See [the contribution index](../../README.md) and
 [import audit](../audits/2026-10-07-import-record.json).
 
-The [assessment decision packet](../assessment-decisions-20261007/README.md) records
+The [assessment decision packet](../../eclipse-score/assessment-decisions-20261007/README.md) records
 the remaining qualification/adoption decisions and required human acceptance for
 Communication #1265 and the assessment-only entries. Retain their assessment statuses
 and exclude them from completed-fix counts, including after documentation-only acceptance.
-The user [accepted the prepared packet](../assessment-decisions-20261007-acceptance.json)
+The user [accepted the prepared packet](../../eclipse-score/assessment-decisions-20261007-acceptance.json)
 on 2026-10-07; native qualification/adoption decisions remain pending.
 
-Run `python3 scripts/verify_missing_contributions.py` in addition to the global
+Run `python3 contributions/shared/scripts/verify_missing_contributions.py` in addition to the global
 registry verifier. Native review, remaining checks and the actual event submission
 requirements still need their recorded decisions.
 

@@ -42,7 +42,7 @@ Scope: the issue-body OSS MVP of [S-CORE #2850](https://github.com/eclipse-score
 | At least 20 public search tasks | 30 search scenarios, 10 separately identified heldout scenarios; `corpus/index.json` and 40 `spec.md` files | All 40 expected verdicts and impact-ID lists match in each native Python baseline |
 | End-to-end outer loop | `runner.py`: candidate validation → coverage → native gate → schema-checked traces → evolution index | Native `bazel run //assurance:evaluate` on both splits, Python 3.12 and 3.14 |
 | Executable repository-native seeds | Threshold/broken-reference/type-scoped gate seeds; ten additional native snapshot-extraction cases | Source attribution to native gate tests and native metric functions; no production-incident claim |
-| Evaluated baseline, grep-able traces | Single-file `candidates/baseline.py`; meta/score/diff/impact/gate artifacts, raw outputs | `evidence/runs/` and both `evidence/native-runs-py*` stores |
+| Evaluated baseline, grep-able traces | Single-file `candidates/baseline.py`; meta/score/diff/impact/gate artifacts, raw outputs | `contributions/shared/evidence/runs/` and both `evidence/native-runs-py*` stores |
 | Index-first history queries | `query.py`: ranking, failed tasks, indexed run comparison | Query unit/integration checks and retained CLI query receipts |
 | CI without LLM | Existing native Bazel suite includes harness test; Python matrix evaluates both splits and uploads trace stores | Native full tests/builds on 3.12/3.14; actionlint; exact CI runner commands |
 | Short top-level navigation | New `AGENTS.md`, linked domain guide, rule/task/block indexes | Source review; native format/copyright checks |

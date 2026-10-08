@@ -30,7 +30,7 @@ Source, builds, logs, and evidence belong on mounted loop4 at:
 /media/jefferson/11c42dee-73a3-4c2b-ab42-a0440011d9e0/threadx-contributions/744/
 ```
 
-The intended folder target is its `source` directory. Evidence is its sibling `evidence` directory. Reviewable exported material belongs in this repository's `contributions/threadx-744/artifacts` directory.
+The intended folder target is its `source` directory. Evidence is its sibling `evidence` directory. Reviewable exported material belongs in this repository's `contributions/eclipse-threadx/threadx/744/artifacts` directory.
 
 Engine persistence is server-owned: `[server.storage].root` / `fabro server start --storage-dir` determine SQLite, engine logs, objects, and run scratch. There is no supported `[run.storage]` setting. Server stanzas inside workflow TOML are schema-valid but inert. The existing server at `http://127.0.0.1:32276/api/v1` stores engine state in `/home/jefferson/.fabro/storage` on the home filesystem; its TMPDIR is already on loop4. To put engine persistence on loop4 as well, run a separate dedicated ThreadX server with a separate config/port/socket and loop4 storage. Each inference session uses the configured Codex CLI login. This installed server also required an OpenAI Codex credential record when creating a run pinned to that provider; the dedicated vault received only the current short-lived access token, without a refresh token. Credentials remain outside repository artifacts and are never printed. Do not relocate or modify existing runs/configuration merely for this task.
 
@@ -41,9 +41,9 @@ privately from loop4 storage. The installed MCP connection targets the unrelated
 server on port 32276, so it is not used to control these runs.
 
 ```bash
-python3 contributions/threadx-744/workflow/fabro_control.py register
-python3 contributions/threadx-744/workflow/fabro_control.py launch
-python3 contributions/threadx-744/workflow/fabro_control.py status
+python3 contributions/eclipse-threadx/threadx/744/workflow/fabro_control.py register
+python3 contributions/eclipse-threadx/threadx/744/workflow/fabro_control.py launch
+python3 contributions/eclipse-threadx/threadx/744/workflow/fabro_control.py status
 ```
 
 Registration uses `workflow.fabro` as the entrypoint. The adjacent TOML supplies

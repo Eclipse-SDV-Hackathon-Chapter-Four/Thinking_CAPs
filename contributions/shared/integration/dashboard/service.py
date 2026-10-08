@@ -18,7 +18,7 @@ import urllib.parse
 import urllib.request
 import uuid
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(__file__).resolve().parents[4]
 WEB = Path(__file__).parent / 'web'
 SCENARIOS = {'core': 'Fixture vehicle inputs; real receiver/openDuT/native faults',
              'cleanup-failure': 'Deliberate failure fixture; actual owned cleanup acceptance',
@@ -303,7 +303,7 @@ class Coordinator:
         code, error, spawned = None, None, False
         try:
             command = (self.command_factory(record) if self.command_factory else
-                       [self.python, str(REPO / 'scripts/run_campaign.py'), '--config', str(self.inputs),
+                       [self.python, str(REPO / 'contributions/shared/scripts/run_campaign.py'), '--config', str(self.inputs),
                         '--scenario', record['scenario'], '--output', str(output), '--run-id', identity])
             with (self.state / (identity + '.log')).open('wb') as log:
                 with self.lock:

@@ -2,7 +2,7 @@
 
 Agent recommendation: accept the scoped integration-test contribution for its measured Ubuntu baseline, retain the checker-path repair as a separately reviewable utility patch, and track inherited copyright repair separately. The authorized human decision is **pending** in [HUMAN-DISPOSITION.md](../submission/HUMAN-DISPOSITION.md). This proposal grants no copyright waiver or upstream acceptance.
 
-The reviewed subject is native baseline `e3d126c2d7569345cf5f790310702eb00cd86b06`, staged tree `1d790b6182be2fed1794bb287f8f9a868bde685f`, source vector SHA-256 `ddccd8f68c44de2b6de920c42c8999189cc3d1845268d9ce6e8dbad3da860e98`. Native run `01M4878Q65ENC6PJ5AEJ6NMWB3` is the measured run. [Evidence verification](evidence-verification.json) freshly verifies carried evidence, rather than executing new tests. Run `python3 contributions/communication-1167/acceptance-review/verify_evidence.py` from the repository root to repeat the check.
+The reviewed subject is native baseline `e3d126c2d7569345cf5f790310702eb00cd86b06`, staged tree `1d790b6182be2fed1794bb287f8f9a868bde685f`, source vector SHA-256 `ddccd8f68c44de2b6de920c42c8999189cc3d1845268d9ce6e8dbad3da860e98`. Native run `01M4878Q65ENC6PJ5AEJ6NMWB3` is the measured run. [Evidence verification](evidence-verification.json) freshly verifies carried evidence, rather than executing new tests. Run `python3 contributions/eclipse-score/communication/1167/acceptance-review/verify_evidence.py` from the repository root to repeat the check.
 
 | Decision | Concrete proposal | Evidence and limitation |
 | --- | --- | --- |

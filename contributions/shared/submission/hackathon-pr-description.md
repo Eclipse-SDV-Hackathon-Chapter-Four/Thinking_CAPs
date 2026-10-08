@@ -5,11 +5,11 @@ native patches, measurements, provenance and license notices:
 
 | Contribution | Evidence | Review status |
 | --- | --- | --- |
-| [SOME/IP #84 duplicate registration fix](../issues/eclipse-score/inc_someip_gateway/84/README.md) | Verified six-file patch; GCC/Clang regressions; native unit, Linux QEMU and profiling records; complete portable archive | Local scoped approval recorded; upstream review/CI pending; broader #84 work remains |
-| [Lifecycle #704 configuration deduplication](../issues/eclipse-score/lifecycle/704/README.md) | Approved Fabro/DeepSeek Flash patch; three equivalent configurations; runfile/package-path checks; 113 passing native cases; complete local upstream PR packet | Owner approval recorded for local patch/advisory responses and PR preparation; upstream review/CI pending |
+| [SOME/IP #84 duplicate registration fix](../../eclipse-score/inc_someip_gateway/84/README.md) | Verified six-file patch; GCC/Clang regressions; native unit, Linux QEMU and profiling records; complete portable archive | Local scoped approval recorded; upstream review/CI pending; broader #84 work remains |
+| [Lifecycle #704 configuration deduplication](../../eclipse-score/lifecycle/704/README.md) | Approved Fabro/DeepSeek Flash patch; three equivalent configurations; runfile/package-path checks; 113 passing native cases; complete local upstream PR packet | Owner approval recorded for local patch/advisory responses and PR preparation; upstream review/CI pending |
 
 `contributions/registry.json` tracks issue identity, baseline and PR status. Artifact
-manifests and `scripts/verify_contributions.py` allow offline SHA-256 verification,
+manifests and `contributions/shared/scripts/verify_contributions.py` allow offline SHA-256 verification,
 including the complete SOME/IP portable evidence and candidate source identities.
 The native test results are retained original measurements, not new runs performed
 while assembling this submission.
@@ -26,7 +26,7 @@ completed-contribution count. CDA #543 is published as native PR #601. Both nati
 PRs currently fail their actual contributor's ECA check, and diagnostics needs
 that author's DCO sign-offs. Jefferson confirmed Claude Opus 5.5 assistance on both.
 
-[Communication #1265 and the assessment-only entries](../assessment-decisions-20261007/README.md)
+[Communication #1265 and the assessment-only entries](../../eclipse-score/assessment-decisions-20261007/README.md)
 retain their assessments with proposed qualification/adoption dispositions and required
 human acceptance. They supply no completed-fix claim; the packet records the remaining
 evidence, reviewer roles and separate acceptance-record requirements.

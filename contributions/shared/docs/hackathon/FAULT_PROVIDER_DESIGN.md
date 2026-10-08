@@ -2,9 +2,9 @@
 
 ## Scope and Source Material
 
-This package implements a hackathon-side fault provider and runnable HTTP adapter under `OpenSOVD/legacy/crates`. It is based on OpenSOVD issue [#156](https://github.com/eclipse-opensovd/opensovd-core/issues/156) and the three pages of the attached draw.io architecture (Architecture, Demo flow, Repository layout).
+This package implements a hackathon-side fault provider and runnable HTTP adapter under `contributions/eclipse-opensovd/OpenSOVD/legacy/crates`. It is based on OpenSOVD issue [#156](https://github.com/eclipse-opensovd/opensovd-core/issues/156) and the three pages of the attached draw.io architecture (Architecture, Demo flow, Repository layout).
 
-The hackathon checkout had README placeholders, but no Cargo workspace or Rust implementation sources under `OpenSOVD/legacy/crates`. The code here creates those source files without replacing the existing S-CORE sources. The diagram is the controlling architecture: `cc-app` owns detection/debounce; the gateway is a timestamped, freshness-bounded translator/store; I1/I2 are JSON-lines over a Unix socket.
+The hackathon checkout had README placeholders, but no Cargo workspace or Rust implementation sources under `contributions/eclipse-opensovd/OpenSOVD/legacy/crates`. The code here creates those source files without replacing the existing S-CORE sources. The diagram is the controlling architecture: `cc-app` owns detection/debounce; the gateway is a timestamped, freshness-bounded translator/store; I1/I2 are JSON-lines over a Unix socket.
 
 ## Architectural Placement
 
@@ -151,7 +151,7 @@ Keep the hackathon application provider behind a small adapter so it can impleme
 
 ```text
 eclipse_sdv_hackathon_2026/
-  OpenSOVD/legacy/
+  contributions/eclipse-opensovd/OpenSOVD/legacy/
     Cargo.toml
     Cargo.lock
     crates/
@@ -163,5 +163,5 @@ eclipse_sdv_hackathon_2026/
         src/lib.rs
         src/main.rs
   interfaces/ (required next: I1/I2 JSONL schemas and replay examples)
-  docs/hackathon/FAULT_PROVIDER_DESIGN.md
+  contributions/shared/docs/hackathon/FAULT_PROVIDER_DESIGN.md
 ```

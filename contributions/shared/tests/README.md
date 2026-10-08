@@ -6,8 +6,8 @@ Run Python contract regressions with an interpreter that has the selected depend
 ```
 
 Native Rust cache/monitor/query-history tests and Clippy run through
-`OpenSOVD/scripts/build_fault_diagnostics.py --check`. Native controller builds/unit target run through
-`scripts/reproduce_core.py`. The upstream storage patch README documents its separate-process
+`contributions/eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py --check`. Native controller builds/unit target run through
+`contributions/shared/scripts/reproduce_core.py`. The upstream storage patch README documents its separate-process
 persistence/clear/error regressions and pinned-nightly mandatory checks.
 
 `opendut_receiver_smoke.py` runs actual receiving-side/controller/network evidence;
@@ -21,12 +21,12 @@ reported as current native end-to-end success.
 captured partial output, helper SIGINT/SIGTERM failure manifests and invalid input.
 Its controlled compiler-wait fixture is never presented as a successful native build.
 Actual Docker timeout/ownership gates and native-build cancellation are recorded in
-`evidence/f008-build-cleanup-after` and `evidence/f008-real-build-interrupted`;
+`contributions/shared/evidence/f008-build-cleanup-after` and `contributions/shared/evidence/f008-real-build-interrupted`;
 the updated wrapper's cached-input native core regression is `f008-process-group-native`.
 
 `test_dashboard.py` checks authoritative admission/cancellation, restart/cleanup
 uncertainty, HTTP mutation boundaries and artifact integrity.
 `dashboard_diagnosis_smoke.py` uses the actual native HTTP provider with synthetic
 observations; `dashboard_browser_smoke.py` uses actual local Chromium.
-`evidence/f010-live/probe.py` records the separate native/physical/cancellation
+`contributions/shared/evidence/f010-live/probe.py` records the separate native/physical/cancellation
 acceptance through the dashboard. See [dashboard.md](../docs/dashboard.md).

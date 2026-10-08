@@ -175,7 +175,7 @@ def main():
         send(True, False)
         check('gateway-restart-and-explicit-state-republish')
         if args.bench_state:
-            sys.path.insert(0, str(ROOT.parent / 'OpenDut/scripts'))
+            sys.path.insert(0, str(ROOT.parents[2] / 'contributions/eclipse-opendut/OpenDut/scripts'))
             from opendut_testbench import Bench, run
             bench = Bench(args.bench_state)
             bench.ownership('container', bench.name('a'))

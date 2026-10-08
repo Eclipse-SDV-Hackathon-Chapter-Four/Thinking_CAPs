@@ -22,7 +22,7 @@ See [verification.md](verification.md) for measured results and their scope.
 | Complete raw execution records and generated outputs | [evidence](evidence) |
 | Portable integrity verification | [artifact-manifest.json](artifact-manifest.json), [verify_packet.py](verify_packet.py) |
 
-The historical packet under `../communication-bug-queue-20261006` is preserved.
+The historical packet under `../bug-queue-20261006` is preserved.
 Failed attempts, incorrect consumer overrides and superseded source bindings
 remain recorded. Baseline analysis is not represented as current-main analysis.
 

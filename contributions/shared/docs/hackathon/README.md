@@ -20,8 +20,8 @@ still pending; browser rendering checks do not satisfy either human milestone.
 
 ## Contribution evidence
 
-See the [contribution index](../../contributions/README.md) for completed local fixes,
+See the [contribution index](../../../README.md) for completed local fixes,
 patches, original measurements and upstream review status. The
-[submission checklist](../../contributions/submission/README.md) and
-[PR draft](../../contributions/submission/hackathon-pr-description.md) prepare the
+[submission checklist](../../submission/README.md) and
+[PR draft](../../submission/hackathon-pr-description.md) prepare the
 later hackathon submission.

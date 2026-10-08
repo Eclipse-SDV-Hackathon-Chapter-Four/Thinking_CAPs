@@ -77,4 +77,4 @@ Test in layers and use explicit acceptance criteria:
 - Run `cc-app` and gateway independently against fixtures, then perform the full demo chain and test a killed `cc-app`/dropped socket.
 - Protect write/clear operations with authentication and authorization; audit clear actor/reason/time. Disable or secure development ingestion endpoints before network deployment.
 
-The current `OpenSOVD/legacy/crates` implementation is a FaultProvider prototype: its provider and local HTTP route tests do not cover the Unix-socket handover, `cc-app`, I3 data resources, or upstream OpenSOVD capability registration. These are completion gates, not assumed working behavior.
+The current `contributions/eclipse-opensovd/OpenSOVD/legacy/crates` implementation is a FaultProvider prototype: its provider and local HTTP route tests do not cover the Unix-socket handover, `cc-app`, I3 data resources, or upstream OpenSOVD capability registration. These are completion gates, not assumed working behavior.

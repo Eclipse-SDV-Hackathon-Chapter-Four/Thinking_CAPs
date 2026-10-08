@@ -1,1 +1,1 @@
-../OpenSOVD/scripts/receiver_container_entrypoint.sh
+../../eclipse-opensovd/OpenSOVD/scripts/receiver_container_entrypoint.sh

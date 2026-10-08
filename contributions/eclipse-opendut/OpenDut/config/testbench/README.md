@@ -4,7 +4,7 @@ NET_ADMIN EDGAR containers in distinct namespaces. VPN/OIDC are disabled for thi
 profile; actual CARL rollout creates br-opendut and GRE TAP over the management network.
 No NetBird/WireGuard/distributed-site claim is made.
 
-Pins are in versions.json. OpenDut/scripts/opendut_testbench.py implements prepare/up/status/down;
+Pins are in versions.json. contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py implements prepare/up/status/down;
 Peer.Dockerfile adds namespace/capture tools. Private PKI, enrollment strings and packet
 archives live under ignored .local/. No signing key is mounted into runtime containers.
 State directory0700 protects the runtime server key, which CARL UID1000 reads through a
@@ -12,7 +12,7 @@ separate bind mount. Certificates expire after seven days; prepare a fresh state
 for later runs. Resources have a unique ownership label; teardown refuses unrelated labels.
 
 Use the [feature quickstart](../../specs/003-opendut-testbench/quickstart.md). Verified evidence:
-[evidence/f003-receiver-version-matched](../../evidence/f003-receiver-version-matched/results.json),
+[contributions/shared/evidence/f003-receiver-version-matched](../../evidence/f003-receiver-version-matched/results.json),
 [f003-cleanup](../../evidence/f003-cleanup/results.json), and
 [f003-repeat-deployment](../../evidence/f003-repeat-deployment/results.json).
 The source research remains historical preparation input, not an assertion of a live VPN.

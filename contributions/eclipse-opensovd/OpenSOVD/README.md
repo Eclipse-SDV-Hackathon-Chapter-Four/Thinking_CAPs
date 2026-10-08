@@ -27,26 +27,26 @@ App discovery to `cc.observation` and the labelled `cc.fault-history` fallback.
 Run commands from the repository root:
 
 ```sh
-cargo test --locked --manifest-path OpenSOVD/integration/diagnostics/Cargo.toml
-python3 OpenSOVD/scripts/build_fault_diagnostics.py --help
-python3 OpenSOVD/tests/diagnostic_http_smoke.py --help
-OpenSOVD/scripts/run_diagnostics.sh
+cargo test --locked --manifest-path contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/Cargo.toml
+python3 contributions/eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py --help
+python3 contributions/eclipse-opensovd/OpenSOVD/tests/diagnostic_http_smoke.py --help
+contributions/eclipse-opensovd/OpenSOVD/scripts/run_diagnostics.sh
 ```
 
 The last command starts the default local provider on `127.0.0.1:7691`; it needs
 receiver observations for live vehicle data. Use the [fault feature quickstart](specs/004-fault-lifecycle/quickstart.md)
-for the native fault build. The shared [dashboard](../docs/dashboard.md),
-[campaign/reproduction guide](../docs/reproduction.md) and
-[OpenDuT testbench](../OpenDut/README.md) describe the connected CARLA environment.
+for the native fault build. The shared [dashboard](../../shared/docs/dashboard.md),
+[campaign/reproduction guide](../../shared/docs/reproduction.md) and
+[OpenDuT testbench](../../eclipse-opendut/OpenDut/README.md) describe the connected CARLA environment.
 Native `/faults`, E2E and VIPER capabilities remain conditional.
 
 The separate [lighting provider](integration/lighting-diagnostics/) serves the
 AutoSD guest's `zonal-lighting` App on `autosd-host`. It exposes actual ThreadX
 observations and a labelled integration-owned fault journal. Build/deployment,
-HTTP inspection and verification steps are in the [AutoSD README](../AutoSD/README.md).
+HTTP inspection and verification steps are in the [AutoSD README](../../eclipse-autosd/AutoSD/README.md).
 This provider does not reuse the Cruise Control observation schema or native DFM.
 
 Historical evidence bytes and provenance remain unchanged. Compatibility links
 at the original paths preserve existing scripts and saved manifests. New output
-specific to this component should go under `OpenSOVD/evidence/<new-run>/`;
+specific to this component should go under `contributions/eclipse-opensovd/OpenSOVD/evidence/<new-run>/`;
 shared physical campaigns remain under the root `evidence/`.

@@ -44,8 +44,8 @@ bound to the captured PR head, not claimed to apply to today's reorganized `main
 From this repository root:
 
 ```bash
-python3 contributions/issues/eclipse-score/score/3115/verify_packet.py
-python3 scripts/verify_contributions.py
+python3 contributions/eclipse-score/score/3115/verify_packet.py
+python3 contributions/shared/scripts/verify_contributions.py
 git diff --check
 ```
 

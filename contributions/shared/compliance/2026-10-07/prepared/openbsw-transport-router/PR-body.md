@@ -12,7 +12,7 @@ OpenBSW has no router that forwards UDS by logical address: `TransportRouterSimp
 only serves the local diagnostic server. This module adds that, so an OpenBSW node
 can act as a DoIP-to-DoCAN diagnostic gateway. It came out of the
 [OpenBSW zonal diagnostic gateway](../../OpenBSW/README.md), which builds from the
-same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRouter).
+same source in [`contributions/eclipse-openbsw/OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRouter).
 
 ## Review artifacts
 
@@ -56,7 +56,7 @@ same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRout
 To verify the integrity of this folder:
 
 ```bash
-python3 -c "import sys; sys.path.insert(0, 'scripts'); import verify_contributions as v; from pathlib import Path; print(v.check_manifest(Path('contributions/openbsw-transport-router/artifact-manifest.json')), 'files ok')"
+python3 -c "import sys; sys.path.insert(0, 'scripts'); import verify_contributions as v; from pathlib import Path; print(v.check_manifest(Path('contributions/eclipse-openbsw/transport-router/artifact-manifest.json')), 'files ok')"
 ```
 
 

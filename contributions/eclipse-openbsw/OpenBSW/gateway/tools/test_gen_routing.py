@@ -88,6 +88,6 @@ def test_serial2can_profile_consistency(tmp_path):
 
 def test_existing_az3166_profiles_do_not_forward_diagnostics():
     """The unchanged lighting profiles forward neither request nor response IDs (SWR-033)."""
-    profiles = Path(__file__).parents[3] / "X-Verse" / "bridges" / "serial2can" / "config"
+    profiles = Path(__file__).parents[5] / "X-Verse" / "bridges" / "serial2can" / "config"
     for profile in profiles.glob("az3166-*.json"):
         assert gen_routing.check_profile(gen_routing.validate(gen_routing.load(CONFIG)), profile) == []

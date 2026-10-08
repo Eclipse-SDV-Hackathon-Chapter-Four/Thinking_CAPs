@@ -9,7 +9,7 @@ GDB12 separate-symbol lookup hits an internal error; symbol-free unwind is unrel
 the first sampled address. addr2line resolves that address to an Unreal tick task. No engine
 stall/root cause is inferred from that limited debugger evidence.
 
-Controlled real comparison (`evidence/f009-client-comparison`): early client created before
+Controlled real comparison (`contributions/shared/evidence/f009-client-comparison`): early client created before
 launch still times out after a fresh client reaches server0.9.15, a real world and advancing
 frames. This establishes the harness startup-client problem on this environment. All original
 blocked evidence remains valid for its old client behavior; it did not establish an engine

@@ -26,8 +26,8 @@ After #628 is accepted/integrated with main, rebase onto the accepted tree, reta
 Offline packet integrity:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 contributions/issues/eclipse-score/score/2850/native-adapter/verify_native_packet.py
-PYTHONDONTWRITEBYTECODE=1 python3 contributions/issues/eclipse-score/score/2850/verify_packet.py
+PYTHONDONTWRITEBYTECODE=1 python3 contributions/eclipse-score/score/2850/native-adapter/verify_native_packet.py
+PYTHONDONTWRITEBYTECODE=1 python3 contributions/eclipse-score/score/2850/verify_packet.py
 ```
 
 The [license follow-up](license-audit/README.md) is included in the current patch and source bindings. The original runtime test evidence predates its six proven comment-only native edits; current copyright/syntax/patch checks are separate.

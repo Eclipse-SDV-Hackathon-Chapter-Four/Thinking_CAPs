@@ -19,7 +19,7 @@ The guest is **Automotive Stream Distribution 10**, using its automotive kernel
 and Podman. ThreadX and the gateway are separate processes in separate containers.
 The pinned kernel includes `vxcan` but not `vcan`: frames sent on one endpoint
 arrive at the other. Host CAN interfaces are separate from these guest interfaces.
-The [ThreadX CAN contract](../demo/X-Verse/external_hackathon_ecus/ThreadX/docs/can-lighting-contract.md) is unchanged:
+The [ThreadX CAN contract](../../../demo/X-Verse/external_hackathon_ecus/ThreadX/docs/can-lighting-contract.md) is unchanged:
 standard eight-byte `0x1F1` VCU status requests and `0x1F4` light responses.
 
 ## 1. Install prerequisites and select a workspace
@@ -72,7 +72,7 @@ hash, and creates a private writable overlay and SSH key. It copies OVMF firmwar
 into the state directory. Internet access is required on first preparation/build.
 
 ```bash
-python3 AutoSD/scripts/vm.py prepare --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py prepare --state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/prepare.json"
 ```
 
@@ -86,13 +86,13 @@ git clone --no-checkout git@github.com:The-Xverse/zenoh2can_bridge.git \
 git -C AutoSD/.local/zenoh2can-source checkout --detach \
   087c5f8a2e63e01c4213cd33161b64e50ffd047d
 export AUTO_SD_BRIDGE="AutoSD/.local/zenoh2can-source/can-zenoh-bridge-python"
-python3 AutoSD/scripts/build_workload.py --bridge-source "$AUTO_SD_BRIDGE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/build_workload.py --bridge-source "$AUTO_SD_BRIDGE" \
   --output "$AUTO_SD_BUNDLE"
 ```
 
 The builder compiles the pinned ThreadX kernel/application, runs its C protocol
 checks, packages the unchanged Zenoh2CAN bridge, and builds the native OpenSOVD
-lighting provider using its [Cargo.lock](../OpenSOVD/integration/lighting-diagnostics/Cargo.lock). The bundle records
+lighting provider using its [Cargo.lock](../../eclipse-opensovd/OpenSOVD/integration/lighting-diagnostics/Cargo.lock). The bundle records
 source, toolchain, container and file hashes. Both the transfer hash and the
 bundle's file hashes are checked before guest provisioning.
 
@@ -100,7 +100,7 @@ Install host test dependencies:
 
 ```bash
 /usr/bin/python3 -m venv AutoSD/.local/client
-AutoSD/.local/client/bin/python -m pip install -r ThreadX/requirements.txt
+AutoSD/.local/client/bin/python -m pip install -r demo/X-Verse/external_hackathon_ecus/ThreadX/requirements.txt
 ```
 
 ## 3. Start the router, VM and guest services
@@ -117,11 +117,11 @@ docker run --init --rm --name autosd-lighting-router --network host \
 In the repository terminal:
 
 ```bash
-python3 AutoSD/scripts/vm.py up --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py up --state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/up.json"
-python3 AutoSD/scripts/vm.py deploy --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py deploy --state "$AUTO_SD_STATE" \
   --bundle "$AUTO_SD_BUNDLE" --output "$AUTO_SD_RUN/deploy.json"
-python3 AutoSD/scripts/vm.py status --state "$AUTO_SD_STATE"
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py status --state "$AUTO_SD_STATE"
 ```
 
 The first boot replaces the sample image's login keys with the generated key and
@@ -146,7 +146,7 @@ VCU state, or restart the gateway before reissuing an identical deduplicated val
 Run the automated fixture test with the interactive vehicle stopped:
 
 ```bash
-AutoSD/.local/client/bin/python AutoSD/tests/lighting_smoke.py \
+AutoSD/.local/client/bin/python contributions/eclipse-autosd/AutoSD/tests/lighting_smoke.py \
   --state "$AUTO_SD_STATE" --output "$AUTO_SD_RUN/smoke"
 ```
 
@@ -177,7 +177,7 @@ its optional client packages and pass its actual RPC endpoint:
 AutoSD/.local/client/bin/python -m pip install carla==0.9.15 pygame==2.6.1 numpy==2.2.6
 export TEST_CARLA_HOST="${TEST_CARLA_HOST:-127.0.0.1}"
 export TEST_CARLA_PORT="${TEST_CARLA_PORT:-2000}"
-AutoSD/.local/client/bin/python AutoSD/tests/lighting_smoke.py \
+AutoSD/.local/client/bin/python contributions/eclipse-autosd/AutoSD/tests/lighting_smoke.py \
   --state "$AUTO_SD_STATE" --output "$AUTO_SD_RUN/carla" \
   --carla-host "$TEST_CARLA_HOST" --carla-port "$TEST_CARLA_PORT" \
   --vehicle-module "$SDV_WORKSPACE/autoverse/bridges/carla/examples/virtual_vehicle.py" \
@@ -197,9 +197,9 @@ Start native discovery in a browser or with curl:
 curl -fsS http://127.0.0.1:7692/sovd/v1 | python3 -m json.tool
 curl -fsS http://127.0.0.1:7692/sovd/v1/apps/zonal-lighting/data/lighting.observation | python3 -m json.tool
 curl -fsS http://127.0.0.1:7692/sovd/v1/apps/zonal-lighting/data/lighting.fault-history | python3 -m json.tool
-python3 AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
   --command 'journalctl -u sdv-threadx -u sdv-zenoh-can --no-pager -n 40'
-python3 AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
   --command 'podman exec sdv-zenoh-can candump avcan1'
 ```
 
@@ -216,9 +216,9 @@ OpenSOVD resources and saved test results.
 Direct CAN and the all-256-values check use the gateway endpoint:
 
 ```bash
-python3 AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
   --command 'podman exec sdv-zenoh-can cansend avcan1 1F1#0600000000000000'
-python3 AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py ssh --state "$AUTO_SD_STATE" \
   --command 'podman exec sdv-threadx python3 can_probe.py'
 ```
 
@@ -237,7 +237,7 @@ Stop the interactive baseline in its terminal first. Shut down the owned AutoSD
 services and VM while the router can still carry the controller's final OFF frame:
 
 ```bash
-python3 AutoSD/scripts/vm.py down --state "$AUTO_SD_STATE" \
+python3 contributions/eclipse-autosd/AutoSD/scripts/vm.py down --state "$AUTO_SD_STATE" \
   --output "$AUTO_SD_RUN/down.json"
 ```
 

@@ -13,7 +13,7 @@ admitted issue branch. No existing fix or regression needed preserving. Before e
 I read `implementation-plan.md`, `admission.json`, `issue.json` (body and empty comment
 list), `upstream-rules.json`, upstream `CONTRIBUTING.md` including its C99/style/MISRA
 and attribution conventions, and
-`/home/jefferson/Thinking_CAPs/contributions/threadx-744/regression-design.md`.
+`/home/jefferson/Thinking_CAPs/contributions/eclipse-threadx/threadx/744/regression-design.md`.
 I inspected the existing native `thread_transition` CMake/recorder pattern, the real
 Linux port, common/SMP headers and shims, and the existing planner probe and run logs.
 No applicable AGENTS.md was found. The issue's historical SMP macro failure is already

@@ -11,8 +11,8 @@ maintainer approval or merge is claimed.
 OpenBSW has no router that forwards UDS by logical address: `TransportRouterSimple`
 only serves the local diagnostic server. This module adds that, so an OpenBSW node
 can act as a DoIP-to-DoCAN diagnostic gateway. It came out of the
-[OpenBSW zonal diagnostic gateway](../../OpenBSW/README.md), which builds from the
-same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRouter).
+[OpenBSW zonal diagnostic gateway](../OpenBSW/README.md), which builds from the
+same source in [`contributions/eclipse-openbsw/OpenBSW/contrib/`](../OpenBSW/contrib/libs/bsw/transportRouter).
 
 ## Review artifacts
 
@@ -51,10 +51,10 @@ same source in [`OpenBSW/contrib/`](../../OpenBSW/contrib/libs/bsw/transportRout
    ```
 
 4. Push and open the PR with [PR-description.md](PR-description.md), filling in the issue number.
-5. Record the issue and PR URLs here and add an entry to [registry.json](../registry.json).
+5. Record the issue and PR URLs here and add an entry to [registry.json](../../registry.json).
 
 To verify the integrity of this folder:
 
 ```bash
-python3 -c "import sys; sys.path.insert(0, 'scripts'); import verify_contributions as v; from pathlib import Path; print(v.check_manifest(Path('contributions/openbsw-transport-router/artifact-manifest.json')), 'files ok')"
+python3 -c "import sys; sys.path.insert(0, 'scripts'); import verify_contributions as v; from pathlib import Path; print(v.check_manifest(Path('contributions/eclipse-openbsw/transport-router/artifact-manifest.json')), 'files ok')"
 ```

@@ -24,9 +24,9 @@ Dependencies: T002 before T003/T004; T004 before T005; all verification before T
 ## Phase 2: Convergence
 - [X] T014 Record the actual reproduction caller and environment without inventing agent identity or shared-host status for future contributors; verify declared/unknown attribution and keep independent human signoff separate per FR001 / FR003 / Constitution VI (partial).
 
-T013 proof: `evidence/f008-presentation-browser`: actual navigation/clock/responsive
+T013 proof: `contributions/shared/evidence/f008-presentation-browser`: actual navigation/clock/responsive
 checks, visually inspected desktop/phone screenshots and seven-page PDF print output.
-T014 proof: `evidence/f008-reproduction-identity-verification.json`: real bounded CLI
+T014 proof: `contributions/shared/evidence/f008-reproduction-identity-verification.json`: real bounded CLI
 compiler-rejection paths retain unknown or caller-declared attribution and observed
 environment. The false shared-host declaration is a validation input on this same
 host, not a real different-host execution. Native compilation is unchanged and was

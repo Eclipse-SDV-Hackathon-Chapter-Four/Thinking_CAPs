@@ -71,5 +71,5 @@ no advisory database sweep was performed. Source hashes, tests or Fabro terminat
 substitute for engineering acceptance. A future corrected native run needs fresh task
 authority beyond this run's exhausted three-fix limit. Upstream ECA/review/CI remains pending.
 
-From the hackathon repository root, `python3 scripts/verify_contributions.py` verifies
+From the hackathon repository root, `python3 contributions/shared/scripts/verify_contributions.py` verifies
 retained artifact hashes. It does not rerun native checks or accept engineering decisions.

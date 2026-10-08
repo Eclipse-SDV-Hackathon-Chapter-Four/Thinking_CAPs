@@ -1,5 +1,5 @@
 # Deployment contract
-OpenDut/scripts/opendut_testbench.py prepare|up|status|down --state PRIVATE_PATH --output NEW_PATH
+contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py prepare|up|status|down --state PRIVATE_PATH --output NEW_PATH
 prepare retrieves digest-checked CLEO, builds pinned peer image, creates private PKI.
 up preflights overlap and resources, creates owned network/containers, enrolls two peers,
 deploys one cluster, and exports redacted interface/status results. Bounded command deadlines.

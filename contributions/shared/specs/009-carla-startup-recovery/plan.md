@@ -1,6 +1,6 @@
 # F009 plan
 ## Technical context and decisions
-Reuse `scripts/owned_carla.py`, unchanged existing vehicle/VCU classes and native campaign.
+Reuse `contributions/shared/scripts/owned_carla.py`, unchanged existing vehicle/VCU classes and native campaign.
 Wire diagnostic proves version RPC works in owned null-RHI server; late fresh native Python
 client also succeeds. Existing readiness constructs a client before server bind, then reuses
 it after connection errors. Diagnose with a controlled early/late/world comparison before
@@ -14,8 +14,8 @@ feature artifacts before edits; actual native/physical evidence; separate proces
 explicit pins/configs; deterministic checks and cleanup; prepared work/human gap; no external
 communication, update activation or optional extension.
 ## Touch points
-scripts/owned_carla.py; OpenDut/tests/opendut_receiver_smoke.py; meaningful readiness tests;
-specs/009-carla-startup-recovery; evidence/f009-*; docs/handover.md and claim-evidence.md.
+contributions/shared/scripts/owned_carla.py; contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py; meaningful readiness tests;
+contributions/shared/specs/009-carla-startup-recovery; evidence/f009-*; contributions/shared/docs/handover.md and claim-evidence.md.
 ## Verification
 Controlled real RPC client comparison, readiness retry/deadline tests, actual owned plant,
 real CARLA/native campaign with unchanged required verdicts, fixture regression if deployment
@@ -28,7 +28,7 @@ X-Verse/control/bridge code or overriding native throttle. Record requested/appl
 and actor position. Keep all physical/native assertions unchanged. Preserve explicit compiler/
 schema configuration during service overlay creation and record the actual executed paths.
 
-Handover refinement: `scripts/render_campaign_replay.py` and `templates/campaign_replay.html`
+Handover refinement: `contributions/shared/scripts/render_campaign_replay.py` and `contributions/shared/templates/campaign_replay.html`
 create a standalone offline historical trace playback from saved real campaign observations,
 physical samples and event timestamps. Preserve actual verdicts and input hashes. Do not
 reclassify historical values as live, interpolate fault health or calculate new runtime verdicts.

@@ -9,8 +9,8 @@
 # replaces demo/X-Verse with the fetched branch and commits that on the
 # current branch. Nothing outside demo/X-Verse is touched; nothing is pushed.
 #
-#   scripts/sync-xverse.sh            sync and commit
-#   scripts/sync-xverse.sh --check    report the state only (exit codes below)
+#   contributions/shared/scripts/sync-xverse.sh            sync and commit
+#   contributions/shared/scripts/sync-xverse.sh --check    report the state only (exit codes below)
 #
 # Options:
 #   --repo <url|path>   autoverse repository (default git@github.com:The-Xverse/autoverse.git,

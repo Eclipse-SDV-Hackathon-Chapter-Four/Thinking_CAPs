@@ -18,7 +18,7 @@ import uuid
 
 import zenoh
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from opendut_testbench import Bench, LABEL, REPO, run
 
 
@@ -241,7 +241,7 @@ def main():
                 "-v", cache_volume + ":/var/cache/bazel:ro", "-v", str(private / "b") + ":/tmp",
                 "-v", str(private / "score-overlay.json") + ":/vsomeip.json:ro", "-e", "VSOMEIP_CONFIGURATION=/vsomeip.json",
                 "-v", str(private / "network-overlay.bin") + ":/network-overlay.bin:ro", "-e", "SCORE_GATEWAY_CONFIG=/network-overlay.bin",
-                "-v", str(REPO / "OpenSOVD/scripts/receiver_container_entrypoint.sh") + ":/entrypoint.sh:ro",
+                "-v", str(REPO / "contributions/eclipse-opensovd/OpenSOVD/scripts/receiver_container_entrypoint.sh") + ":/entrypoint.sh:ro",
                 "-e", "SCORE_DIAGNOSTIC_SOCKET=/tmp/receiver.sock", "-e", "SCORE_BUILD_IDENTITY=sha256:" + digest], ["/entrypoint.sh"])
             start = time.monotonic()
             def publish(duration, speed=42.5, engage="false", measure=False):

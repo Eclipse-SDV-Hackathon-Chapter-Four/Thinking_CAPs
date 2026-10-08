@@ -5,7 +5,7 @@ No public PR or maintainer approval is claimed.
 
 The selected KVS adapter updates a process-global cache without flushing. Its same-process
 restart test can therefore pass while a new OS process sees no record. The new regression
-fails against the unmodified adapter, retained in evidence/f004-unpatched-process-restart.txt.
+fails against the unmodified adapter, retained in contributions/shared/evidence/f004-unpatched-process-restart.txt.
 The patch adds new_write_through(dir,instance), preserving default new() policy. Explicit mode
 flushes put/delete/clear before returning success and propagates backend errors. A failed
 flush leaves the in-memory mutation intact; neither hardware nor power-loss durability is
@@ -26,7 +26,7 @@ remain separate from locally prepared code.
 Default diagnostic builds use pinned Git dependencies and Cargo.lock. The optional profile
 uses this explicit exported patch and fault-build.lock through a private build source copy:
 ```sh
-python3 OpenSOVD/scripts/build_fault_diagnostics.py --fault-source /home/jefferson/sdv-fault-lib-durability --target-dir /tmp/sdv-opensovd-research-target --output evidence/f004-fresh-build --check
+python3 contributions/eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py --fault-source /home/jefferson/sdv-fault-lib-durability --target-dir /tmp/sdv-opensovd-research-target --output evidence/f004-fresh-build --check
 ```
 Omit --fault-source to create an isolated pinned clone under ignored private build state and
 apply the same patch. The script verifies base/diff/untracked inputs, then records hashes of

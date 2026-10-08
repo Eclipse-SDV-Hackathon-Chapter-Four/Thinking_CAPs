@@ -38,11 +38,11 @@ git remote add fork git@github.com:<your-user>/communication.git   # once
 git rebase origin/main draft/490-mock-runtime        # optional; re-run the checks if you rebase
 git push fork draft/490-mock-runtime
 gh pr create -R eclipse-score/communication --draft --head <your-user>:draft/490-mock-runtime \
-  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/490/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/490/pr-description.md
+  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/490/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/490/pr-description.md
 ```
 
 Elsewhere, recreate the branch from the bundle:
-`git fetch /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/490/draft-490-mock-runtime.bundle draft/490-mock-runtime:draft/490-mock-runtime` (the clone must contain `381d43dec900`).
+`git fetch /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/490/draft-490-mock-runtime.bundle draft/490-mock-runtime:draft/490-mock-runtime` (the clone must contain `381d43dec900`).
 
 ## Open items
 

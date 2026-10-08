@@ -30,8 +30,8 @@ separate copy before using the original packet's tools.
 From the Thinking_CAPs root:
 
 ```bash
-python3 scripts/verify_missing_contributions.py
-python3 scripts/verify_missing_contributions.py --restore-to /path/to/empty/queue-copy
+python3 contributions/shared/scripts/verify_missing_contributions.py
+python3 contributions/shared/scripts/verify_missing_contributions.py --restore-to /path/to/empty/queue-copy
 ```
 
 The default verifier performs no extraction or execution. Restoration recreates

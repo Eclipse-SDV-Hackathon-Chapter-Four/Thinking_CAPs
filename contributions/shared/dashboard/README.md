@@ -2,7 +2,7 @@
 
 # Demo
 
-Two paths, both real, checked in one run (see `docs/architecture/`):
+Two paths, both real, checked in one run (see `contributions/shared/docs/architecture/`):
 
 - **Path A (ours):** S-CORE `diag_api::DataResource`s → `sovd_adapter`
   (`DataProvider`, inc_diagnostics #16) → OpenSOVD gateway `:7690/sovd`.
@@ -16,20 +16,20 @@ Two paths, both real, checked in one run (see `docs/architecture/`):
   CDA SOVD API `:20002`
 
 ```bash
-dashboard/setup.sh      # once: clone upstream at pinned commits, apply contrib/ patches, build
-dashboard/start.sh      # start CDA + simulator (Docker), the gateway and the live console
-DEMO=cruise dashboard/start.sh   # same, with the cruise control gateway (stop the other one first)
-DEMO=score dashboard/start.sh    # the full S-CORE architecture; first use builds it with Bazel (~10 min)
-dashboard/run-demo.sh   # 12 (HVAC) or 13 (cruise) assertions -> evidence/runs/<run-id>/{verdict.md,run.json,raw/}
+contributions/shared/dashboard/setup.sh      # once: clone upstream at pinned commits, apply contrib/ patches, build
+contributions/shared/dashboard/start.sh      # start CDA + simulator (Docker), the gateway and the live console
+DEMO=cruise contributions/shared/dashboard/start.sh   # same, with the cruise control gateway (stop the other one first)
+DEMO=score contributions/shared/dashboard/start.sh    # the full S-CORE architecture; first use builds it with Bazel (~10 min)
+contributions/shared/dashboard/run-demo.sh   # 12 (HVAC) or 13 (cruise) assertions -> contributions/shared/evidence/runs/<run-id>/{verdict.md,run.json,raw/}
                    # (or press "Run the checks" in the live console; both follow the running gateway)
-dashboard/start.sh stop
+contributions/shared/dashboard/start.sh stop
 ```
 
 | Path | What lives there |
 |---|---|
-| `gateway/` | Cargo workspace that compiles the upstream inc_diagnostics sources (with our patches) in place. Bazel cannot build the gateway binary yet — `evidence/pr6-gateway/FINDINGS.md` |
+| `gateway/` | Cargo workspace that compiles the upstream inc_diagnostics sources (with our patches) in place. Bazel cannot build the gateway binary yet — `contributions/shared/evidence/pr6-gateway/FINDINGS.md` |
 | `gateway/crates/cruise_diag`, `cruise_sim`, `cruise-gateway` | Cruise control, stage 1: cruise diag resources behind a `CruiseLink`, the stand-in cruise control app, and the gateway binary serving both. The stand-in's behaviour is our assumption, to confirm with the other team |
-| `score/` | The S-CORE side of the full architecture: `sdv_cruise/` (our `cruise_bridge` in Rust + mw::com, `cruise_ecu` stand-in in C++ + vsomeip, configs), built inside `eclipse-score/inc_someip_gateway` by `build.sh`; `docker-compose.yml` runs the vehicle computer and the cruise ECU. Findings: `evidence/cruise-stage2/FINDINGS.md` |
+| `score/` | The S-CORE side of the full architecture: `sdv_cruise/` (our `cruise_bridge` in Rust + mw::com, `cruise_ecu` stand-in in C++ + vsomeip, configs), built inside `eclipse-score/inc_someip_gateway` by `build.sh`; `docker-compose.yml` runs the vehicle computer and the cruise ECU. Findings: `contributions/shared/evidence/cruise-stage2/FINDINGS.md` |
 | `live/` | Live console on `:8080`, with a **live architecture** panel (every process, link and message rate): freeze the sensor, inject/clear a DTC, watch both paths and run the checks. `server.py` forwards to the services and prints every request (`dashboard/.live.log`) |
 | `replay/` | Offline replay of a recorded run (`build.py <run-id>` -> `index.html`), a fallback when the stack cannot run |
 | `run-demo.sh` | The runner: expected values fixed up front, deterministic PASS/FAIL per assertion |
@@ -41,4 +41,4 @@ Useful knobs: `HVAC_DEBOUNCE_FAILED_MS` (default 5000) for `start.sh`;
 speed until the stand-in turns unavailable) and `CRUISE_SIM_RESUME_MS` (3000, the "driver"
 re-engages after a repair; 0 = never) for the cruise gateway;
 `DTC`, `DTC_MASK`, `ECU` for `run-demo.sh`. The DTC must exist in the ECU's MDD —
-the CDA rejects unknown codes (`evidence/g1/FINDINGS.md`).
+the CDA rejects unknown codes (`contributions/shared/evidence/g1/FINDINGS.md`).

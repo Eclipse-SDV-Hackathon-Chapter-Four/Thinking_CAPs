@@ -414,19 +414,19 @@ Suggested paths (adapt to the existing repository):
 |---|---|
 | `.specify/memory/constitution.md` | Spec Kit principles |
 | `specs/<feature>/` | Generated specification, plan, research, contracts, tasks and evidence references |
-| `docs/implementation-brief.md` | This brief copied into the implementation repository |
-| `docs/baseline.md` | Existing system, revisions, commands and demonstrated behaviour |
-| `docs/upstream-status.md` | Dated source/issue audit and decisions |
+| `contributions/shared/docs/implementation-brief.md` | This brief copied into the implementation repository |
+| `contributions/shared/docs/baseline.md` | Existing system, revisions, commands and demonstrated behaviour |
+| `contributions/shared/docs/upstream-status.md` | Dated source/issue audit and decisions |
 | `docs/decisions/` | Short architecture decision records |
-| `docs/interfaces.md` | Actual application, diagnostic, network and updater contracts |
-| `docs/prepared-work.md` | Prepared assets and event-time contribution inventory |
+| `contributions/shared/docs/interfaces.md` | Actual application, diagnostic, network and updater contracts |
+| `contributions/shared/docs/prepared-work.md` | Prepared assets and event-time contribution inventory |
 | `docs/demo-runbook.md` | Live sequence and fallbacks |
-| `docs/handover.md` | Contribution links, limitations and next steps |
+| `contributions/shared/docs/handover.md` | Contribution links, limitations and next steps |
 | `config/dependencies.lock.yaml` | Validated revisions, image digests and tool versions |
-| `OpenDut/config/testbench/` | openDuT and endpoint configuration, without secrets |
-| `OpenSOVD/integration/diagnostics/` | Collector/provider integration code |
+| `contributions/eclipse-opendut/OpenDut/config/testbench/` | openDuT and endpoint configuration, without secrets |
+| `contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics/` | Collector/provider integration code |
 | `integration/update/` | Adapter to existing AAOS asset |
-| `tests/campaigns/` | Reusable runner and scenario definitions |
+| `contributions/shared/tests/campaigns/` | Reusable runner and scenario definitions |
 | `scripts/` | Setup, preflight, run and cleanup entry points |
 | `evidence/<run-id>/` | Reports, manifest, observations and selected logs |
 
@@ -692,10 +692,10 @@ Resolve unknowns from source/configuration first. Ask only questions whose answe
 Paste the following into Codex in the intended local project workspace. Attach or copy this brief and the two reference files first.
 
 ```text
-Use docs/implementation-brief.md (the Eclipse SDV Hackathon Spec Kit / Codex
+Use contributions/shared/docs/implementation-brief.md (the Eclipse SDV Hackathon Spec Kit / Codex
 Implementation Brief) as the controlling implementation brief. If the file is
 still named SDV_Hackathon_Spec_Kit_Codex_Implementation_Brief.md, read it under
-that name first and place a project copy at docs/implementation-brief.md.
+that name first and place a project copy at contributions/shared/docs/implementation-brief.md.
 
 Our objective is a reproducible Cruise Control demonstration: drive, disturb,
 diagnose, update and verify. Reuse the existing zenoh2someip bridge without
@@ -756,7 +756,7 @@ blockers and the next executable feature, with exact artifact/test evidence.
 Use the installed skill syntax. For example, in current Codex skills mode:
 
 ```text
-$speckit-specify Implement F002 from docs/implementation-brief.md: expose actual
+$speckit-specify Implement F002 from contributions/shared/docs/implementation-brief.md: expose actual
 S-CORE receiving-side Cruise Control state through OpenSOVD, preserving the
 existing bridge and control behaviour. Include stale/unknown state and source
 provenance. Native faults and E2E remain outside this feature.

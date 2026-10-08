@@ -2,16 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0
 """Generate the ASPICE SWE.1-SWE.6 evidence report for the OpenBSW zonal diagnostic gateway.
 
-Parses the work products in OpenBSW/aspice, runs the unit and static verification
+Parses the work products in contributions/eclipse-openbsw/OpenBSW/aspice, runs the unit and static verification
 (including the upstream OpenBSW gates for the contributed transportRouter module), loads the
 recorded SWE.5 integration results, computes the SWE.6 automated qualification checks and
 the bidirectional traceability, and writes:
 
     report/aspice-swe-report.html   report/summary.json   report/evidence/*
 
-Run from the repository root:  python3 OpenBSW/aspice/tools/generate_report.py
-Requires the SIL workspace on the build volume (OpenBSW/scripts/bootstrap.sh), java for
-PlantUML, cppcheck, clang-tidy, and the PR tools (OpenBSW/scripts/openbsw-pr.sh tools).
+Run from the repository root:  python3 contributions/eclipse-openbsw/OpenBSW/aspice/tools/generate_report.py
+Requires the SIL workspace on the build volume (contributions/eclipse-openbsw/OpenBSW/scripts/bootstrap.sh), java for
+PlantUML, cppcheck, clang-tidy, and the PR tools (contributions/eclipse-openbsw/OpenBSW/scripts/openbsw-pr.sh tools).
 Use --skip-upstream to reuse the last upstream gate run instead of re-running it.
 """
 
@@ -75,7 +75,7 @@ def sha256(path) -> str:
 
 
 def workspace() -> dict:
-    out = run(["bash", "-c", "source OpenBSW/scripts/storage.sh >/dev/null && "
+    out = run(["bash", "-c", "source contributions/eclipse-openbsw/OpenBSW/scripts/storage.sh >/dev/null && "
                "echo $OBSW_WORKSPACE; echo $OBSW_SRC; echo $OBSW_VENV"]).stdout.split()
     return {"workspace": Path(out[0]), "openbsw": Path(out[1]), "venv": Path(out[2])}
 
@@ -306,12 +306,12 @@ def build_checks(ws):
         text = source.read_text(errors="replace")
         if "Modified for the zonal diagnostic gateway" in text and "Accenture" not in text and "An Dao" not in text:
             derived.append(rel(source))
-    # the gateway work starts with the commit that added OpenBSW/; diff against its parent
-    first = run(["git", "log", "--diff-filter=A", "--format=%H", "--", "OpenBSW/README.md"]).stdout.split()
+    # the gateway work starts with the commit that added contributions/eclipse-openbsw/OpenBSW/; diff against its parent
+    first = run(["git", "log", "--diff-filter=A", "--format=%H", "--", "contributions/eclipse-openbsw/OpenBSW/README.md"]).stdout.split()
     base = f"{first[-1]}^" if first else "main"
     branch = run(["git", "diff", "--name-only", f"{base}...HEAD"], check=False).stdout.split()
     work = [line[3:] for line in run(["git", "status", "--porcelain"]).stdout.splitlines()]
-    outside = sorted({p for p in branch + work if not (p.startswith("OpenBSW/") or p.startswith("contributions/"))})
+    outside = sorted({p for p in branch + work if not (p.startswith("contributions/eclipse-openbsw/OpenBSW/") or p.startswith("contributions/"))})
     return {"build_ok": build.returncode == 0, "warnings": len(re.findall(r"warning:", log)),
             "elf_sha256": sha256(elf), "elf_bytes": elf.stat().st_size, "middleware_symbols": middleware,
             "openbsw_lock": lock, "openbsw_head": head, "openbsw_clean": clean, "forbidden": forbidden,
@@ -411,7 +411,7 @@ def qualification(wp, ws, upstream, checks, it, board, board_it):
         "observability": (f"routing table {cfg['hash']}" in logs and "stats local=" in logs,
                           f"start-up hash {cfg['hash']} {'found' if f'routing table {cfg['hash']}' in logs else 'missing'}; "
                           f"statistics line {'found' if 'stats local=' in logs else 'missing'}"),
-        "baseline-untouched": (not checks["outside_paths"], "only OpenBSW/ and contributions/ changed"
+        "baseline-untouched": (not checks["outside_paths"], "only contributions/eclipse-openbsw/OpenBSW/ and contributions/ changed"
                                if not checks["outside_paths"] else f"outside: {checks['outside_paths']}"),
     }
     if board.get("available"):
@@ -699,9 +699,9 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
             for r in swr.values() if r["status"] != "verified"]
     issues = ev["issues"] or ["None — every SYS has derived SWR; every SWR is allocated, implemented and referenced consistently."]
     evidence_rows = [
-        ["SWE.1", link("OpenBSW/aspice/swe1-requirements/software-requirements.md"), "Software requirements"],
-        ["SWE.2", link("OpenBSW/aspice/swe2-architecture/architecture.md"), "Architecture, elements, interfaces"],
-        ["SWE.3", link("OpenBSW/aspice/swe3-detailed-design/detailed-design.md"), "Units and detailed design"],
+        ["SWE.1", link("contributions/eclipse-openbsw/OpenBSW/aspice/swe1-requirements/software-requirements.md"), "Software requirements"],
+        ["SWE.2", link("contributions/eclipse-openbsw/OpenBSW/aspice/swe2-architecture/architecture.md"), "Architecture, elements, interfaces"],
+        ["SWE.3", link("contributions/eclipse-openbsw/OpenBSW/aspice/swe3-detailed-design/detailed-design.md"), "Units and detailed design"],
         ["SWE.4", '<a href="evidence/module-junit.xml">module-junit.xml</a> · <a href="evidence/gateway-ut.xml">gateway-ut.xml</a> · '
                   '<a href="evidence/generator-ut.xml">generator-ut.xml</a>', "Unit test results"],
         ["SWE.4", '<a href="evidence/cppcheck.txt">cppcheck.txt</a> · <a href="evidence/module-clang-tidy.txt">module-clang-tidy.txt</a> · '
@@ -709,10 +709,10 @@ def render(wp, diagrams, ev, unit_cases, cov, built, findings, functions, upstre
          "Static verification"],
         ["SWE.4", '<a href="evidence/module-treefmt.txt">module-treefmt.txt</a> · <a href="evidence/module-copyright.txt">module-copyright.txt</a> · '
                   '<a href="evidence/module-bazel-test.txt">module-bazel-test.txt</a>', "OpenBSW upstream gates"],
-        ["SWE.5", link("OpenBSW/evidence/gateway-it/results.json"), "Integration results (recorded)"],
-        ["SWE.5", link("OpenBSW/evidence/board-gateway-it/results.json"), "S32K148EVB integration results (recorded)"],
-        ["SWE.6", link("OpenBSW/evidence/sil-baseline/manifest.json"), "OpenBSW SIL baseline (Linux)"],
-        ["SWE.6", link("OpenBSW/evidence/board-baseline/manifest.json"), "OpenBSW SIL baseline (S32K148EVB)"],
+        ["SWE.5", link("contributions/eclipse-openbsw/OpenBSW/evidence/gateway-it/results.json"), "Integration results (recorded)"],
+        ["SWE.5", link("contributions/eclipse-openbsw/OpenBSW/evidence/board-gateway-it/results.json"), "S32K148EVB integration results (recorded)"],
+        ["SWE.6", link("contributions/eclipse-openbsw/OpenBSW/evidence/sil-baseline/manifest.json"), "OpenBSW SIL baseline (Linux)"],
+        ["SWE.6", link("contributions/eclipse-openbsw/OpenBSW/evidence/board-baseline/manifest.json"), "OpenBSW SIL baseline (S32K148EVB)"],
         ["SWE.3", '<a href="evidence/board-build.log">board-build.log</a>', "S32K148 build and memory regions"],
         ["All", '<a href="summary.json">summary.json</a>', "Machine-readable summary"],
     ]

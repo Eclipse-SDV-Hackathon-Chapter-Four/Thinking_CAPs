@@ -11,8 +11,8 @@ and bridge. Native pinned OpenSOVD provides discovery and a read-only App data r
 - Controller Bazel build and existing cruise_control_unit_tests target pass (see build log).
   Initial build found the fixed-capacity receive callback could not hold an extra runtime index;
   event index is now a compile-time template argument, preserving callback capacity.
-- Native HTTP fixture: eight checks pass, evidence/f002-http-fixture.
-- Actual receiver integration: eight checks pass, evidence/f002-receiver. Fixture inputs traverse
+- Native HTTP fixture: eight checks pass, contributions/shared/evidence/f002-http-fixture.
+- Actual receiver integration: eight checks pass, contributions/shared/evidence/f002-receiver. Fixture inputs traverse
   unchanged native bridge -> gateway/daemon -> mw::com -> actual controller -> diagnostic cache.
   Actual speed/artifact identity/engagement are observed; existing positive throttle return is
   received; speed-only loss becomes stale while other events continue; input recovery is observed.
@@ -34,6 +34,6 @@ Native faults/fault lifecycle, real CARLA campaign and openDuT traffic remain se
 ## Reproduction
 Use pinned Cargo.lock and existing S-CORE build toolchain. Apply the exported patch at base
 93f8ea1e6f76714496c092902e00c9b91c58cdc8, build the cruise main and unit target, then run
-`/usr/bin/python3 OpenSOVD/tests/receiver_integration_smoke.py --binary <diagnostic binary> --score-source
+`/usr/bin/python3 contributions/eclipse-opensovd/OpenSOVD/tests/receiver_integration_smoke.py --binary <diagnostic binary> --score-source
 <patched cc_s-core> --baseline-source <original cc_s-core> --output evidence/<new-run-id>`.
 The smoke starts/removes only uniquely named test containers and keeps IPC in a private mount.

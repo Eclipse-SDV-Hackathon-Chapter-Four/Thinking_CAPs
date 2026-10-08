@@ -32,7 +32,7 @@ runtime), so rebase whichever merges later.
 - `score-rust-issue-queue-ycbvxir7-linux-execution`: launch records.
 - `queue-results-ycbvxir7-top-level`: queue results, verification audit and operator findings.
   This includes the duplicate `clippy_strict` launcher defect that made many lint checks fail.
-  Its manifest also lists `issues/<n>/…` entries; those files are stored in the per-issue folders.
+  Its manifest also lists `<n>/…` entries; those files are stored in the per-issue folders.
 - `queue-run-ycbvxir7-issue-1265`: the queue run for #1265.
 - `score-rust-claude-independent-review-20261007`: the all-issue status review.
 

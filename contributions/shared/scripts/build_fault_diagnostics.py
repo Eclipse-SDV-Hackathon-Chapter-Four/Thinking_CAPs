@@ -1,1 +1,1 @@
-../OpenSOVD/scripts/build_fault_diagnostics.py
+../../eclipse-opensovd/OpenSOVD/scripts/build_fault_diagnostics.py

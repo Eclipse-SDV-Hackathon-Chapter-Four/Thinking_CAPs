@@ -1,7 +1,7 @@
 # F004 tasks
 ## Foundation
 - [X] T001 Specify scope and consolidate actual upstream APIs/persistence research.
-- [X] T002 Pin optional native fault dependencies and catalog in OpenSOVD/integration/diagnostics and OpenSOVD/config/faults/.
+- [X] T002 Pin optional native fault dependencies and catalog in contributions/eclipse-opensovd/OpenSOVD/integration/diagnostics and contributions/eclipse-opensovd/OpenSOVD/config/faults/.
 - [X] T003 Add failing OS-process durability/clear/write-error regression in isolated fault-lib worktree.
 - [X] T004 Implement opt-in write-through native storage and export reviewable patch.
 ## US1 — Timeout policy

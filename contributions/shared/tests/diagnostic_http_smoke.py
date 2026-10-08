@@ -1,1 +1,1 @@
-../OpenSOVD/tests/diagnostic_http_smoke.py
+../../eclipse-opensovd/OpenSOVD/tests/diagnostic_http_smoke.py

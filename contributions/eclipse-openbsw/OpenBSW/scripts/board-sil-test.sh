@@ -4,7 +4,7 @@
 # attached, so the target has no socketcan section and CAN-only tests are skipped
 # or excluded (test_udsToolRDBI needs CAN). Results: <volume>/openbsw-sil/runs/board-<timestamp>/
 #
-#   OpenBSW/scripts/board-sil-test.sh [pytest paths...]   # default: uds enet
+#   contributions/eclipse-openbsw/OpenBSW/scripts/board-sil-test.sh [pytest paths...]   # default: uds enet
 #
 # ZGW_RTOS selects the reference app: THREADX (default, preset s32k148-threadx)
 # or FREERTOS (preset s32k148-freertos); it is passed to the harness as --app.

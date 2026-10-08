@@ -3,7 +3,7 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-MODULE = Path(__file__).resolve().parents[1] / 'OpenDut/tests/opendut_receiver_smoke.py'
+MODULE = Path(__file__).resolve().parents[3] / 'contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py'
 spec = importlib.util.spec_from_file_location('stream_loss', MODULE)
 stream_loss = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(stream_loss)

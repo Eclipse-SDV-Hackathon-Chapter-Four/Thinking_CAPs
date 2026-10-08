@@ -1,1 +1,1 @@
-../OpenDut/scripts/opendut_testbench.py
+../../eclipse-opendut/OpenDut/scripts/opendut_testbench.py

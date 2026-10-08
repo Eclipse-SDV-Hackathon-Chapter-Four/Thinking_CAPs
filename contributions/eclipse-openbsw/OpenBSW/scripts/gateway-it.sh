@@ -3,7 +3,7 @@
 # simulated zonal ECUs on vcan0 and a DoIP tester on tap0.
 # Results: <volume>/openbsw-sil/runs/it-<timestamp>/ (JUnit, pytest log, gateway logs, candumps)
 #
-#   OpenBSW/scripts/gateway-it.sh [pytest args...]
+#   contributions/eclipse-openbsw/OpenBSW/scripts/gateway-it.sh [pytest args...]
 #
 # ZGW_RTOS selects the RTOS: THREADX (default) or FREERTOS.
 set -euo pipefail

@@ -11,7 +11,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 # ThreadX comes with the X-Verse branch (external_hackathon_ecus/ThreadX).
-THREADX = ROOT.parent / 'demo' / 'X-Verse' / 'external_hackathon_ecus' / 'ThreadX'
+THREADX = ROOT.parents[2] / 'demo' / 'X-Verse' / 'external_hackathon_ecus' / 'ThreadX'
 sys.path.insert(0, str(ROOT / 'scripts'))
 from vm import digest, run
 
@@ -48,7 +48,7 @@ def main():
         else:
             save = ['docker', 'save']
         run([*save, '-o', staging / 'workload-image.tar', 'sdv-autosd-lighting:1.0'])
-        run(['cargo', 'build', '--locked', '--manifest-path', ROOT.parent / 'OpenSOVD/integration/lighting-diagnostics/Cargo.toml',
+        run(['cargo', 'build', '--locked', '--manifest-path', ROOT.parents[2] / 'contributions/eclipse-opensovd/OpenSOVD/integration/lighting-diagnostics/Cargo.toml',
              '--target-dir', args.target_dir.resolve()])
         shutil.copy2(args.target_dir / 'debug/sdv-lighting-diagnostics', staging / 'sdv-lighting-diagnostics')
         for f in (ROOT / 'config').glob('sdv-*.service'):

@@ -38,4 +38,4 @@ baseline: `381d43dec900ab6a9076f3f30e7bfbdee019e26e`.
 
 Human review, remaining native checks and qualification are pending. No native
 upstream PR, merge or issue closure is performed. Verify retained evidence with
-`python3 scripts/verify_missing_contributions.py` and the repository-wide verifier.
+`python3 contributions/shared/scripts/verify_missing_contributions.py` and the repository-wide verifier.

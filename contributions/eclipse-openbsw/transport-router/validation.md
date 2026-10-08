@@ -6,10 +6,10 @@ maintainer approval or merge is claimed.
 | Item | Value |
 | --- | --- |
 | Upstream | <https://github.com/eclipse-openbsw/openbsw>, base `432b9be6098d99570ab8ebc32a7cbb895ca7bb63` |
-| Source of the change | `OpenBSW/contrib/libs/bsw/transportRouter` in this repository (the zonal gateway builds from the same files) |
+| Source of the change | `contributions/eclipse-openbsw/OpenBSW/contrib/libs/bsw/transportRouter` in this repository (the zonal gateway builds from the same files) |
 | Commit on the PR branch | `evidence/commit.txt` (author Jefferson Nascimento, `Signed-off-by`) |
 | Patch | `0001-transport-router.patch`, 16 files, +2353 lines; SHA-256 in `artifact-manifest.json` |
-| Reproduce | `OpenBSW/scripts/bootstrap.sh`, then `OpenBSW/scripts/openbsw-pr.sh all` (needs the external build volume) |
+| Reproduce | `contributions/eclipse-openbsw/OpenBSW/scripts/bootstrap.sh`, then `contributions/eclipse-openbsw/OpenBSW/scripts/openbsw-pr.sh all` (needs the external build volume) |
 
 ## Checks performed
 
@@ -38,11 +38,11 @@ DoIP over lwIP/TAP, DoCAN on `vcan0`, OpenBSW UDS. The module uses no RTOS API
 directly, only OpenBSW's `async`; it was tested with both RTOS bindings.
 
 - **Integration tests:** 28/28 passed on FreeRTOS and on ThreadX (the gateway's
-  current default). See `OpenBSW/evidence/gateway-it/results.json`, which
+  current default). See `contributions/eclipse-openbsw/OpenBSW/evidence/gateway-it/results.json`, which
   records the executable hash of the ThreadX run.
 - **NXP S32K148EVB (ThreadX and FreeRTOS):** 10/10 board tests. See
-  `OpenBSW/evidence/board-gateway-it/results.json`.
-- **ASPICE SWE.1–SWE.6 report:** `OpenBSW/aspice/report/aspice-swe-report.html`.
+  `contributions/eclipse-openbsw/OpenBSW/evidence/board-gateway-it/results.json`.
+- **ASPICE SWE.1–SWE.6 report:** `contributions/eclipse-openbsw/OpenBSW/aspice/report/aspice-swe-report.html`.
 
 ## Not done / limitations
 

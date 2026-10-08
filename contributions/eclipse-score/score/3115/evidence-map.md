@@ -23,7 +23,7 @@ complete standalone bundles.
 | Live rendering proxies | `carried/specs/011-change-impact-and-freshness/evidence/qualification/` and `projection-qualification/` beneath `evidence/fabric/` | Copied summaries, requests/responses, usage, events, logs and subject bindings; operator scripts/private server state omitted |
 | Later native/compatibility findings | Other directories beneath `evidence/fabric/carried/specs/011-change-impact-and-freshness/evidence/` | High-level original reports and failures, explicitly historical and incomplete for full replay |
 | Historical-byte inventory | `evidence/fabric/historical-evidence-inventory.json` | Hashes/sizes freshly read for original 011 packets; omitted bytes do not travel here |
-| Existing native implementation packets | `evidence/native-contributions.json`; records under `contributions/issues/eclipse-score/` | Preserved in this same repository; fresh byte-integrity results, not test reruns |
+| Existing native implementation packets | `evidence/native-contributions.json`; records under `contributions/eclipse-score/` | Preserved in this same repository; fresh byte-integrity results, not test reruns |
 | Concrete native proposal | `native/supplement.rst`, `native/supplement.patch` | Proposed addition to the captured PR file; no fabricated new native IDs |
 
 ## Snapshot boundaries

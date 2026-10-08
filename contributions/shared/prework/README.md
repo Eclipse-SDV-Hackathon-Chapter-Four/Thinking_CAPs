@@ -7,7 +7,7 @@ This folder contains all **pre-work** completed before the Eclipse SDV Hackathon
 This directory contains planning and reference documents. It does not establish
 that the rest of the repository was developed during the event. Retained
 diagnostics patches include commits dated **2026-09-22**, and campaign evidence
-exists under `evidence/runs/20260925T125437Z`, before the October 6 event start.
+exists under `contributions/shared/evidence/runs/20260925T125437Z`, before the October 6 event start.
 These are pre-existing implementations and measurements. Event additions must
 be identified by their actual revisions and dates; competition eligibility
 requires the organizers' published rules and has not been established.

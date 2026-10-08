@@ -22,7 +22,7 @@ Decision: bounded read-only preflight before starting any supervisor.
 Rationale: run_autoverse.py deliberately kills stale processes; existing Docker containers are stopped.
 Current host network/shared /tmp path does not establish openDuT Ethernet transport.
 Alternative: treating container presence or ping as function acceptance is incorrect.
-See OpenDut/docs/opendut-deployment-research.md and docs/upstream-status.md for source audit.
+See contributions/eclipse-opendut/OpenDut/docs/opendut-deployment-research.md and contributions/shared/docs/upstream-status.md for source audit.
 
 ## AAOS
 Decision: defer F006. User will bring FOTA asset later; emulator/APK install is not OTA.

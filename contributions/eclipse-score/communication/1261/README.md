@@ -47,11 +47,11 @@ git remote add fork git@github.com:<your-user>/communication.git   # once
 git rebase origin/main feature/1261-async-service-stream        # optional; re-run the checks if you rebase
 git push fork feature/1261-async-service-stream
 gh pr create -R eclipse-score/communication --draft --head <your-user>:feature/1261-async-service-stream \
-  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/1261/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/1261/pr-description.md
+  --title "$(cat /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/1261/pr-title.txt)" --body-file /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/1261/pr-description.md
 ```
 
 Elsewhere, recreate the branch from the bundle:
-`git fetch /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-score/communication/1261/feature-1261-async-service-stream.bundle feature/1261-async-service-stream:feature/1261-async-service-stream` (the clone must contain `381d43dec900`).
+`git fetch /home/jefferson/Thinking_CAPs/contributions/eclipse-score/communication/1261/feature-1261-async-service-stream.bundle feature/1261-async-service-stream:feature/1261-async-service-stream` (the clone must contain `381d43dec900`).
 
 ## Open items
 

@@ -246,13 +246,13 @@ not an assessed capability level. The end-to-end package lives in the X-Verse wo
 | SWE.5 Software integration and integration test | 16 black-box interface checks against the running system (`tools/e2e_check.py`) | [integration-test.md](demo/X-Verse/aspice/swe5-integration-test/integration-test.md) |
 | SWE.6 Software qualification test | Scenario tests of the system requirements, driven automatically through Vehicle Manual Control's scripted input (`tools/qualification_check.py`); no case is accepted from a witness statement | [qualification-test.md](demo/X-Verse/aspice/swe6-qualification-test/qualification-test.md) |
 | Traceability (SWE.1–SWE.6) | Bidirectional: SYS → SWR → element → test case → result, checked on every report run; a gap fails the run | [report](demo/X-Verse/aspice/report/README.md), `summary.json` |
-| SUP.8 Configuration management | One X-Verse repository per component on its `dev/sdv-hackathon-2026` branch, selected by `autoverse.repos` and imported with `vcs import`; upstream dependencies pinned by commit (inc_diagnostics PR #40 `d388985`, opensovd-core `29e806f`, CDA `c1a5d8b`, ThreadX and the Zenoh2CAN bridge in `dependencies.lock.json`); `demo/X-Verse` changes only through `scripts/sync-xverse.sh` | `demo/X-Verse/autoverse.repos`, sync commits with an `X-Verse-Source` trailer |
+| SUP.8 Configuration management | One X-Verse repository per component on its `dev/sdv-hackathon-2026` branch, selected by `autoverse.repos` and imported with `vcs import`; upstream dependencies pinned by commit (inc_diagnostics PR #40 `d388985`, opensovd-core `29e806f`, CDA `c1a5d8b`, ThreadX and the Zenoh2CAN bridge in `dependencies.lock.json`); `demo/X-Verse` changes only through `contributions/shared/scripts/sync-xverse.sh` | `demo/X-Verse/autoverse.repos`, sync commits with an `X-Verse-Source` trailer |
 | SUP.9 Problem resolution | Defects found by the tests are recorded with cause and decision (fixed, or known and out of scope) | "Known defect" in [qualification-test.md](demo/X-Verse/aspice/swe6-qualification-test/qualification-test.md), defects in the [package README](demo/X-Verse/aspice/README.md) |
 | SUP.10 Change request management / review | Every change is a reviewed commit with its rationale; AI-generated changes (Software Factory, section 6) are human-reviewed before a pull request | commit history, [contributions](contributions/) |
 
 Component-level ASPICE packages follow the same layout: the ThreadX AZ3166 ECU
 ([`external_hackathon_ecus/ThreadX/az3166/aspice`](demo/X-Verse/external_hackathon_ecus/ThreadX/az3166/aspice/README.md)),
-the OpenBSW gateway ([`OpenBSW/aspice`](OpenBSW/aspice/)), and, in their X-Verse repositories, the OTA vECU
+the OpenBSW gateway ([`contributions/eclipse-openbsw/OpenBSW/aspice`](contributions/eclipse-openbsw/OpenBSW/aspice/)), and, in their X-Verse repositories, the OTA vECU
 (`vecu/ota/aspice`) and the Serial2CAN bridge (`bridges/can/serial2can-bridge/aspice`).
 
 Working rules derived from it:

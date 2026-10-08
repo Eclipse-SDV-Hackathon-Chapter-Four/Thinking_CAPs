@@ -6,7 +6,7 @@ second contributor's acceptance. See the actual reproduction record linked in ha
 
 ## Existing reference assets
 Freeze the [dependency audit](../config/dependencies.lock.json),
-[testbench release pins](../OpenDut/config/testbench/versions.json), Cargo locks and exported patches.
+[testbench release pins](../../eclipse-opendut/OpenDut/config/testbench/versions.json), Cargo locks and exported patches.
 Local native Score/bridge/build images are identified by immutable IDs in
 [local.example.json](../tests/campaigns/local.example.json). These local IDs are not pullable
 registry names. Use the existing images on this machine, or acquire/build the corresponding
@@ -33,9 +33,9 @@ owned peer containers. The local profile reserves172.30.77.0/24 management and
 Use fresh private state and new evidence output directories:
 
 ```sh
-python3 OpenDut/scripts/opendut_testbench.py prepare --state .local/opendut-next --output evidence/my-bench-prepare
-python3 OpenDut/scripts/opendut_testbench.py up --state .local/opendut-next --output evidence/my-bench-up
-cp tests/campaigns/local.example.json .local/campaign.json
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py prepare --state .local/opendut-next --output evidence/my-bench-prepare
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py up --state .local/opendut-next --output evidence/my-bench-up
+cp contributions/shared/tests/campaigns/local.example.json .local/campaign.json
 ```
 
 Update `state` in the private JSON to `.local/opendut-next`'s absolute path and all source/image/tool
@@ -47,7 +47,7 @@ is actual local CARL-managed GRE, with no distributed-site/VPN claim.
 To preserve original checkouts and rebuild the selected frozen sources:
 
 ```sh
-/usr/bin/python3 scripts/reproduce_core.py --config .local/campaign.json --state .local/my-clean-sources --output evidence/my-reproduction
+/usr/bin/python3 contributions/shared/scripts/reproduce_core.py --config .local/campaign.json --state .local/my-clean-sources --output evidence/my-reproduction
 ```
 
 The helper freezes the current committed integration HEAD (or explicit `--integration-revision`),
@@ -63,9 +63,9 @@ and shared assets. Default Rust builds and fault profile builds must use separat
 For already validated binaries/builds:
 
 ```sh
-/usr/bin/python3 scripts/run_campaign.py --config .local/campaign.json --scenario core --output evidence/my-core
-/usr/bin/python3 scripts/run_campaign.py --config .local/campaign.json --scenario cleanup-failure --output evidence/my-cleanup-check
-/usr/bin/python3 scripts/run_campaign.py --config .local/campaign.json --scenario carla --output evidence/my-carla-gate
+/usr/bin/python3 contributions/shared/scripts/run_campaign.py --config .local/campaign.json --scenario core --output evidence/my-core
+/usr/bin/python3 contributions/shared/scripts/run_campaign.py --config .local/campaign.json --scenario cleanup-failure --output evidence/my-cleanup-check
+/usr/bin/python3 contributions/shared/scripts/run_campaign.py --config .local/campaign.json --scenario carla --output evidence/my-carla-gate
 ```
 
 Core uses fixture vehicle inputs with real native receiver/network/fault processing. CARLA
@@ -84,7 +84,7 @@ run label from private `deployment.json`, and verify any leftover `sdv-net-*` ap
 to that run before removal. Do not remove original baseline containers or global processes.
 
 ```sh
-python3 OpenDut/scripts/opendut_testbench.py down --state .local/opendut-next --output evidence/my-bench-down
+python3 contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py down --state .local/opendut-next --output evidence/my-bench-down
 ```
 
 Teardown verifies ownership labels before removing peers/CARL/network/data volume. Preserve

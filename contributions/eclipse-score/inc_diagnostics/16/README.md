@@ -17,7 +17,7 @@ The five patch files have been recovered and are ready for testing.
 | 4 | `0004-feat-sovd_adapter-serve-diag_api-DataResources-as-an.patch` | DataProvider implementation |
 | 5 | `0005-feat-opensovd-gateway-serve-HVAC-diag_api-resources-.patch` | Wire into gateway |
 
-Location: `patches/inc_diagnostics/`
+Location: `contributions/shared/patches/inc_diagnostics/`
 
 ## Apply the Patches
 

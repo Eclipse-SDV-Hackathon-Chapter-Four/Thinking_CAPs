@@ -8,6 +8,6 @@ Patches for upstream Eclipse projects.
 
 ## Verified contribution artifacts
 
-The [contribution index](../contributions/README.md) contains the recovered SOME/IP
+The [contribution index](../../README.md) contains the recovered SOME/IP
 and lifecycle patches with original verification evidence. See
-[evidence gaps](../contributions/EVIDENCE_GAPS.md) for missing diagnostics/CDA artifacts.
+[evidence gaps](../../EVIDENCE_GAPS.md) for missing diagnostics/CDA artifacts.

@@ -19,7 +19,7 @@ Existing virtualenv/frontend dependencies were reused without installing or upda
 | External assets and telemetry checks | Pass | [assets](evidence/checks/frontend-assets.log), [telemetry](evidence/checks/frontend-telemetry.log) |
 | Original and disposable source inputs after checks | Clean original source; all 655 tracked input hashes unchanged | [initial after-check](evidence/checks/source-after.json), [after-rerun](evidence/checks/source-after-rerun.json) |
 | Original historical release manifest | All 17 artifacts copied with matching original sizes/hashes | [original manifest](evidence/historical/local-release-1.0.0/release-manifest.json) |
-| Scoped packet/source/original-release verifier | Pass; 266 packet files, 655 archived source files, 17 historical artifacts | `python3 contributions/issues/eclipse-score/score/2850/verify_packet.py` |
+| Scoped packet/source/original-release verifier | Pass; 266 packet files, 655 archived source files, 17 historical artifacts | `python3 contributions/eclipse-score/score/2850/verify_packet.py` |
 | Entire contribution registry verifier | Fail: inherited upstream observation mismatch for diagnostics #16; stops before new entry | [raw result](evidence/checks/repository-verifier.log), [command record](evidence/checks/repository-verifier.json) |
 
 The four initial failures all came from the timer installer requiring the copied

@@ -27,7 +27,7 @@ This folder is a proposal record, excluded from completed or accepted implementa
 Verify retained bytes from any directory:
 
 ```bash
-python /home/jefferson/Thinking_CAPs/contributions/issues/eclipse-hephaestus/hephaestus/11/verify_evidence.py
+python /home/jefferson/Thinking_CAPs/contributions/eclipse-hephaestus/hephaestus/11/verify_evidence.py
 ```
 
 Hash verification establishes retained artifact integrity; it does not rerun builds or grant engineering acceptance.

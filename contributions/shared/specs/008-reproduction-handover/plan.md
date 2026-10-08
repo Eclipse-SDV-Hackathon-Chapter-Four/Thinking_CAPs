@@ -7,7 +7,7 @@ explicit reused LLVM repository and existing pinned Docker assets. No system dep
 All twelve principles checked. Explicit reused assets/caches, hash provenance, no bridge edit,
 no second-person/event/publication claim, actual assertions and scoped teardown.
 ## Design
-scripts/reproduce_core.py creates NEW ignored owned state and clones immutable pins. Apply
+contributions/shared/scripts/reproduce_core.py creates NEW ignored owned state and clones immutable pins. Apply
 receiver patch; compile controller plus unmodified gateway/daemon/config targets in native image,
 run existing cruise unit target, derive flatc/schema paths by cquery/info rather than guessing
 cache layout. Build native fault profile from the frozen integration checkout with exported patch
@@ -19,9 +19,9 @@ entrypoints. Rehearsal shows actual fixture loss/history/recovery and labels CAR
 Readiness recovery can use exact existing CARLA launch flags in a bounded owned probe, with no
 system driver changes. Finish with benchmark teardown and original container/source comparison.
 ## Touch points
-scripts/reproduce_core.py; docs/{handover.md,reproduction.md,claim-evidence.md};
-contributions/fault-storage-write-through/; README.md; scripts/README.md; tests/README.md;
-docs/setup/README.md; docs/prepared-work.md; evidence/f008-*.
+contributions/shared/scripts/reproduce_core.py; docs/{handover.md,reproduction.md,claim-evidence.md};
+contributions/eclipse-opensovd/fault-storage-write-through/; README.md; contributions/shared/scripts/README.md; contributions/shared/tests/README.md;
+contributions/shared/docs/setup/README.md; contributions/shared/docs/prepared-work.md; evidence/f008-*.
 
 Presentation refinement after F009: add an eight-minute technical interview script
 and a standalone final-pitch deck below the brief's ten-minute cap. Use the actual
@@ -29,8 +29,8 @@ fresh-build core/physical results, labelled offline replay and bounded storage p
 AAOS/FOTA remains user-deferred. Add speaker notes and evidence links, readable
 functional topology, keyboard slide navigation and print output. Verify in an actual
 browser; do not label browser checks as a human rehearsal or second-person run.
-Touch points: docs/hackathon/{technical-interview.md,pitch.html,pitch-notes.md,README.md},
-docs/handover.md and evidence/f008-presentation-browser/.
+Touch points: contributions/shared/docs/hackathon/{technical-interview.md,pitch.html,pitch-notes.md,README.md},
+contributions/shared/docs/handover.md and contributions/shared/evidence/f008-presentation-browser/.
 
 Reproduction attribution refinement: the helper must record caller-supplied operator
 identity and explicit shared-host declaration rather than hardcoding the implementation
@@ -50,4 +50,4 @@ failed/interrupted manifests and cleanup records. Preserve partial command outpu
 Verify actual timeout/owned removal/unowned refusal/process-tree termination and
 signal paths, then a native core regression with cached validated binaries. No new
 native build acceptance is inferred from the harmless timeout probes.
-The new process-boundary regressions live in `tests/test_reproduction_lifecycle.py`.
+The new process-boundary regressions live in `contributions/shared/tests/test_reproduction_lifecycle.py`.

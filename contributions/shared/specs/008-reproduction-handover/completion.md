@@ -5,18 +5,18 @@ Actual second-person acceptance and real CARLA physics remain pending/blocked.
 
 | Intent | Verification |
 | --- | --- |
-| FR001 / SC001 | `scripts/reproduce_core.py` froze integration6d7bef9, Score93f8ea1 and bridge0d53a2a; source-clean clones, exact receiver patch, fresh Bazel/Rust outputs, controller unit target and native fault tests/Clippy passed. `evidence/f008-reproduction-final` records commands and a successful real native core campaign. Host/images/LLVM are explicitly shared; the implementation agent is the operator. First failed bridge-layout attempt is retained. Human signoff stays pending. |
-| FR002 / SC002 | `contributions/fault-storage-write-through` contains the narrow native storage patch/problem/PR draft and reproducible pinned-nightly validation. Patch bytes match the implementation patch. Default flush behavior, opt-in persistence, storage read errors, memory-on-flush-failure and power-loss boundaries are explicit. Full upstream CI, ECA, publication and maintainer agreement are not claimed. |
+| FR001 / SC001 | `contributions/shared/scripts/reproduce_core.py` froze integration6d7bef9, Score93f8ea1 and bridge0d53a2a; source-clean clones, exact receiver patch, fresh Bazel/Rust outputs, controller unit target and native fault tests/Clippy passed. `contributions/shared/evidence/f008-reproduction-final` records commands and a successful real native core campaign. Host/images/LLVM are explicitly shared; the implementation agent is the operator. First failed bridge-layout attempt is retained. Human signoff stays pending. |
+| FR002 / SC002 | `contributions/eclipse-opensovd/fault-storage-write-through` contains the narrow native storage patch/problem/PR draft and reproducible pinned-nightly validation. Patch bytes match the implementation patch. Default flush behavior, opt-in persistence, storage read errors, memory-on-flush-failure and power-loss boundaries are explicit. Full upstream CI, ECA, publication and maintainer agreement are not claimed. |
 | FR003–004 | README/setup/scripts/tests entrypoints reflect the actual 42 native assertions, fixture vehicle inputs and eight selected wrapper verdicts. Claim/evidence and prepared-work inventories separate preparation, native integration, self-reproduction and human acceptance. Event-start revision remains unassigned. |
-| FR005 / SC003 | `evidence/f008-teardown` passed scoped openDuT undeploy/removal. `evidence/f008-preservation.json` verifies all seven original repository pins/status/diff hashes, selected configurations/images and original stopped containers. No owned containers/networks/volumes or CARLA listeners remain. Private state/build caches are intentionally retained. |
+| FR005 / SC003 | `contributions/shared/evidence/f008-teardown` passed scoped openDuT undeploy/removal. `contributions/shared/evidence/f008-preservation.json` verifies all seven original repository pins/status/diff hashes, selected configurations/images and original stopped containers. No owned containers/networks/volumes or CARLA listeners remain. Private state/build caches are intentionally retained. |
 | FR006 / SC004 | Exact baseline recipe, Epic/NVIDIA and null-RHI probes still timed out on actual world/version RPC. Thread investigation does not establish root cause; the main-thread GDB probe hit an internal debugger error. Failed/blocked logs retained. CARLA runtime configuration is now private temporary state; tracked generated configuration is removed. Physics/control acceptance remains blocked. |
-| FR007 | `docs/handover.md` contains restart/rehearsal/pitch/evidence and continuation for CARLA, native `/faults`, human signoff, optional extensions and user-deferred FOTA. Recorded fixture fallback is labelled. |
+| FR007 | `contributions/shared/docs/handover.md` contains restart/rehearsal/pitch/evidence and continuation for CARLA, native `/faults`, human signoff, optional extensions and user-deferred FOTA. Recorded fixture fallback is labelled. |
 
 Appropriate final checks: 11 baseline/verdict regressions, retained contribution integrity,
 Python compilation, whitespace, handover relative links and patch equality passed in
-`evidence/f008-verification.json`. The fresh native build/test campaign is separate evidence;
+`contributions/shared/evidence/f008-verification.json`. The fresh native build/test campaign is separate evidence;
 component tests are not advertised as full upstream CI or independent-person reproduction.
-`evidence/f008-carla-private-runtime/verification.json` separately verifies private0700
+`contributions/shared/evidence/f008-carla-private-runtime/verification.json` separately verifies private0700
 runtime, blocked-start cleanup, stopped owned server and released ports against the updated
 helper; it records the harness's corrected timeout field interpretation.
 
@@ -40,7 +40,7 @@ Those artifacts supersede the original CARLA blocker for current demonstration c
 historical blocked measurements above remain retained.
 
 The eight-minute interview script and9:30 final-pitch deck/notes are now prepared in
-`docs/hackathon`. Actual browser checks cover keyboard/button navigation, rehearsal
+`contributions/shared/docs/hackathon`. Actual browser checks cover keyboard/button navigation, rehearsal
 clock, phone layout, offline-only resource use and error-free execution. Desktop/phone
 screenshots were visually inspected. Printing yields exactly seven A4 landscape pages
 with all seven slide titles. Evidence links and declared timing totals are verified.

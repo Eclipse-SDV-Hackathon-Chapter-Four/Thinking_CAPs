@@ -2,8 +2,8 @@
 
 The complete [open-issue snapshot](artifacts/open-issues.md) contains 52 issues
 from October 7, 2026. The selection below follows the integration in
-[`ThreadX/CMakeLists.txt`](../../ThreadX/CMakeLists.txt) and
-[`ThreadX/README.md`](../../ThreadX/README.md): a single-core Linux/GNU ThreadX
+[`demo/X-Verse/external_hackathon_ecus/ThreadX/CMakeLists.txt`](../../../../demo/X-Verse/external_hackathon_ecus/ThreadX/CMakeLists.txt) and
+[`demo/X-Verse/external_hackathon_ecus/ThreadX/README.md`](../../../../demo/X-Verse/external_hackathon_ecus/ThreadX/README.md): a single-core Linux/GNU ThreadX
 simulator, pinned to 6.5.1, driving a zonal lighting controller through threads,
 a bounded queue, a timer and event flags, with SocketCAN and Zenoh integration.
 

@@ -12,8 +12,8 @@ All twelve principles checked before/after design. Preserve source and control r
 pin inputs, label fixture traffic/preparation, scope namespace mutations, record failure.
 No deviations. FOTA excluded. Research agents already resolved deployment unknowns.
 ## Structure
-OpenDut/config/testbench/{Peer.Dockerfile,peer-entrypoint.sh,versions.json};
-OpenDut/scripts/opendut_testbench.py; OpenDut/tests/opendut_receiver_smoke.py; evidence/f003-*.
+contributions/eclipse-opendut/OpenDut/config/testbench/{Peer.Dockerfile,peer-entrypoint.sh,versions.json};
+contributions/eclipse-opendut/OpenDut/scripts/opendut_testbench.py; contributions/eclipse-opendut/OpenDut/tests/opendut_receiver_smoke.py; evidence/f003-*.
 ## Design
 Generate local CA/server SAN carl in ignored private state; immutable CARL/EDGAR images,
 verified CLEO archive; derive peer tooling image and record actual digest. Use management
