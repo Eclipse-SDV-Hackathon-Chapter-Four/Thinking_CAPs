@@ -68,6 +68,7 @@ body {
   height: 100vh;
   display: grid;
   grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   padding: 14px 20px 16px;
   max-width: 1920px;
@@ -174,6 +175,19 @@ main { display: grid; grid-template-columns: minmax(0, 43fr) minmax(0, 57fr); ga
 .topo .cda-chip.stock text.sub { fill: var(--stock); }
 .topo .cda-chip.fix text.sub { fill: var(--fix); }
 
+/* bench switch: one page, two benches */
+.seg.bench button { padding: 6px 12px; font-size: 12.5px; font-weight: 700; }
+.seg.bench button small { font-weight: 500; opacity: .8; }
+.seg.bench:has(button:disabled) { opacity: .6; }
+[data-bench="vecu"] .only-pi, [data-bench="pi"] .only-vecu { display: none !important; }
+.topo .node text.ip { fill: var(--brand-2); font: 600 10px var(--mono); }
+.topo .ctl { fill: none; stroke: var(--border-strong); stroke-width: 1.3; stroke-dasharray: 4 4; transition: stroke .3s; }
+.topo .ctl.on { stroke: var(--brand); stroke-width: 2; animation: flow .9s linear infinite; }
+.topo .cable { fill: none; stroke: var(--border-strong); stroke-width: 4; stroke-linecap: round; transition: stroke .3s; }
+.topo .cable.on { stroke: var(--brand); }
+.topo .pi-board { fill: color-mix(in srgb, #c51a4a 14%, var(--surface-2)); stroke: #c51a4a; stroke-width: 1.4; transition: all .35s; }
+.topo .node.on .pi-board { stroke-width: 2.4; filter: drop-shadow(0 0 8px rgba(197, 26, 74, .55)); }
+
 /* lanes */
 .lanes { display: grid; gap: 9px; }
 .lane { display: grid; grid-template-columns: 132px 1fr 64px; align-items: center; gap: 12px; }
@@ -181,7 +195,7 @@ main { display: grid; grid-template-columns: minmax(0, 43fr) minmax(0, 57fr); ga
 .lane .name small { display: block; font-weight: 500; font-size: 11px; color: var(--muted); }
 .lane.stock .name { color: var(--stock); }
 .lane.fix .name { color: var(--fix); }
-.steps { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.steps { display: grid; grid-template-columns: repeat(var(--nsteps, 9), 1fr); gap: 4px; }
 .steps i {
   height: 26px; border-radius: 6px; background: var(--surface-3); border: 1px solid var(--border);
   font: 700 10.5px var(--mono); font-style: normal; color: var(--muted);
@@ -352,6 +366,17 @@ a.mini:hover { border-color: var(--brand); }
 @keyframes pulse { 50% { opacity: .65; } }
 @keyframes reveal { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
 
+@media (max-width: 1800px) { .seg.bench button small { display: none; } }
+@media (max-width: 1500px), (max-height: 940px) {
+  .app { height: auto; min-height: 100vh; }
+  .term { min-height: 150px; }
+}
+@media (max-width: 1500px) {
+  header { flex-wrap: wrap; row-gap: 10px; }
+  .title { flex-basis: calc(100% - 420px); }
+  .controls { flex-basis: 100%; justify-content: flex-end; }
+  .seg.bench { margin-right: auto; }
+}
 @media (max-width: 1250px) {
   .app { height: auto; }
   main { grid-template-columns: minmax(0, 1fr); }
@@ -365,6 +390,8 @@ a.mini:hover { border-color: var(--brand); }
   header { flex-wrap: wrap; }
   .title { flex-basis: 100%; }
   .controls { flex-wrap: wrap; }
+  .seg.bench { order: -1; flex-basis: 100%; }
+  .seg.bench button { flex: 1; }
   .story .v code { white-space: normal; word-break: break-word; }
   .divider { display: none; }
   .title h1 { white-space: normal; }
@@ -402,10 +429,14 @@ a.mini:hover { border-color: var(--brand); }
       <p>Eclipse OpenSOVD Classic Diagnostic Adapter · <code>cda-main/src/mdd.rs</code> returns <code>Result</code> instead of <code>Option</code> · same tests, same MDD files, one binary swapped</p>
     </div>
     <div class="controls">
+      <div class="seg bench" id="benchSeg" role="tablist" aria-label="Test bench">
+        <button data-b="vecu" title="Local openDuT stack: tester + vehicle peers as containers, FLXC1000 vECU (V)">Local bench <small>containers</small></button>
+        <button data-b="pi" title="Coach's openDuT (nc.opendut.net) with two Raspberry Pis (V)">Raspberry Pi bench <small>nc.opendut.net</small></button>
+      </div>
       <span id="mode" class="pill"><span class="dot"></span><span id="modeText">Idle</span></span>
-      <button id="btnDav" class="dav" title="Result ZIPs on openDuT WebDAV (W)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>WebDAV results<span class="count" id="davCount">·</span></button>
+      <button id="btnDav" class="dav only-vecu" title="Result ZIPs on openDuT WebDAV (W)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>WebDAV results<span class="count" id="davCount">·</span></button>
       <button id="btnReplay" title="Replay a recorded bench run (R)">⟲ Replay</button>
-      <button id="btnLive" class="primary" title="Run run-both.sh on the bench now">▶ Run live</button>
+      <button id="btnLive" class="primary" title="Run the before/after test on this bench now">▶ Run live</button>
       <button id="btnTheme" class="icon" title="Light / dark (T)">◐</button>
       <button id="btnFull" class="icon" title="Full screen (F)">⛶</button>
       <div class="clock" id="clock">--:--</div>
@@ -417,15 +448,16 @@ a.mini:hover { border-color: var(--brand); }
     <div class="arrow">→</div>
     <div><div class="k">Our fix</div><div class="v">Every failure step returns a typed error: missing payload, broken database, unreadable storage.</div></div>
     <div class="arrow">→</div>
-    <div><div class="k">The proof</div><div class="v">The CDA runs on an openDuT peer and talks DoIP to the FLXC1000 vECU through the openDuT tunnel.</div></div>
+    <div class="only-vecu"><div class="k">The proof · local bench</div><div class="v">The CDA runs on an openDuT peer and talks DoIP to the FLXC1000 vECU through the openDuT tunnel.</div></div>
+    <div class="only-pi"><div class="k">The proof · Raspberry Pi bench</div><div class="v">Same test on real hardware: DoIP goes from our laptop through <code>sdv-pi-14</code> → coach's openDuT → <code>sdv-pi-13</code> to the vECU on the team PC.</div></div>
   </section>
 
   <main>
     <div class="col left">
       <section class="card topo" id="topo">
-        <div class="card-h"><h2>openDuT test bench</h2><span class="meta">CARL · CLEO · EDGAR 0.10.2 · NetBird</span></div>
+        <div class="card-h"><h2 id="topoTitle">openDuT test bench</h2><span class="meta" id="topoMeta">CARL · CLEO · EDGAR 0.10.2 · NetBird</span></div>
         <div class="card-b">
-          <svg viewBox="0 0 640 352" role="img" aria-label="Bench: laptop, CARL, WebDAV, tester peer with CDA, vehicle peer with FLXC1000 vECU, openDuT tunnel">
+          <svg class="only-vecu" viewBox="0 0 640 352" role="img" aria-label="Bench: laptop, CARL, WebDAV, tester peer with CDA, vehicle peer with FLXC1000 vECU, openDuT tunnel">
             <!-- links (under the nodes) -->
             <path id="l-res" class="link" d="M545 34 C545 4, 95 4, 95 34"/>
             <text class="linklabel" x="320" y="14" text-anchor="middle">result ZIP → laptop</text>
@@ -462,15 +494,50 @@ a.mini:hover { border-color: var(--brand); }
             <circle class="packet" cx="0" cy="0" r="4.5" fill="var(--fix)"><animateMotion dur="1.3s" repeatCount="indefinite" path="M250 296 H390"/></circle>
             <circle class="packet" r="4.5" fill="var(--ok)"><animateMotion dur="1.3s" repeatCount="indefinite" path="M390 296 H250"/></circle>
           </svg>
+          <svg class="only-pi" viewBox="0 0 640 352" role="img" aria-label="Raspberry Pi bench: laptop with CDA, cable to sdv-pi-14, openDuT tunnel over nc.opendut.net to sdv-pi-13, cable to the team PC with the FLXC1000 vECU">
+            <path id="p-l-c14" class="ctl" d="M270 74 C250 110, 240 140, 240 168"/>
+            <path id="p-l-c13" class="ctl" d="M370 74 C390 110, 400 140, 400 168"/>
+            <text class="linklabel" x="320" y="104" text-anchor="middle">EDGAR ⇄ CARL</text>
+            <text class="linklabel" x="320" y="117" text-anchor="middle">cluster deploy</text>
+            <g id="p-coach" class="node"><rect class="box" x="230" y="18" width="180" height="56" rx="10"/><text x="244" y="42">nc.opendut.net</text><text class="sub" x="244" y="60">coach's CARL · NetBird relay</text></g>
+
+            <g class="peer"><rect class="frame" x="14" y="150" width="172" height="190" rx="12"/><text class="ptitle" x="26" y="171">This laptop · tester</text></g>
+            <g id="p-exec" class="node"><rect class="box" x="24" y="182" width="152" height="58" rx="9"/><text x="36" y="204">Test container</text><text class="sub" x="36" y="220">cda543-check · T1–T5</text><text class="ip" x="36" y="234">eno1 · 10.42.0.20</text></g>
+            <g id="p-cda" class="node cda-chip"><rect class="box" x="24" y="252" width="152" height="74" rx="9"/><text x="36" y="274">Classic Diagnostic</text><text x="36" y="290">Adapter</text><text class="sub" id="pCdaSub" x="36" y="310">waiting</text></g>
+
+            <path id="p-cab1" class="cable" d="M186 254 H206"/>
+            <g id="p-pi14" class="node"><rect class="pi-board" x="206" y="168" width="68" height="112" rx="8"/>
+              <text x="240" y="196" text-anchor="middle">Pi</text><text class="sub" x="240" y="212" text-anchor="middle">sdv-pi-14</text>
+              <text class="sub" x="240" y="236" text-anchor="middle">EDGAR</text><text class="sub" x="240" y="250" text-anchor="middle">br-opendut</text></g>
+            <g id="p-pi13" class="node"><rect class="pi-board" x="366" y="168" width="68" height="112" rx="8"/>
+              <text x="400" y="196" text-anchor="middle">Pi</text><text class="sub" x="400" y="212" text-anchor="middle">sdv-pi-13</text>
+              <text class="sub" x="400" y="236" text-anchor="middle">EDGAR</text><text class="sub" x="400" y="250" text-anchor="middle">br-opendut</text></g>
+            <path id="p-cab2" class="cable" d="M434 254 H454"/>
+
+            <path class="tunnel-pipe" d="M274 254 H366"/>
+            <path class="tunnel-core" d="M274 254 H366"/>
+            <text class="tunnel-label" x="320" y="236" text-anchor="middle">openDuT</text>
+            <text class="linklabel" x="320" y="296" text-anchor="middle">WireGuard + GRE</text>
+            <text class="linklabel" x="320" y="309" text-anchor="middle">DoIP · 6–680 ms</text>
+
+            <g class="peer"><rect class="frame" x="454" y="150" width="172" height="190" rx="12"/><text class="ptitle" x="466" y="171">Team PC · vECU runs here</text></g>
+            <g id="p-ecu" class="node"><rect class="box" x="464" y="182" width="152" height="144" rx="9"/>
+              <text x="476" y="204">FLXC1000 vECU</text><text class="sub" x="476" y="221">ECU simulator · DoIP</text><text class="ip" x="476" y="236">eno2 · 10.42.0.10</text>
+              <g transform="translate(476 252)">
+                <rect x="0" y="0" width="128" height="58" rx="7" fill="none" stroke="var(--border-strong)"/>
+                <text class="sub" x="9" y="18">DTC memory</text><text class="sub" id="pDtc" x="9" y="36" style="font-family:var(--mono)">—</text>
+              </g>
+            </g>
+            <circle class="packet" r="4.5" fill="var(--fix)"><animateMotion dur="1.6s" repeatCount="indefinite" path="M176 254 H464"/></circle>
+            <circle class="packet" r="4.5" fill="var(--ok)"><animateMotion dur="1.6s" repeatCount="indefinite" path="M464 254 H176"/></circle>
+          </svg>
         </div>
       </section>
 
       <section class="card">
         <div class="card-h"><h2>Run progress</h2><span class="meta" id="runMeta">—</span></div>
         <div class="card-b lanes">
-          <div class="steps-legend"><span></span><div class="steps">
-            <i>build image</i><i>load on peer</i><i>upload MDDs</i><i>start vECU</i><i>register</i><i>deploy</i><i>run tests</i><i>verdicts</i><i>clean up</i>
-          </div><span></span></div>
+          <div class="steps-legend"><span></span><div class="steps" id="stepsLegend"></div><span></span></div>
           <div class="lane stock"><div class="name">Before the fix<small>upstream CDA</small></div><div class="steps" id="steps-stock"></div><div class="verdict" id="lv-stock"></div></div>
           <div class="lane fix"><div class="name">After the fix<small>ThinkingCAPs</small></div><div class="steps" id="steps-fix"></div><div class="verdict" id="lv-fix"></div></div>
           <div class="now-line" id="nowLine"><span class="tag">Now</span><span id="nowText">—</span></div>
@@ -478,13 +545,13 @@ a.mini:hover { border-color: var(--brand); }
       </section>
 
       <section class="card">
-        <div class="card-h"><h2>Bench console</h2><span class="meta" id="termMeta">run-both.sh</span></div>
+        <div class="card-h"><h2>Bench console</h2><span class="meta" id="termMeta">—</span></div>
         <div class="term" id="term"></div>
       </section>
     </div>
 
     <section class="card results">
-      <div class="card-h"><h2>What the CDA reports: before vs after</h2><span style="display:flex;gap:10px;align-items:center;min-width:0"><span class="meta" id="resMeta">—</span><button class="mini" id="btnDav2" title="Show these results on WebDAV"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>on WebDAV</button></span></div>
+      <div class="card-h"><h2>What the CDA reports: before vs after</h2><span style="display:flex;gap:10px;align-items:center;min-width:0"><span class="meta" id="resMeta">—</span><button class="mini only-vecu" id="btnDav2" title="Show these results on WebDAV"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>on WebDAV</button></span></div>
       <div class="matrix" id="matrix"></div>
     </section>
   </main>
@@ -523,7 +590,7 @@ a.mini:hover { border-color: var(--brand); }
     <div class="dr-f"><span>The test executor uploads one ZIP per run from the tester peer.</span><a href="/webdav/cda-543/results/" target="_blank" rel="noopener">Open raw WebDAV folder ↗</a></div>
   </div>
 </aside>
-<footer class="hint"><kbd>W</kbd> WebDAV · <kbd>R</kbd> replay · <kbd>F</kbd> full screen · <kbd>T</kbd> theme</footer>
+<footer class="hint"><kbd>V</kbd> switch bench · <kbd>W</kbd> WebDAV · <kbd>R</kbd> replay · <kbd>F</kbd> full screen · <kbd>T</kbd> theme</footer>
 
 <script>
 "use strict";
@@ -536,9 +603,28 @@ const CASES = [
 ];
 const VARIANTS = ["stock", "fix"];
 const VLABEL = { stock: "Before the fix", fix: "After the fix" };
-const STEP_TITLE = ["Bench check", "Build the test image", "Load it onto the tester peer", "Upload MDD files to WebDAV",
-  "Start the FLXC1000 vECU", "Register executor + cluster in CARL", "Deploy the cluster", "Run T1–T5 on the bench",
-  "Fetch the verdicts", "Clean up"];
+const BENCH = {
+  vecu: {
+    title: "openDuT test bench · local (all on this laptop)", meta: "local stack · CARL · CLEO · EDGAR 0.10.2 · NetBird", script: "run-both.sh",
+    legend: ["build image", "load on peer", "upload MDDs", "start vECU", "register", "deploy", "run tests", "verdicts", "clean up"],
+    titles: ["Bench check", "Build the test image", "Load it onto the tester peer", "Upload MDD files to WebDAV",
+      "Start the FLXC1000 vECU", "Register executor + cluster in CARL", "Deploy the cluster", "Run T1–T5 on the bench",
+      "Fetch the verdicts", "Clean up"],
+    testing: [7, 8], tunnel: [6, 8], dtcStep: 7,
+    confirm: "Start run-both.sh on the local openDuT vECU bench now? (stock, then fix: about 2 minutes)",
+  },
+  pi: {
+    title: "openDuT test bench · Raspberry Pi", meta: "nc.opendut.net · sdv-pi-14 ⇄ sdv-pi-13 · cluster 92bc165e", script: "pi-run.sh",
+    legend: ["start test container", "T1–T5 through the Pis", "verdicts"],
+    titles: ["Check the openDuT path to the team PC's vECU", "Start the test container on eno1 (cabled to sdv-pi-14)",
+      "Run T1–T5: DoIP via sdv-pi-14 → openDuT → sdv-pi-13 → team PC", "Read the verdicts"],
+    testing: [2, 2], tunnel: [1, 2], dtcStep: 2,
+    confirm: "Run the before/after test on the Raspberry Pi bench now?\n\nOK starts it from this laptop (about 1 minute). Nothing has to be run on the Raspberry Pis.\n\nIt only works if these are already in place:\n  • cluster deployed in the coach's LEA (nc.opendut.net)\n  • ecu-sim running on the team PC (./start_ecu_sim.sh)\n  • this laptop's Ethernet cable plugged into sdv-pi-14",
+  },
+};
+let bench = "vecu";
+const B = () => BENCH[bench];
+const nSteps = () => B().titles.length - 1;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -557,10 +643,10 @@ let L1 = null;
 function apply(e, animate) {
   const V = e.v ? S.variants[e.v] : null;
   switch (e.type) {
-    case "run_start": { const lbl = S.label; reset(); S.label = lbl; } S.started = true; S.order = (e.variants || "stock fix").split(" ").filter(Boolean); break;
+    case "run_start": { const lbl = S.label; reset(); S.label = lbl; } setBench(e.bench || "vecu", false); S.started = true; S.order = (e.variants || "stock fix").split(" ").filter(Boolean); break;
     case "variant_start": S.cur = e.v; V.status = "running"; V.step = 0; break;
     case "step":
-      S.step = e.n; S.title = e.title || STEP_TITLE[e.n] || "";
+      S.step = e.n; S.title = e.title || B().titles[e.n] || "";
       if (V) { V.step = e.n; V.status = "running"; S.cur = e.v; } else S.cur = null;
       break;
     case "verdicts":
@@ -614,7 +700,7 @@ function cellHTML(v, idx) {
     const msg = CASES[idx].id === "T1" ? t1Msg(r.found) : markMsg(cleanMsg(r.found));
     return { cls: r.result, html: `<div class="top"><span class="badge ${r.result}">${r.result}</span><span class="hl">${esc(headline(r.case, r.result))}</span></div><div class="msg" title="${esc(r.found)}">${msg}</div>` };
   }
-  const testing = V.status === "running" && V.step >= 7 && V.step <= 8;
+  const testing = V.status === "running" && V.step >= B().testing[0] && V.step <= B().testing[1];
   if (testing) return { cls: "idle", html: `<div class="top"><span class="badge run">···</span><span class="hl">testing on the bench</span></div>` };
   const txt = V.status === "error" ? "no result" : V.status === "running" ? "preparing the bench" : (S.order.includes(v) ? "waiting" : "not in this run");
   return { cls: "idle", html: `<div class="top"><span class="badge wait">—</span><span class="hl">${txt}</span></div>` };
@@ -645,7 +731,7 @@ function renderLanes() {
   for (const v of VARIANTS) {
     const V = S.variants[v], el = $(`steps-${v}`);
     let h = "";
-    for (let n = 1; n <= 9; n++) {
+    for (let n = 1; n <= nSteps(); n++) {
       const st = V.step > n || V.status === "done" ? "done" : V.step === n && V.status === "running" ? "now" : "";
       h += `<i class="${st}">${n}</i>`;
     }
@@ -671,25 +757,29 @@ function overall(v) {
 const cls = (o) => (o === "PASS" ? "c-ok" : o === "FAIL" ? "c-ng" : "c-mut");
 function verdictTag(v) { const o = overall(v); return o ? `<span class="badge ${o === "PASS" ? "OK" : "NG"}">${o}</span>` : ""; }
 function renderTopo() {
-  const on = new Set(), V = S.cur ? S.variants[S.cur] : null, n = S.step;
-  const map = {
+  const on = new Set(), V = S.cur ? S.variants[S.cur] : null, n = S.step, pi = bench === "pi";
+  const map = pi ? {
+    0: ["p-coach", "p-l-c14", "p-l-c13", "p-pi14", "p-pi13", "p-ecu"], 1: ["p-exec", "p-cab1"],
+    2: ["p-exec", "p-cda", "p-cab1", "p-pi14", "p-pi13", "p-cab2", "p-ecu"], 3: ["p-exec"],
+  } : {
     0: ["n-carl", "l-ct", "l-cv"], 1: ["n-laptop", "n-cda"], 2: ["l-img", "n-exec"], 3: ["l-mdd", "n-webdav"],
     4: ["n-ecu"], 5: ["l-cleo", "n-carl"], 6: ["n-carl", "l-ct", "l-cv"], 7: ["n-exec", "n-cda", "n-ecu"],
     8: ["l-res", "n-webdav", "n-laptop"], 9: ["n-carl"],
   };
   if (!S.finished && n != null && (V || n === 0)) (map[n] || []).forEach((id) => on.add(id));
-  document.querySelectorAll("#topo .node, #topo .link").forEach((el) => el.classList.toggle("on", on.has(el.id)));
-  const up = !!V && V.step >= 6 && V.step <= 8 && !S.finished;
+  document.querySelectorAll("#topo .node, #topo .link, #topo .ctl, #topo .cable").forEach((el) => el.classList.toggle("on", on.has(el.id)));
+  const up = !!V && V.step >= B().tunnel[0] && V.step <= B().tunnel[1] && !S.finished;
   const topo = $("topo");
   topo.classList.toggle("tunnel-up", up);
-  topo.classList.toggle("testing", !!V && V.step === 7 && !S.finished);
-  const chip = $("n-cda"), shown = S.cur || (S.variants.fix.verdicts ? "fix" : S.variants.stock.verdicts ? "stock" : null);
+  topo.classList.toggle("testing", !!V && V.step === B().dtcStep && !S.finished);
+  const chip = $(pi ? "p-cda" : "n-cda"), shown = S.cur || (S.variants.fix.verdicts ? "fix" : S.variants.stock.verdicts ? "stock" : null);
   chip.classList.remove("stock", "fix");
   if (shown) chip.classList.add(shown);
-  $("cdaSub").textContent = shown === "stock" ? "stock build · upstream 58f0c90" : shown === "fix" ? "fixed build · ThinkingCAPs #543" : "waiting";
+  $(pi ? "pCdaSub" : "cdaSub").textContent = shown === "stock" ? (pi ? "stock · upstream" : "stock build · upstream 58f0c90")
+    : shown === "fix" ? (pi ? "fixed · ThinkingCAPs" : "fixed build · ThinkingCAPs #543") : "waiting";
   const t1 = (S.variants[shown || "stock"].verdicts || []).find((r) => r.case === "T1");
   const m = t1 && /after='([^']*)'/.exec(t1.found);
-  $("dtc").textContent = V && V.step === 7 ? "inject → read → clear …" : m ? `read: ${m[1] || "none"} → cleared` : "—";
+  $(pi ? "pDtc" : "dtc").textContent = V && V.step === B().dtcStep ? "inject → read → clear …" : m ? `read: ${m[1] || "none"} → cleared` : "—";
 }
 function renderKpis() {
   for (const v of VARIANTS) {
@@ -721,9 +811,10 @@ function renderMode() {
   p.className = "pill " + mode;
   $("modeText").textContent = { idle: "Idle", live: liveRunning ? "Live on bench" : "Last live run", replay: "Replay", recorded: "Recorded run" }[mode];
   $("btnLive").disabled = liveRunning;
+  document.querySelectorAll("#benchSeg button").forEach((b) => { b.classList.toggle("on", b.dataset.b === bench); b.disabled = liveRunning; });
   $("runMeta").textContent = S.label || "—";
   $("resMeta").textContent = mode === "live" ? "results arrive from the bench" : S.label || "—";
-  $("termMeta").textContent = mode === "live" ? "run-both.sh (live)" : mode === "replay" ? "replay · bench logs" : "run-both.sh";
+  $("termMeta").textContent = mode === "live" ? `${B().script} (live)` : mode === "replay" ? "replay · bench logs" : B().script;
 }
 function render(reveal = true) { renderMode(); renderTopo(); renderLanes(); renderMatrix(reveal); renderKpis(); renderTerm(); }
 
@@ -743,7 +834,7 @@ async function poll() {
       for (const e of d.events) apply(e, animate);
       liveSeen = d.total;
       if (d.console.length) S.console = d.console;
-      S.label = d.running ? "live · run-both.sh" : "last live run";
+      S.label = d.running ? `live · ${B().script}` : "last live run";
       render(animate);
     } else if (newRun) liveSeen = 0;
     if (mode !== "live") renderMode();
@@ -753,8 +844,8 @@ async function poll() {
 // ---------- replay ----------
 async function replay(id, instant) {
   stopReplay();
-  const runs = await (await fetch("/api/runs")).json();
-  if (!runs.length) { reset(); mode = "idle"; S.console = ["no recorded run with both variants in runs/manual-*"]; render(); return; }
+  const runs = await (await fetch(`/api/runs?bench=${bench}`)).json();
+  if (!runs.length) { reset(); mode = "idle"; S.console = [`no recorded ${bench === "pi" ? "Raspberry Pi" : "local"} bench run yet: press Run live`]; render(); return; }
   id = id || runs[0];
   const data = await (await fetch(`/api/run/${id}`)).json();
   mode = instant ? "recorded" : "replay";
@@ -763,18 +854,29 @@ async function replay(id, instant) {
   const ev = [];
   let t = 0;
   const at = (dt, e) => { t += dt; ev.push([t, e]); };
-  at(0, { type: "run_start", variants: "stock fix" });
-  at(400, { type: "step", v: "", n: 0, title: STEP_TITLE[0], log: "▶ Step 0: bench check · both peers Connected" });
+  const pi = data.bench === "pi";
+  at(0, { type: "run_start", variants: "stock fix", bench: data.bench });
+  at(400, { type: "step", v: "", n: 0, title: B().titles[0], log: pi ? "▶ Step 0: vECU on the team PC answers through sdv-pi-14 → openDuT → sdv-pi-13" : "▶ Step 0: bench check · both peers Connected" });
   for (const v of VARIANTS) {
     const d = data[v];
     if (!d) continue;
+    if (pi) {
+      at(900, { type: "variant_start", v, log: `════════ ${v} CDA (${VLABEL[v].toLowerCase()}) ════════` });
+      at(500, { type: "step", v, n: 1, title: B().titles[1], log: `▶ Step 1: ${B().titles[1]}` });
+      at(1000, { type: "step", v, n: 2, title: B().titles[2], log: `▶ Step 2: ${B().titles[2]}` });
+      for (const line of d.log.split("\n").filter(Boolean)) at(700, { type: "log", log: `[${v}] ${line}` });
+      at(700, { type: "step", v, n: 3, title: B().titles[3], log: `▶ Step 3: ${B().titles[3]}` });
+      at(200, { type: "verdicts", v, verdicts: d.verdicts, exit: d.exit });
+      at(2600, { type: "variant_done", v });
+      continue;
+    }
     at(900, { type: "variant_start", v, log: `════════ ${v} CDA (${VLABEL[v].toLowerCase()}) ════════` });
-    for (let n = 1; n <= 6; n++) at(n === 1 ? 500 : 1000, { type: "step", v, n, title: STEP_TITLE[n], log: `▶ Step ${n}: ${STEP_TITLE[n]}` });
-    at(1300, { type: "step", v, n: 7, title: STEP_TITLE[7], log: "▶ Step 7: wait for the result ZIP on WebDAV" });
+    for (let n = 1; n <= 6; n++) at(n === 1 ? 500 : 1000, { type: "step", v, n, title: B().titles[n], log: `▶ Step ${n}: ${B().titles[n]}` });
+    at(1300, { type: "step", v, n: 7, title: B().titles[7], log: "▶ Step 7: wait for the result ZIP on WebDAV" });
     for (const line of d.log.split("\n").filter(Boolean)) at(700, { type: "log", log: `[executor] ${line}` });
-    at(700, { type: "step", v, n: 8, title: STEP_TITLE[8], log: "▶ Step 8: fetch it and read the verdicts" });
+    at(700, { type: "step", v, n: 8, title: B().titles[8], log: "▶ Step 8: fetch it and read the verdicts" });
     at(200, { type: "verdicts", v, verdicts: d.verdicts, exit: d.exit });
-    at(2600, { type: "step", v, n: 9, title: STEP_TITLE[9], log: "▶ Step 9: clean up (undeploy, remove the executor)" });
+    at(2600, { type: "step", v, n: 9, title: B().titles[9], log: "▶ Step 9: clean up (undeploy, remove the executor)" });
     at(800, { type: "variant_done", v });
   }
   at(400, { type: "run_done", log: "════════ Result ════════" });
@@ -787,12 +889,27 @@ async function replay(id, instant) {
 // ---------- controls ----------
 $("btnReplay").onclick = () => { if (!liveRunning) replay(null, false); };
 $("btnLive").onclick = async () => {
-  if (!confirm("Start run-both.sh on the openDuT bench now? (stock, then fix: about 2 minutes)")) return;
+  if (!confirm(B().confirm)) return;
   stopReplay();
-  const r = await fetch("/api/start", { method: "POST" });
+  const r = await fetch(`/api/start?bench=${bench}`, { method: "POST" });
   if (r.status === 409) alert("A run is already going on.");
-  mode = "live"; liveSeen = 0; reset(); S.console = ["starting run-both.sh …"]; liveRunning = true; render();
+  mode = "live"; liveSeen = 0; reset(); S.console = [`starting ${B().script} …`]; liveRunning = true; render();
 };
+function setBench(b, user) {
+  if (!BENCH[b]) b = "vecu";
+  const changed = b !== bench;
+  bench = b;
+  document.documentElement.dataset.bench = b;
+  $("topoTitle").textContent = B().title;
+  $("topoMeta").textContent = B().meta;
+  const lg = $("stepsLegend");
+  lg.innerHTML = B().legend.map((t) => `<i>${esc(t)}</i>`).join("");
+  document.querySelector(".lanes").style.setProperty("--nsteps", B().legend.length);
+  try { localStorage.setItem("tc-bench", b); } catch (_) {}
+  if (user && changed && !liveRunning) replay(null, true);
+  else renderMode();
+}
+$("benchSeg").onclick = (e) => { const b = e.target.closest("button"); if (b && !b.disabled) setBench(b.dataset.b, true); };
 function toggleTheme() {
   const root = document.documentElement, next = root.dataset.theme === "light" ? "dark" : "light";
   root.dataset.theme = next;
@@ -805,6 +922,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "r" || e.key === "R") $("btnReplay").click();
   if (e.key === "f" || e.key === "F") $("btnFull").click();
   if (e.key === "t" || e.key === "T") toggleTheme();
+  if ((e.key === "v" || e.key === "V") && !liveRunning) setBench(bench === "vecu" ? "pi" : "vecu", true);
 });
 try { const th = localStorage.getItem("tc-theme"); if (th) document.documentElement.dataset.theme = th; } catch (_) {}
 const tick = () => { $("clock").textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }); };
@@ -900,15 +1018,19 @@ fetch("/api/webdav").then((r) => r.json()).then((d) => { if (d.results) $("davCo
 
 // ---------- start ----------
 (async () => {
+  let saved = null;
+  try { saved = localStorage.getItem("tc-bench"); } catch (_) {}
+  setBench(new URLSearchParams(location.search).get("bench") || saved || "vecu", false);
   render();
   try { L1 = await (await fetch("/api/l1")).json(); } catch (_) {}
   let d = null;
   try { d = await (await fetch("/api/live?since=0")).json(); } catch (_) {}
   const lastLiveComplete = d && VARIANTS.every((v) => d.events.some((e) => e.type === "verdicts" && e.v === v));
-  if (d && (d.running || lastLiveComplete)) {
+  const liveBench = d && ((d.events.find((e) => e.type === "run_start") || {}).bench || "vecu");
+  if (d && (d.running || (lastLiveComplete && liveBench === bench))) {
     mode = "live"; liveRunning = d.running;
     d.events.forEach((e) => apply(e, false)); liveSeen = d.total; S.console = d.console;
-    S.label = d.running ? "live · run-both.sh" : "last live run"; render(false);
+    S.label = d.running ? `live · ${B().script}` : "last live run"; render(false);
   } else {
     await replay(null, true);
   }

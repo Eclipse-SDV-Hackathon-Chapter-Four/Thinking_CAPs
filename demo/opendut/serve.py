@@ -5,10 +5,11 @@ Serves dashboard/index.html and a small JSON API on 127.0.0.1 (stdlib only, no i
 
   GET  /api/live?since=N   events of the current or last run-both.sh run (runs/live/events.jsonl),
                            the console tail and whether a run is going on
-  GET  /api/runs           recorded runs (runs/manual-*) that have a stock and a fix verdict
+  GET  /api/runs?bench=B   recorded runs (runs/manual-*) that have a stock and a fix verdict;
+                           bench vecu (local openDuT stack) or pi (Raspberry Pis, run has bench.txt)
   GET  /api/run/<id>       verdicts + executor log of one recorded run, for the replay
   GET  /api/l1             unit test totals (L1) before and after, from runs/*-L1-*/summary.json
-  POST /api/start          starts ../run-both.sh in the background (one run at a time)
+  POST /api/start?bench=B  starts ../run-both.sh (vecu) or ../../coach/pi-run.sh (pi) in the background
   GET  /api/webdav         result ZIPs and MDD files on openDuT's WebDAV, with each ZIP's verdicts
   GET  /api/webdav/zip/<n> one result ZIP from WebDAV: verdicts, run.log, file list
   GET  /webdav/<path>      plain pass-through to WebDAV (folder listings, ZIP downloads)
@@ -45,6 +46,7 @@ WEBDAV_ADDR = ("127.0.0.1", 443)
 RESULTS_DIR = "/cda-543/results/"
 MDD_DIR = "/cda-543/mdd/"
 CA_FILE = ROOT.parent / "opendut-ca.pem"
+PI_RUN = ROOT.parent / "coach" / "pi-run.sh"  # Raspberry Pi bench on the coach's openDuT
 
 proc = None  # run-both.sh started from the dashboard
 zip_cache = {}  # (name, size) -> summary
@@ -182,11 +184,16 @@ def variant(run_dir, v):
     return {"verdicts": verdicts, "exit": code, "log": log}
 
 
-def recorded_runs():
+def bench_of(run_dir):
+    return "pi" if (run_dir / "bench.txt").exists() else "vecu"
+
+
+def recorded_runs(bench=None):
     out = []
     for d in sorted(RUNS.glob("manual-*"), reverse=True):
         if (d / "stock" / "verdict.json").exists() and (d / "fix" / "verdict.json").exists():
-            out.append(d.name)
+            if bench in (None, bench_of(d)):
+                out.append(d.name)
     return out
 
 
@@ -237,13 +244,15 @@ class Handler(BaseHTTPRequestHandler):
                 "running": running(events),
             })
         if path == "/api/runs":
-            return self.send(200, recorded_runs())
+            m = re.search(r"bench=(vecu|pi)", query)
+            return self.send(200, recorded_runs(m.group(1) if m else None))
         if path.startswith("/api/run/"):
             name = path.rsplit("/", 1)[-1]
             d = RUNS / name
             if not re.fullmatch(r"manual-[0-9TZ]+", name) or not d.is_dir():
                 return self.send(404, {"error": "no such run"})
-            return self.send(200, {"id": name, "stock": variant(d, "stock"), "fix": variant(d, "fix")})
+            return self.send(200, {"id": name, "bench": bench_of(d),
+                                  "stock": variant(d, "stock"), "fix": variant(d, "fix")})
         if path == "/api/l1":
             return self.send(200, l1_totals())
         if path == "/api/webdav":
@@ -278,12 +287,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         global proc
-        if self.path != "/api/start":
+        path, _, query = self.path.partition("?")
+        if path != "/api/start":
             return self.send(404, {"error": "not found"})
+        script = PI_RUN if "bench=pi" in query else ROOT / "run-both.sh"
         if running(live_events()):
             return self.send(409, {"error": "a run is already going on"})
         proc = subprocess.Popen(
-            [str(ROOT / "run-both.sh")], cwd=ROOT,
+            [str(script)], cwd=ROOT,
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
